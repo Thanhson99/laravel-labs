@@ -1,0 +1,30 @@
+# macOS
+.DS_Store
+
+# Laravel labs (each child folder is an independent Laravel project)
+*/.env
+*/.env.*
+!*/.env.example
+
+*/vendor/
+*/node_modules/
+
+*/public/build/
+*/public/hot
+
+*/bootstrap/cache/*.php
+
+*/storage/logs/*
+!*/storage/logs/.gitignore
+
+*/storage/framework/cache/data/*
+!*/storage/framework/cache/data/.gitignore
+
+*/storage/framework/sessions/*
+!*/storage/framework/sessions/.gitignore
+
+*/storage/framework/views/*
+!*/storage/framework/views/.gitignore
+
+*/storage/app/private/*
+!*/storage/app/private/.gitignore
