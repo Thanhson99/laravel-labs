@@ -1,0 +1,766 @@
+{
+  "anchor": "laravel-performance-search",
+  "type": "list",
+  "heading": "Hiệu năng, cache và search: từ app chạy được tới app chạy khỏe",
+  "intro": "Site này gom toàn bộ kiến thức thực chiến quanh hiệu năng, cache và search trong Laravel. Mục tiêu không chỉ là biết dùng `Cache::remember()` hay thêm một ô tìm kiếm, mà là hiểu bottleneck nằm ở đâu, cache ở tầng nào, invalidation khó ra sao, query và index ảnh hưởng thế nào, full-text khác database filter đơn giản ở đâu, và làm sao để tối ưu mà không tự tạo stale data hay độ phức tạp mù mờ.",
+  "breaks": [
+    {
+      "start": 1,
+      "title": "I. Tư Duy Hiệu Năng Và Cách Đọc Bottleneck",
+      "description": "Hiệu năng là gì, nhanh ở đâu, chậm ở đâu, đo bằng gì và vì sao tối ưu mù thường hại hơn có lợi.",
+      "tone": "amber"
+    },
+    {
+      "start": 19,
+      "title": "II. Query, Eloquent, Index Và Tầng Database",
+      "description": "N+1, eager loading, query shape, index, explain plan, pagination, aggregate và những thứ làm app chậm từ dưới lên.",
+      "tone": "copper"
+    },
+    {
+      "start": 43,
+      "title": "III. Cache Foundations, Redis Và Invalidation",
+      "description": "Cache là gì, cache layer, Redis, key design, TTL, stale data, invalidation, tag, atomicity và các bẫy cache rất thật.",
+      "tone": "sand"
+    },
+    {
+      "start": 69,
+      "title": "IV. Cache Ở Laravel: Config, Route, View, Query Và Response",
+      "description": "Các loại cache sẵn có và cache tự thiết kế trong Laravel, khi nào nên dùng và khi nào không nên lạm dụng.",
+      "tone": "amber"
+    },
+    {
+      "start": 91,
+      "title": "V. Search, Filter, Sort, Pagination Và Trải Nghiệm Tìm Kiếm",
+      "description": "Search đơn giản bằng SQL, filter-sort-paginate, UX tìm kiếm, full-text mindset và tại sao search là bài toán sản phẩm chứ không chỉ là query.",
+      "tone": "copper"
+    },
+    {
+      "start": 113,
+      "title": "VI. Scout, Meilisearch, Algolia Và Search Engine Ngoài",
+      "description": "Khi nào database search không đủ, dùng Scout để làm gì, sync index ra sao và các rủi ro khi search engine tách khỏi DB chính.",
+      "tone": "sand"
+    },
+    {
+      "start": 131,
+      "title": "VII. Profiling, Observability, Queue Offload Và Production Ops",
+      "description": "Profiling, query log, Telescope, Horizon, tracing, cache hit rate, index health, background reindexing và cách nhìn hiệu năng như một phần vận hành.",
+      "tone": "amber"
+    },
+    {
+      "start": 149,
+      "title": "VIII. Case Thực Chiến, Anti-Pattern Và Đánh Giá Cuối",
+      "description": "Những lỗi production điển hình của cache và search, mùi tối ưu hóa sai chỗ và cách biết app đã đủ khỏe hay chưa.",
+      "tone": "copper"
+    }
+  ],
+  "items": [
+    {
+      "title": "1. Hiệu năng trong app Laravel nên được hiểu là gì?",
+      "body": "Là tốc độ phản hồi, khả năng chịu tải, độ ổn định dưới áp lực và cảm giác mượt của hệ thống khi người dùng thực hiện các flow thật.",
+      "code": "Route::get('/health/perf-demo', function () {\n    $startedAt = microtime(true);\n\n    $users = User::query()->latest()->take(20)->get();\n\n    return response()->json([\n        'count' => $users->count(),\n        'duration_ms' => round((microtime(true) - $startedAt) * 1000, 2),\n    ]);\n});",
+      "note": "Sai lầm thường gặp: nghĩ hiệu năng chỉ là request có nhanh không. Cách sửa là nhìn cả response time, tải, độ ổn định và trải nghiệm thật của flow."
+    },
+    {
+      "title": "2. Hiệu năng có phải chỉ là request nhanh hơn không?",
+      "body": "Không. Nó còn là khả năng scale, mức tiêu thụ tài nguyên, queue backlog, tốc độ search, tốc độ render trang và độ ổn định khi traffic tăng."
+    },
+    {
+      "title": "3. Vì sao tối ưu mù là anti-pattern?",
+      "body": "Vì bạn có thể làm code phức tạp lên mà không chạm đúng bottleneck. Đo sai hoặc đo thiếu dễ dẫn tới tối ưu nhầm chỗ."
+    },
+    {
+      "title": "4. Bottleneck là gì?",
+      "body": "Là điểm nghẽn thật sự giới hạn tốc độ hoặc throughput của hệ thống, ví dụ query chậm, Redis nghẽn, provider ngoài chậm hoặc CPU xử lý ảnh quá nặng."
+    },
+    {
+      "title": "5. Vì sao một app 'cảm thấy chậm' chưa chắc vì Laravel chậm?",
+      "body": "Vì nguyên nhân có thể nằm ở DB, network, frontend asset, CDN, API ngoài, queue lag hoặc search index chứ không phải framework."
+    },
+    {
+      "title": "6. Tư duy đúng khi tối ưu là gì?",
+      "body": "Đo trước, xác định bottleneck thật, tối ưu đúng tầng, kiểm chứng lại và tránh tạo complexity không cần thiết.",
+      "code": "DB::listen(function ($query) {\n    logger()->info('sql', [\n        'sql' => $query->sql,\n        'time_ms' => $query->time,\n    ]);\n});",
+      "note": "Sai lầm thường gặp: vừa thấy chậm là thêm cache. Cách sửa là đo trước để biết nghẽn đang nằm ở query, render, queue hay API ngoài."
+    },
+    {
+      "title": "7. Latency và throughput khác nhau thế nào?",
+      "body": "Latency là thời gian hoàn thành một request hoặc tác vụ. Throughput là lượng công việc xử lý được trong một đơn vị thời gian."
+    },
+    {
+      "title": "8. Một trang web phản hồi chậm có thể do những tầng nào?",
+      "body": "DB query, PHP compute, external API, cache miss, view rendering, network, image weight, JS bundle hoặc search backend."
+    },
+    {
+      "title": "9. P95 hoặc P99 hữu ích hơn average ở đâu?",
+      "body": "Vì average có thể che giấu các request rất chậm. P95/P99 cho bạn nhìn nhóm người dùng bị đau nhất."
+    },
+    {
+      "title": "10. Tại sao local môi trường nhỏ dễ đánh lừa cảm giác hiệu năng?",
+      "body": "Vì local thường có ít data, không có concurrent traffic, không có provider thật và không tái hiện cache behavior production."
+    },
+    {
+      "title": "11. Search cũng là bài toán hiệu năng vì sao?",
+      "body": "Vì người dùng cảm nhận search rất trực tiếp. Search chậm hoặc thiếu liên quan làm toàn bộ app có cảm giác ì ạch và kém tin cậy."
+    },
+    {
+      "title": "12. Cache là tối ưu hay là phần của thiết kế hệ thống?",
+      "body": "Trong app thật, cache thường là một phần của thiết kế hệ thống chứ không chỉ là mẹo tối ưu nhỏ."
+    },
+    {
+      "title": "13. Hiệu năng và tính đúng đắn có thể xung đột không?",
+      "body": "Có. Cache và denormalization có thể làm nhanh hơn nhưng tăng nguy cơ stale data hoặc consistency bug nếu thiết kế kém."
+    },
+    {
+      "title": "14. Một tip senior về performance mindset là gì?",
+      "body": "Nếu chưa chỉ ra được bottleneck là gì và đo bằng gì, bạn chưa tối ưu mà mới chỉ đang phỏng đoán."
+    },
+    {
+      "title": "15. App admin và app public khác nhau thế nào về performance concern?",
+      "body": "App admin thường nặng filter, sort, export, search, còn app public thường nhạy hơn với TTFB, caching, CDN và burst traffic."
+    },
+    {
+      "title": "16. Khi nào performance trở thành vấn đề sản phẩm chứ không chỉ kỹ thuật?",
+      "body": "Khi trang chậm làm người dùng bỏ thao tác, search khó dùng, conversion giảm hoặc support liên tục nghe phàn nàn về độ lag."
+    },
+    {
+      "title": "17. Có nên tối ưu từ ngày đầu không?",
+      "body": "Nên giữ kiến trúc đủ lành mạnh để tối ưu về sau, nhưng không nên over-engineer trước khi có tín hiệu thật."
+    },
+    {
+      "title": "18. Nền tảng quan trọng nhất khi học performance là gì?",
+      "body": "Học cách đọc hệ thống nhiều tầng: request, DB, cache, queue, search, network và dữ liệu thật."
+    },
+    {
+      "title": "19. Query là nơi bottleneck phổ biến nhất trong app Laravel vì sao?",
+      "body": "Vì nhiều màn hình phụ thuộc nhiều dữ liệu quan hệ, filter, sort, pagination và aggregate. Query shape tệ rất dễ làm app chậm."
+    },
+    {
+      "title": "20. N+1 là gì?",
+      "body": "Là tình huống app chạy một query lấy danh sách rồi thêm nhiều query nữa cho từng item thay vì eager load hợp lý."
+    },
+    {
+      "title": "21. Eager loading giải quyết gì?",
+      "body": "Nó giảm số query bằng cách nạp quan hệ trước thay vì để view hoặc code lặp gây N+1."
+    },
+    {
+      "title": "22. Có phải eager load càng nhiều càng tốt không?",
+      "body": "Không. Eager load quá mức cũng tốn RAM, tăng payload object và đôi khi load cả dữ liệu không dùng."
+    },
+    {
+      "title": "23. Query log giúp gì?",
+      "body": "Nó cho bạn thấy số query, query nào chậm và khu vực nào đang bắn query quá nhiều.",
+      "code": "DB::enableQueryLog();\n\n$posts = Post::query()->with('author')->latest()->take(10)->get();\n\nlogger()->info('query-log', DB::getQueryLog());",
+      "bullets": [
+        "Hữu ích khi nghi N+1 hoặc nghi một đoạn code bắn quá nhiều query.",
+        "Đừng bật query log bừa trên production rồi làm log phình vô ích."
+      ]
+    },
+    {
+      "title": "24. Một query ít nhưng vẫn chậm có thể vì sao?",
+      "body": "Có thể do thiếu index, sort nặng, join lớn, select quá rộng, full table scan hoặc dữ liệu quá lớn."
+    },
+    {
+      "title": "25. Index là gì?",
+      "body": "Là cấu trúc giúp DB tìm dữ liệu nhanh hơn cho các điều kiện hoặc sort nhất định, đổi lại tốn thêm storage và chi phí ghi."
+    },
+    {
+      "title": "26. Có phải mọi cột đều nên thêm index không?",
+      "body": "Không. Index thừa làm tăng chi phí insert/update và phình storage."
+    },
+    {
+      "title": "27. Composite index hữu ích khi nào?",
+      "body": "Khi query thường lọc hoặc sort theo nhiều cột theo một pattern cụ thể."
+    },
+    {
+      "title": "28. `EXPLAIN` hoặc query plan dùng để làm gì?",
+      "body": "Nó cho biết DB đang thực thi query theo cách nào, có dùng index không, có scan toàn bảng không và chỗ nào là điểm nghẽn.",
+      "code": "EXPLAIN SELECT *\nFROM posts\nWHERE team_id = 5\n  AND published_at IS NOT NULL\nORDER BY created_at DESC\nLIMIT 20;",
+      "note": "Trước khi thêm cache cho một query chậm, hãy nhìn plan trước để biết DB đang thực sự đau ở đâu."
+    },
+    {
+      "title": "29. `select *` có hại gì?",
+      "body": "Nó kéo nhiều cột không cần thiết, tăng băng thông DB-app và làm hydrate model nặng hơn."
+    },
+    {
+      "title": "30. Aggregate như `count`, `sum`, `group by` có thể gây chậm không?",
+      "body": "Có, nhất là trên bảng lớn hoặc query nhiều join. Chúng thường cần index, precompute hoặc cache đúng cách."
+    },
+    {
+      "title": "31. Pagination ảnh hưởng hiệu năng thế nào?",
+      "body": "Offset pagination trên bảng lớn có thể chậm dần ở trang sâu. Cursor pagination hoặc chiến lược khác có thể hợp hơn.",
+      "code": "// Offset pagination\n$posts = Post::query()->latest()->paginate(20);\n\n// Cursor pagination\n$posts = Post::query()\n    ->orderByDesc('id')\n    ->cursorPaginate(20);",
+      "note": "Sai lầm thường gặp: paginate kiểu nào cũng như nhau. Cách sửa là nhìn dữ liệu thật và cân nhắc cursor khi danh sách rất sâu."
+    },
+    {
+      "title": "32. `whereHas` và query relation có thể gây bất ngờ gì?",
+      "body": "Chúng rất tiện nhưng trên dữ liệu lớn có thể tạo query nặng hơn bạn tưởng nếu không nhìn plan thực tế."
+    },
+    {
+      "title": "33. Sorting theo cột không index có nguy hiểm không?",
+      "body": "Rất có thể gây chậm, nhất là khi kết hợp filter lớn và paginate."
+    },
+    {
+      "title": "34. Soft delete có liên quan tới performance không?",
+      "body": "Có. `deleted_at` xuất hiện trong nhiều query và có thể làm query shape khác đi nếu không nghĩ index hợp lý."
+    },
+    {
+      "title": "35. Chunking hoặc cursor trong xử lý hàng loạt giúp gì?",
+      "body": "Nó giúp tránh load toàn bộ dataset lớn vào RAM và giảm nguy cơ timeout khi xử lý background."
+    },
+    {
+      "title": "36. Materialized view mindset hoặc denormalization dùng khi nào?",
+      "body": "Khi read pattern quá nặng và business chấp nhận dữ liệu tổng hợp cập nhật theo nhịp hoặc qua pipeline."
+    },
+    {
+      "title": "37. Một tip thực chiến với DB performance là gì?",
+      "body": "Đừng tối ưu query bằng cảm giác. Hãy nhìn query thật trên dữ liệu gần production và đọc plan thực sự."
+    },
+    {
+      "title": "38. Mùi code xấu ở tầng Eloquent là gì?",
+      "body": "View hoặc resource vô tình chạm thêm relation, controller lặp query theo từng item và không ai để ý số query phình ra."
+    },
+    {
+      "title": "39. Có nên đổ mọi thứ cho DB khi app chậm không?",
+      "body": "Không. Nhưng DB là nơi cần kiểm tra rất sớm vì nhiều bottleneck Laravel app thật xuất phát từ đó."
+    },
+    {
+      "title": "40. Query đúng nhưng vẫn chậm ở production thường vì sao?",
+      "body": "Do data volume, index lệch, collation, concurrent load, plan đổi theo thống kê hoặc sort/filter không ăn index."
+    },
+    {
+      "title": "41. Search đơn giản bằng `LIKE` có đủ không?",
+      "body": "Đủ cho nhiều case nhỏ, nhưng sẽ yếu dần khi dữ liệu lớn, cần relevance, typo tolerance hoặc multi-field search."
+    },
+    {
+      "title": "42. Tầng database mạnh là điều kiện cần gì cho cache và search?",
+      "body": "Nếu query nền quá tệ, cache miss hoặc reindex sẽ vẫn đau. Cache và search engine không chữa mọi thiết kế DB yếu."
+    },
+    {
+      "title": "43. Cache là gì ở góc nhìn hệ thống?",
+      "body": "Là lớp lưu tạm kết quả hoặc dữ liệu thường dùng để giảm chi phí tính toán hoặc truy cập nguồn gốc."
+    },
+    {
+      "title": "44. Tại sao cache hấp dẫn nhưng nguy hiểm?",
+      "body": "Vì nó làm nhanh lên rất rõ, nhưng cũng dễ tạo stale data, race condition và bug khó tái hiện."
+    },
+    {
+      "title": "45. Cache hit và cache miss nghĩa là gì?",
+      "body": "Hit là lấy được dữ liệu từ cache, miss là phải tính hoặc đọc lại từ nguồn gốc."
+    },
+    {
+      "title": "46. Redis thường được dùng cho cache vì sao?",
+      "body": "Vì nó nhanh, phổ biến, hỗ trợ nhiều kiểu dữ liệu và thường đã có mặt trong hệ Laravel cho queue hoặc session."
+    },
+    {
+      "title": "47. TTL là gì?",
+      "body": "Time to live là thời gian cache còn hiệu lực trước khi hết hạn.",
+      "code": "Cache::put('homepage:stats', [\n    'user_count' => User::count(),\n], now()->addMinutes(5));",
+      "note": "TTL không phải con số đặt cho có. Nó phản ánh app chấp nhận dữ liệu cũ trong bao lâu."
+    },
+    {
+      "title": "48. TTL ngắn hay dài tốt hơn?",
+      "body": "Không có đáp án chung. TTL phải phản ánh trade-off giữa độ mới dữ liệu và chi phí recompute."
+    },
+    {
+      "title": "49. Stale data là gì?",
+      "body": "Là dữ liệu cache không còn phản ánh state hiện tại của nguồn gốc."
+    },
+    {
+      "title": "50. Cache invalidation khó vì sao?",
+      "body": "Vì phải biết khi nào dữ liệu thay đổi, key nào liên quan, luồng nào ghi dữ liệu và bao nhiêu nơi đang phụ thuộc vào cache đó."
+    },
+    {
+      "title": "51. Có nên cache mọi query chậm không?",
+      "body": "Không. Có query chậm cần sửa index hoặc shape trước. Cache có thể che mùi thiết kế thay vì chữa gốc."
+    },
+    {
+      "title": "52. Key design trong cache quan trọng thế nào?",
+      "body": "Rất quan trọng. Key nên đủ rõ nghĩa để tránh đụng nhau, hỗ trợ invalidation và phân biệt tenant, locale, filter hoặc user context.",
+      "code": "$key = sprintf(\n    'search:%s:%s:%s',\n    $tenant->id,\n    app()->getLocale(),\n    md5(json_encode($filters))\n);",
+      "note": "Theo tư duy cache chính thức của Laravel, key là một phần của contract. Key mơ hồ sẽ kéo theo invalidation mơ hồ."
+    },
+    {
+      "title": "53. Cache key thiếu tenant hoặc locale có thể gây bug gì?",
+      "body": "Rất dễ rò dữ liệu giữa tenant hoặc hiển thị sai ngôn ngữ, sai context người dùng."
+    },
+    {
+      "title": "54. Cache tag hữu ích khi nào?",
+      "body": "Khi cần invalidate theo nhóm như sản phẩm, category, user dashboard hoặc tenant data."
+    },
+    {
+      "title": "55. `Cache::remember()` phù hợp ở đâu?",
+      "body": "Khi dữ liệu đọc thường xuyên, chi phí tính lại đáng kể và logic invalidation đủ rõ.",
+      "code": "$topPosts = Cache::remember('blog:top-posts', 600, function () {\n    return Post::query()\n        ->with('author')\n        ->orderByDesc('view_count')\n        ->take(5)\n        ->get();\n});",
+      "bullets": [
+        "Hợp với homepage, sidebar, dashboard summary, leaderboard nhẹ.",
+        "Không hợp nếu dữ liệu phải đúng tức thời mà không có chiến lược invalidation rõ ràng."
+      ]
+    },
+    {
+      "title": "56. `rememberForever()` có đáng sợ không?",
+      "body": "Có thể rất đáng sợ nếu không có chiến lược invalidation rõ ràng, vì stale data có thể sống mãi."
+    },
+    {
+      "title": "57. Cache stampede là gì?",
+      "body": "Là khi nhiều request cùng cache miss và cùng đổ vào recompute một dữ liệu nặng, tạo tải lớn đột ngột."
+    },
+    {
+      "title": "58. Lock hoặc stale-while-revalidate mindset giúp gì?",
+      "body": "Nó giúp giảm stampede bằng cách để một process tái tạo dữ liệu còn process khác dùng bản cũ hoặc chờ có kiểm soát."
+    },
+    {
+      "title": "59. Có nên cache dữ liệu cá nhân hóa theo user không?",
+      "body": "Được nhưng phải cực kỳ cẩn thận với cache key và invalidation. Đây là khu vực dễ rò dữ liệu."
+    },
+    {
+      "title": "60. Atomic increment/decrement trong Redis dùng ở đâu?",
+      "body": "Hữu ích cho counter, quota, rate limiting và một số trạng thái nhẹ cần thao tác nhanh."
+    },
+    {
+      "title": "61. Cache warming là gì?",
+      "body": "Là chuẩn bị trước một số cache quan trọng để request đầu tiên sau deploy hoặc sau expire không quá chậm."
+    },
+    {
+      "title": "62. Eviction là gì?",
+      "body": "Là khi backend cache phải loại bớt key cũ do thiếu bộ nhớ hoặc policy lưu trữ."
+    },
+    {
+      "title": "63. Vì sao memory pressure của Redis cũng là vấn đề sản phẩm?",
+      "body": "Vì eviction hoặc latency tăng có thể làm app bỗng chậm đi hoặc trả dữ liệu lệch hành vi."
+    },
+    {
+      "title": "64. Một tip senior về cache là gì?",
+      "body": "Cache là dữ liệu phụ. Nếu mất cache mà app chết hẳn, có thể bạn đang phụ thuộc sai vào nó."
+    },
+    {
+      "title": "65. Có nên coi cache như source of truth không?",
+      "body": "Không nên trong đa số case. Source of truth vẫn nên là DB hoặc hệ chính, còn cache là lớp tăng tốc."
+    },
+    {
+      "title": "66. Mùi code xấu ở phần cache là gì?",
+      "body": "Key được đặt tùy hứng, không ai biết invalidate ở đâu và bug stale data chỉ được chữa bằng `cache:clear` liên tục."
+    },
+    {
+      "title": "67. Một cache strategy tốt trả lời được câu hỏi gì?",
+      "body": "Cache cái gì, key ra sao, TTL bao lâu, ai invalidate, khi miss thì chuyện gì xảy ra và nếu stale thì mức đau ra sao."
+    },
+    {
+      "title": "68. Vì sao cache invalidation là bài toán sản phẩm?",
+      "body": "Vì mỗi loại dữ liệu có tolerance khác nhau với độ trễ cập nhật. Giá sản phẩm stale khác rất xa với dashboard analytics stale vài phút."
+    },
+    {
+      "title": "69. Config cache trong Laravel làm gì?",
+      "body": "Nó gom config thành dạng tối ưu để app boot nhanh hơn và ổn định hơn ở production."
+    },
+    {
+      "title": "70. Route cache dùng khi nào?",
+      "body": "Khi app có nhiều route và production cần boot nhanh hơn. Nhưng phải chắc route không phụ thuộc closure không tương thích."
+    },
+    {
+      "title": "71. View cache giúp gì?",
+      "body": "Nó giảm chi phí compile Blade lặp lại, đặc biệt hữu ích ở production.",
+      "code": "php artisan view:cache\nphp artisan view:clear",
+      "note": "Nếu bạn sửa view mà deploy xong vẫn thấy output cũ, hãy nghĩ tới view cache trước khi nghi business logic."
+    },
+    {
+      "title": "72. `optimize` hoặc các lệnh cache của Laravel có tự làm app nhanh lên thần kỳ không?",
+      "body": "Không thần kỳ. Chúng hữu ích nhưng không thay thế việc sửa query, payload hoặc architecture bottleneck."
+    },
+    {
+      "title": "73. Response cache là gì?",
+      "body": "Là cache nguyên response HTML hoặc JSON cho một số route phù hợp, giúp giảm nhiều lớp xử lý.",
+      "code": "return Cache::remember(\n    'landing-page:guest',\n    300,\n    fn () => view('landing', [\n        'plans' => Plan::query()->public()->get(),\n    ])->render()\n);",
+      "note": "Response cache mạnh nhưng rất dễ cache nhầm dữ liệu theo user, locale hoặc tenant nếu key không đủ context."
+    },
+    {
+      "title": "74. Response cache phù hợp khi nào?",
+      "body": "Khi nội dung ít thay đổi, tính cá nhân hóa thấp hoặc key theo context đủ rõ."
+    },
+    {
+      "title": "75. Query result cache có đáng dùng không?",
+      "body": "Có thể rất đáng, nhưng nên cẩn thận invalidate. Nếu không, nó dễ trở thành nguồn stale data rất khó lần."
+    },
+    {
+      "title": "76. Có nên cache model nguyên object không?",
+      "body": "Được trong một số case, nhưng phải cẩn thận với serialization, version schema và invalidation."
+    },
+    {
+      "title": "77. View fragment cache là gì?",
+      "body": "Là chỉ cache một phần giao diện thay vì toàn response, hữu ích cho block nặng nhưng ít đổi."
+    },
+    {
+      "title": "78. Page cache khác fragment cache thế nào?",
+      "body": "Page cache giữ cả response, fragment cache chỉ giữ một phần. Mỗi loại có trade-off khác nhau về personalization và invalidation."
+    },
+    {
+      "title": "79. Có nên cache dashboard số liệu không?",
+      "body": "Rất thường nên, vì dashboard aggregate thường đắt. Nhưng phải chấp nhận freshness window hợp lý.",
+      "code": "$metrics = Cache::remember('ops:dashboard:5m', 300, function () {\n    return [\n        'orders_today' => Order::whereDate('created_at', today())->count(),\n        'revenue_today' => Order::whereDate('created_at', today())->sum('total'),\n    ];\n});",
+      "note": "Dashboard là nơi rất hợp để chấp nhận dữ liệu chậm vài phút nếu đổi lại request nhẹ và ổn định hơn."
+    },
+    {
+      "title": "80. Cache theo tenant hoặc theo role có ích gì?",
+      "body": "Nó giúp tách đúng context dữ liệu và tránh rò thông tin giữa các nhóm người dùng."
+    },
+    {
+      "title": "81. Session cache và application cache có nên trộn khái niệm không?",
+      "body": "Không. Session phục vụ trạng thái người dùng, còn application cache phục vụ tăng tốc dữ liệu hoặc kết quả dùng chung."
+    },
+    {
+      "title": "82. Cache trong queue hoặc background processing có cần không?",
+      "body": "Có thể rất hữu ích, ví dụ cache metadata, config ngoài, rate limit state hoặc checkpoint, nhưng phải cân nhắc invalidation."
+    },
+    {
+      "title": "83. Caching ở API layer cần cẩn thận gì?",
+      "body": "User context, auth, locale, query params, versioning và privacy đều phải đi vào chiến lược key."
+    },
+    {
+      "title": "84. HTTP cache header có liên quan tới Laravel app không?",
+      "body": "Có. Browser cache và CDN cache có thể làm app nhanh hơn nhiều, nhưng phải điều phối đúng với data freshness."
+    },
+    {
+      "title": "85. ETag, Last-Modified giúp gì?",
+      "body": "Chúng giúp client và server tối ưu lại việc tải tài nguyên nếu nội dung chưa thay đổi."
+    },
+    {
+      "title": "86. Một tip thực chiến với Laravel cache commands là gì?",
+      "body": "Đừng biến `cache:clear` thành phản xạ. Nếu thường xuyên phải clear cache thủ công để app 'đúng lại', chiến lược invalidation của bạn đang có vấn đề."
+    },
+    {
+      "title": "87. Mùi code xấu ở cache layer của Laravel là gì?",
+      "body": "Mỗi nơi tự cache theo kiểu riêng, key không có convention và production bug được chữa bằng xóa hết cache."
+    },
+    {
+      "title": "88. Cache có liên quan tới deploy safety không?",
+      "body": "Có. Build artifact, config cache, route cache và response cache cũ có thể làm deploy mới hành xử lẫn lộn."
+    },
+    {
+      "title": "89. Một app cache khỏe cần gì ngoài code?",
+      "body": "Cần cả observability: hit rate, memory usage, eviction, latency và dấu hiệu stale data."
+    },
+    {
+      "title": "90. Kết luận ngắn về cache layer là gì?",
+      "body": "Cache mạnh khi nó rõ mục đích, rõ invalidation và rõ tolerance của dữ liệu. Cache mù chỉ tạo thêm nợ kỹ thuật."
+    },
+    {
+      "title": "91. Search đơn giản trong app admin thường bắt đầu từ đâu?",
+      "body": "Từ filter, sort, paginate và một số điều kiện `LIKE` hoặc exact match theo cột quan trọng.",
+      "code": "$users = User::query()\n    ->when($term, fn ($q) => $q->where('name', 'like', \"%{$term}%\"))\n    ->when($role, fn ($q) => $q->where('role', $role))\n    ->orderByDesc('id')\n    ->paginate(20);",
+      "note": "Đây thường là điểm bắt đầu đủ tốt trước khi nghĩ tới Scout hay search engine ngoài."
+    },
+    {
+      "title": "92. Vì sao search là bài toán sản phẩm chứ không chỉ query?",
+      "body": "Vì người dùng không chỉ cần 'có kết quả', mà cần kết quả liên quan, nhanh, dễ refine và đáng tin."
+    },
+    {
+      "title": "93. Search field nào cũng gộp vào một query lớn có ổn không?",
+      "body": "Chỉ ổn tới một mức. Khi dữ liệu lớn hoặc relevance quan trọng, cách làm đó nhanh chóng trở nên khó scale và khó kiểm soát."
+    },
+    {
+      "title": "94. Filter và search khác nhau ở đâu?",
+      "body": "Filter thường là điều kiện có cấu trúc rõ, còn search mang tính tìm kiếm tự do hơn, đôi khi cần ranking hoặc typo tolerance."
+    },
+    {
+      "title": "95. Sort ảnh hưởng cảm giác search ra sao?",
+      "body": "Rất mạnh. Kết quả đúng nhưng sort tệ vẫn làm người dùng thấy search 'ngu'.",
+      "code": "$products = Product::query()\n    ->where('name', 'like', \"%{$keyword}%\")\n    ->orderByDesc('is_featured')\n    ->orderByDesc('popularity_score')\n    ->orderBy('name')\n    ->paginate(20);",
+      "note": "Sai lầm thường gặp: chỉ nghĩ search là match từ khóa. Cách sửa là coi sort là một phần của relevance."
+    },
+    {
+      "title": "96. Pagination trong search cần cẩn thận gì?",
+      "body": "Kết quả có thể thay đổi khi dữ liệu cập nhật, nên cursor hoặc engine ngoài đôi khi phù hợp hơn offset truyền thống."
+    },
+    {
+      "title": "97. Full-text search là gì?",
+      "body": "Là kiểu tìm kiếm hiểu text sâu hơn `LIKE`, có thể dùng index full-text, ranking và đôi khi xử lý từ ngữ thông minh hơn."
+    },
+    {
+      "title": "98. Database full-text có đủ cho mọi bài toán search không?",
+      "body": "Không. Nó tốt cho một số bài toán trung bình, nhưng các tính năng như typo tolerance, facets, advanced ranking thường cần search engine riêng."
+    },
+    {
+      "title": "99. Search relevance là gì?",
+      "body": "Là mức độ kết quả trả về khớp với ý định tìm kiếm của người dùng."
+    },
+    {
+      "title": "100. Search UX tốt gồm những gì ngoài tốc độ?",
+      "body": "Placeholder rõ, filter hữu ích, sort hợp lý, empty state tốt, highlight khi cần và cảm giác người dùng tìm được thứ họ nghĩ app nên tìm ra."
+    },
+    {
+      "title": "101. Facet search là gì?",
+      "body": "Là search có thêm nhóm lọc như category, trạng thái, tag, brand để người dùng thu hẹp kết quả nhanh.",
+      "code": "$products = Product::search($keyword)\n    ->where('category_id', $categoryId)\n    ->where('brand_id', $brandId)\n    ->paginate(20);",
+      "note": "Facet không chỉ là filter đẹp hơn. Nó là cách biến search từ một ô gõ chữ thành công cụ khám phá dữ liệu."
+    },
+    {
+      "title": "102. Search suggestion hoặc autocomplete dùng khi nào?",
+      "body": "Khi người dùng cần được dẫn hướng nhanh hoặc dataset đủ lớn để việc gõ tự do dễ lạc hướng."
+    },
+    {
+      "title": "103. Typo tolerance quan trọng ở đâu?",
+      "body": "Rất quan trọng với search người dùng cuối, nơi sai chính tả hoặc gõ thiếu là chuyện thường xuyên."
+    },
+    {
+      "title": "104. Search theo nhiều ngôn ngữ khó hơn vì sao?",
+      "body": "Vì tokenization, stemming, stop words và relevance có thể khác theo ngôn ngữ."
+    },
+    {
+      "title": "105. Search theo tenant hoặc permission cần cẩn thận gì?",
+      "body": "Search engine hoặc query phải luôn giữ boundary đúng, nếu không sẽ rò kết quả của tenant khác hoặc resource không được phép xem."
+    },
+    {
+      "title": "106. Soft delete và search có liên quan gì?",
+      "body": "Nếu index hoặc query không đồng bộ với trạng thái xóa mềm, kết quả search có thể trả cả item đã ẩn."
+    },
+    {
+      "title": "107. Search result cache có đáng làm không?",
+      "body": "Có thể đáng với query lặp nhiều, nhưng cần cẩn thận vì search result thường nhạy với filter, sort, tenant và freshness.",
+      "code": "$cacheKey = 'posts:search:'.md5(json_encode([\n    'term' => $term,\n    'sort' => $sort,\n    'tenant' => $tenant->id,\n]));\n\n$results = Cache::remember($cacheKey, 120, fn () => Post::search($term)->get());",
+      "note": "Search result cache hữu ích nhất khi bạn đã xác định rõ freshness window và không quên encode đủ context vào key."
+    },
+    {
+      "title": "108. A/B giữa search DB và search engine ngoài có hợp lý không?",
+      "body": "Có ở giai đoạn chuyển đổi hoặc đánh giá relevance, nhưng cần đo latency, quality và sync cost thực tế."
+    },
+    {
+      "title": "109. Một tip thực chiến với search là gì?",
+      "body": "Search kém không chỉ vì query chậm. Nhiều hệ thống nhanh nhưng kết quả quá tệ nên người dùng vẫn thấy nó vô dụng."
+    },
+    {
+      "title": "110. Anti-pattern phổ biến ở phần search là gì?",
+      "body": "Nhét mọi cột vào `LIKE '%term%'` rồi hy vọng nó thành search engine."
+    },
+    {
+      "title": "111. Search analytics có đáng giữ không?",
+      "body": "Rất đáng. Nó cho biết người dùng hay tìm gì, search nào không có kết quả, search nào cần synonym hoặc cải thiện ranking."
+    },
+    {
+      "title": "112. Search quality nên đo bằng gì ngoài latency?",
+      "body": "Zero-result rate, click-through, refinement behavior và mức độ người dùng phải đổi từ khóa nhiều lần."
+    },
+    {
+      "title": "113. Laravel Scout dùng để làm gì?",
+      "body": "Scout là lớp abstraction giúp model Laravel đồng bộ với search engine ngoài như Meilisearch hoặc Algolia."
+    },
+    {
+      "title": "114. Khi nào nên nghĩ tới Scout thay vì SQL search thường?",
+      "body": "Khi search cần relevance tốt hơn, typo tolerance, facets, tốc độ ổn định hơn trên dataset lớn hoặc muốn tách search khỏi DB chính."
+    },
+    {
+      "title": "115. Scout có tự giải quyết toàn bộ bài toán search không?",
+      "body": "Không. Nó giúp kết nối và đồng bộ, nhưng relevance, index design, sync flow và permission vẫn cần tư duy riêng."
+    },
+    {
+      "title": "116. Meilisearch mạnh ở đâu?",
+      "body": "Nó khá thân thiện, nhanh, relevance tốt cho nhiều case, dễ bắt đầu và hợp với nhiều app product cần search hiện đại."
+    },
+    {
+      "title": "117. Algolia mạnh ở đâu?",
+      "body": "Mạnh về ecosystem, relevance tuning, hosted experience và nhiều tính năng search product-grade, đổi lại cost và vận hành sẽ là câu chuyện khác."
+    },
+    {
+      "title": "118. Search engine ngoài làm hệ thống phức tạp hơn thế nào?",
+      "body": "Bạn phải sync dữ liệu, reindex, xử lý eventual consistency và quan sát một backend mới ngoài DB chính."
+    },
+    {
+      "title": "119. Reindex là gì?",
+      "body": "Là quá trình đẩy lại dữ liệu vào search index, thường cần khi mapping đổi, ranking logic đổi hoặc index bị lệch.",
+      "code": "php artisan scout:flush \"App\\\\Models\\\\Post\"\nphp artisan scout:import \"App\\\\Models\\\\Post\"",
+      "note": "Reindex không chỉ là thao tác kỹ thuật. Đây là lúc dễ lộ lệch dữ liệu giữa DB và search engine."
+    },
+    {
+      "title": "120. Search index drift là gì?",
+      "body": "Là khi search engine và DB chính không còn đồng bộ, khiến kết quả search thiếu, thừa hoặc stale."
+    },
+    {
+      "title": "121. Queue có liên quan tới Scout/search sync không?",
+      "body": "Rất thường có. Đồng bộ index nền giúp request chính nhanh hơn nhưng tạo thêm bài toán retry và consistency."
+    },
+    {
+      "title": "122. Có nên index mọi field có thể nghĩ ra không?",
+      "body": "Không nên. Cần thiết kế field nào phục vụ search, filter, sort và relevance thực sự."
+    },
+    {
+      "title": "123. Permission-aware search trong engine ngoài cần cẩn thận gì?",
+      "body": "Nếu engine không hiểu permission như app, bạn phải encode boundary rất rõ hoặc lọc lại đúng cách để tránh rò dữ liệu."
+    },
+    {
+      "title": "124. Multi-tenant search cần chiến lược gì?",
+      "body": "Index theo tenant, key theo tenant hoặc filter bắt buộc theo tenant là các chiến lược phổ biến tùy quy mô.",
+      "code": "$results = Product::search($term)\n    ->where('tenant_id', $tenant->id)\n    ->paginate(20);",
+      "note": "Theo tư duy Scout và search engine ngoài, tenant boundary không nên là chuyện frontend tự nhớ thêm filter. Nó phải là phần của chiến lược index hoặc query ngay từ đầu."
+    },
+    {
+      "title": "125. Search engine ngoài có thay DB làm source of truth không?",
+      "body": "Không nên. Search index thường là projection tối ưu cho truy vấn, không phải nguồn dữ liệu chính."
+    },
+    {
+      "title": "126. Eventual consistency trong search nghĩa là gì?",
+      "body": "Người dùng có thể vừa tạo hoặc sửa record nhưng search chưa phản ánh ngay lập tức vì index sync nền chưa xong."
+    },
+    {
+      "title": "127. Một tip thực chiến với Scout là gì?",
+      "body": "Đừng chỉ test search result khi dữ liệu lý tưởng. Hãy test cả create, update, delete, soft delete, permission và reindex.",
+      "code": "class PostSearchService\n{\n    public function search(string $keyword)\n    {\n        return Post::search($keyword)\n            ->query(fn ($query) => $query->where('is_published', true))\n            ->paginate(15);\n    }\n}",
+      "bullets": [
+        "Gom search vào service giúp đổi engine hoặc đổi rule ít đau hơn.",
+        "Đừng để mọi controller tự viết search theo một kiểu khác nhau."
+      ]
+    },
+    {
+      "title": "128. Mùi hệ thống xấu ở lớp search engine là gì?",
+      "body": "Không ai biết index sync bằng gì, reindex thế nào, khi search lệch DB thì xử lý ra sao."
+    },
+    {
+      "title": "129. Search engine cost cũng là vấn đề sản phẩm vì sao?",
+      "body": "Vì càng nhiều record, field, replica hoặc query traffic thì chi phí càng tăng. Search tốt nhưng không kiểm soát chi phí cũng là bài toán business."
+    },
+    {
+      "title": "130. Khi nào nên tạm ở lại với SQL search?",
+      "body": "Khi dataset chưa lớn, search requirement còn đơn giản và team chưa sẵn sàng gánh thêm hạ tầng search riêng."
+    },
+    {
+      "title": "131. Profiling là gì trong bối cảnh hiệu năng Laravel?",
+      "body": "Là đo và quan sát nơi thời gian hoặc tài nguyên đang tiêu tốn, từ request, query, cache tới background job."
+    },
+    {
+      "title": "132. Telescope giúp gì cho performance debugging?",
+      "body": "Nó giúp nhìn request, query, job, cache, mail và nhiều tín hiệu khác trong quá trình debug local hoặc môi trường phù hợp."
+    },
+    {
+      "title": "133. Query profiling nên nhìn gì?",
+      "body": "Số query, query chậm, query lặp, relation load bất thường và nơi phát sinh."
+    },
+    {
+      "title": "134. Cache hit rate là metric quan trọng vì sao?",
+      "body": "Vì cache tồn tại để hit. Nếu hit rate thấp, bạn đang trả complexity mà không thu được nhiều lợi ích."
+    },
+    {
+      "title": "135. Search latency nên tách theo đâu?",
+      "body": "Theo endpoint, tenant lớn, loại query hoặc filter nặng để thấy bottleneck thật chứ không chỉ average chung.",
+      "code": "$startedAt = microtime(true);\n$results = Post::search($keyword)->take(10)->get();\n\nlogger()->info('search-latency', [\n    'keyword' => $keyword,\n    'duration_ms' => round((microtime(true) - $startedAt) * 1000, 2),\n    'result_count' => $results->count(),\n]);",
+      "note": "Nếu chỉ có một con số 'search chậm', team rất khó biết lỗi nằm ở app, engine hay network."
+    },
+    {
+      "title": "136. Reindex operation nên quan sát gì?",
+      "body": "Throughput, time-to-complete, failed item count, queue lag và tác động tới search freshness."
+    },
+    {
+      "title": "137. Queue offload giúp performance ra sao?",
+      "body": "Nó chuyển công việc nặng như reindex, aggregate, export hoặc cache warming ra khỏi request chính."
+    },
+    {
+      "title": "138. CDN và browser cache có liên quan tới performance app không?",
+      "body": "Có rất nhiều, nhất là với asset, image và một số response public phù hợp."
+    },
+    {
+      "title": "139. Load test có hữu ích với performance/search không?",
+      "body": "Có nếu biết mô phỏng pattern thật. Nó giúp lộ query nóng, cache miss storm, queue backlog hoặc search burst."
+    },
+    {
+      "title": "140. Một tip vận hành về performance là gì?",
+      "body": "Theo dõi xu hướng chậm dần quan trọng hơn nhiều so với chỉ chụp một lần rồi quên. Performance xuống cấp thường từ từ."
+    },
+    {
+      "title": "141. Dashboard tối thiểu cho khu vực này nên có gì?",
+      "body": "P95 latency, error rate, query chậm, cache hit rate, Redis health, queue lag và search latency hoặc failed indexing.",
+      "code": "// ví dụ các tín hiệu nên gom về dashboard\n[\n    'http.p95_ms',\n    'db.slow_query_count',\n    'cache.hit_rate',\n    'redis.memory_usage',\n    'queue.search_sync_lag',\n    'search.failed_index_jobs',\n]"
+    },
+    {
+      "title": "142. Alert nên đặt ở đâu?",
+      "body": "Khi latency tăng, error spike, cache hit tụt mạnh, Redis memory pressure cao, queue reindex backlog lớn hoặc search engine không sync được."
+    },
+    {
+      "title": "143. Capacity planning có liên quan gì?",
+      "body": "Khi data, traffic và search volume tăng, bạn cần biết DB, Redis, queue worker và search backend sẽ chạm trần ở đâu."
+    },
+    {
+      "title": "144. Performance budget là gì?",
+      "body": "Là ngưỡng mục tiêu cho latency, payload, query count hoặc render cost để team biết khi nào một thay đổi đã làm app vượt vùng khỏe mạnh."
+    },
+    {
+      "title": "145. Một bug production kinh điển với cache là gì?",
+      "body": "Data đã đổi nhưng UI vẫn hiển thị bản cũ hàng giờ vì key thiếu context hoặc invalidation bị bỏ sót."
+    },
+    {
+      "title": "146. Một bug production kinh điển với search là gì?",
+      "body": "DB đã có record mới nhưng search không thấy vì index sync fail âm thầm hoặc queue reindex chết."
+    },
+    {
+      "title": "147. Một bug khác rất thật là gì?",
+      "body": "Cache cải thiện speed nhưng vô tình rò dữ liệu tenant này sang tenant khác vì key không chứa boundary đúng."
+    },
+    {
+      "title": "148. Anti-pattern lớn nhất của performance work là gì?",
+      "body": "Tối ưu bằng cảm giác, thêm cache everywhere, không đo lại và làm code ngày càng khó hiểu."
+    },
+    {
+      "title": "149. Anti-pattern lớn của search là gì?",
+      "body": "Xem search chỉ là ô input kỹ thuật thay vì một trải nghiệm chính của người dùng."
+    },
+    {
+      "title": "150. Anti-pattern ở tầng cache là gì?",
+      "body": "Không có owner cho key strategy, invalidate bằng tay và dùng `cache:clear` như nút reset thế giới."
+    },
+    {
+      "title": "151. Một câu hỏi senior hay đặt ra trước khi thêm cache là gì?",
+      "body": "Nếu dữ liệu này stale 30 giây, 5 phút hoặc 1 giờ thì business đau tới mức nào, và ai sẽ chịu trách nhiệm làm nó mới lại?",
+      "code": "// Trước khi cache, tự hỏi:\n// 1. Dữ liệu này stale 5 phút có chấp nhận được không?\n// 2. Ai sẽ xóa cache khi post mới được publish?\n// 3. Nếu cache lệch, support nhìn ở đâu để biết?",
+      "note": "Cache tốt là cache có chủ, có chiến lược invalidation và có giới hạn rõ ràng, không phải cache thêm vì thấy query chậm."
+    },
+    {
+      "title": "152. Một câu hỏi senior khác trước khi thêm search engine là gì?",
+      "body": "Liệu bài toán hiện tại thật sự cần relevance, typo tolerance và scale của search engine riêng, hay team đang thêm hạ tầng quá sớm?"
+    },
+    {
+      "title": "153. Đánh giá cuối: khi nào có thể nói app đã đủ khỏe ở mảng này?",
+      "body": "Khi bottleneck chính đã được đo rõ, query nóng được kiểm soát, cache có strategy hợp lý, search đáng tin và team có observability đủ để nhìn thấy suy giảm trước khi người dùng than."
+    },
+    {
+      "title": "154. Thundering herd khác cache stampede ở góc vận hành nào?",
+      "body": "Chúng rất gần nhau, nhưng thundering herd nhấn mạnh cảnh nhiều request cùng đổ vào một tài nguyên sau khi cache hoặc lock không bảo vệ đủ, gây bùng tải dây chuyền."
+    },
+    {
+      "title": "155. Zero-downtime reindex mindset là gì?",
+      "body": "Là tạo hoặc đồng bộ index mới song song, kiểm tra đủ rồi mới chuyển traffic/search query sang index mới, thay vì phá index cũ giữa chừng."
+    },
+    {
+      "title": "156. Synonym strategy trong search có giá trị gì?",
+      "body": "Nó giúp search hiểu cách người dùng thật gọi dữ liệu, ví dụ từ viết tắt, tên sản phẩm phổ biến hoặc biến thể ngôn ngữ."
+    },
+    {
+      "title": "157. Zero-result analytics đáng giữ vì sao?",
+      "body": "Search không có kết quả là tín hiệu rất mạnh cho biết dữ liệu thiếu, synonym thiếu, indexing lỗi hoặc UX search đang lệch nhu cầu thật."
+    },
+    {
+      "title": "158. Cache ownership là gì?",
+      "body": "Là xác định ai chịu trách nhiệm cho một nhóm cache key hoặc một lớp cache quan trọng. Không có owner thì stale bug rất dễ bị chữa cháy theo cảm tính."
+    },
+    {
+      "title": "159. Ví dụ cache cơ bản với `Cache::remember()`",
+      "body": "Đây là kiểu snippet thực chiến người học Laravel nên đọc và chạy thử sớm.",
+      "code": "$posts = Cache::remember('homepage:posts', 300, function () {\n    return Post::latest()->take(10)->get();\n});",
+      "bullets": [
+        "Key nên có naming rõ nghĩa ngay từ đầu.",
+        "TTL phải phản ánh độ chấp nhận stale của business, không phải chọn đại.",
+        "Nếu invalidate không rõ, cache rất dễ trở thành nguồn bug."
+      ]
+    },
+    {
+      "title": "160. Ví dụ eager loading để giảm N+1 trong màn list",
+      "body": "Rất nhiều bug performance Laravel bắt đầu từ đoạn query tưởng như vô hại này.",
+      "code": "$posts = Post::with('user')\n    ->latest()\n    ->paginate(20);",
+      "note": "Nếu view lặp qua post rồi chạm `post->user` mà không eager load, bạn rất dễ tạo thêm hàng chục hoặc hàng trăm query ngầm."
+    },
+    {
+      "title": "161. Ví dụ search với Scout ở mức tối thiểu",
+      "body": "Nếu dự án đã chạm search engine ngoài, người học nên thấy ít nhất một đường code thật.",
+      "code": "class Post extends Model\n{\n    use Searchable;\n}\n\n$results = Post::search('laravel')->get();",
+      "note": "Đây mới là điểm vào nhỏ. Search thật còn kéo theo indexing, sync drift, ranking và filter permission-aware."
+    },
+    {
+      "title": "162. Đánh giá sau rà soát: phần performance-search đã đủ chi tiết chưa?",
+      "body": "Ở mức portal học tập thì phần này đã khá đầy: có performance mindset, DB/query/index, cache design, invalidation, search UX, Scout/engine ngoài, observability, cost và case production. Nếu muốn đi sâu hơn nữa sau này, hướng tách riêng tốt nhất là một site con cho DB/query tuning, một site cho cache architecture và một site cho search relevance/product search."
+    }
+  ]
+}

@@ -1,0 +1,219 @@
+{
+  "heading": "Vibe Coding AI CRUD",
+  "intro": "Nhánh này gom workflow dùng AI để dựng feature Laravel thật. Trọng tâm không phải là để AI code hộ tất cả, mà là biết cách ra yêu cầu, giới hạn phạm vi, rồi review output để feature đi đúng cấu trúc.",
+  "type": "list",
+  "breaks": [
+    {
+      "start": 1,
+      "title": "Feature Nên Chọn Gì",
+      "description": "Chọn những feature đủ thực tế nhưng vẫn đủ gọn để build, review và sửa trong một workflow ngắn.",
+      "tone": "amber"
+    },
+    {
+      "start": 5,
+      "title": "Flow Khi Build Feature",
+      "description": "Một workflow build tốt nên vừa có code, vừa có giải thích vì sao tách lớp và vì sao chạy lệnh đó.",
+      "tone": "coral"
+    },
+    {
+      "start": 9,
+      "title": "Các Series Dễ Mở Rộng",
+      "description": "Những nhánh dưới đây có thể tách thành nhiều workflow nhỏ mà vẫn liên kết với nhau.",
+      "tone": "amber"
+    }
+  ],
+  "items": [
+    {
+      "title": "Feature đầu tiên nên giao AI dựng là gì?",
+      "body": "Một feature hợp lý để mở đầu là `CRUD + validation + flash message`. Nó chạm route, controller, request, model, view và redirect mà vẫn đủ nhỏ để review hết output.",
+      "code": "php artisan make:model Post -mcr\nphp artisan make:request StorePostRequest\n",
+      "tip": "Nếu mới dùng AI để build feature, hãy chọn thực thể đơn giản như `Post`, `Task`, `Note` để dễ bóc prompt và review."
+    },
+    {
+      "title": "Một flow CRUD có nên đi full từ migration đến Blade không?",
+      "body": "Có, nếu mục tiêu là nắm được flow trọn vẹn. Nhưng nên chia nhịp: schema trước, request/controller sau, rồi mới tới Blade và UX nhỏ."
+    },
+    {
+      "title": "Flow auth nào hợp để thử với AI?",
+      "body": "Các flow như `login`, `register`, `forgot password`, `email verification`, hoặc `profile update` rất hợp vì phổ biến, có nhiều constraint thật và lộ rõ chỗ AI dễ làm sai."
+    },
+    {
+      "title": "Feature upload nên đi theo flow nào để có chiều sâu?",
+      "body": "Đừng chỉ dừng ở `store()` file. Nên có validate mime, naming, lưu path vào DB, render preview và nói rõ public/private file khác nhau thế nào.",
+      "code": "$path = $request->file('avatar')->store('avatars', 'public');\n$user->update(['avatar_path' => $path]);\n",
+      "note": "Nếu bỏ qua `storage:link` thì rất dễ thiếu một mắt xích quan trọng trong flow upload."
+    },
+    {
+      "title": "Một flow build feature bằng AI nên có nhịp thế nào?",
+      "body": "Bắt đầu từ outcome rõ, sau đó chốt prompt, để AI sinh bước đầu, rồi đi từng lớp như migration -> route -> request -> controller -> view -> test tay."
+      },
+    {
+      "title": "Khi nào phải dừng AI lại để giải thích tradeoff?",
+      "body": "Ngay lúc output bắt đầu nhét hết logic vào controller, hoặc khi cần quyết định `FormRequest`, `Policy`, `Service`, `Action`. Đây là chỗ người dùng phải lấy lại quyền điều hướng."
+      },
+    {
+      "title": "Có nên chuẩn bị prompt/template trước không?",
+      "body": "Có, đặc biệt với các phần lặp như route resource, request rule, migration skeleton và response format.",
+      "code": "Route::resource('posts', PostController::class);\n\npublic function rules(): array\n{\n    return [\n        'title' => ['required', 'string', 'max:255'],\n        'body' => ['required', 'string'],\n    ];\n}\n"
+    },
+    {
+      "title": "AI build API feature nên được kiểm tra khác gì web feature?",
+      "body": "API feature cần soi kỹ `JSON response`, `status code`, `validation error`, `auth`, `rate limit`, và không được để AI vô thức trộn redirect + Blade flow vào."
+    },
+    {
+      "title": "Những series build nào dễ mở rộng?",
+      "body": "Có thể tách thành các series như `blog mini app`, `admin CRUD`, `upload center`, `notification flow`, `REST API starter`.",
+      "bullets": [
+        "Blog mini app: post, comment, tag, like, filter.",
+        "Admin CRUD: role, status, approve/reject, search.",
+        "Upload center: image, PDF, private download, cleanup.",
+        "REST API starter: auth, index, store, pagination, resource."
+      ]
+    },
+    {
+      "title": "Sai lầm hay gặp khi dùng AI build feature là gì?",
+      "body": "Sai lầm lớn là thấy code chạy được nên chấp nhận luôn. Cách sửa là luôn hỏi: file này tồn tại để gánh trách nhiệm gì, và nó có đúng boundary hiện tại không."
+    },
+    {
+      "title": "Có nên để AI viết migration không?",
+      "body": "Có thể, nhưng phải review rất kỹ phần type, index, foreign key, nullable, default và rollback. Migration là nơi AI dễ sinh code nhìn ổn nhưng sai dữ liệu thật."
+    },
+    {
+      "title": "AI có hợp để viết FormRequest không?",
+      "body": "Rất hợp để draft nhanh `rules()` và message cơ bản. Nhưng bạn vẫn phải tự xem rule đã đủ cho business chưa, nhất là unique, auth, file và conditional validation.",
+      "code": "public function rules(): array\n{\n    return [\n        'email' => ['required', 'email'],\n        'avatar' => ['nullable', 'image', 'max:2048'],\n    ];\n}\n"
+    },
+    {
+      "title": "Khi nhờ AI tạo Blade/UI, nên khóa những gì?",
+      "body": "Nên khóa tên route, biến truyền sang view, error display, `old()` value, `@csrf`, và style/component đang dùng. Nếu không, AI rất dễ tạo UI chạy lệch convention hiện có."
+    },
+    {
+      "title": "Nếu AI đụng Eloquent relationship thì nên soi gì?",
+      "body": "Phải soi tên quan hệ, foreign key, eager loading, `fillable`, cast, và query có vô tình tạo N+1 hay không."
+    },
+    {
+      "title": "Có nên để AI viết test cho feature không?",
+      "body": "Nên, nhưng xem test đó có thật sự khóa behavior không hay chỉ assert mấy thứ quá nông. AI rất dễ viết test dài mà không bảo vệ rủi ro chính.",
+      "tip": "Một test ngắn nhưng khóa đúng bug quan trọng hơn năm test chỉ assert status `200`."
+    },
+    {
+      "title": "Nếu AI sinh cả route, request, controller, model trong một lượt thì nên review theo thứ tự nào?",
+      "body": "Nên đi từ ngoài vào trong: `route -> auth/validation -> controller -> model/query -> response/view`. Thứ tự này giúp bạn bắt lỗi flow trước khi sa vào chi tiết nhỏ."
+    },
+    {
+      "title": "Một case AI dễ làm lệch business rule là gì?",
+      "body": "Ví dụ tạo đơn hàng, giảm tồn kho, gửi mail, tạo log và dispatch job trong cùng flow. AI dễ làm tất cả chạy được nhưng sai thứ tự, sai transaction boundary hoặc bỏ quên rollback case."
+    },
+    {
+      "title": "Khi nào nên buộc AI giải thích từng file nó vừa sửa?",
+      "body": "Rất nên khi diff bắt đầu chạm nhiều hơn 3-4 file, hoặc khi file được sửa nằm ngoài vùng bạn dự tính ban đầu. Câu trả lời giải thích giúp bạn bắt sớm việc nó sửa lan hoặc hiểu sai ý."
+    },
+    {
+      "title": "Một prompt mạnh để build feature theo nhiều bước nên làm sao?",
+      "body": "Thay vì một prompt to, hãy chia thành nhiều chặng: schema trước, request + controller sau, Blade/API response sau nữa, rồi test/checklist cuối.",
+      "code": "Step 1: create migration + model only\nStep 2: add request validation\nStep 3: add controller/store flow\nStep 4: add Blade form\nStep 5: list verification gaps\n"
+    },
+    {
+      "title": "Khi AI làm lệch convention của repo thì xử lý sao?",
+      "body": "Đừng chỉ sửa tay âm thầm. Hãy update prompt hoặc system instruction của bạn để các lần sau AI biết đúng convention về naming, folder, action class, policy, resource, response shape."
+    },
+    {
+      "title": "Một red flag khi AI build CRUD là gì?",
+      "body": "CRUD nhìn chạy được nhưng controller ôm hết validate, business rule, upload, query và redirect. Đó là dấu hiệu output đang tối ưu cho tốc độ sinh code chứ không tối ưu cho tuổi thọ feature.",
+      "note": "Code càng “làm hết mọi thứ ở một chỗ” thì càng nên nghi ngờ output AI đã đi sai hướng."
+    },
+    {
+      "title": "Khi AI sinh search/filter/list page thì nên soi gì?",
+      "body": "Cần soi query parameter, default sort, pagination, filter sanitation, eager loading và khả năng query lan quá rộng.",
+      "code": "$posts = Post::query()\n    ->when($request->filled('status'), fn ($q) => $q->where('status', $request->status))\n    ->latest()\n    ->paginate(15);\n"
+    },
+    {
+      "title": "Một workflow mạnh cho AI feature build là gì?",
+      "body": "Chia feature thành `data shape`, `request/validation`, `controller flow`, `view/API response`, rồi `tests`. Mỗi bước chốt xong mới cho AI đi tiếp bước sau.",
+      "tip": "Đây là cách giảm mạnh nguy cơ diff quá lớn và giảm cả xác suất business drift."
+    },
+    {
+      "title": "Khi nào nên yêu cầu AI dừng lại và chỉ liệt kê risk?",
+      "body": "Khi feature bắt đầu đụng transaction, inventory, payment, email side effect, job dispatch, policy hoặc upload private file. Lúc đó risk list quan trọng ngang patch."
+    },
+    {
+      "title": "Một case AI CRUD dễ fail ở đâu nhất?",
+      "body": "Các chỗ như unique validation, update flow khác create flow, file cũ cần xóa hay giữ, ownership check, và list page có filter/pagination thường là nơi output AI nhìn ổn nhưng logic lệch."
+    },
+    {
+      "title": "AI rất hay làm sai gì ở update flow?",
+      "body": "Nó thường copy create rule sang update rule mà quên ignore record hiện tại, hoặc quên xử lý field nullable, file cũ, và conditional validation.",
+      "code": "Rule::unique('users', 'email')->ignore($user->id)\n"
+    },
+    {
+      "title": "Một workflow tốt cho AI CRUD có upload là gì?",
+      "body": "Tách thành: validation file, store file, update DB, render preview, và cleanup file cũ. Nếu dồn hết vào một prompt, AI dễ quên một mắt xích."
+    },
+    {
+      "title": "Khi nào AI CRUD nên đi kèm test ngay?",
+      "body": "Khi feature chạm auth, ownership, file replace, multi-step form, status transition, hoặc API response shape. Những vùng này rất dễ có bug im lặng."
+    },
+    {
+      "title": "Red flag lớn khi AI sinh list page là gì?",
+      "body": "List page chạy được nhưng không có eager loading, không sanitize filter, không giữ query string khi paginate, hoặc để sort/filter mở quá rộng.",
+      "tip": "List page thường là nơi hiệu năng và UX xấu bắt đầu xuất hiện rất sớm."
+    }
+  ,
+    {
+      "title": "Một tip mạnh khi nhờ AI build feature là gì?",
+      "body": "Hãy bắt nó liệt kê `changed files` và `risks` ở cuối mỗi lượt. Cách này giúp bạn review nhanh hơn rất nhiều và sớm phát hiện patch đang sửa lan."
+    },
+    {
+      "title": "Khi nào nên tách prompt theo web flow và API flow ngay từ đầu?",
+      "body": "Khi feature có cả Blade và API, hoặc có cả web flow và mobile/API flow. Nếu không tách sớm, AI rất dễ trộn redirect, JSON response, validation và auth lẫn nhau."
+    },
+    {
+      "title": "AI hay làm gì sai ở phần UX nhỏ?",
+      "body": "Hay quên `old()`, quên hiển thị error đúng field, quên disable button lúc submit, hoặc dùng wording form không khớp flow hiện có. Đó là các lỗi nhỏ nhưng rất dễ làm app trông nửa vời."
+    },
+    {
+      "title": "Một anti-pattern lớn trong AI CRUD là gì?",
+      "body": "Nhìn feature chạy được rồi coi như xong, trong khi controller đang phình to, validation lẫn business rule và query bắt đầu lặp sai chỗ."
+    },
+    {
+      "title": "Khi nào nên bắt AI tự viết acceptance criteria cho feature?",
+      "body": "Rất nên khi requirement còn mơ hồ hoặc khi feature có nhiều nhánh hành vi như create/update/status transition. Acceptance criteria giúp bạn chặn output lệch business ngay từ đầu.",
+      "code": "Acceptance criteria:\n- who can access the flow\n- valid input\n- invalid input\n- expected DB change\n- expected response or redirect\n"
+    },
+    {
+      "title": "Một case AI CRUD dễ gây regression là gì?",
+      "body": "Update flow sửa được bug hiện tại nhưng làm hỏng create flow, search flow hoặc ownership check vì AI chỉ tập trung vào triệu chứng trước mắt."
+    },
+    {
+      "title": "Khi nào nên yêu cầu AI liệt kê edge case trước khi build?",
+      "body": "Khi feature có unique field, replace file, nested relation, status transition, hoặc nhiều loại người dùng. Edge case list tốt sẽ làm prompt sau đó mạnh hơn hẳn.",
+      "tip": "Nếu chưa có edge case list, rất dễ nhận một CRUD chạy được ở happy path nhưng hỏng ngay khi dùng thật."
+    },
+    {
+      "title": "Một workflow tốt để build feature nhiều bước với AI là gì?",
+      "body": "Chốt data shape trước, rồi chốt acceptance criteria, rồi mới tới patch từng lớp. Cách này chậm hơn một chút ở đầu nhưng giảm rất mạnh việc vá sai ở cuối."
+    },
+    {
+      "title": "Khi nào phải cẩn thận với migration do AI sinh ra?",
+      "body": "Khi AI thêm `drop`, đổi kiểu dữ liệu, rename cột hoặc nhét nhiều thay đổi schema vào một bước. Feature nhìn có vẻ chỉ là CRUD, nhưng migration sai có thể phá dữ liệu thật."
+    },
+    {
+      "title": "Vì sao test xanh chưa chắc feature AI build ra đã ổn?",
+      "body": "Vì test có thể chỉ chạm happy path. AI rất hay bỏ sót ownership, edge case update, dữ liệu cũ, file cũ, behavior pagination hoặc rule quyền trong màn hình thật."
+    },
+    {
+      "title": "Một bug rất hay lọt khi AI build CRUD là gì?",
+      "body": "Form chạy được, record tạo được, test basic vẫn xanh, nhưng ownership hoặc rule cập nhật bị thiếu. Đây là lỗi rất điển hình vì AI thường tối ưu cho happy path trước.",
+      "code": "public function update(UpdatePostRequest $request, Post $post)\n{\n    abort_unless($request->user()->id === $post->user_id, 403);\n\n    $post->update($request->validated());\n\n    return redirect()->route('posts.show', $post);\n}\n"
+    },
+    {
+      "title": "Khi nào AI dễ sinh ra test CRUD rất dài nhưng rất nông?",
+      "body": "Khi bạn chỉ bảo nó `hãy viết test cho feature này` mà không nêu risk chính. Lúc đó nó thường generate nhiều assert bề mặt như status, redirect, count, nhưng không khóa bug quan trọng nhất.",
+      "tip": "Luôn nêu rõ `bug/risk this test must lock`, thay vì chỉ yêu cầu viết test chung chung."
+    },
+    {
+      "title": "Vì sao feature CRUD AI build xong vẫn phải test tay trên UI hoặc API thật?",
+      "body": "Vì nhiều lỗi nằm ở hành vi ghép giữa validation, old input, policy, pagination, query string, file cũ, hoặc edge case update. Những thứ này thường không lộ hết nếu chỉ nhìn diff và test nháp."
+    }
+  ]
+}

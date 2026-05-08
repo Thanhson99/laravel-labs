@@ -1,0 +1,328 @@
+{
+  "anchor": "laravel-php-commands",
+  "type": "list",
+  "heading": "PHP & Artisan commands: the baseline commands that bootstrap, run, and debug a Laravel app",
+  "intro": "This topic groups `php` and `php artisan` commands by the job they do instead of listing them as isolated trivia. The goal is to understand why a command is needed, when it belongs in the flow, and what kind of failure usually appears when that step is skipped.",
+  "breaks": [
+    {
+      "start": 1,
+      "title": "Foundations and Early Bootstrap",
+      "description": "Understanding `php`, `composer`, `artisan`, the fresh-clone flow, `key:generate`, `serve`, and the first commands most Laravel projects need.",
+      "tone": "amber"
+    },
+    {
+      "start": 5,
+      "title": "Database and Data Setup",
+      "description": "Migration, seeding, status inspection, fresh rebuilds, and how database-oriented commands should be used in context.",
+      "tone": "copper"
+    },
+    {
+      "start": 8,
+      "title": "Cache, Inspection, and Environment Debugging",
+      "description": "Targeted cache clearing, route and environment inspection, `tinker`, model/db commands, and habits that improve diagnosis.",
+      "tone": "olive"
+    },
+    {
+      "start": 15,
+      "title": "Storage, Queues, Scheduler, and Testing",
+      "description": "The operational commands behind real apps: file links, workers, failed jobs, scheduler flows, tests, and maintenance mode.",
+      "tone": "ocean"
+    },
+    {
+      "start": 21,
+      "title": "Code Generation, Tips, and Real-World Playbooks",
+      "description": "The `make:*` family, common mistakes, working habits from basic to advanced, and situational playbooks for real Laravel work.",
+      "tone": "slate"
+    }
+  ],
+  "items": [
+    {
+      "title": "Quick mental model: `php`, `composer`, and `php artisan` are different layers",
+      "body": "`php` is the binary that executes PHP code. `composer` manages dependencies and autoloading. `php artisan` is the CLI of the Laravel application itself, so it only works properly when the app can bootstrap. That is why many real setup flows go in this order: install dependencies with Composer, prepare `.env`, then run Artisan commands."
+    },
+    {
+      "title": "What does a common 'fresh clone' Laravel setup flow look like?",
+      "body": "There is no single universal recipe, but there is a very common pattern: install PHP dependencies, prepare environment variables, generate the application key, build the database, link storage if uploads exist, and only then start the local server or frontend tooling.",
+      "code": "composer install\ncp .env.example .env\nphp artisan key:generate\nphp artisan migrate\nphp artisan storage:link\nnpm install\nnpm run dev",
+      "bullets": [
+        "`composer install`: rebuild `vendor/` from `composer.lock`.",
+        "`key:generate`: create the `APP_KEY` Laravel needs for encryption.",
+        "`migrate`: create the database schema the app expects.",
+        "`storage:link`: expose public files when the app uses uploads."
+      ]
+    },
+    {
+      "title": "Why is `php artisan key:generate` important?",
+      "body": "This command creates `APP_KEY` and writes it to `.env`. Laravel uses that key for encrypted cookies, sessions, signed values, and other encryption-related framework behavior. If the key is missing, the app usually fails early or runs in an unsafe state.",
+      "code": "php artisan key:generate",
+      "note": "If you just copied `.env.example` into `.env`, this is often one of the first commands you should run."
+    },
+    {
+      "title": "`php artisan serve`: the quickest way to bring up a local web server",
+      "body": "This is the most convenient command when you want to open a Laravel app locally without setting up Nginx, Apache, or another full web stack first. It uses PHP's built-in server, so it is well suited for learning, demos, or quick flow checks.",
+      "code": "php artisan serve\nphp artisan serve --host=127.0.0.1 --port=8080",
+      "bullets": [
+        "Use it right after cloning when you want to confirm the app can boot.",
+        "Use it for quick local debugging, not as a production solution.",
+        "If the project also depends on queues, websockets, Vite, or other services, `serve` is only one part of the full runtime."
+      ]
+    },
+    {
+      "title": "Database command group: `migrate`, `rollback`, `fresh`, `seed`",
+      "body": "These are some of the most common commands you will touch while learning Laravel. They control schema and bootstrap data. Use them with context because some move the schema forward safely, while others destroy and rebuild data from scratch.",
+      "code": "php artisan migrate\nphp artisan migrate:rollback\nphp artisan migrate:fresh\nphp artisan db:seed\nphp artisan migrate --seed",
+      "bullets": [
+        "`migrate`: apply new migrations that have not run yet.",
+        "`rollback`: revert the latest migration batch.",
+        "`fresh`: drop all tables and migrate from zero again.",
+        "`seed`: insert bootstrap or sample data."
+      ],
+      "note": "Do not build the habit of running `migrate:fresh` on environments with important data."
+    },
+    {
+      "title": "When should you use `migrate` versus `migrate:fresh`?",
+      "body": "If you are following the normal forward-moving migration flow, `migrate` is the natural command. `migrate:fresh` is better for local development when you want a clean rebuild from zero or want to verify the full seed flow. It is not for situations where existing data must be preserved."
+    },
+    {
+      "title": "`migrate:status`, `db:seed --class`, and `make:migration`: extra database commands worth knowing",
+      "body": "Beyond `migrate` and `fresh`, a few commands make database work much more controlled. They help you inspect migration state and create targeted schema or seed changes instead of working blindly.",
+      "code": "php artisan migrate:status\nphp artisan db:seed --class=RolesSeeder\nphp artisan make:migration add_status_to_orders_table --table=orders",
+      "bullets": [
+        "`migrate:status`: see which migrations already ran and which are still pending.",
+        "`db:seed --class=...`: run one specific seeder instead of every seed process.",
+        "`make:migration`: create a correctly named migration stub instead of crafting it manually."
+      ]
+    },
+    {
+      "title": "Cache and optimization commands: the usual fix for 'I changed it but nothing updated'",
+      "body": "Laravel has multiple caches: config, routes, views, events, and compiled bootstrap artifacts. That means code can be correct while the app still behaves as if nothing changed because stale cache is in the way.",
+      "code": "php artisan optimize:clear\nphp artisan config:clear\nphp artisan route:clear\nphp artisan view:clear\nphp artisan cache:clear\nphp artisan config:cache\nphp artisan route:cache",
+      "bullets": [
+        "`optimize:clear`: clears several cache layers at once and is very practical in local debugging.",
+        "`config:cache` and `route:cache`: common in deployment or production-like setups.",
+        "If `.env` changed but the app still uses old values, think about config cache immediately."
+      ]
+    },
+    {
+      "title": "Why is `php artisan optimize:clear` not always the only command you should run?",
+      "body": "`optimize:clear` is convenient because it clears several cache layers at once, so it is often the right first move in a messy local environment. But it is a broad reset, not always the best diagnostic tool. When you want to know whether the problem lives in config, routes, views, or application cache, clearing one layer at a time gives you much better signal than just wiping everything and hoping.",
+      "code": "php artisan optimize:clear\nphp artisan config:clear\nphp artisan route:clear\nphp artisan view:clear\nphp artisan cache:clear",
+      "bullets": [
+        "`optimize:clear`: good when local state is messy, many things changed at once, or you need a broad reset quickly.",
+        "`config:clear`: good after changing `.env`, mail, queue, cache, or database drivers and the app still uses old values.",
+        "`route:clear`: good after changing routes, middleware, or route model binding and the behavior still looks stale.",
+        "`view:clear`: good when Blade output still reflects old markup.",
+        "`cache:clear`: good when the app stores real data/cache entries and you want to invalidate that specific layer."
+      ],
+      "note": "A practical habit: start with `optimize:clear` for speed, but use targeted clears when you want to actually understand the problem."
+    },
+    {
+      "title": "`view:cache`, `event:cache`, and `event:clear`: less common, but useful optimization commands",
+      "body": "As an app grows, you may also run into view compilation and event discovery caching. These are not commands you run every day, but they matter in production-oriented setups and while debugging event-related behavior.",
+      "code": "php artisan view:cache\nphp artisan event:cache\nphp artisan event:clear",
+      "bullets": [
+        "`view:cache`: precompile Blade views to reduce first-render overhead.",
+        "`event:cache`: cache the event discovery map when the app has many events and listeners.",
+        "`event:clear`: clear event cache after changing listeners if the app seems stale."
+      ]
+    },
+    {
+      "title": "One important habit: do not turn `optimize:clear` into a blind reflex",
+      "body": "Many newer developers treat any strange app behavior as a reason to run `optimize:clear` first. That does fix some cases, but overusing it slows down your debugging growth. More experienced Laravel developers usually ask: what changed, which framework layer owns that behavior, and which exact command matches that layer?",
+      "bullets": [
+        "Changed `.env` or driver config: think `config:clear` first.",
+        "Changed Blade but the UI still looks old: think `view:clear` first.",
+        "Changed routes or middleware: think `route:clear` first.",
+        "Changed code but queue workers still process old logic: think `queue:restart`, not only cache clearing."
+      ]
+    },
+    {
+      "title": "Commands that help you inspect the app: `route:list`, `about`, `tinker`",
+      "body": "Not every Artisan command mutates data. Some of the most useful ones help you understand an unfamiliar app or quickly inspect framework state during debugging.",
+      "code": "php artisan route:list\nphp artisan about\nphp artisan tinker",
+      "bullets": [
+        "`route:list`: inspect routes, middleware, methods, and controller targets.",
+        "`about`: get a quick environment overview for drivers, queues, cache, and database.",
+        "`tinker`: a REPL for trying models, queries, helpers, and container resolution directly."
+      ]
+    },
+    {
+      "title": "`model:show`, `db:show`, and `db:table`: quick structural inspection from the CLI",
+      "body": "Recent Laravel versions include useful commands for inspecting models and database structure directly from Artisan. They do not replace full DB tooling, but they are very handy when reading an unfamiliar codebase.",
+      "code": "php artisan model:show User\nphp artisan db:show\nphp artisan db:table users",
+      "bullets": [
+        "`model:show`: inspect model attributes, casts, and relationships.",
+        "`db:show`: get a database-level summary view.",
+        "`db:table`: inspect one table more directly from the CLI."
+      ],
+      "note": "Depending on the Laravel version, some of these newer commands may not exist in older projects."
+    },
+    {
+      "title": "File and storage commands",
+      "body": "If the app deals with uploads, images, exports, or avatars, you will likely hit `storage:link` early. It creates a symlink from `public/storage` to `storage/app/public` so the web layer can serve the files.",
+      "code": "php artisan storage:link",
+      "note": "If uploads succeed but the browser cannot open the file, this is one of the first commands to verify."
+    },
+    {
+      "title": "Queue, scheduler, and background operation commands",
+      "body": "Once the app grows beyond basic CRUD, many tasks move out of the request cycle: sending mail, processing images, syncing APIs, reminders, and scheduled reports. At that point queue and scheduler commands become part of the backend operating model.",
+      "code": "php artisan queue:work\nphp artisan queue:listen\nphp artisan schedule:run\nphp artisan horizon",
+      "bullets": [
+        "`queue:work`: run a worker that processes queued jobs.",
+        "`schedule:run`: simulate the cron entry that triggers Laravel's scheduler.",
+        "`horizon`: used when the project runs Redis queues with Horizon."
+      ]
+    },
+    {
+      "title": "`queue:restart`, `queue:failed`, and `queue:retry`: the commands you need once queues fail in real life",
+      "body": "In real queue-based systems, `queue:work` is only the beginning. You also need to know how to reload workers after deployment, inspect failed jobs, and retry them after fixing the root cause.",
+      "code": "php artisan queue:restart\nphp artisan queue:failed\nphp artisan queue:retry all\nphp artisan queue:flush",
+      "bullets": [
+        "`queue:restart`: ask running workers to restart gracefully so they pick up fresh code.",
+        "`queue:failed`: list failed jobs for investigation.",
+        "`queue:retry`: rerun failed jobs after fixing the underlying issue.",
+        "`queue:flush`: clear failed-job records, so use it carefully."
+      ]
+    },
+    {
+      "title": "`schedule:list` and `schedule:test`: understand the scheduler before blaming cron",
+      "body": "If scheduled commands do not seem to run, these commands help you inspect the Laravel side of the scheduling system before assuming the OS-level cron setup is broken.",
+      "code": "php artisan schedule:list\nphp artisan schedule:test",
+      "bullets": [
+        "`schedule:list`: inspect what recurring tasks are registered.",
+        "`schedule:test`: test a scheduled task in a local or debugging flow."
+      ],
+      "note": "Some scheduler-related commands depend on Laravel version, so older apps may not have the full set."
+    },
+    {
+      "title": "`php artisan test`: run tests through Laravel's own entry point",
+      "body": "Whether the project uses PHPUnit or Pest underneath, this is a natural way to run tests inside a Laravel app. It fits well with Laravel's testing environment and common workflow options.",
+      "code": "php artisan test\nphp artisan test --filter=AuthTest\nphp artisan test --parallel",
+      "bullets": [
+        "Use it before committing, after dependency updates, or after touching important flows.",
+        "`--filter`: run a focused test class or case.",
+        "`--parallel`: speed up a larger test suite when the project is ready for it."
+      ]
+    },
+    {
+      "title": "Code generation commands: useful, but do not overuse them",
+      "body": "Laravel scaffolds many classes for you. That is useful when you want correct namespaces and file placement quickly, but it should not turn into a habit of generating too many classes just because the CLI makes it easy.",
+      "code": "php artisan make:controller PostController\nphp artisan make:model Post -mfs\nphp artisan make:request StorePostRequest\nphp artisan make:job SyncOrderJob\nphp artisan make:policy PostPolicy --model=Post",
+      "bullets": [
+        "`make:model -mfs` can generate a model, migration, factory, and seeder together.",
+        "Generate only what helps, then organize code by feature when the project grows.",
+        "The CLI helps you start in the right place, but it does not replace architecture thinking."
+      ]
+    },
+    {
+      "title": "Other `make:*` commands that show up as projects grow",
+      "body": "Beyond controllers, models, and requests, Laravel can scaffold commands, mailables, notifications, listeners, events, middleware, casts, and validation rules. Knowing they exist helps you remember that Laravel already expects those extension points.",
+      "code": "php artisan make:command SyncLegacyOrders\nphp artisan make:mail InvoicePaid\nphp artisan make:notification OrderShipped\nphp artisan make:event OrderCreated\nphp artisan make:listener SendOrderEmail --event=OrderCreated\nphp artisan make:middleware EnsureUserIsAdmin",
+      "bullets": [
+        "Use them when you want correct namespace placement quickly.",
+        "Helpful in convention-heavy teams because they reduce file-placement mistakes.",
+        "But you still need to decide whether the class should exist at all."
+      ]
+    },
+    {
+      "title": "`php artisan down` and `php artisan up`: maintenance mode for temporary access control",
+      "body": "This command pair is for short maintenance windows, manual deployment steps, or temporarily blocking user traffic while you stabilize the system. It does not replace a solid deployment strategy, but it is still important to know.",
+      "code": "php artisan down\nphp artisan down --retry=60\nphp artisan up",
+      "bullets": [
+        "`down`: put the app into maintenance mode.",
+        "`up`: bring it back after the work is done.",
+        "`--retry`: hint how long clients should wait before trying again."
+      ],
+      "note": "In stronger production setups, maintenance mode is usually part of a larger, planned deployment workflow."
+    },
+    {
+      "title": "Common errors when running `php artisan` commands",
+      "body": "If Artisan fails, do not assume the problem is the command itself. Many failures come from app bootstrap issues: missing `.env`, missing `APP_KEY`, database not running, broken package providers, incorrect folder permissions, or stale autoload metadata.",
+      "code": "php artisan about\nphp artisan optimize:clear\ncomposer dump-autoload\nphp artisan config:clear",
+      "bullets": [
+        "`No application encryption key has been specified`: run `php artisan key:generate`.",
+        "Database connection errors during migrate: check `.env`, the DB service, and credentials.",
+        "`Class not found`: sometimes you need `composer dump-autoload` or a namespace fix."
+      ]
+    },
+    {
+      "title": "Tips and working habits from basic to advanced",
+      "body": "These are not rigid laws, but they are common habits shared by people who have spent more time working with Laravel in real projects. They help you avoid a lot of wasted debugging motion.",
+      "bullets": [
+        "Basic: after cloning, do not fire random commands. Follow a setup flow like `composer install` -> `.env` -> `key:generate` -> `migrate` -> `serve`.",
+        "Basic: read the first meaningful error carefully. The first useful line is often worth more than the entire stack trace dump.",
+        "Intermediate: when behavior feels strange, run `php artisan about` to inspect the environment before blaming the code.",
+        "Intermediate: after deployment on queue-based apps, remember `queue:restart`; many teams forget this and then assume new code is broken.",
+        "Intermediate: if production uses real application cache, do not clear it casually because that can create load spikes.",
+        "Advanced: separate bootstrap errors, business-logic errors, and infrastructure errors. Not every problem should be solved with Artisan.",
+        "Advanced: before adding a command to onboarding docs, ask whether it is truly required for everyone or just a workaround for one developer's machine.",
+        "Advanced: in production, prefer a clear deployment process over memorizing a pile of emergency commands."
+      ],
+      "note": "The best tip is usually not 'know more commands', but 'know which command belongs to which kind of problem'."
+    },
+    {
+      "title": "A small real-world playbook",
+      "body": "These patterns show up constantly in Laravel work. They help connect commands to situations instead of treating every command as isolated trivia.",
+      "code": "1) Fresh clone:\ncomposer install\ncp .env.example .env\nphp artisan key:generate\nphp artisan migrate\nphp artisan serve\n\n2) Changed .env but the app still acts the same:\nphp artisan config:clear\n\n3) Changed routes but behavior is stale:\nphp artisan route:clear\n\n4) Queue still runs old code after deploy:\nphp artisan queue:restart\n\n5) Blade output did not change:\nphp artisan view:clear",
+      "bullets": [
+        "If stale behavior remains, think about the responsible framework layer before clearing everything.",
+        "If production is acting up, prioritize logs, worker state, process managers, and environment config before firing cleanup commands.",
+        "If local state is very confused and you do not yet know the direction, `optimize:clear` is a good reset button, but it should not end the investigation."
+      ]
+    },
+    {
+      "title": "Learn commands by job group, not as a giant flat list",
+      "body": "In real work, people rarely memorize Artisan as one huge dictionary. They remember it by situation: fresh clone setup, database work, cache clearing, route inspection, queue running, environment debugging, and code scaffolding. That learning model is more friendly and scales better once a project gains many moving parts."
+    },
+    {
+      "title": "275. `config:cache` and `route:cache` are useful, but dangerous if you do not understand deploy state",
+      "body": "These commands are valuable in production, but if deploy order is wrong or the environment is not clean, you may cache stale configuration or old routes. That creates painful bugs where the app looks like it is ignoring new code."
+    },
+    {
+      "title": "276. Real case: queue workers keep running old code even after deploy",
+      "body": "This happens often because workers are long-lived processes. You need to remember `queue:restart` or an equivalent worker-restart strategy, otherwise new jobs may still be processed by old code already living in memory."
+    },
+    {
+      "title": "277. `schedule:run` succeeding locally is not enough; the real question is whether system cron actually calls it reliably",
+      "body": "Many people test a command locally and assume scheduling is solved, but production also depends on cron, timezone, which OS user runs the cron, and whether scheduler activity is being monitored."
+    },
+    {
+      "title": "278. `tinker` is powerful, but do not turn it into an unreviewed production data editor",
+      "body": "Tinker is useful because it gives direct access to models and queries, but it is also dangerous because it encourages changes that are not reviewed, not turned into clear commands, and hard to repeat later."
+    },
+    {
+      "title": "279. Extra tip: command maturity is not only knowing how to run a command, but knowing when not to run it in a real environment",
+      "body": "Many local-friendly commands such as `migrate:fresh`, total cache clears, demo seeding, or ad-hoc Tinker fixes require a completely different level of discipline in production. Senior experience often shows up as restraint."
+    },
+    {
+      "title": "280. Example of a minimal Artisan flow after cloning a Laravel project",
+      "body": "This is a common sequence when the project has just been pulled and needs to be brought up for the first time.",
+      "code": "php artisan key:generate\nphp artisan migrate\nphp artisan db:seed\nphp artisan storage:link\nphp artisan route:list",
+      "bullets": [
+        "`key:generate` creates the `APP_KEY` needed for encryption and sessions.",
+        "`migrate` creates the required schema.",
+        "`db:seed` loads seed data if the project expects it.",
+        "`storage:link` exposes public files when the app handles uploads or media.",
+        "`route:list` gives you a quick overview of the available endpoints."
+      ]
+    },
+    {
+      "title": "281. Example cache-clearing commands and how to choose the right one",
+      "body": "You should not always reflexively fire `optimize:clear` first.",
+      "code": "php artisan config:clear\nphp artisan route:clear\nphp artisan view:clear\nphp artisan cache:clear\nphp artisan optimize:clear",
+      "bullets": [
+        "If `.env` or config changed but the app did not notice, think about `config:clear`.",
+        "If routes changed but behavior still looks old, check `route:clear`.",
+        "If Blade changed but the UI still renders stale output, think about `view:clear`.",
+        "`cache:clear` should be used when you know the app depends on stale application cache.",
+        "`optimize:clear` is convenient for a quick local reset, but it should not replace real debugging of the failing layer."
+      ]
+    },
+    {
+      "title": "282. Example queue and scheduler commands that newcomers often forget",
+      "body": "A Laravel app does not live only through web requests. It also lives through background processes.",
+      "code": "php artisan queue:work\nphp artisan queue:restart\nphp artisan queue:failed\nphp artisan queue:retry all\nphp artisan schedule:list\nphp artisan schedule:run",
+      "note": "`queue:restart` matters a lot after deployment because workers may still hold old code in memory. `schedule:list` shows the expected cron logic, while `schedule:run` is useful for local testing and quick debugging."
+    }
+  ]
+}

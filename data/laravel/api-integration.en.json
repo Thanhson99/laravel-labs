@@ -1,0 +1,653 @@
+{
+  "anchor": "laravel-api-integration",
+  "type": "list",
+  "heading": "API and third-party integration: from basic JSON to production-grade integration systems",
+  "intro": "This topic pulls together the important perspectives around APIs and integrations in Laravel. The goal is not only to create routes in `api.php`, but to understand contracts, auth, validation, HTTP clients, webhooks, retries, idempotency, rate limiting, timeouts, queues, logging, testing, documentation, and how to keep integrations from becoming the most fragile layer in the system.",
+  "breaks": [
+    {
+      "start": 1,
+      "title": "I. API Foundations",
+      "description": "Start with what an API is, what integration means, how client-server communication works, and why API thinking differs from Blade thinking.",
+      "tone": "amber"
+    },
+    {
+      "start": 13,
+      "title": "II. Routes, Resources, And Response Contracts",
+      "description": "Organizing `api.php`, endpoint naming, status codes, JSON shape, pagination, versioning, and contract stability.",
+      "tone": "copper"
+    },
+    {
+      "start": 29,
+      "title": "III. Validation, Errors, And Contract Quality",
+      "description": "Request validation, standardized errors, field-level feedback, idempotency, and the details that stop clients from guessing.",
+      "tone": "sand"
+    },
+    {
+      "start": 45,
+      "title": "IV. Auth, Security, Rate Limits, And Access Control",
+      "description": "Sanctum, tokens, API keys, OAuth mindset, CORS, secrets, quotas, and protecting APIs from misuse or abuse.",
+      "tone": "amber"
+    },
+    {
+      "start": 63,
+      "title": "V. Calling External Services With The HTTP Client",
+      "description": "Designing outbound integrations with `Http::`, timeouts, retries, circuit-breaker thinking, response mapping, and shielding your app from external instability.",
+      "tone": "copper"
+    },
+    {
+      "start": 81,
+      "title": "VI. Webhooks, Async Synchronization, And Reliability",
+      "description": "Receiving webhooks, verifying signatures, preventing duplicates, queueing processing, eventual consistency, and operating integrations with side effects.",
+      "tone": "sand"
+    },
+    {
+      "start": 97,
+      "title": "VII. Testing, Documentation, Observability, And Operations",
+      "description": "API testing, faked services, contract docs, logs, traces, metrics, correlation IDs, support playbooks, and monitoring.",
+      "tone": "amber"
+    },
+    {
+      "start": 113,
+      "title": "VIII. Real-World Cases And Long-Term Thinking",
+      "description": "Very real production failures, signs of poor integration design, and how to keep the API layer healthy as the system grows.",
+      "tone": "copper"
+    }
+  ],
+  "items": [
+    {
+      "title": "1. What is an API in a Laravel context?",
+      "body": "An API is an interface that lets clients talk to the system through structured requests and responses, usually JSON. In Laravel, it often passes through `routes/api.php`, API middleware, validation, auth, and response resources.",
+      "code": "Route::get('/posts', function () {\n    return response()->json([\n        'data' => Post::query()->latest()->take(10)->get(),\n    ]);\n});",
+      "note": "This minimal example shows that an API does not render HTML. It returns a data contract for a client."
+    },
+    {
+      "title": "2. What is an integration?",
+      "body": "An integration is the part of your system that communicates with another system. That may mean payment APIs, CRMs, email providers, ERPs, third-party webhooks, or a mobile app consuming your API."
+    },
+    {
+      "title": "3. How do internal APIs differ from public APIs?",
+      "body": "Internal APIs usually have fewer clients and can move faster, though they still need clear contracts. Public or partner-facing APIs need stronger stability, more careful versioning, and much more attention to backward compatibility."
+    },
+    {
+      "title": "4. How is API thinking different from Blade-app thinking?",
+      "body": "Blade apps mostly serve browsers and render HTML. APIs must think in terms of data contracts, status codes, retries, error formats, client auth, caching, rate limits, and compatibility with many kinds of consumers."
+    },
+    {
+      "title": "5. Who can the client be in API work?",
+      "body": "The client can be an SPA, a mobile app, another backend, a cron job, a partner service, a webhook sender, or even a command-line script. Never assume the client is always your own frontend."
+    },
+    {
+      "title": "6. What should a clean API request-response cycle look like?",
+      "body": "The client sends input, the backend validates and authenticates, runs business logic, talks to storage or external services, then returns consistent JSON. A good API makes success and failure equally understandable."
+    },
+    {
+      "title": "7. What is REST, and must everything be perfectly RESTful?",
+      "body": "REST is a widely used set of design conventions around resources and HTTP verbs. It helps keep APIs predictable, but you do not need to be dogmatic when real business actions need endpoints like `/orders/{id}/cancel`."
+    },
+    {
+      "title": "8. Why does consistency matter more than looking elegant?",
+      "body": "Clients suffer most when every endpoint returns a different shape. Consistency saves real time for frontend, mobile, QA, and support teams."
+    },
+    {
+      "title": "9. What is a JSON contract?",
+      "body": "It is the response shape the client depends on: which fields exist, which types they use, whether `null` is possible, and how errors are represented. Small contract changes can break clients even when backend code still runs."
+    },
+    {
+      "title": "10. Is the best API the one that returns the fewest fields?",
+      "body": "Not necessarily. A good API returns the right fields, names them clearly, and avoids forcing the client to reconstruct business meaning from fragmented endpoints."
+    },
+    {
+      "title": "11. Why do integrations become such unpredictable bug zones?",
+      "body": "Because they depend on networks, timeouts, secrets, external contracts, rate limits, duplicate events, and system state outside your control."
+    },
+    {
+      "title": "12. What is the core mindset for API and integration work?",
+      "body": "Assume requests may fail, arrive late, repeat, drift in contract, or appear out of order. Strong design accepts that reality from day one."
+    },
+    {
+      "title": "13. What is `routes/api.php` for?",
+      "body": "It is where Laravel API endpoints are defined. These routes usually pass through API middleware and are commonly served under the `/api` prefix in standard Laravel setups.",
+      "code": "Route::prefix('v1')->group(function () {\n    Route::get('/orders', [OrderController::class, 'index']);\n    Route::post('/orders', [OrderController::class, 'store']);\n    Route::post('/orders/{order}/cancel', [CancelOrderController::class, '__invoke']);\n});"
+    },
+    {
+      "title": "14. Should every API route live in one file forever?",
+      "body": "No once the API grows. Splitting routes by domain such as billing, orders, or users, or by version, keeps the route layer readable and easier to review."
+    },
+    {
+      "title": "15. How should endpoints be named?",
+      "body": "Prefer nouns for resources such as `/orders`, `/users`, and `/invoices`. Avoid vague action-style endpoints unless the business action itself is the real unit, such as `/orders/{order}/refund`."
+    },
+    {
+      "title": "16. How should HTTP verbs be used?",
+      "body": "`GET` reads, `POST` creates or starts an action, `PUT` or `PATCH` updates, and `DELETE` removes. Correct verbs make APIs easier to understand and integrate with."
+    },
+    {
+      "title": "17. Why do status codes matter so much?",
+      "body": "They are the first signal clients receive about success, invalid input, missing permissions, or server failure. Many APIs become painful because everything returns `200` and hides real meaning in the body."
+    },
+    {
+      "title": "18. When should `200`, `201`, and `202` be used?",
+      "body": "`200` for a normal success, `201` when a new resource was created, and `202` when the request was accepted but actual completion happens later through a queue or background process."
+    },
+    {
+      "title": "19. When is `204 No Content` useful?",
+      "body": "Use it when the action succeeded but there is no useful response body to send back, such as deleting a resource or updating a trivial setting."
+    },
+    {
+      "title": "20. Should JSON response shapes be stable?",
+      "body": "Yes. If success responses sometimes return `data`, sometimes not, sometimes objects, sometimes arrays, the client layer becomes brittle very quickly."
+    },
+    {
+      "title": "21. What are Laravel API Resources for?",
+      "body": "API Resources let you standardize how models and collections become JSON. They are safer than returning raw models because you control fields, formatting, and nested relations.",
+      "code": "class OrderResource extends JsonResource\n{\n    public function toArray($request): array\n    {\n        return [\n            'id' => $this->id,\n            'number' => $this->number,\n            'status' => $this->status,\n            'total' => $this->total,\n        ];\n    }\n}",
+      "note": "A Resource is the buffer between your Eloquent model and your public contract. That is why it matters."
+    },
+    {
+      "title": "22. Why should you avoid returning Eloquent models directly?",
+      "body": "Because you may expose fields you should not expose, accidentally change your public contract, and lose control over formatting. Resources act as a boundary between your domain model and your external contract."
+    },
+    {
+      "title": "23. How should pagination be handled?",
+      "body": "Large lists should expose clear pagination, along with metadata such as current page, total items when appropriate, or cursor pagination when data changes frequently and scale matters."
+    },
+    {
+      "title": "24. How does cursor pagination differ from standard pagination?",
+      "body": "Cursor pagination fits large or frequently changing datasets better because it avoids some offset-scan costs and reduces page drift when new records are inserted."
+    },
+    {
+      "title": "25. How should filtering and sorting be designed?",
+      "body": "Prefer explicit query parameters like `?status=paid&sort=-created_at`. The easier an endpoint is to predict, the less a client needs to reverse-engineer backend behavior."
+    },
+    {
+      "title": "26. When does API versioning become necessary?",
+      "body": "When the API has multiple clients or contract changes are difficult to avoid. Versioning gives you room to evolve without immediately breaking old consumers."
+    },
+    {
+      "title": "27. Should versioning live in the URL or headers?",
+      "body": "URL versioning like `/api/v1/...` is often easiest to operate and debug across teams. Header-based versioning is flexible but easier to miss during manual inspection."
+    },
+    {
+      "title": "28. What does a stable contract really mean?",
+      "body": "It means existing clients still work after a normal deploy. If you rename fields, change types, or remove fields abruptly, the contract is no longer stable."
+    },
+    {
+      "title": "29. How is API validation different from web-form validation?",
+      "body": "Laravel mechanics are similar, but APIs also need machine-readable errors, consistent field paths, and predictable behavior for very different clients."
+    },
+    {
+      "title": "30. Is Form Request worth using in APIs?",
+      "body": "Very much so. It keeps validation and authorization out of controllers, clarifies the request contract, and makes review easier.",
+      "code": "class StoreOrderRequest extends FormRequest\n{\n    public function rules(): array\n    {\n        return [\n            'customer_id' => ['required', 'exists:customers,id'],\n            'items' => ['required', 'array', 'min:1'],\n            'items.*.sku' => ['required', 'string'],\n            'items.*.qty' => ['required', 'integer', 'min:1'],\n        ];\n    }\n}",
+      "note": "Once the input contract lives in a Form Request, the API controller stops mixing validation with orchestration."
+    },
+    {
+      "title": "31. What should a good error response include?",
+      "body": "At minimum it should include a useful error type or code, a concise message, field-level details for validation failures when relevant, and optionally a correlation ID for tracing logs."
+    },
+    {
+      "title": "32. When should validation failures return `422`?",
+      "body": "`422 Unprocessable Entity` fits when the request is structurally valid but the data does not satisfy validation rules or business acceptance rules."
+    },
+    {
+      "title": "33. How is `400` different from `422`?",
+      "body": "`400` often implies a more fundamental request problem, while `422` is useful when the request was parsed correctly but the payload was not acceptable to the application."
+    },
+    {
+      "title": "34. Should all API errors include human-readable messages?",
+      "body": "Yes, but they should remain stable and concise. Large systems often pair readable messages with machine-friendly error codes."
+    },
+    {
+      "title": "35. Why are internal error codes valuable?",
+      "body": "They let clients distinguish between different failures under the same HTTP status, such as `payment_provider_timeout`, `duplicate_webhook`, or `invalid_signature`."
+    },
+    {
+      "title": "36. Should production error responses contain stack traces?",
+      "body": "No. Clients do not need stack traces, and you should not expose internal SQL, paths, or secrets."
+    },
+    {
+      "title": "37. What is idempotency?",
+      "body": "It is the ability to safely repeat the same request without creating extra side effects. It matters enormously for payments, webhooks, and create actions that may be retried.",
+      "code": "$key = $request->header('Idempotency-Key');\n\n$existing = PaymentAttempt::where('idempotency_key', $key)->first();\n\nif ($existing) {\n    return response()->json(['data' => $existing], 200);\n}",
+      "note": "Common mistake: retries are enabled, but nobody notices that a create action may now run twice and produce duplicates."
+    },
+    {
+      "title": "38. When should an API support idempotency keys?",
+      "body": "Whenever clients may retry requests that create orders, payments, payouts, subscriptions, or any operation where duplicates would be expensive."
+    },
+    {
+      "title": "39. Should business rules always be validated at the request layer?",
+      "body": "Simple rules can be. But rules tied to database state, transactions, or orchestration often belong deeper in a service or use-case layer."
+    },
+    {
+      "title": "40. Why is the error contract often more important than a beautiful success payload?",
+      "body": "Because when systems fail, support teams, frontend teams, and partners spend their time reading errors, not admiring successful responses."
+    },
+    {
+      "title": "41. What kinds of API auth are common?",
+      "body": "Common choices include session-based auth for same-domain SPAs, personal access tokens, API keys, OAuth2, and signed-request schemes. Each fits a different trust model."
+    },
+    {
+      "title": "42. When is Sanctum a good fit?",
+      "body": "Sanctum works well for SPAs using cookie/session auth with Laravel, and for simple personal access tokens. It is not a universal machine-to-machine auth solution."
+    },
+    {
+      "title": "43. When are API keys appropriate?",
+      "body": "They are useful when a partner or internal service needs simple identification without complex delegated auth, provided you still control quotas, revocation, and logging.",
+      "code": "Route::middleware('check.partner.key')->post('/partner/orders', PartnerOrderController::class);\n\n// middleware\nabort_unless(\n    hash_equals(config('services.partner.key'), $request->header('X-API-Key', '')),\n    401\n);",
+      "note": "API keys are only acceptable when you also control rotation, revocation, quotas, and auditability."
+    },
+    {
+      "title": "44. Is OAuth2 worth learning?",
+      "body": "Yes if you are building a platform, handling delegated access, or serving many outside clients. It is more complex, but correct for some trust models."
+    },
+    {
+      "title": "45. What is the weakness of bearer tokens?",
+      "body": "Anyone holding the token can use it. If it leaks through logs, bad storage, or insecure transport, it can be abused immediately."
+    },
+    {
+      "title": "46. What are token scopes or abilities for?",
+      "body": "They limit what a token or client can do. This is much safer than handing every integration a fully privileged credential."
+    },
+    {
+      "title": "47. Should tokens live forever?",
+      "body": "Usually not. Long-lived tokens increase the cost of leaks and make rotation or revocation harder to manage."
+    },
+    {
+      "title": "48. Where should secrets be stored?",
+      "body": "They belong in `.env`, `config/services.php`, or your infrastructure secret manager. Do not hardcode them, commit them, or pass them around casually."
+    },
+    {
+      "title": "49. Why is `config/services.php` useful for integrations?",
+      "body": "It centralizes endpoints, keys, default timeouts, and service-specific config. That keeps integration code cleaner and environment changes easier.",
+      "code": "'partner' => [\n    'base_url' => env('PARTNER_BASE_URL'),\n    'key' => env('PARTNER_API_KEY'),\n    'timeout' => env('PARTNER_TIMEOUT', 5),\n    'webhook_secret' => env('PARTNER_WEBHOOK_SECRET'),\n]"
+    },
+    {
+      "title": "50. How does CORS relate to APIs?",
+      "body": "If the client is a browser app from another origin, CORS decides whether the browser may send the request and read the response. Many 'dead API' reports are actually CORS failures."
+    },
+    {
+      "title": "51. Where should rate limiting be enforced?",
+      "body": "It can live in Laravel middleware, an API gateway, or both. The goal is to protect resources, reduce abuse, and keep the service alive under aggressive traffic."
+    },
+    {
+      "title": "52. What does `429 Too Many Requests` mean?",
+      "body": "It tells the client they exceeded quota or sent requests too quickly. A good API should also communicate when it is safe to retry if possible."
+    },
+    {
+      "title": "53. Should auth headers be fully logged?",
+      "body": "No. Tokens, API keys, cookies, and signature secrets should be masked or removed from logs."
+    },
+    {
+      "title": "54. Is IP allowlisting enough security by itself?",
+      "body": "It is useful as an extra layer, but should not be the only one. IPs can change, proxies may exist, and it does not solve credential leakage."
+    },
+    {
+      "title": "55. What is secret rotation, and why does it matter?",
+      "body": "It is the ability to change credentials without breaking the integration. Healthy systems plan for key rotation before an incident forces them to."
+    },
+    {
+      "title": "56. What is a very common integration security mistake?",
+      "body": "Trusting external payloads as if they are always correct. Safe integrations still validate inputs, verify signatures, inspect state, and avoid blind trust."
+    },
+    {
+      "title": "57. What is Laravel's HTTP Client for?",
+      "body": "It is Laravel's convenience layer for outbound HTTP calls through `Http::get`, `post`, `withHeaders`, `timeout`, `retry`, `fake`, and related helpers.",
+      "code": "$response = Http::baseUrl(config('services.partner.base_url'))\n    ->acceptJson()\n    ->withToken(config('services.partner.key'))\n    ->timeout(5)\n    ->get('/orders');"
+    },
+    {
+      "title": "58. Why should you avoid scattering `Http::post()` inside controllers?",
+      "body": "Because integration logic becomes fragmented, harder to test, harder to switch providers, and harder to standardize around timeouts, retries, auth headers, logging, and error mapping."
+    },
+    {
+      "title": "59. How should outbound integration code be structured?",
+      "body": "A client class, gateway, adapter, or focused service usually works well. The rest of the app should speak your domain language, not the raw payload language of an external provider."
+    },
+    {
+      "title": "60. Should timeouts be treated as mandatory config?",
+      "body": "Yes. Skipping explicit timeouts is a reliable way to get hanging requests, blocked workers, and an application that feels randomly frozen."
+    },
+    {
+      "title": "61. Should retries always be enabled?",
+      "body": "No. Retries only make sense for transient failures and safe operations. Blind retries on non-idempotent payment or create flows can create duplicates."
+    },
+    {
+      "title": "62. What should `retry()` be paired with?",
+      "body": "It should be paired with timeouts, clear retry conditions, logging, and a real understanding of idempotency. Retry is not magic."
+    },
+    {
+      "title": "63. Why is response mapping from external services useful?",
+      "body": "It keeps the rest of your application from depending on provider-specific fields and statuses. If the provider changes, you fix one mapping layer instead of many call sites."
+    },
+    {
+      "title": "64. Should raw external responses be stored?",
+      "body": "Often yes, selectively, especially when auditability or debugging matters. But be careful with PII, secrets, and storage cost."
+    },
+    {
+      "title": "65. When should you use `throw()` with the HTTP client?",
+      "body": "Use it when you want non-success HTTP responses to become exceptions and enter centralized error handling. But still classify exceptions carefully.",
+      "code": "$payload = Http::timeout(5)\n    ->withToken(config('services.partner.key'))\n    ->get('/orders/'.$order->external_id)\n    ->throw()\n    ->json();",
+      "note": "`throw()` makes the happy path cleaner, but remember to catch and classify exceptions in your adapter or orchestration layer."
+    },
+    {
+      "title": "66. How are network errors different from business errors?",
+      "body": "Network errors mean you could not reach the service or it timed out. Business errors mean the provider responded correctly, but the operation was rejected for domain reasons such as insufficient funds or an expired card."
+    },
+    {
+      "title": "67. Should every external call happen inside the user's request cycle?",
+      "body": "Not always. If the provider is slow, unstable, or triggers heavy side effects, queueing the work can improve user experience and system reliability."
+    },
+    {
+      "title": "68. How does `202 Accepted` relate to queued integrations?",
+      "body": "If the request only starts a background process, `202` accurately tells the client the server accepted the work but has not finished it yet."
+    },
+    {
+      "title": "69. What is a fallback in integration work?",
+      "body": "A fallback is how your system behaves when an external provider fails, such as degrading the feature, returning pending status, using stale cache, or retrying later."
+    },
+    {
+      "title": "70. What is circuit-breaker thinking?",
+      "body": "If a provider is failing at scale, stop hammering it continuously. A circuit-breaker style strategy protects your own resources and reduces cascading failure."
+    },
+    {
+      "title": "71. Should bulk API calls be treated differently from single calls?",
+      "body": "Yes. Bulk flows need batching, rate-limit awareness, concurrency control, retry strategy, and per-item error visibility rather than one giant success/failure assumption."
+    },
+    {
+      "title": "72. Should higher layers return raw Laravel HTTP responses?",
+      "body": "Usually no. Convert them into clear domain objects or normalized data so the rest of the app is less coupled to framework details and provider quirks."
+    },
+    {
+      "title": "73. How do sandbox and production endpoints differ?",
+      "body": "Not only by URL. Many providers use fake data, different speed, different signatures, or different quotas in sandbox. Do not assume sandbox perfectly mirrors production."
+    },
+    {
+      "title": "74. Why should integration config be environment-specific?",
+      "body": "Because base URLs, secrets, webhook endpoints, timeouts, and logging expectations usually differ across local, staging, and production."
+    },
+    {
+      "title": "75. Should you call multiple providers sequentially in one user request?",
+      "body": "Be very careful. Every extra dependency increases latency, introduces another failure point, and complicates rollback when step one succeeds and step two fails."
+    },
+    {
+      "title": "76. Why does a queue not solve every integration problem?",
+      "body": "A queue only moves work in time. It does not automatically solve duplicates, stale payloads, idempotency, endless retries, or missing audit trails."
+    },
+    {
+      "title": "77. What is partner API drift?",
+      "body": "It is when an external service gradually changes contract or behavior, sometimes with poor communication, and your integration starts failing even though your code did not change."
+    },
+    {
+      "title": "78. What is a practical tip for calling external providers?",
+      "body": "Always log the request ID, target action, general endpoint, latency, and high-level result. You do not need every byte, but you need enough to investigate real incidents."
+    },
+    {
+      "title": "79. Why do adapters or gateways make integrations more durable?",
+      "body": "Because your app calls a stable internal abstraction in your own business language while the adapter absorbs provider-specific contract details."
+    },
+    {
+      "title": "80. When should you consider an internal package or module for an integration?",
+      "body": "When multiple apps or features share the same provider, auth strategy, logging policy, retry policy, and payload mapping. But do not extract too early."
+    },
+    {
+      "title": "81. What is a webhook?",
+      "body": "A webhook is an incoming call from another system telling your app that something happened, such as a payment succeeding, an invoice being paid, or a shipment being updated.",
+      "code": "Route::post('/webhooks/partner', PartnerWebhookController::class);"
+    },
+    {
+      "title": "82. Why should webhook handling often be queued?",
+      "body": "Because senders usually want a fast `2xx` response. Heavy synchronous handling increases timeouts and duplicate retries."
+    },
+    {
+      "title": "83. Why verify webhook signatures?",
+      "body": "To confirm the payload truly came from a trusted provider rather than anyone who found your public endpoint and sent a forged POST request.",
+      "code": "$signature = $request->header('X-Partner-Signature');\n$payload = $request->getContent();\n$expected = hash_hmac('sha256', $payload, config('services.partner.webhook_secret'));\n\nabort_unless(hash_equals($expected, $signature), 401);"
+    },
+    {
+      "title": "84. What happens when a webhook sender retries?",
+      "body": "You should treat duplicate delivery as normal. The handler must be idempotent or at least detect that the event was already processed."
+    },
+    {
+      "title": "85. Why is the provider's event ID useful?",
+      "body": "It is an excellent deduplication and audit key, because the same event may be delivered more than once."
+    },
+    {
+      "title": "86. Can webhook event order be trusted?",
+      "body": "No. Events may arrive late, out of order, or get retried after newer events already arrived. Your logic must tolerate out-of-order delivery."
+    },
+    {
+      "title": "87. What if a webhook says payment succeeded but your database has no order yet?",
+      "body": "That is a very real production case. You need reconciliation, delayed lookup, pending queues, or dead-letter handling instead of silently dropping the event."
+    },
+    {
+      "title": "88. How do sync APIs and webhooks usually work together?",
+      "body": "Many providers let you initiate an action through an API call while final state confirmation arrives later through a webhook. The initial response is not always the final truth."
+    },
+    {
+      "title": "89. What does eventual consistency mean in integrations?",
+      "body": "It means two systems may not agree instantly at every moment, but should converge after the required processing and retries happen."
+    },
+    {
+      "title": "90. When is a dead-letter queue useful?",
+      "body": "When certain webhook or queue jobs fail repeatedly and cannot be handled normally. It preserves the event for human investigation instead of losing it."
+    },
+    {
+      "title": "91. What is a reconciliation job?",
+      "body": "It is a scheduled job or command that compares your system state with an external provider to find missing events, long-pending records, or drifted data."
+    },
+    {
+      "title": "92. When should raw webhook payloads be stored?",
+      "body": "Usually when the event has business value or audit importance. The raw payload is valuable evidence during dispute resolution and incident analysis."
+    },
+    {
+      "title": "93. Should webhook controllers execute heavy side effects directly?",
+      "body": "Usually no. The controller should verify, persist minimal state, acknowledge quickly, and hand off heavy work to a queue or focused service."
+    },
+    {
+      "title": "94. Why should inbound and outbound integrations be treated differently?",
+      "body": "Inbound integrations receive outside data into your system, while outbound integrations call external systems. Their auth, retry, trust, and debugging patterns differ substantially."
+    },
+    {
+      "title": "95. What is a webhook replay attack?",
+      "body": "It is when an attacker or system reuses a previously valid payload to trigger repeated effects. Timestamp validation, short signature windows, and deduplication help reduce that risk."
+    },
+    {
+      "title": "96. What is a common webhook mistake?",
+      "body": "Blindly updating state based on every incoming payload without checking current state, valid transitions, or event authenticity."
+    },
+    {
+      "title": "97. What should Laravel API tests cover?",
+      "body": "They should cover success, validation failure, unauthorized, forbidden, not found, rate limiting, response shape, and critical business rules."
+    },
+    {
+      "title": "98. Why is HTTP faking useful in integration tests?",
+      "body": "It lets you simulate external providers to test your logic, mapping, and failure handling without relying on real networks or unstable sandboxes.",
+      "code": "Http::fake([\n    'partner.test/orders*' => Http::response([\n        'id' => 'ord_123',\n        'status' => 'created',\n    ], 201),\n]);",
+      "note": "Once the provider is faked, you can reliably test failure paths and mapping logic instead of depending on flaky sandboxes."
+    },
+    {
+      "title": "99. Should timeout and retry behavior be tested?",
+      "body": "Yes when the integration matters. The most painful bugs often live in failure paths, not the happy path."
+    },
+    {
+      "title": "100. What is contract testing?",
+      "body": "It is testing that ensures your API still returns the shape clients depend on, or that your integration client still correctly understands the external provider's contract."
+    },
+    {
+      "title": "101. Is OpenAPI or Swagger worth maintaining?",
+      "body": "Yes, especially when many consumers or teams depend on the API. Machine-readable documentation improves frontend, mobile, QA, and partner integration work."
+    },
+    {
+      "title": "102. Are Postman collections still useful?",
+      "body": "Yes. They are convenient for demos, manual QA, partner onboarding, and quickly exercising important endpoints outside automated tests."
+    },
+    {
+      "title": "103. What is a correlation ID for?",
+      "body": "It connects the incoming request, logs, jobs, webhook callbacks, and outbound calls into one traceable investigation path. It saves enormous time during incidents.",
+      "code": "$correlationId = (string) Str::uuid();\n\nlogger()->withContext([\n    'correlation_id' => $correlationId,\n    'provider' => 'partner-api',\n]);",
+      "note": "If the request, job, and outbound call do not share the same correlation ID, support teams waste time stitching clues together by hand."
+    },
+    {
+      "title": "104. What should be logged for inbound API requests?",
+      "body": "At minimum log the route, actor, correlation ID, processing time, status code, and high-level error category. Do not log sensitive data carelessly."
+    },
+    {
+      "title": "105. What should be logged for outbound calls?",
+      "body": "Log the service name, action, general endpoint, latency, status, provider request ID if available, and whether the call succeeded or failed."
+    },
+    {
+      "title": "106. Which metrics matter for APIs and integrations?",
+      "body": "Useful metrics include request count, error rate, timeout rate, retry rate, queue lag, duplicate webhook rate, endpoint latency, and provider success rate."
+    },
+    {
+      "title": "107. What should trigger alerts?",
+      "body": "Alert when error rates spike, queue lag grows, webhook failures rise, provider timeouts jump, or reconciliation detects data drift."
+    },
+    {
+      "title": "108. What should an integration support playbook include?",
+      "body": "It should explain how to inspect correlation IDs, raw payloads, event IDs, database state, outbound-call logs, queue retries, and provider health.",
+      "code": "1. get the correlation ID or event ID\n2. find inbound/outbound logs\n3. inspect current database state\n4. check failed jobs and retries\n5. compare with provider health/dashboard\n6. choose retry, reconcile, or escalate",
+      "note": "A good playbook reduces the dangerous habit of saying 'just resend it' before anyone understands where the system is actually out of sync."
+    },
+    {
+      "title": "109. How should partner-facing documentation be written?",
+      "body": "Clearly document endpoints, auth, sample requests and responses, error codes, retry expectations, webhook signature verification, and sandbox versus production differences."
+    },
+    {
+      "title": "110. Why does strong partner onboarding documentation matter?",
+      "body": "Because every repeated integration question is support cost. Good docs reduce support load far more than many teams expect."
+    },
+    {
+      "title": "111. Should every internal field be exposed through the API for frontend convenience?",
+      "body": "No. The API is an external contract, not a window into your entire database or internal business logic."
+    },
+    {
+      "title": "112. Why do integrations often work locally but fail in production?",
+      "body": "Common causes include wrong secrets, CORS, SSL, proxy headers, timeouts, queue workers still running old code, rate limits, or sandbox and production behaving differently."
+    },
+    {
+      "title": "113. Why can a Sanctum login API return `200` while the next request still gets `401`?",
+      "body": "Because the real problem is often cookies, stateful domains, CORS, `withCredentials`, session domain, or the CSRF flow rather than the login action itself."
+    },
+    {
+      "title": "114. Why can a webhook validate locally but fail with `401` or `403` in production?",
+      "body": "Possible causes include environment-specific secrets, reverse proxies altering the raw body, missing signature headers, or clock skew breaking timestamp windows."
+    },
+    {
+      "title": "115. Why might a payment provider report success while your order remains pending?",
+      "body": "The create call may have succeeded while the webhook never arrived, the queue failed, the event was wrongly deduplicated, the state transition was blocked, or reconciliation has not run yet."
+    },
+    {
+      "title": "116. Why do integrations often need dedicated event or log tables?",
+      "body": "Because when disputes happen, you need to know what was sent, what was received, which payload was used, what state resulted, and which step failed."
+    },
+    {
+      "title": "117. What is a code smell in an integration layer?",
+      "body": "Controllers directly calling `Http::post()`, parsing provider payloads inline, implementing retries ad hoc, catching exceptions inconsistently, and updating the database in many scattered places."
+    },
+    {
+      "title": "118. Should every provider live inside one giant integration class?",
+      "body": "No. Each provider deserves a focused module or class with clear responsibility. Giant integration classes quickly become logic dumps."
+    },
+    {
+      "title": "119. Why should transport errors be separated from domain errors in your own system?",
+      "body": "Because knowing whether a request failed due to networking or due to a business rejection determines how you retry, support, and recover."
+    },
+    {
+      "title": "120. Why should idempotency be considered for both inbound and outbound flows?",
+      "body": "Outbound create calls may be retried by your system, while inbound webhooks may be retried by the provider. Both directions can duplicate side effects."
+    },
+    {
+      "title": "121. What is a senior-level question to ask about a new API?",
+      "body": "If the same request arrives three times, two minutes late, times out in the middle, and the client only sees the first status code, how will our system behave?"
+    },
+    {
+      "title": "122. When should API orchestration be separated from business core logic?",
+      "body": "When HTTP is only one entry point and the same use case must also run from jobs, commands, webhooks, or admin flows. This keeps core logic independent of transport details."
+    },
+    {
+      "title": "123. Should integrations be designed as 'happy path first, failures later'?",
+      "body": "Not for important systems. Real integrations usually fail through retries, duplicates, stale secrets, delayed events, and provider drift, not through demo-path success."
+    },
+    {
+      "title": "124. Final review: what major areas should an API and integration topic include?",
+      "body": "At minimum it should cover API foundations, routes-resources-contracts, validation-errors-idempotency, auth-security-rate-limiting, outbound HTTP calls, webhooks-queues-reliability, testing-docs-observability, and real production cases."
+    },
+    {
+      "title": "125. Where does basic API route configuration in Laravel usually begin?",
+      "body": "It usually begins in `routes/api.php`, with the right auth middleware and clear endpoint naming. What matters is not only that the route works, but that it starts life with an explicit contract, auth model, and quota policy."
+    },
+    {
+      "title": "126. How does a real API Resource help more than hand-written JSON arrays?",
+      "body": "It centralizes formatting, such as converting `created_at` to ISO strings, hiding sensitive fields, or including relations only when needed. When the contract changes, you update one resource instead of hunting through controllers."
+    },
+    {
+      "title": "127. Should Laravel rate limiting be treated as a fixed number or as a policy?",
+      "body": "Treat it as a policy. Different clients and actions may need different limits: login, search, webhook endpoints, partner APIs, and import jobs do not necessarily deserve the same quota."
+    },
+    {
+      "title": "128. When calling `Http::withToken()` or `withHeaders()`, why still build a wrapper layer?",
+      "body": "Because auth headers are only the beginning. A wrapper also centralizes timeouts, retries, base URLs, correlation IDs, error mapping, logging, and consistent response parsing."
+    },
+    {
+      "title": "129. Why does webhook verification often require the raw body instead of only parsed JSON?",
+      "body": "Many providers sign the original raw payload. If the body is parsed and re-encoded with different spacing or ordering, the signature may fail even though the visible data looks the same."
+    },
+    {
+      "title": "130. How do `Http::fake()` and `Http::fakeSequence()` differ in testing mindset?",
+      "body": "`fake()` fits a single stable response, while `fakeSequence()` is very useful for testing retries, first-call failure then second-call success, or a chain of provider interactions."
+    },
+    {
+      "title": "131. When should an API announce deprecation before removing a field or endpoint?",
+      "body": "Almost always if external clients or slow-release mobile apps depend on it. Deprecation notices, changelogs, and clear timelines help prevent the classic 'backend shipped, client broke' scenario."
+    },
+    {
+      "title": "132. How does the outbox pattern relate to integrations?",
+      "body": "When your app commits database state and also needs to publish an event or notify an external system, the outbox pattern helps avoid the split-brain case where the database commits but the message never goes out, or the message goes out and the database later rolls back."
+    },
+    {
+      "title": "133. When should you publish an internal event instead of calling a provider directly inside a transaction?",
+      "body": "When external side effects should not be tightly locked to the main transaction. Transactions should protect internal state, while publishing or calling providers can happen more safely after commit through reliable async work."
+    },
+    {
+      "title": "134. Should clients be allowed to request sparse fieldsets?",
+      "body": "Only when the API is large enough and the need is real. It can reduce payload size, but it also complicates contracts, caching, and testing if introduced too early."
+    },
+    {
+      "title": "135. What is a good playbook when a partner says 'your API works sometimes and fails sometimes'?",
+      "body": "Check correlation IDs, rate limits, timeout distribution, recent deploys, secret changes, proxy logs, queue lag, and whether the failures cluster around one action instead of looking at isolated requests only."
+    },
+    {
+      "title": "136. Example of a basic API route and JSON response in Laravel",
+      "body": "This is a minimal example, but it is enough to show where an API contract starts.",
+      "code": "Route::middleware('auth:sanctum')->get('/user', function (Request $request) {\n    return response()->json([\n        'data' => $request->user(),\n    ]);\n});",
+      "note": "Even this small example already touches auth boundaries, response contracts, and client expectations."
+    },
+    {
+      "title": "137. Example of calling an external API with `Http::` plus timeout and retry",
+      "body": "This is the kind of snippet worth copying when integrating with an outside service for the first time.",
+      "code": "$response = Http::timeout(5)\n    ->retry(2, 200)\n    ->acceptJson()\n    ->post('https://partner.test/api/orders', [\n        'order_id' => $order->id,\n        'amount' => $order->total,\n    ]);\n\nif ($response->failed()) {\n    report(new RuntimeException('Partner API failed'));\n}",
+      "bullets": [
+        "`timeout()` prevents the request from hanging too long.",
+        "`retry()` is useful for temporary network failures, but should not be blindly applied to every error type.",
+        "`failed()` gives you a clean branch for bad integration results."
+      ]
+    },
+    {
+      "title": "138. Example of a basic webhook endpoint with signature verification",
+      "body": "Webhooks are one of the easiest integration areas to break if you simply trust incoming payloads.",
+      "code": "$signature = $request->header('X-Signature');\n$payload = $request->getContent();\n$expected = hash_hmac('sha256', $payload, config('services.partner.webhook_secret'));\n\nabort_unless(hash_equals($expected, $signature), 401);\n\nProcessWebhookJob::dispatch($request->all());",
+      "note": "Verify against the raw body first, then queue processing. If you reverse that order, it becomes much easier to accept and process forged webhooks."
+    },
+    {
+      "title": "139. Example of an API Resource for a cleaner response contract",
+      "body": "As the API grows, hand-written arrays spread across controllers become difficult to control.",
+      "code": "class PostResource extends JsonResource\n{\n    public function toArray($request): array\n    {\n        return [\n            'id' => $this->id,\n            'title' => $this->title,\n            'author' => $this->user?->name,\n        ];\n    }\n}\n\nreturn new PostResource($post);",
+      "note": "An API Resource centralizes contract shape and reduces the chance that each endpoint quietly drifts into a different response structure."
+    },
+    {
+      "title": "140. Final assessment after review: is this API and integration topic detailed enough?",
+      "body": "For a learning portal, it is now fairly complete: foundations, config mindset, auth, contracts, resources, HTTP clients, webhooks, retries, idempotency, docs, tests, observability, and production cases are all covered. If you want to go deeper later, the best next split would be dedicated sites for OAuth, webhook security, event-driven integration, and API versioning strategy."
+    }
+  ]
+}

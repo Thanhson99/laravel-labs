@@ -1,0 +1,724 @@
+{
+  "anchor": "laravel-request-flow",
+  "type": "list",
+  "heading": "Laravel request flow: from incoming request to outgoing response",
+  "intro": "This site goes deep into Laravel request flow in the exact order a real request moves through the system. The goal is not only to know routes and controllers, but to see the whole pipeline: web server, bootstrap, container, middleware, validation, auth, service, query, response, exception, session, cache, and the production problems that appear around them.",
+  "breaks": [
+    {
+      "start": 1,
+      "title": "Foundations And Entry Point",
+      "description": "What a request is, where the web server sends it, and which file begins the Laravel lifecycle.",
+      "tone": "amber"
+    },
+    {
+      "start": 11,
+      "title": "Bootstrap, Kernel, And Route Matching",
+      "description": "How the app starts, what the HTTP kernel does, how routes are matched, and where middleware enters the flow.",
+      "tone": "copper"
+    },
+    {
+      "start": 23,
+      "title": "Middleware, Validation, And Authorization",
+      "description": "Where requests are blocked or allowed, how input is cleaned, and how permissions are checked.",
+      "tone": "olive"
+    },
+    {
+      "start": 35,
+      "title": "Controllers, Services, And The Data Layer",
+      "description": "How controllers coordinate, where services belong, and how models, queries, and transactions participate in request handling.",
+      "tone": "ocean"
+    },
+    {
+      "start": 47,
+      "title": "Responses, Sessions, And Web Experience",
+      "description": "Blade, redirects, JSON, file responses, old input, flash messages, and sessions as the request comes to an end.",
+      "tone": "indigo"
+    },
+    {
+      "start": 59,
+      "title": "API Flow, Auth, And Exceptions",
+      "description": "The difference between web and API mode, token versus session auth, status codes, exception handling, and error responses.",
+      "tone": "rose"
+    },
+    {
+      "start": 71,
+      "title": "Events, Queues, Cache, And Side Effects",
+      "description": "What should happen inside the request, what should be deferred, where cache fits, and how side effects impact user experience.",
+      "tone": "slate"
+    },
+    {
+      "start": 83,
+      "title": "Debugging, Performance, And Security",
+      "description": "How to trace requests systematically, find bottlenecks, avoid security mistakes, and recognize pipeline smells.",
+      "tone": "stone"
+    },
+    {
+      "start": 95,
+      "title": "Production Cases And Long-Term Habits",
+      "description": "Real problems from larger systems: retries, idempotency, race conditions, observability, and ways to design more durable flows.",
+      "tone": "amber"
+    },
+    {
+      "start": 107,
+      "title": "Extended Flow: Livewire, Inertia, Redis, And Real Cases",
+      "description": "How request flow changes with Livewire or Inertia, how Redis affects state, and which production failures repeatedly waste team time.",
+      "tone": "copper"
+    },
+    {
+      "start": 125,
+      "title": "Practical Flow: Uploads, SPA Auth, And Multi-Tenancy",
+      "description": "The request paths that hurt real projects most often: large uploads, Sanctum for SPAs, and how every request must carry the right tenant context.",
+      "tone": "olive"
+    }
+  ],
+  "items": [
+    {
+      "title": "1. What is a request in a web application?",
+      "body": "A request is one attempt by a user or client to ask the server for data or to ask the system to do something. Examples include opening a page, submitting a form, calling an API, downloading a file, or logging in.",
+      "code": "GET /posts\nPOST /login\nPOST /api/orders\nGET /files/report.pdf",
+      "note": "Seeing a request as method + URL from the beginning makes request flow far less abstract."
+    },
+    {
+      "title": "2. What is a response?",
+      "body": "A response is what the server returns after processing the request. It may be HTML, JSON, a redirect, a file download, a stream, or an error status code."
+    },
+    {
+      "title": "3. What is request flow?",
+      "body": "It is the full path a request takes from entering the system to producing the final response. Understanding this path makes the framework feel far less magical."
+    },
+    {
+      "title": "4. Why should request flow be studied carefully?",
+      "body": "Because many bugs do not live in a single file. They live where a request is blocked incorrectly, validated incorrectly, queried incorrectly, redirected incorrectly, or turned into the wrong response."
+    },
+    {
+      "title": "5. Where does a request usually enter Laravel?",
+      "body": "Usually the web server sends valid dynamic requests to `public/index.php`. This is the familiar entry point of a Laravel application.",
+      "code": "server {\n    root /var/www/app/public;\n\n    location / {\n        try_files $uri $uri/ /index.php?$query_string;\n    }\n}",
+      "note": "Common mistake: pointing the document root to the project directory instead of `public/`. The fix is to verify the web root before blaming Laravel code."
+    },
+    {
+      "title": "6. What is the role of the `public/` directory in request flow?",
+      "body": "`public/` is the safe web root exposed to the browser. The browser should only touch public assets and the `index.php` entry file, not your internal application code."
+    },
+    {
+      "title": "7. Why is `public/index.php` so important?",
+      "body": "It is the first door of the app. From there Laravel loads autoloading, bootstraps the application, creates the app instance, and passes the request into the HTTP kernel."
+    },
+    {
+      "title": "8. What does the web server do before Laravel runs?",
+      "body": "The web server decides which requests are static files, which requests should go to PHP, and often also handles things such as TLS termination, gzip, cache headers, or rewrite rules."
+    },
+    {
+      "title": "9. How does PHP-FPM relate to request flow?",
+      "body": "In many modern PHP stacks, the web server forwards dynamic requests to PHP-FPM to execute PHP code. Laravel lives in that layer, while Nginx or Apache acts as the front door."
+    },
+    {
+      "title": "10. Foundational tip: do not study only routes and controllers while ignoring the web-server layer",
+      "body": "Many bugs that look like Laravel bugs are actually rewrite-rule mistakes, wrong document roots, bad headers, wrong timeouts, or PHP-FPM issues."
+    },
+    {
+      "title": "11. What does Laravel bootstrap after `public/index.php`?",
+      "body": "Laravel loads Composer autoloading, boots the app, prepares configuration, environment values, the service container, the exception handler, and the HTTP kernel.",
+      "code": "require __DIR__.'/../vendor/autoload.php';\n\n$app = require_once __DIR__.'/../bootstrap/app.php';",
+      "note": "Understanding just these two lines already connects `public/index.php` to `vendor/` and `bootstrap/app.php`."
+    },
+    {
+      "title": "12. What does `bootstrap/app.php` do?",
+      "body": "It creates the application instance and registers core parts such as the container, kernel, and exception handler. It connects the entry point to the framework core."
+    },
+    {
+      "title": "13. What is the HTTP kernel?",
+      "body": "The HTTP kernel is the high-level coordinator of the request lifecycle. It sends the request through middleware and then dispatches it into the router."
+    },
+    {
+      "title": "14. Why is the kernel like the app's main traffic gate?",
+      "body": "Because every valid HTTP request passes through it. If global middleware, exception handling, or lifecycle hooks are wrong, the kernel is where the impact begins."
+    },
+    {
+      "title": "15. When does the service container begin affecting request flow?",
+      "body": "Very early. When Laravel resolves controllers, services, middleware, form requests, or type-hinted dependencies, the container is doing the creation and injection work."
+    },
+    {
+      "title": "16. What is route matching?",
+      "body": "It is the process where Laravel matches the URL, HTTP method, and other conditions to determine which route should handle the request."
+    },
+    {
+      "title": "17. How do HTTP methods affect routes?",
+      "body": "`GET`, `POST`, `PUT`, `PATCH`, and `DELETE` are not just different names. They express different intentions. The same URL with a different method can mean a completely different operation."
+    },
+    {
+      "title": "18. How are `routes/web.php` and `routes/api.php` different?",
+      "body": "`web.php` usually involves sessions, CSRF, cookies, and Blade rendering. `api.php` usually involves JSON, stateless auth, rate limiting, and consistent API responses.",
+      "code": "// routes/web.php\nRoute::get('/profile', [ProfileController::class, 'show']);\n\n// routes/api.php\nRoute::middleware('auth:sanctum')->get('/me', function (Request $request) {\n    return $request->user();\n});",
+      "note": "Common mistake: mixing web flow with API flow until auth, CSRF, and response formats all become tangled."
+    },
+    {
+      "title": "19. What is a route parameter?",
+      "body": "It is the variable part of a URL such as `/posts/{post}` or `/users/{user}/orders/{order}`. It lets one route pattern handle many specific resources."
+    },
+    {
+      "title": "20. How does route model binding help request flow?",
+      "body": "It lets Laravel automatically resolve a model from a route parameter, such as turning `{post}` into a `Post` instance. This keeps controllers cleaner but you must understand when it returns 404."
+    },
+    {
+      "title": "21. What are route groups for?",
+      "body": "Route groups help share prefixes, names, middleware, namespaces, or domains across many routes. They make route files more structured."
+    },
+    {
+      "title": "22. How does route cache affect request flow?",
+      "body": "It makes route resolution faster in production, but if you forget to clear or rebuild it at the right time, the app may keep using outdated route definitions."
+    },
+    {
+      "title": "23. What is middleware in request flow?",
+      "body": "Middleware is the layer between the request and the main business handling. It can let the request continue, mutate it, or stop it and return a response immediately.",
+      "code": "public function handle(Request $request, Closure $next): Response\n{\n    if (! $request->user()) {\n        return redirect('/login');\n    }\n\n    return $next($request);\n}",
+      "note": "If middleware returns early, the controller never runs. That boundary is easy to forget while debugging."
+    },
+    {
+      "title": "24. What is the difference between global middleware and route middleware?",
+      "body": "Global middleware runs for most or all requests. Route middleware runs only on specific routes or route groups."
+    },
+    {
+      "title": "25. Why is middleware a common source of invisible bugs?",
+      "body": "Because a request may be changed or blocked before it ever reaches the controller. If you forget which middleware is active, you will debug the wrong layer."
+    },
+    {
+      "title": "26. Common middleware examples",
+      "body": "Auth, guest, throttle, verified, locale, role, permission, force-https, maintenance mode, CORS, or custom request logging middleware.",
+      "code": "Route::middleware(['auth', 'verified', 'throttle:60,1'])\n    ->get('/dashboard', [DashboardController::class, 'index']);",
+      "note": "Common mistake: attaching middleware by habit without remembering where it changes the flow. The fix is to read routes together with their middleware."
+    },
+    {
+      "title": "27. What does the `auth` middleware do?",
+      "body": "It checks whether the user is authenticated. In web flow it often redirects to login, while in API flow it usually returns an unauthorized error."
+    },
+    {
+      "title": "28. When is `guest` middleware used?",
+      "body": "When only unauthenticated users should access something, such as login or registration screens. Authenticated users are redirected away."
+    },
+    {
+      "title": "29. What is the `throttle` middleware for?",
+      "body": "It limits request frequency to reduce spam, brute force, and abuse. It is important for login, OTP, search, and public API endpoints."
+    },
+    {
+      "title": "30. Why is locale middleware useful?",
+      "body": "It determines the active language or region from the session, user settings, subdomain, or headers and attaches that context to the current request."
+    },
+    {
+      "title": "31. What is a Form Request?",
+      "body": "A Form Request is a dedicated class for validating and authorizing input. It moves request rules out of the controller.",
+      "code": "class StorePostRequest extends FormRequest\n{\n    public function rules(): array\n    {\n        return [\n            'title' => ['required', 'string', 'max:255'],\n            'body' => ['required', 'string'],\n        ];\n    }\n}",
+      "note": "When request rules live here, the controller behind them stays much cleaner."
+    },
+    {
+      "title": "32. Why should validation leave the controller once rules become complex?",
+      "body": "Because controllers should coordinate rather than own every rule. Separate validation makes the input flow clearer and testing cleaner."
+    },
+    {
+      "title": "33. What does `authorize()` do inside a Form Request?",
+      "body": "It lets you stop the request at the request-class layer when the user lacks permission. It sits right at the intersection of validation and authorization."
+    },
+    {
+      "title": "34. Practical tip: dirty requests should die early",
+      "body": "Bad format, missing fields, invalid state, or missing permission should be blocked early so they do not waste deeper business logic."
+    },
+    {
+      "title": "35. What should the controller do?",
+      "body": "The controller should receive dependencies, accept already-valid input, call the right service or action, and return the response. It should coordinate, not contain the whole system.",
+      "code": "class OrderController extends Controller\n{\n    public function store(StoreOrderRequest $request, CreateOrderAction $action)\n    {\n        $order = $action->execute($request->validated());\n\n        return redirect()->route('orders.show', $order);\n    }\n}",
+      "note": "Common mistake: letting the controller validate, query, call outside APIs, and send mail all at once. The fix is to keep it as a coordinator."
+    },
+    {
+      "title": "36. Anti-pattern: the bloated controller",
+      "body": "If the controller validates, queries, authorizes, formats responses, sends mail, and dispatches jobs all at once, request flow becomes hard to read and hard to test."
+    },
+    {
+      "title": "37. Where does a service layer fit in request flow?",
+      "body": "A service usually sits between the controller and the data or integration layer. It gathers business rules so controllers stay small and flows become reusable."
+    },
+    {
+      "title": "38. Does every project need a heavy service layer?",
+      "body": "No. Small apps may not need one yet. But once one request touches multiple models, policies, integrations, and side effects, service or action classes often become worth it."
+    },
+    {
+      "title": "39. Is a repository always necessary in request flow?",
+      "body": "No. Do not add abstraction only because it sounds nice. Use it only when it solves a real problem such as source switching, complex query handling, or a specific testing strategy."
+    },
+    {
+      "title": "40. How does a model participate in request flow?",
+      "body": "A model is often used to read or write data after the request has passed validation and authorization. This is where the request starts touching real system state."
+    },
+    {
+      "title": "41. How do query builder and Eloquent differ in flow handling?",
+      "body": "Eloquent is convenient for relationships and business entities, while query builder is often better for custom query shapes. Choosing the right layer makes the flow easier to read."
+    },
+    {
+      "title": "42. Where should transactions appear in request flow?",
+      "body": "Whenever one request needs several writes that must succeed together or roll back together, a transaction should wrap that write-heavy business segment.",
+      "code": "DB::transaction(function () use ($payload) {\n    $order = Order::create($payload);\n    $order->items()->createMany($payload['items']);\n    $order->payments()->create(['amount' => $payload['amount']]);\n});",
+      "note": "Without a transaction here, the flow can leave behind half-correct state."
+    },
+    {
+      "title": "43. Why are transactions part of request flow, not just a database detail?",
+      "body": "Because they determine whether the request leaves the system in a half-correct state or a consistent one. For orders, payments, and inventory, that matters deeply."
+    },
+    {
+      "title": "44. When do policies and gates enter request flow?",
+      "body": "They are called when you check whether a user may perform an action or access a resource. That can happen in controllers, form requests, middleware, or services."
+    },
+    {
+      "title": "45. Should events be dispatched directly inside the request?",
+      "body": "Sometimes, but you must understand which side effects must happen synchronously and which ones should move to a queue so the response stays fast."
+    },
+    {
+      "title": "46. Practical tip: a healthy request flow assigns each responsibility to the right layer",
+      "body": "When permission checks, validation, queries, side effects, and formatting are mixed together without structure, every bug sends you wandering through the whole codebase."
+    },
+    {
+      "title": "47. Which response types exist in Laravel?",
+      "body": "Blade views, JSON, redirects, file downloads, streamed responses, binary responses, no-content responses, and custom response objects.",
+      "code": "return view('posts.show', compact('post'));\nreturn response()->json(['data' => $post]);\nreturn redirect()->route('posts.index');\nreturn response()->noContent();",
+      "note": "Choosing the wrong response type is a quick way to make web flow or API flow feel broken."
+    },
+    {
+      "title": "48. How does a web flow usually end?",
+      "body": "Usually with a rendered view or a redirect. Redirects often carry flash messages, old input, or validation errors."
+    },
+    {
+      "title": "49. How does an API flow usually end?",
+      "body": "Usually with JSON and a clear status code. The most important thing is consistency in both success payloads and error payloads."
+    },
+    {
+      "title": "50. What does a redirect mean in request flow?",
+      "body": "A redirect does not simply switch pages. It ends the current request and tells the browser to make a new request to another URL."
+    },
+    {
+      "title": "51. What is a flash message?",
+      "body": "It is short-lived data that survives into the next request, usually to show success, failure, or UX messages after a redirect."
+    },
+    {
+      "title": "52. How does `old()` relate to request flow?",
+      "body": "When a form fails validation and redirects back, Laravel can keep the old input in session so users do not need to retype everything."
+    },
+    {
+      "title": "53. What is an error bag?",
+      "body": "It is the collection of validation errors carried into the next request or the current view so each field can show the right message."
+    },
+    {
+      "title": "54. Where does session influence request flow?",
+      "body": "It stores login state, flash data, locale, temporary cart state, old input, and other short-lived web context."
+    },
+    {
+      "title": "55. How do cookies relate to session?",
+      "body": "Cookies often hold the session ID or related state so future requests can be tied back to the right user context. Without understanding this layer, login and logout bugs become confusing."
+    },
+    {
+      "title": "56. How is a file-download response different from rendering a view?",
+      "body": "It is not a traditional UI response. It is meant to push a file or file stream to the client, which is common in exports, invoices, reports, or media delivery."
+    },
+    {
+      "title": "57. When do you use a stream response?",
+      "body": "When data is large or should be sent progressively instead of building the whole payload in memory first, such as large CSV exports or media streaming."
+    },
+    {
+      "title": "58. UX tip: a good response matches the type of request that produced it",
+      "body": "A broken form that returns raw JSON usually feels wrong. An API client that receives a redirected HTML page for an error is also a design failure."
+    },
+    {
+      "title": "59. Where is the deep difference between web flow and API flow?",
+      "body": "In how state is stored, how authentication works, how errors are reported, what response shape is expected, and how the client consumes results. It is more than a route-file difference.",
+      "code": "// web flow\nreturn redirect()->back()->withErrors($validator);\n\n// api flow\nreturn response()->json([\n    'message' => 'Validation failed',\n    'errors' => $validator->errors(),\n], 422);",
+      "note": "Common mistake: returning JSON for a broken web form or redirecting HTML to an API client. The fix is to ask which client is calling the flow."
+    },
+    {
+      "title": "60. How does session-based auth work in request flow?",
+      "body": "After successful login, the user is associated with a server-side session. Future requests carry that session identity so the app recognizes who the user is."
+    },
+    {
+      "title": "61. How does token-based auth work?",
+      "body": "The client sends a token through headers or cookies according to the chosen design. Each request carries the identity clue it needs instead of depending primarily on server-side session state."
+    },
+    {
+      "title": "62. Where does CSRF protection sit in request flow?",
+      "body": "It protects state-changing web requests. Laravel checks the token before allowing POST, PUT, PATCH, or DELETE requests to proceed deeper into the app."
+    },
+    {
+      "title": "63. Why do APIs usually not use CSRF in the same way as web forms?",
+      "body": "Because stateless APIs usually rely on different token strategies. But if an SPA API uses cookies or session-style auth, the picture changes and you need to understand that architecture carefully."
+    },
+    {
+      "title": "64. What is an exception in request flow?",
+      "body": "It is an error thrown by an inner layer that interrupts the normal path. Laravel then needs to transform it into a meaningful response."
+    },
+    {
+      "title": "65. How is a validation exception different from an authorization exception?",
+      "body": "A validation exception says the input is invalid. An authorization exception says the user is not allowed to do the action. Those should lead to clearly different responses."
+    },
+    {
+      "title": "66. Where does a 404 usually come from in request flow?",
+      "body": "From no matching route, failed route model binding, or logic that intentionally aborts with 404 when a resource does not exist."
+    },
+    {
+      "title": "67. What does a 419 usually suggest in Laravel?",
+      "body": "It usually points to CSRF token issues, session timeout, or a mismatch in cookie or form flow. It is a very common web-flow error."
+    },
+    {
+      "title": "68. When does 422 usually appear?",
+      "body": "It commonly appears when validation fails in API or XHR contexts. It means the request shape was acceptable but the data did not satisfy the required rules."
+    },
+    {
+      "title": "69. What is the difference between 401 and 403 in auth flow?",
+      "body": "401 usually means unauthenticated or invalid token or session. 403 usually means the system knows who you are, but you still may not do that action."
+    },
+    {
+      "title": "70. Practical tip: a good error response tells the client what to do next",
+      "body": "Validation errors should indicate which fields are wrong. Auth errors should make it clear whether login is required or extra permission is missing. Internal errors should be logged deeply but exposed carefully."
+    },
+    {
+      "title": "71. When should events be used in request flow?",
+      "body": "When you want to separate side effects from core logic, for example after user registration when you need email sending, audit logging, or downstream syncing.",
+      "code": "UserRegistered::dispatch($user);",
+      "note": "Events help the core flow avoid tight coupling to side effects, but you still need to decide what stays synchronous versus asynchronous."
+    },
+    {
+      "title": "72. How do queues make request flow lighter?",
+      "body": "Heavy work such as sending mail, resizing images, syncing third parties, or generating reports can be pushed to a queue so the user gets a faster response."
+    },
+    {
+      "title": "73. When should work not be moved to a queue?",
+      "body": "When the result is required immediately for the current request to remain logically correct, such as core validation or mandatory calculations needed for the response."
+    },
+    {
+      "title": "74. What is the difference between synchronous and asynchronous listeners?",
+      "body": "Synchronous listeners run inside the current request and increase response time. Asynchronous listeners usually run later through the queue."
+    },
+    {
+      "title": "75. Where does cache appear inside request flow?",
+      "body": "It may appear in query results, config, routes, partial response fragments, or business lookups. Good cache makes requests faster, but wrong cache makes stale data linger."
+    },
+    {
+      "title": "76. Why is cache part of request flow worth learning?",
+      "body": "Because a request may return data from cache instead of the real database. If you forget that layer, you may think your code did not run or your data did not change."
+    },
+    {
+      "title": "77. Beyond middleware, how does rate limiting affect the flow?",
+      "body": "It directly shapes both user experience and endpoint safety. Login, OTP, resend-email, and public search endpoints all require careful thought here."
+    },
+    {
+      "title": "78. Should notifications be sent inside the request?",
+      "body": "Light notifications may be fine immediately, but most email, push, or webhook work should be considered for queues so the response is not slowed unnecessarily."
+    },
+    {
+      "title": "79. How do file uploads enter request flow?",
+      "body": "The request carries the file, validation checks it, the app stores it on the right disk, and only then does it persist metadata or trigger follow-up processing."
+    },
+    {
+      "title": "80. Why do uploads make request flow more complex than ordinary text forms?",
+      "body": "Because they touch file-size limits, timeouts, MIME types, storage disks, permissions, cleanup of failed uploads, and sometimes post-processing jobs."
+    },
+    {
+      "title": "81. How is a webhook request different from a user-submitted form?",
+      "body": "A webhook comes from another system, usually has no session, has its own signature or verification strategy, and often raises retry, duplication, and timing concerns."
+    },
+    {
+      "title": "82. Practical tip: classify side effects clearly as synchronous or asynchronous",
+      "body": "If everything runs inside the request, UX gets slow. If everything goes to the queue, business state may be wrong at the moment the response is returned."
+    },
+    {
+      "title": "83. Where should request-flow debugging begin?",
+      "body": "Start with the URL, method, and route match. Then trace middleware, request input, validation, authorization, controller, service, query, event, and response.",
+      "code": "1. URL + method\n2. route:list / route match\n3. middleware\n4. input + validation\n5. controller / service\n6. query / external call\n7. response / exception",
+      "note": "Common mistake: opening random files and guessing. The fix is to trace the flow in order."
+    },
+    {
+      "title": "84. Why is flow-based debugging better than file-based debugging?",
+      "body": "Because a request is a sequence of events with order. Randomly opening files makes it easy to miss the layer that blocked or transformed the request."
+    },
+    {
+      "title": "85. How does `route:list` help you understand request flow?",
+      "body": "It shows all entry points of the system, which methods map where, what middleware is attached, and how routes are named."
+    },
+    {
+      "title": "86. Where should logging be placed in request flow?",
+      "body": "At meaningful transition points such as middleware, services, external calls, exceptions, or important state changes. Logging everything everywhere only creates noise."
+    },
+    {
+      "title": "87. How do Telescope, Debugbar, or profilers help?",
+      "body": "They let you see actual queries, requests, responses, exceptions, mail, jobs, or events so you can inspect the real flow instead of guessing."
+    },
+    {
+      "title": "88. Why is N+1 a request-flow bug?",
+      "body": "Because the request still returns the right answer, but it does it with far too many queries due to poor relationship loading. It is a classic performance flaw in data-reading flows."
+    },
+    {
+      "title": "89. Can middleware order cause bugs?",
+      "body": "Yes. The wrong order may authenticate before locale is set, throttle before identity is resolved correctly, or alter request context in the wrong sequence."
+    },
+    {
+      "title": "90. How does CORS relate to request flow?",
+      "body": "For APIs and SPAs, the browser may block the request before it ever reaches your controller if CORS policy is wrong. That means the failure happens at the edge of the system."
+    },
+    {
+      "title": "91. Security tip: never trust input just because it reached the controller",
+      "body": "Reaching the controller does not mean the data is clean or the user should be trusted. Validation, authorization, and sanitization still need to be explicit."
+    },
+    {
+      "title": "92. Security tip: error responses should not leak too much internal detail",
+      "body": "Deep debug information belongs in logs and monitoring, not in production responses visible to clients."
+    },
+    {
+      "title": "93. Performance tip: what usually makes request flow slow?",
+      "body": "Heavy queries, slow external calls, too many synchronous side effects, logic-heavy view rendering, cache misses, large file handling, or lock contention."
+    },
+    {
+      "title": "94. Code-reading habit: follow one full request from route to response",
+      "body": "This helps you understand an app far faster than opening folders in isolation. It also reveals where the flow is fragmented or responsibilities are duplicated."
+    },
+    {
+      "title": "95. What is idempotency in request flow?",
+      "body": "It is the property that repeating the same request does not create unintended extra side effects. It matters greatly for payments, webhooks, retries, and double-submitted forms.",
+      "code": "$existing = Order::where('idempotency_key', $request->header('Idempotency-Key'))->first();\n\nif ($existing) {\n    return response()->json(['data' => $existing]);\n}",
+      "note": "Without an idempotency guard, retries can easily turn into double orders or double payments."
+    },
+    {
+      "title": "96. Why is double-submit a real problem?",
+      "body": "Users can click twice, networks can retry, and clients can resend. Without anti-duplication design, orders or transactions may be created twice."
+    },
+    {
+      "title": "97. How do race conditions enter request flow?",
+      "body": "Two requests read the same old state and both write based on that outdated assumption. The final data becomes wrong even if each request looked correct in isolation."
+    },
+    {
+      "title": "98. How do third-party timeouts affect request flow?",
+      "body": "If a request depends on an external service without proper timeouts and fallbacks, the whole user experience can hang or fail in a chain reaction."
+    },
+    {
+      "title": "99. Where should retries live, and what must be handled carefully?",
+      "body": "Retries may live in an HTTP client, queue job, or integration layer, but they must be combined with idempotency so dangerous side effects are not repeated."
+    },
+    {
+      "title": "100. How do circuit breakers or fallbacks relate to Laravel request flow?",
+      "body": "When your app depends on external services, you need ways to degrade safely instead of letting every request slam into a failing dependency."
+    },
+    {
+      "title": "101. What is observability in the context of request flow?",
+      "body": "It is the ability to see what requests are doing through logs, metrics, traces, and exception reporting. A large app without visibility into flow becomes very expensive to debug."
+    },
+    {
+      "title": "102. How do correlation IDs or request IDs help?",
+      "body": "They connect logs from the same request across many layers or even across services, which is extremely useful when debugging production failures."
+    },
+    {
+      "title": "103. How does maintenance mode enter the flow?",
+      "body": "It can stop requests early through middleware or kernel-level protection and return a maintenance response instead of letting traffic enter the deeper app."
+    },
+    {
+      "title": "104. How do feature flags affect request flow?",
+      "body": "A request may follow different logic branches depending on feature flags, user segments, or environment. Without good logging and structure, the flow becomes much harder to predict."
+    },
+    {
+      "title": "105. Why does multi-tenancy make request flow harder?",
+      "body": "The request must identify the correct tenant, set the right tenant context, scope queries correctly, and prevent data leakage between tenants."
+    },
+    {
+      "title": "106. Final practical insight: a good request flow helps the next developer predict the path correctly",
+      "body": "If a new developer can trace route, middleware, validation, controller, service, data layer, and response without getting lost, the flow is probably organized well."
+    },
+    {
+      "title": "107. How is request flow in Livewire different from plain Blade?",
+      "body": "Livewire still lives on top of request-response mechanics, but it feels more interactive because background requests are sent to the server as component state changes. Without understanding that, many people mistake Livewire for purely frontend magic.",
+      "code": "<input wire:model.live=\"search\" />\n\npublic function updatedSearch()\n{\n    $this->results = Post::query()\n        ->where('title', 'like', '%'.$this->search.'%')\n        ->get();\n}",
+      "note": "Common mistake: forgetting that each Livewire interaction may be a separate request and can trigger repeated queries."
+    },
+    {
+      "title": "108. Is each Livewire interaction a separate request?",
+      "body": "Usually yes. Typing, clicking, or triggering component actions can create separate AJAX requests that hydrate state, validate input, run actions, and re-render the necessary HTML fragment."
+    },
+    {
+      "title": "109. Why does Livewire request flow need its own optimization mindset?",
+      "body": "Because one screen can generate many small requests. If each one runs heavy queries or uncontrolled side effects, the experience becomes slow and much harder to debug."
+    },
+    {
+      "title": "110. How does Inertia enter request flow?",
+      "body": "Inertia still lets the backend control routes and controllers, but the response is a page payload that a frontend framework such as Vue or React renders. It sits between a traditional server-rendered app and a full SPA."
+    },
+    {
+      "title": "111. How is Inertia flow different from a pure API plus SPA approach?",
+      "body": "Inertia does not force you to design a full REST API for every screen from day one. Controllers still return page-level data, while client-side navigation makes the experience feel more app-like."
+    },
+    {
+      "title": "112. Why should you understand hydration and re-hydration in modern flows?",
+      "body": "Because state may be rebuilt from server payloads, page props, or component lifecycle. If you do not know when state is recreated, debugging disappearing data or unstable UI becomes much harder."
+    },
+    {
+      "title": "113. In which layers can Redis participate in request flow?",
+      "body": "Redis may be used for cache, session, queue, rate limiting, or pub/sub. Once an app leans on Redis heavily, request flow is no longer just routes and databases; it also moves through this in-memory state layer."
+    },
+    {
+      "title": "114. How does storing session in Redis affect the flow?",
+      "body": "It helps centralize session state when multiple app instances are running, but it also introduces failure modes such as early expiration, wrong driver configuration, or environments not sharing the same Redis instance."
+    },
+    {
+      "title": "115. How does a Redis-backed queue affect request flow?",
+      "body": "The request can return faster because side effects are pushed to a queue, but you must then understand workers, retries, failed jobs, and eventual consistency instead of assuming dispatch means completion."
+    },
+    {
+      "title": "116. Where does Redis cache make the flow harder to predict?",
+      "body": "A request may return fast cached data instead of hitting the database, but if invalidation is wrong or TTL is poorly chosen, users see stale results and the team often blames controllers or the database first."
+    },
+    {
+      "title": "117. Real case: where do login loops usually come from?",
+      "body": "Usually from session driver issues, cookie domain mistakes, secure-cookie mismatches, reverse-proxy headers, or auth and guest middleware configured in conflicting ways. It is painful because users keep bouncing between login and protected pages."
+    },
+    {
+      "title": "118. Why are redirect loops so frustrating in practice?",
+      "body": "One middleware or controller redirects to another route, and that route is pushed back by another layer to the original place. Without drawing the flow or logging it clearly, teams can waste a lot of time chasing circles."
+    },
+    {
+      "title": "119. When do CSRF mismatch problems commonly appear?",
+      "body": "When sessions expire, cookies are not sent correctly, old tabs use old tokens, domains differ, or the app sits behind a proxy with scheme handling configured incorrectly. These issues often show up more in staging and production than in local development."
+    },
+    {
+      "title": "120. Real case: webhook duplicates should be treated as part of request flow design",
+      "body": "External providers may retry the same webhook multiple times. Without idempotency or duplicate guarding, your request flow can create repeated orders, logs, or status transitions."
+    },
+    {
+      "title": "121. Real case: where do double orders or double payments usually come from?",
+      "body": "From double clicks, client retries, repeated external callbacks, weak transaction boundaries, or business rules with no duplicate protection. This is where request flow must cooperate with constraints and idempotency."
+    },
+    {
+      "title": "122. Real case: local works but production fails because of proxies or headers",
+      "body": "HTTPS termination, trusted proxies, forwarded headers, or host detection mistakes can make URL generation, secure cookies, redirects, or signed URLs behave differently in production."
+    },
+    {
+      "title": "123. Senior tip: the more modern layers you add, the more important it is to explain the flow in very simple words",
+      "body": "For example: which browser request hits which route, which middleware runs, what the controller returns, what payload the frontend receives, which background request fires next, and which side effect moves into a queue. This simple retelling is extremely effective for onboarding and debugging."
+    },
+    {
+      "title": "124. Senior tip: a good flow is not the one with the most technology, but the one that stays predictable",
+      "body": "Whether you use Blade, Livewire, Inertia, or API plus SPA, the important thing is that the next developer can tell where a request started, which path it took, and what final state it produced."
+    },
+    {
+      "title": "125. Why is large-file upload its own request-flow problem instead of just a form with a file input?",
+      "body": "Because it touches web-server limits, PHP ini limits, timeouts, memory, disk storage, validation, background post-processing, and sometimes resumable upload strategy. A large upload can fail before Laravel even reaches your controller.",
+      "code": "upload_max_filesize=50M\npost_max_size=50M\nclient_max_body_size 50M;",
+      "note": "Common mistake: staring only at the controller and validation while forgetting the web-server or PHP limits in front of Laravel."
+    },
+    {
+      "title": "126. Why does upload work locally but fail in staging or production?",
+      "body": "Usually because `upload_max_filesize`, `post_max_size`, proxy timeouts, disk permissions, or storage drivers differ across environments. This is deeply practical because local setups are usually smaller and more forgiving."
+    },
+    {
+      "title": "127. When upload fails, what order should you debug in?",
+      "body": "Ask whether the request reached Laravel at all, whether the web server blocked it first, whether PHP dropped the payload because the file was too large, whether validation failed, whether storage writing failed, and whether post-upload jobs ran correctly."
+    },
+    {
+      "title": "128. Why can an upload never reach the controller even when the route is correct?",
+      "body": "If the payload exceeds the limits of the web server or PHP runtime, the request can be rejected or truncated before the app receives enough data. Many developers waste time debugging controllers when the request never made it there."
+    },
+    {
+      "title": "129. When should you consider direct-to-S3 uploads instead of passing files through the app server?",
+      "body": "When files are large, traffic is high, the app server should not spend bandwidth on uploads, or you want to reduce timeout and memory pressure on the application layer. This is an architectural decision tied directly to request flow."
+    },
+    {
+      "title": "130. Why do uploads often lead to background jobs afterward?",
+      "body": "Because after receiving the file, the app may still need to resize images, generate thumbnails, scan for malware, extract metadata, convert formats, or sync with another system. Doing all of that in the request usually hurts UX."
+    },
+    {
+      "title": "131. Real case: why can upload succeed but the user still see an error?",
+      "body": "The file may have reached storage while the database failed to save metadata, or metadata was saved but a follow-up job failed, or the frontend expected a different response shape. This is a classic cross-layer state mismatch."
+    },
+    {
+      "title": "132. How does Sanctum enter SPA request flow?",
+      "body": "Sanctum lets an SPA use cookie and session style authentication more safely within the right domain setup. This flow is not the same as pure API token auth, and it is not quite the same as traditional Blade web auth either.",
+      "code": "axios.get('/sanctum/csrf-cookie', { withCredentials: true })\n  .then(() => axios.post('/login', payload, { withCredentials: true }));",
+      "note": "If you skip the CSRF-cookie step or misconfigure cookie domains, you can easily get login 200 while later requests still return 401."
+    },
+    {
+      "title": "133. Why do many people still get confused when using Sanctum?",
+      "body": "Because they assume login API success is enough, while the real flow also depends on CSRF cookies, session cookies, same-site policy, stateful domains, and how the browser sends cookies in later requests."
+    },
+    {
+      "title": "134. What does a typical Sanctum SPA auth flow look like?",
+      "body": "Usually the browser fetches the CSRF cookie first, then sends the login request, then the server creates a session, and later requests carry the cookie automatically so the backend can recognize the user. If any link in that chain is missing, login appears to do nothing."
+    },
+    {
+      "title": "135. Why can Sanctum login succeed but the next request still gets 401?",
+      "body": "Often because the cookie is not being sent due to wrong domain, wrong same-site setting, wrong secure setting, wrong `SANCTUM_STATEFUL_DOMAINS`, or the frontend calling from an origin the browser does not treat as stateful."
+    },
+    {
+      "title": "136. When debugging Sanctum, do not stop at the login response; inspect the request after login",
+      "body": "Many developers see a 200 login response and assume auth is finished, but the real question is whether the next request carries the right cookie and whether the backend can read that session."
+    },
+    {
+      "title": "137. Real case: why can login still fail even after the CSRF cookie exists?",
+      "body": "Because the token header may not be sent correctly, a proxy may distort the scheme, the cookie path or domain may not match, or the frontend client may not be configured with `withCredentials` or the equivalent setting."
+    },
+    {
+      "title": "138. At what step does multi-tenancy start changing request flow?",
+      "body": "Right from the moment the request enters the app, the system must know which tenant owns it. Tenant detection may come from a subdomain, a custom domain, a path prefix, a header, or user-linked lookup."
+    },
+    {
+      "title": "139. Why is wrong tenant detection such a dangerous bug?",
+      "body": "Because every later query, policy, cache key, storage path, queue context, and log context may run under the wrong tenant. That is not a UI bug; it is a serious data-leak risk."
+    },
+    {
+      "title": "140. Where should tenant context be set in request flow?",
+      "body": "Usually as early as possible, commonly in middleware. The goal is for services, queries, policies, and cache logic downstream to read one consistent tenant context."
+    },
+    {
+      "title": "141. Real case: why does a single-tenant local setup look fine but production multi-tenant setups break?",
+      "body": "When only one tenant exists, missing scopes often stay invisible. Once real tenants run together, missing query conditions, unscoped cache keys, or shared file paths become obvious immediately."
+    },
+    {
+      "title": "142. Why does cache require extra care in multi-tenant flow?",
+      "body": "If cache keys do not include tenant ID or tenant slug, a request from tenant A may read cached data produced for tenant B. This is a deeply production-minded and extremely frustrating bug."
+    },
+    {
+      "title": "143. Where can queues go wrong in multi-tenant flow?",
+      "body": "A job may be dispatched under tenant A but later handled by a worker that never restores the correct tenant context, leading to queries or writes under the wrong tenant. Beginners miss this often."
+    },
+    {
+      "title": "144. Practical questions you should ask when designing a difficult request flow",
+      "body": "Can this request be retried, can it be blocked before Laravel, does it need idempotency, which side effects should move to queues, does it carry tenant context, which caches may return the wrong data, and what does the user actually see when it fails?"
+    },
+    {
+      "title": "145. Final tip: the more practical the system becomes, the more you should think of request flow as state transitions instead of just file order",
+      "body": "Experienced developers ask less often which file runs first and more often how system state changes step by step. That mindset exposes data bugs, auth bugs, and side-effect bugs much faster."
+    },
+    {
+      "title": "146. Example of a basic web request flow from route to controller",
+      "body": "A short block like this is enough to show that a Laravel request does not magically end up in a view.",
+      "code": "Route::post('/posts', [PostController::class, 'store']);\n\nclass PostController extends Controller\n{\n    public function store(StorePostRequest $request)\n    {\n        $post = Post::create($request->validated());\n\n        return redirect()->route('posts.show', $post);\n    }\n}",
+      "bullets": [
+        "The route matches before the controller action runs.",
+        "`StorePostRequest` blocks invalid input before post-creation logic runs.",
+        "The final response here is a redirect, not automatically JSON or a view."
+      ]
+    },
+    {
+      "title": "147. Example of a Form Request handling validation and authorization in the same flow",
+      "body": "This is one of the places where many Laravel projects become cleaner when split correctly.",
+      "code": "class StorePostRequest extends FormRequest\n{\n    public function authorize(): bool\n    {\n        return $this->user()?->can('create', Post::class) ?? false;\n    }\n\n    public function rules(): array\n    {\n        return [\n            'title' => ['required', 'string', 'max:255'],\n            'body' => ['required', 'string'],\n        ];\n    }\n}",
+      "note": "If the request fails here, the flow has not even reached the controller's core business logic yet. That is a very important debugging boundary."
+    },
+    {
+      "title": "148. Example of an API request returning JSON instead of a redirect",
+      "body": "It is still a request flow, but web flows and API flows end very differently at the response layer.",
+      "code": "Route::post('/api/posts', [ApiPostController::class, 'store']);\n\nreturn response()->json([\n    'data' => $post,\n], 201);",
+      "note": "That response difference cascades into different error formats, auth strategy, client expectations, and production debugging habits."
+    },
+    {
+      "title": "149. Example of middleware blocking a request before it reaches the controller",
+      "body": "This is a place newcomers often forget during debugging, because the controller never runs even though the app already returned a response.",
+      "code": "Route::middleware(['auth', 'verified'])->group(function () {\n    Route::get('/dashboard', [DashboardController::class, 'index']);\n});",
+      "note": "If the request redirects or returns 403 here, the problem is in middleware or auth state rather than the controller's business logic."
+    },
+    {
+      "title": "150. Common mistake when studying request flow, and how to fix it",
+      "body": "A common mistake is studying isolated files, memorizing middleware or controller names, and never seeing how request state changes step by step. The fix is to always retrace the order: where the request enters, where it gets blocked, where it is validated, where queries happen, which side effects stay synchronous or move to the background, and which response finally returns to the user.",
+      "code": "request\n-> web server\n-> public/index.php\n-> middleware\n-> request validation\n-> controller/service\n-> query/transaction\n-> response",
+      "note": "If you can explain this chain in your own words, you understand request flow much better than someone who only memorized file names."
+    }
+  ]
+}

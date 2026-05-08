@@ -1,0 +1,737 @@
+{
+  "anchor": "laravel-async",
+  "type": "list",
+  "heading": "Queues, events, scheduler, and the async processing layer in Laravel",
+  "intro": "This topic gathers the full async layer in Laravel from a practical angle. The goal is not only to know `dispatch()` or `queue:work`, but to understand when work should leave the main request, what a job should contain, how far events should go, what Redis and Horizon contribute, the downsides of retries, why idempotency matters, and how to keep background processing from becoming the most invisible bug zone in the app.",
+  "breaks": [
+    {
+      "start": 1,
+      "title": "I. Async Processing Foundations",
+      "description": "What async means, why queues exist, how sync differs from background work, and how Laravel enters this layer.",
+      "tone": "amber"
+    },
+    {
+      "start": 17,
+      "title": "II. Jobs, Queues, And Workers",
+      "description": "Job design, dispatching, queue connections, workers, delays, timeouts, retries, and the responsibility boundary of background jobs.",
+      "tone": "copper"
+    },
+    {
+      "start": 39,
+      "title": "III. Events, Listeners, And Side-Effect Separation",
+      "description": "Events as things that happened, listeners as reactions, and how to keep event-driven code from turning into a maze.",
+      "tone": "sand"
+    },
+    {
+      "start": 57,
+      "title": "IV. Mail, Notifications, Webhooks, And Async Integrations",
+      "description": "Email, notifications, webhooks, data sync, external APIs, and the very common async use cases found in real applications.",
+      "tone": "amber"
+    },
+    {
+      "start": 75,
+      "title": "V. Scheduler, Cron, And Recurring Work",
+      "description": "Scheduled tasks, cleanup, reconciliation, reports, cron, overlap control, and very common scheduler failures in production.",
+      "tone": "copper"
+    },
+    {
+      "start": 91,
+      "title": "VI. Redis, Horizon, Reliability, And Worker Operations",
+      "description": "Queue backends, Redis, Horizon, worker scaling, dead-letter thinking, queue lag, worker restarts, and observing background systems.",
+      "tone": "sand"
+    },
+    {
+      "start": 109,
+      "title": "VII. Failure, Retry, Idempotency, And Data Consistency",
+      "description": "Job failure, retries, duplicate side effects, transaction boundaries, the illusion of exactly-once, and keeping background workflows from corrupting data.",
+      "tone": "amber"
+    },
+    {
+      "start": 127,
+      "title": "VIII. Testing, Debugging, Production Cases, And Long-Term Thinking",
+      "description": "Queue fakes, async testing, worker observability, debugging lost jobs, and the classic production failures of background systems.",
+      "tone": "copper"
+    }
+  ],
+  "items": [
+    {
+      "title": "1. What does asynchronous processing mean in Laravel?",
+      "body": "It means moving part of the work out of the current request so it can be handled later or elsewhere instead of forcing the user to wait for everything to finish."
+    },
+    {
+      "title": "2. Why do real applications need async work?",
+      "body": "Because sending email, resizing images, calling slow APIs, syncing data, exporting large files, webhook processing, and scheduled reporting should not block user requests."
+    },
+    {
+      "title": "3. How do sync and async differ from the user's point of view?",
+      "body": "Sync makes the user wait for the full result in the same request. Async returns earlier and lets the heavier work continue in the background."
+    },
+    {
+      "title": "4. Is async always better than sync?",
+      "body": "No. Async adds complexity, intermediate states, retries, monitoring, and eventual consistency. Not every task deserves that overhead."
+    },
+    {
+      "title": "5. What is a sign that a task should move to a queue?",
+      "body": "The task is slow, calls external services, is CPU-heavy, can happen later, does not need an immediate result, or risks request timeouts."
+    },
+    {
+      "title": "6. What is a sign that async is being introduced too early?",
+      "body": "The logic is simple, the business requires immediate certainty, or the team is adding pending-state complexity for very little benefit."
+    },
+    {
+      "title": "7. What is the queue used for in Laravel?",
+      "body": "A queue stores jobs waiting to be processed by workers. It helps separate user-facing requests from slow or heavy work.",
+      "code": "use App\\Jobs\\SendInvoiceEmail;\n\nSendInvoiceEmail::dispatch($invoice->id);\n\nreturn response()->json([\n    'message' => 'Invoice accepted for processing.',\n], 202);",
+      "note": "Common mistake: keeping email sending, PDF generation, and slow third-party calls inside the same request. Fix it by returning early and pushing the heavy work into a clear job."
+    },
+    {
+      "title": "8. What is a worker?",
+      "body": "A worker is a long-running background process that continuously pulls jobs from a queue and executes them."
+    },
+    {
+      "title": "9. What is an event in Laravel?",
+      "body": "An event represents something that has already happened in the system, such as `OrderPlaced`, `UserRegistered`, or `InvoicePaid`."
+    },
+    {
+      "title": "10. What is a listener?",
+      "body": "A listener reacts to an event, for example by sending a welcome email or creating an audit log after `UserRegistered` happens."
+    },
+    {
+      "title": "11. What is the scheduler?",
+      "body": "The scheduler lets Laravel define recurring work such as cleanup jobs, daily reports, reconciliation, or reminder tasks through application code."
+    },
+    {
+      "title": "12. How is Redis connected to the async layer?",
+      "body": "Redis is often used as the queue backend, and also as cache, rate limiter, and sometimes session storage. It is common infrastructure for strong async setups."
+    },
+    {
+      "title": "13. What is Horizon?",
+      "body": "Horizon is Laravel's queue dashboard and supervisor for Redis queues, helping you monitor, scale, and manage workers more effectively."
+    },
+    {
+      "title": "14. Why is the async layer often underestimated?",
+      "body": "Because users do not always see it directly. But bugs here can quietly cause missing emails, failed exports, lost webhooks, or inconsistent data."
+    },
+    {
+      "title": "15. What is the most important foundational mindset for async systems?",
+      "body": "Do not only ask whether a job runs. Ask whether it runs correctly, how many times, what happens when it fails, how retries behave, and whether data stays consistent."
+    },
+    {
+      "title": "16. Why is observability tightly tied to async systems?",
+      "body": "Because without logs, metrics, queue lag, failed-job visibility, and traceability, background failures effectively disappear into the dark."
+    },
+    {
+      "title": "17. What should a Laravel job represent?",
+      "body": "A clear unit of work for a worker to execute, such as `SendInvoiceEmail`, `GenerateReportPdf`, or `SyncOrderToERP`.",
+      "code": "namespace App\\Jobs;\n\nuse App\\Services\\ErpSyncService;\nuse Illuminate\\Bus\\Queueable;\nuse Illuminate\\Contracts\\Queue\\ShouldQueue;\nuse Illuminate\\Foundation\\Bus\\Dispatchable;\nuse Illuminate\\Queue\\InteractsWithQueue;\nuse Illuminate\\Queue\\SerializesModels;\n\nclass SyncOrderToErp implements ShouldQueue\n{\n    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;\n\n    public function __construct(public int $orderId)\n    {\n    }\n\n    public function handle(ErpSyncService $erpSyncService): void\n    {\n        $erpSyncService->syncOrder($this->orderId);\n    }\n}",
+      "bullets": [
+        "A good job name tells you exactly what work is expected.",
+        "The constructor should carry just enough data for the worker to execute later."
+      ]
+    },
+    {
+      "title": "18. How small should a good job be?",
+      "body": "Small enough to have clear responsibility and retry boundaries, but not so small that the app becomes a cloud of meaningless micro-steps."
+    },
+    {
+      "title": "19. What does `dispatch()` do?",
+      "body": "It pushes a job into the queue or triggers the configured job dispatch mechanism so the job can be handled later."
+    },
+    {
+      "title": "20. How is `dispatchSync()` different from `dispatch()`?",
+      "body": "`dispatchSync()` runs the job immediately inside the current request. It is useful when a job class is acting like a command object but does not need a real queue."
+    },
+    {
+      "title": "21. Is it a good idea to keep long business logic in the controller and only queue a tiny tail step?",
+      "body": "Usually not if the real concern is background work. The job or orchestration service should carry that responsibility more clearly."
+    },
+    {
+      "title": "22. What should a job constructor contain?",
+      "body": "Usually only the data required to perform the work, such as IDs or a compact payload. Avoid heavy objects, problematic closures, or vague state."
+    },
+    {
+      "title": "23. Why is passing IDs often better than passing full models into jobs?",
+      "body": "Because workers may run seconds or minutes later after database state has changed. Passing IDs and reloading often reflects real current state more reliably.",
+      "code": "// Better\nDispatchInvoiceReminder::dispatch($invoice->id);\n\n// Inside the job\n$invoice = Invoice::query()->findOrFail($this->invoiceId);\n\n// Riskier when state may change\nDispatchInvoiceReminder::dispatch($invoice);",
+      "note": "Common mistake: assuming the object captured at dispatch time still reflects reality when the worker runs. Reload the current state when correctness matters."
+    },
+    {
+      "title": "24. When can model serialization inside a job become surprising?",
+      "body": "When relationships change, records are deleted, or the worker ends up acting on older model state than the developer expected."
+    },
+    {
+      "title": "25. What should a job's `handle()` method do?",
+      "body": "It should execute the main work, call the necessary services, react to failure properly, and leave enough traceability when needed."
+    },
+    {
+      "title": "26. Should a single job call many providers and update many tables at once?",
+      "body": "That requires caution. Overloaded jobs are hard to retry correctly and hard to keep consistent."
+    },
+    {
+      "title": "27. What is a queue connection?",
+      "body": "It is the backend queue system, such as database, Redis, or SQS. Each has different trade-offs around speed, durability, scale, and operations."
+    },
+    {
+      "title": "28. When is the `database` queue a good fit?",
+      "body": "It is convenient for getting started or for smaller systems, though it is usually less powerful than Redis or a dedicated queue service under heavier load."
+    },
+    {
+      "title": "29. What is Redis strong at for queues?",
+      "body": "It is fast, widely used, integrates well with Horizon, and works well for Laravel applications with meaningful background workloads."
+    },
+    {
+      "title": "30. Should different queue names be separated?",
+      "body": "Yes when the app has jobs with different priorities, such as email, media processing, webhooks, and reports. That prevents heavy jobs from blocking more urgent work.",
+      "code": "SendWelcomeEmail::dispatch($user->id)->onQueue('mail');\nGenerateVideoThumbnail::dispatch($video->id)->onQueue('media');\nSyncWebhookToPartner::dispatch($payload)->onQueue('integrations');",
+      "bullets": [
+        "Separate queues protect urgent work from heavy background pipelines.",
+        "Queue names usually map to priority or operational ownership."
+      ]
+    },
+    {
+      "title": "31. When is job delay useful?",
+      "body": "When work should happen later, such as waiting for state to settle, debouncing a repeated action, or sending a reminder after a pause."
+    },
+    {
+      "title": "32. Is delay a replacement for correct state modeling?",
+      "body": "No. Delay only moves the execution time. It does not solve poor state design or race conditions by itself."
+    },
+    {
+      "title": "33. Why does job timeout matter so much?",
+      "body": "A hanging job ties up a worker, increases queue lag, and may be retried or duplicated if timeout and retry settings are misaligned.",
+      "code": "class GenerateLargeExport implements ShouldQueue\n{\n    public int $timeout = 120;\n    public int $tries = 3;\n    public array $backoff = [30, 120, 300];\n}",
+      "note": "Timeout, tries, and backoff should reflect the real external dependency. Treating every job the same usually creates noisy retries."
+    },
+    {
+      "title": "34. How should `tries` and `backoff` be understood?",
+      "body": "`tries` defines max attempts and `backoff` defines wait time between attempts. Bad values either give up too early or create noisy, useless retries."
+    },
+    {
+      "title": "35. Should every job be retried many times?",
+      "body": "No. Some failures are permanent, such as invalid input, missing files, or permission problems. Blind retry just wastes time and resources."
+    },
+    {
+      "title": "36. What is job batching?",
+      "body": "It is grouping related jobs together for coordinated tracking, often useful for large imports, exports, backfills, or multi-step processing."
+    },
+    {
+      "title": "37. What is job chaining?",
+      "body": "It means one job runs after another completes. It is helpful for sequential pipelines but requires careful thinking about mid-chain failures."
+    },
+    {
+      "title": "38. What is a practical job-design tip?",
+      "body": "Every job should have clear input, clear side effects, and a clear definition of success. If you cannot explain those, the job is probably too vague."
+    },
+    {
+      "title": "39. What is the key difference between an event and a job?",
+      "body": "A job is work that must be done. An event is something that already happened. Mixing them makes code harder to read."
+    },
+    {
+      "title": "40. When should an event be fired?",
+      "body": "When a meaningful business occurrence should be available to other parts of the system, such as a user registering or an order being placed.",
+      "code": "OrderPlaced::dispatch($order->id);\n\nclass SendOrderConfirmation implements ShouldQueue\n{\n    public function handle(OrderPlaced $event): void\n    {\n        Mail::to($event->customerEmail)->send(new OrderConfirmedMail($event->orderId));\n    }\n}",
+      "note": "A common mistake is naming an event like a command. `OrderPlaced` reads as a fact. `SendOrderConfirmation` reads as work."
+    },
+    {
+      "title": "41. Should listeners always be queued?",
+      "body": "Not always, but listeners that do heavy work or call external services are often good candidates for queueing."
+    },
+    {
+      "title": "42. How do events reduce coupling?",
+      "body": "The code that raises the event does not need to know all of the side effects. For example, after `OrderPlaced`, email, analytics, and ERP sync can all happen without cluttering the order flow."
+    },
+    {
+      "title": "43. What is the downside of overusing event-driven design?",
+      "body": "Flow becomes hard to trace, side effects become hidden, debugging becomes slower, and new developers cannot easily see what one action really triggers."
+    },
+    {
+      "title": "44. Should events be used for every use case?",
+      "body": "No. In many places, explicit service calls or clear orchestration are easier to understand."
+    },
+    {
+      "title": "45. How should events be named?",
+      "body": "They should describe something that happened, usually in past tense, such as `InvoicePaid`, `UserRegistered`, or `ReportGenerated`."
+    },
+    {
+      "title": "46. What responsibility should a good listener have?",
+      "body": "It should stay focused, clear, testable, and avoid combining too many unrelated side effects."
+    },
+    {
+      "title": "47. Does broadcasting belong to the same general async family?",
+      "body": "It is related, even though its goal is real-time delivery. It still behaves like a reaction to events and often uses queues."
+    },
+    {
+      "title": "48. How do domain events differ from framework events conceptually?",
+      "body": "Domain events reflect core business occurrences, while framework events may describe technical or infrastructure-level happenings. Mixing them muddies the architecture."
+    },
+    {
+      "title": "49. Should events be fired before the database transaction commits?",
+      "body": "Be very careful. If side effects run early and the transaction later rolls back, your system becomes inconsistent."
+    },
+    {
+      "title": "50. Why is `afterCommit` thinking important in async work?",
+      "body": "It ensures background side effects only start after the main database state truly exists and is stable.",
+      "code": "DB::transaction(function () use ($orderData) {\n    $order = Order::query()->create($orderData);\n\n    SyncOrderToErp::dispatch($order->id)->afterCommit();\n});",
+      "note": "Without this guard, a worker can start running against state that is later rolled back, which is how ghost emails and phantom syncs appear."
+    },
+    {
+      "title": "51. What is an event storm?",
+      "body": "It is when one small action emits too many events and listeners, creating resource overhead and making the flow difficult to reason about."
+    },
+    {
+      "title": "52. What is a practical event-design tip?",
+      "body": "If an important use case becomes impossible to trace because too many hidden listeners react to it, the event design has likely gone too far."
+    },
+    {
+      "title": "53. How should listener failure be viewed?",
+      "body": "A queued listener becomes a failed background concern that needs retry or recovery. A synchronous listener can break the original request directly."
+    },
+    {
+      "title": "54. Should listeners trigger more events indefinitely?",
+      "body": "Use great caution. Deep event chains can become a maze of cascading side effects."
+    },
+    {
+      "title": "55. Are events useful for audit?",
+      "body": "Yes when used carefully. Many audit trails and analytics flows naturally begin from clear domain events."
+    },
+    {
+      "title": "56. What is a code smell in event-listener design?",
+      "body": "Everything is an event, listeners trigger more listeners, side effects are hidden everywhere, and nobody wants to touch the system for fear of accidental chain reactions."
+    },
+    {
+      "title": "57. Why is email sending a classic async use case?",
+      "body": "Users usually do not need to wait for an email provider in the request path, and mail delivery depends on external systems that may be slow or unstable.",
+      "code": "Mail::to($user->email)\n    ->queue(new WelcomeMail($user));\n\n$user->notify(\n    (new InvoicePaidNotification($invoiceId))->delay(now()->addMinutes(2))\n);",
+      "bullets": [
+        "Email is a classic queue candidate because user experience rarely depends on sending it inside the same request.",
+        "Notifications also benefit from delay when the app wants a small cooldown before contacting the user."
+      ]
+    },
+    {
+      "title": "58. What do Laravel notifications help with?",
+      "body": "They standardize user notifications across channels such as mail, database, Slack, or broadcast."
+    },
+    {
+      "title": "59. Should a registration flow send email synchronously?",
+      "body": "If the mail provider is slow or unstable, the signup request will suffer. Queueing is usually healthier."
+    },
+    {
+      "title": "60. Why is webhook processing a strong fit for queueing?",
+      "body": "Webhook senders usually only need a fast `2xx`, while the heavy internal work should happen in the background to avoid timeouts and duplicate retries."
+    },
+    {
+      "title": "61. Should syncing data to ERP, CRM, or partner APIs usually be async?",
+      "body": "Very often yes, because outside providers can be slow, fail unpredictably, or require controlled retries without blocking the user request."
+    },
+    {
+      "title": "62. How is large file export a typical async workflow?",
+      "body": "The user requests an export, the app returns a processing state, a background job creates the file, and the user is notified when it is ready."
+    },
+    {
+      "title": "63. Why should large imports often be async too?",
+      "body": "Because parsing, validating, and storing many rows takes time and often needs progress visibility, retries, and detailed error reporting."
+    },
+    {
+      "title": "64. Should every notification be queued?",
+      "body": "Not necessarily, but many notifications involving mail or outside providers should be."
+    },
+    {
+      "title": "65. What is the dangerous side of async integrations?",
+      "body": "It is easy to act as if the request succeeded and everything is done, while the real side effect is still pending, may fail, or may run twice later."
+    },
+    {
+      "title": "66. Is a state like `pending_sync` or `processing` useful?",
+      "body": "Very useful. It gives the UI, support, and backend a shared truth that the work is not finished yet."
+    },
+    {
+      "title": "67. Should users be allowed to trigger the same async action repeatedly without control?",
+      "body": "Be careful. Repeated clicks can create duplicate jobs, duplicate emails, duplicate exports, or duplicate business operations."
+    },
+    {
+      "title": "68. How do debounce or unique-job ideas help?",
+      "body": "They help prevent repeated processing of equivalent work in a short time window, which is useful for sync, reindexing, report regeneration, or cache refresh."
+    },
+    {
+      "title": "69. What extra concerns remain when an external API is called from a job instead of a request?",
+      "body": "You still need timeouts, retries, logging, idempotency, and a clean distinction between network failure and business rejection. Running in the background does not make those concerns disappear."
+    },
+    {
+      "title": "70. How can mail-queue failure affect the business?",
+      "body": "Verification emails, invoices, OTPs, payment confirmations, or password resets arriving late or not at all can break key product flows."
+    },
+    {
+      "title": "71. What is a practical async-integration tip?",
+      "body": "Every important side effect should have enough state and audit information to show that it was scheduled, is running, completed, or failed."
+    },
+    {
+      "title": "72. Should email, notifications, webhooks, and partner sync all live inside one giant job?",
+      "body": "No. A huge job with many side effects is difficult to retry correctly and difficult to understand."
+    },
+    {
+      "title": "73. How does the async layer affect UX?",
+      "body": "A lot. The UI needs to know when to show pending state, when to poll for status, when to refresh, and when to tell the user to retry."
+    },
+    {
+      "title": "74. What is a code smell in async integration work?",
+      "body": "Jobs calling many providers directly, no request IDs, no clear retry policy, no internal state tracking, and support having no obvious place to start debugging."
+    },
+    {
+      "title": "75. What does Laravel's scheduler provide beyond plain cron?",
+      "body": "It lets scheduled behavior live in application code, making recurring tasks easier to review, reason about, and keep inside the project.",
+      "code": "use Illuminate\\Support\\Facades\\Schedule;\n\nSchedule::command('reports:daily-sales')->dailyAt('06:00');\nSchedule::job(new CleanupStaleExports)->hourly();",
+      "note": "A common mistake is spreading recurring logic across many unknown cron entries on the server. Keeping it in app code makes it reviewable."
+    },
+    {
+      "title": "76. How does `schedule:run` work?",
+      "body": "The system cron typically calls `php artisan schedule:run` every minute, and Laravel decides which scheduled tasks are due."
+    },
+    {
+      "title": "77. What kinds of work commonly belong in the scheduler?",
+      "body": "Cleanup, reminder emails, daily reports, reconciliation, data sync, token expiry handling, archiving, and cache refresh."
+    },
+    {
+      "title": "78. Should heavy work run directly in the scheduler callback?",
+      "body": "Usually it is better for the scheduler to dispatch jobs so work can be scaled, retried, and observed more cleanly."
+    },
+    {
+      "title": "79. What does `withoutOverlapping()` do?",
+      "body": "It prevents a new scheduled run from starting while the previous one is still running, which is very useful for long-running reports, sync jobs, or cleanup tasks.",
+      "code": "Schedule::command('billing:reconcile')\n    ->hourly()\n    ->withoutOverlapping()\n    ->onOneServer();",
+      "note": "This is especially important for imports, billing, reconciliation, and cleanup tasks where duplicate overlap can corrupt data."
+    },
+    {
+      "title": "80. When is `onOneServer()` useful?",
+      "body": "When the application runs on multiple servers but a scheduled task should happen only once across the whole system."
+    },
+    {
+      "title": "81. Why can scheduler tasks work locally but not in production?",
+      "body": "Common causes include missing cron setup, wrong user permissions, incorrect PHP path, wrong environment, or unmonitored scheduler processes."
+    },
+    {
+      "title": "82. What is a common scheduler failure pattern?",
+      "body": "A task that people assume runs daily has actually been failing silently for weeks because nobody logs or alerts on it."
+    },
+    {
+      "title": "83. Is the scheduler a good fit for reconciliation work?",
+      "body": "Yes. Many systems use it to compare internal state with external providers and discover missing jobs or webhooks."
+    },
+    {
+      "title": "84. What must be considered in scheduled report generation?",
+      "body": "Data volume, timezone correctness, duplicate runs, output retention, and making sure emails or publishes only happen after generation succeeds."
+    },
+    {
+      "title": "85. How does timezone affect scheduling?",
+      "body": "If user, server, and business timezones differ, tasks may run at the wrong real-world time, report periods may be wrong, and reminders may go out on the wrong day."
+    },
+    {
+      "title": "86. Should the scheduler be used to poll external providers repeatedly?",
+      "body": "It can be, but you must think about rate limits, backoff, and whether webhooks would be a better model."
+    },
+    {
+      "title": "87. Why are scheduled cleanup tasks so important?",
+      "body": "Temp files, expired tokens, stale pending records, old exports, junk cache, and orphaned data accumulate quickly if nothing regularly removes them."
+    },
+    {
+      "title": "88. What is a practical scheduler tip?",
+      "body": "Every important scheduled task should leave a trace of its last run, how much it processed, and whether it succeeded."
+    },
+    {
+      "title": "89. What is a code smell in scheduler design?",
+      "body": "Cron shell scripts scattered outside the repository, with nobody clearly knowing which tasks exist, which are critical, or which are failing."
+    },
+    {
+      "title": "90. Why is the scheduler central to long-term async architecture?",
+      "body": "It becomes the backbone for recurring background responsibilities such as cleanup and reconciliation. Ignoring it means ignoring real backend operations."
+    },
+    {
+      "title": "91. How does Redis queue differ from database queue operationally?",
+      "body": "Redis is usually faster, scales better, and works especially well with Horizon, while database queues are simpler to start with."
+    },
+    {
+      "title": "92. What is Horizon most useful for?",
+      "body": "It gives insight into queue depth, throughput, failed jobs, worker health, tags, and better control over queue processing."
+    },
+    {
+      "title": "93. What is queue lag?",
+      "body": "It is the delay between a job being dispatched and actually being processed. High lag hurts async UX and often signals operational trouble."
+    },
+    {
+      "title": "94. How should workers run in production?",
+      "body": "They should usually be supervised by tools such as Supervisor, systemd, Horizon, or container orchestration so they restart automatically after crashes."
+    },
+    {
+      "title": "95. Why is `queue:restart` important after deployment?",
+      "body": "Workers are long-lived processes and may still be executing old code. Restarting them loads the new code and configuration.",
+      "code": "php artisan queue:restart\nphp artisan horizon:terminate",
+      "bullets": [
+        "Workers are long-lived processes, not per-request PHP scripts.",
+        "Deploying code without restarting workers often explains 'web is new but queue still behaves old'."
+      ]
+    },
+    {
+      "title": "96. What happens if workers are not restarted after deployment?",
+      "body": "The web layer may run the new code while background jobs still execute the old logic, producing confusing split behavior."
+    },
+    {
+      "title": "97. How should worker scaling be approached?",
+      "body": "Based on queue priority, workload type, CPU or I/O behavior, and actual queue lag, not by blindly adding workers."
+    },
+    {
+      "title": "98. How do CPU-bound and I/O-bound jobs differ for scaling?",
+      "body": "CPU-bound jobs such as image or video processing need resource-aware scaling, while I/O-bound jobs such as API calls are dominated by latency and timeout behavior."
+    },
+    {
+      "title": "99. How should failed jobs be viewed?",
+      "body": "As business and operational signals, not only technical logs. A failed job may mean a customer never got an invoice or a sync never happened."
+    },
+    {
+      "title": "100. What is dead-letter thinking?",
+      "body": "It is accepting that some jobs should stop retrying endlessly and be preserved for human inspection instead."
+    },
+    {
+      "title": "101. Should failed jobs be flushed casually?",
+      "body": "No. That can erase the evidence of real bugs and remove the chance of controlled recovery."
+    },
+    {
+      "title": "102. Why are Horizon tags or job tags useful?",
+      "body": "They help you filter by domain such as orders, reports, media, or payments so incident investigation is much faster."
+    },
+    {
+      "title": "103. How should queue priority be designed?",
+      "body": "User-sensitive jobs such as verification emails or payment-related work should not wait behind heavy import or reporting batches."
+    },
+    {
+      "title": "104. What is worker memory leak?",
+      "body": "It is when a long-running worker process gradually consumes more RAM due to job behavior, libraries, or resource handling problems."
+    },
+    {
+      "title": "105. Why can periodic worker restarts still be a healthy practice?",
+      "body": "They help contain long-term memory growth and keep workers more stable over time."
+    },
+    {
+      "title": "106. What is a strong async-operations tip?",
+      "body": "Do not only check whether the queue is technically alive. Watch queue lag, failure rate, retry rate, and completion time for important business workflows."
+    },
+    {
+      "title": "107. What is a bad-smell system in worker operations?",
+      "body": "Nobody knows which workers consume which queues, there is no restart policy, no supervision, and the team only learns about failures when users complain."
+    },
+    {
+      "title": "108. How does a Redis outage affect async work?",
+      "body": "Queues, cache, rate limiting, sessions, and Horizon may all be affected together, so it is rarely just 'a queue issue'."
+    },
+    {
+      "title": "109. Why is retry a double-edged sword?",
+      "body": "It can recover transient errors, but it can also duplicate side effects such as emails, records, or external API calls.",
+      "code": "// Risky if the provider is not idempotent\nCapturePayment::dispatch($paymentId);\n\n// The job must know whether charging twice is possible\n// and whether a provider reference already exists.",
+      "note": "Common mistake: seeing retry only as safety. In payments, stock, emails, or webhooks, retry can also multiply damage."
+    },
+    {
+      "title": "110. What does idempotency mean for a job?",
+      "body": "It means the job can safely run again without creating extra unintended side effects."
+    },
+    {
+      "title": "111. Why is exactly-once processing often an illusion?",
+      "body": "In distributed systems, timeouts, retries, crashes, duplicate delivery, and race conditions make true exactly-once semantics very hard. Most systems instead aim for at-least-once plus idempotency."
+    },
+    {
+      "title": "112. Which jobs especially need idempotency?",
+      "body": "Payment capture, webhook handling, partner sync, important emails, invoice creation, access provisioning, and export generation."
+    },
+    {
+      "title": "113. How can a job become more idempotent?",
+      "body": "Use unique keys, check state before side effects, store idempotency tokens, define transactions carefully, or record which event was already processed.",
+      "code": "$invoice = Invoice::query()->findOrFail($this->invoiceId);\n\nif ($invoice->receipt_sent_at) {\n    return;\n}\n\nMail::to($invoice->customer_email)->send(new ReceiptMail($invoice));\n\n$invoice->forceFill([\n    'receipt_sent_at' => now(),\n])->save();",
+      "note": "Idempotency usually means using a stable business key or persisted state check, not just hoping the queue will behave exactly once."
+    },
+    {
+      "title": "114. How do transaction boundaries relate to async work?",
+      "body": "If a job is dispatched before the main database change commits, the worker may observe incomplete or nonexistent state."
+    },
+    {
+      "title": "115. Where is `afterCommit` thinking especially important?",
+      "body": "In create or update flows where jobs or listeners depend on newly written data being truly committed."
+    },
+    {
+      "title": "116. Where can duplicate jobs come from?",
+      "body": "Repeated clicks, request retries, duplicate webhooks, overlapping scheduled tasks, worker timeouts, interrupted deploys, or multiple code paths dispatching the same work."
+    },
+    {
+      "title": "117. Should jobs that call external providers retry forever?",
+      "body": "No. They need limits, alerts, and a manual-intervention path for failures that cannot heal themselves."
+    },
+    {
+      "title": "118. What is compensation in async workflows?",
+      "body": "It is corrective action taken when one async step succeeds and a later one fails, such as reversing a temporary payment hold or marking a sync for manual recovery."
+    },
+    {
+      "title": "119. How does saga thinking relate here?",
+      "body": "It matters in multi-step workflows with many side effects. It reminds you that one simple database transaction usually cannot cover the entire process."
+    },
+    {
+      "title": "120. What is a classic async data bug?",
+      "body": "An order exists but the email, ERP sync, or payment-side effect quietly failed, so different systems believe different truths about the same business event."
+    },
+    {
+      "title": "121. Why are states like `pending`, `processing`, `failed`, and `completed` useful?",
+      "body": "They let the UI and support understand where a workflow stands instead of pretending everything is complete when it is not."
+    },
+    {
+      "title": "122. How does the outbox pattern connect to async work?",
+      "body": "It helps guarantee that events or follow-up jobs triggered by a database commit are not lost if the application crashes at a sensitive moment."
+    },
+    {
+      "title": "123. What is a practical data-consistency tip?",
+      "body": "Do not think of the queue as mere infrastructure. It is part of the business workflow, and business state must reflect that."
+    },
+    {
+      "title": "124. What is a bad smell in retry and idempotency design?",
+      "body": "Nobody knows which jobs are safe to retry, which ones will duplicate business effects, and people retry things based on instinct."
+    },
+    {
+      "title": "125. When should manual reprocess tools exist?",
+      "body": "When jobs carry high business value, such as invoice sync, export regeneration, webhook resend, or document rebuilding. Good support tooling avoids raw database surgery."
+    },
+    {
+      "title": "126. What does the real reliability of the async layer depend on?",
+      "body": "Not just the queue backend, but also idempotency, observability, retry policy, state modeling, and operational response when failures happen."
+    },
+    {
+      "title": "127. Where should async testing start in Laravel?",
+      "body": "By checking that the right action dispatches the expected job, event, or notification, and then testing each job or listener with clear inputs.",
+      "code": "Queue::fake();\n\n$response = $this->post('/orders', [\n    'product_id' => 5,\n    'quantity' => 2,\n]);\n\n$response->assertCreated();\nQueue::assertPushed(SyncOrderToErp::class);",
+      "note": "The first useful test is often 'did the request dispatch the right background work', not 'did the entire worker infrastructure run'."
+    },
+    {
+      "title": "128. What is `Queue::fake()` useful for?",
+      "body": "It lets you verify that jobs were dispatched without needing real workers in the test suite."
+    },
+    {
+      "title": "129. How do `Bus::fake()` and fake-queue thinking help further?",
+      "body": "They help test orchestration, batches, chains, and whether async flow behaves as designed."
+    },
+    {
+      "title": "130. Is checking that a job was dispatched enough as a test?",
+      "body": "No. You also need tests for job logic, failure paths, idempotency, and the critical side effects.",
+      "code": "$job = new SyncOrderToErp($order->id);\n$service = Mockery::mock(ErpSyncService::class);\n\n$service->shouldReceive('syncOrder')\n    ->once()\n    ->with($order->id);\n\n$job->handle($service);",
+      "bullets": [
+        "Dispatch tests prove orchestration.",
+        "Handle tests prove the job itself does the right work."
+      ]
+    },
+    {
+      "title": "131. Why are background bugs harder to debug than request bugs?",
+      "body": "They happen later, in another process, with retries and pending states, often after the original request context is gone."
+    },
+    {
+      "title": "132. What should be logged for jobs?",
+      "body": "Job class, domain entity ID, correlation ID, attempt number, queue name, latency, and broad failure type. Enough to trace, without leaking sensitive data."
+    },
+    {
+      "title": "133. Which metrics matter for the async subsystem?",
+      "body": "Queue lag, throughput, failed-job count, retry count, processing time, success rate by domain, and time-to-completion for important workflows."
+    },
+    {
+      "title": "134. Where should alerts be placed?",
+      "body": "When failed jobs spike, queue lag rises, workers die, the mail queue stalls, webhook backlog builds up, or report generation breaks its SLA."
+    },
+    {
+      "title": "135. What is a classic production case?",
+      "body": "The web request succeeds, but workers have been dead since the morning, so emails, exports, partner syncs, and notifications pile up silently."
+    },
+    {
+      "title": "136. What is another very real production case?",
+      "body": "A deployment finishes but workers are not restarted, so the web uses new code while background jobs still run the old logic."
+    },
+    {
+      "title": "137. Why is the scheduler often forgotten operationally?",
+      "body": "Because users do not see it directly. But when it fails, cleanup, reconciliation, token expiry, and recurring reports can all stop quietly."
+    },
+    {
+      "title": "138. What is a good playbook when queue backlog grows?",
+      "body": "Check worker health, queue priority, which job types are congested, timeout behavior, queue backend health, recent deploys, and whether a newly introduced heavy job caused the jam."
+    },
+    {
+      "title": "139. What is a good playbook when jobs fail in bulk after a deployment?",
+      "body": "Check configuration drift, missing migrations, workers not restarted, payload serialization changes, or external providers failing at the same time."
+    },
+    {
+      "title": "140. What is a good playbook when users say emails are not arriving?",
+      "body": "Check the mail queue, failed jobs, provider responses, retry loops, queue lag, bounce or suppression behavior, and whether the notification was actually dispatched."
+    },
+    {
+      "title": "141. What is a code smell in the async layer overall?",
+      "body": "Async work is scattered everywhere with no state, no logs, no dashboard, no clear owner, and only gets attention once the system is already burning."
+    },
+    {
+      "title": "142. When does the async layer become a true subsystem?",
+      "body": "When the app has multiple background workflows, multiple queue domains, different SLAs, dedicated observability, and custom support or reprocessing tools."
+    },
+    {
+      "title": "143. Final review: what major areas should an async topic include?",
+      "body": "At minimum it should cover async foundations, jobs-queues-workers, events-listeners, mail-notification-integration, scheduler-cron, Redis-Horizon-operations, retry-idempotency-consistency, testing-debugging, and real production cases."
+    },
+    {
+      "title": "144. What are `ShouldBeUnique` or unique jobs useful for?",
+      "body": "They help prevent the same kind of job from being enqueued too many times, which is very useful for report regeneration, cache refresh, profile sync, or index rebuild work."
+    },
+    {
+      "title": "145. Are unique jobs enough to solve all duplicate problems?",
+      "body": "No. They help at enqueue time, but duplicate side effects still require state modeling and idempotency in the execution layer."
+    },
+    {
+      "title": "146. What is job middleware for in Laravel?",
+      "body": "It lets you wrap shared job behavior such as rate limiting, overlap control, locking, or refined retry behavior without pushing everything into `handle()`."
+    },
+    {
+      "title": "147. Where are `WithoutOverlapping` and lock middleware useful?",
+      "body": "They are very useful when jobs of the same kind should not run in parallel, such as syncing the same tenant, the same order, or the same report."
+    },
+    {
+      "title": "148. How is a queueable listener different from a normal listener?",
+      "body": "A queueable listener turns event reaction into real background work, separating heavy side effects from both the request and the event source more clearly."
+    },
+    {
+      "title": "149. What role do Supervisor or systemd play for workers?",
+      "body": "They keep workers alive, restart them after crashes, and reduce the chance that production depends on someone remembering to run queue commands manually."
+    },
+    {
+      "title": "150. What is a poison job?",
+      "body": "It is a job that keeps failing or hanging every time it is touched, clogging the queue or creating noisy retry loops. It should be isolated and investigated early."
+    },
+    {
+      "title": "151. Why do batch cancellation and partial failure matter?",
+      "body": "In large imports, exports, or backfills, you need to know whether one failed item should stop the whole batch, be skipped, or allow controlled resume."
+    },
+    {
+      "title": "152. When are rate-limited jobs useful?",
+      "body": "When calling providers with quotas, sending large numbers of notifications, or running bulk sync flows where going too fast would trigger throttling or create unnecessary pressure."
+    },
+    {
+      "title": "153. Example of a basic job and how to dispatch it onto the queue",
+      "body": "This is a block worth typing yourself a few times so async work feels concrete.",
+      "code": "class SendInvoiceMail implements ShouldQueue\n{\n    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;\n\n    public function __construct(public int $invoiceId)\n    {\n    }\n\n    public function handle(): void\n    {\n        // load invoice and send mail\n    }\n}\n\nSendInvoiceMail::dispatch($invoice->id);",
+      "note": "Once work enters the queue, the handling flow no longer lives inside the current request. That is where observability and retry thinking begin to matter."
+    },
+    {
+      "title": "154. Example of the scheduler for recurring commands",
+      "body": "The scheduler is easy to overlook even though it strongly affects data and background automation.",
+      "code": "protected function schedule(Schedule $schedule): void\n{\n    $schedule->command('reports:daily')->dailyAt('01:00');\n    $schedule->command('cleanup:temp-files')->hourly();\n}",
+      "bullets": [
+        "The operating-system cron must actually call the scheduler reliably.",
+        "Background commands should emit at least minimal success or failure signals.",
+        "If a task is heavy, consider dispatching jobs instead of doing all the work inside the command."
+      ]
+    },
+    {
+      "title": "155. Example of an event with a queueable listener",
+      "body": "This is a common way to move side effects away from the main business flow while keeping an event-driven mindset.",
+      "code": "class OrderPaid\n{\n    use Dispatchable, SerializesModels;\n\n    public function __construct(public Order $order)\n    {\n    }\n}\n\nclass SendReceiptListener implements ShouldQueue\n{\n    public function handle(OrderPaid $event): void\n    {\n        Mail::to($event->order->user)->send(new ReceiptMail($event->order));\n    }\n}",
+      "note": "When the listener is queueable, the event can be emitted quickly while heavier side effects run in the background instead of delaying the request."
+    },
+    {
+      "title": "156. Final assessment after review: is the async topic detailed enough?",
+      "body": "For a learning portal, this is now fairly complete: foundations, jobs-workers-events, async integrations, scheduler, Redis-Horizon, retry and idempotency, observability, support playbooks, and production cases are all covered. If you want to go deeper later, the best next split would be one dedicated site for queue reliability, one for event-driven workflows, and one for scheduler operational playbooks."
+    }
+  ]
+}

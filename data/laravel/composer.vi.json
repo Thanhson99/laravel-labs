@@ -1,0 +1,331 @@
+{
+  "anchor": "laravel-composer",
+  "type": "list",
+  "heading": "Composer, package và thư mục vendor: phần ít hào nhoáng nhưng cực thực chiến",
+  "intro": "Site này nên được học theo góc nhìn làm dự án thật, không chỉ theo kiểu định nghĩa công cụ. Khi đụng Laravel ngoài đời, bạn sẽ clone project, cài package, gặp lỗi version, thiếu extension, thiếu `vendor`, autoload sai, package xung đột, hoặc muốn custom hành vi mà không được sửa bừa trong `vendor/`.",
+  "breaks": [
+    {
+      "start": 1,
+      "title": "Nền Tảng Composer",
+      "description": "Composer là gì, `composer.json` và `composer.lock` khác nhau ra sao, và vì sao chúng ảnh hưởng trực tiếp tới clone, deploy, teamwork.",
+      "tone": "amber"
+    },
+    {
+      "start": 4,
+      "title": "Flow Clone Project và Bootstrap Ban Đầu",
+      "description": "Những gì thường xảy ra sau khi kéo project Laravel về máy: `vendor/`, `install`, `key:generate`, môi trường và lỗi cài đặt.",
+      "tone": "copper"
+    },
+    {
+      "start": 9,
+      "title": "Autoload, Vendor và Custom Package",
+      "description": "Cách hiểu `autoload`, vì sao không sửa `vendor/`, khi nào nên bọc package, fork package hoặc tách lib riêng.",
+      "tone": "olive"
+    },
+    {
+      "start": 13,
+      "title": "Nhóm Lệnh Composer Hay Dùng",
+      "description": "Từ `install`, `update`, `require` tới `dump-autoload`, `show`, `why-not`, `audit` và các lệnh tra cứu dependency graph.",
+      "tone": "ocean"
+    },
+    {
+      "start": 22,
+      "title": "Tư Duy Dài Hạn với Dependency",
+      "description": "Cách đọc tính cách của project qua `composer.json`, nhóm package phổ biến và mindset chọn package đúng thay vì chọn nhiều.",
+      "tone": "slate"
+    }
+  ],
+  "items": [
+    {
+      "title": "Composer là gì trong một dự án Laravel thật",
+      "body": "Composer không chỉ là lệnh cài package. Nó là dependency manager của cả project PHP. `composer.json` mô tả app cần những gì. `composer.lock` đóng băng phiên bản đã giải được. `vendor/` chứa code package thực tế được kéo về để app chạy."
+    },
+    {
+      "title": "`composer.json` và `composer.lock` khác nhau ở đâu?",
+      "body": "`composer.json` là file khai báo mong muốn của project: cần package nào, chấp nhận version ở khoảng nào, autoload ra sao, script nào chạy sau cài đặt, có package dev nào không. `composer.lock` là kết quả Composer đã giải dependency tại một thời điểm cụ thể: mỗi package chốt ở version nào, kéo theo dependency con nào, checksum ra sao. Nói ngắn gọn: `composer.json` là ý định, `composer.lock` là trạng thái đã khóa để mọi máy dựng ra cùng một bộ dependency.",
+      "bullets": [
+        "`composer.json`: team nói 'project này muốn những package nào và chấp nhận khoảng version nào'.",
+        "`composer.lock`: Composer trả lời 'tôi đã giải ra đúng bộ package/version này rồi, cứ dùng lại bộ này'.",
+        "Khi clone project, `composer install` chủ yếu đọc `composer.lock` chứ không tự ý giải mới từ đầu."
+      ],
+      "code": "{\n  \"require\": {\n    \"laravel/framework\": \"^11.0\",\n    \"spatie/laravel-permission\": \"^6.0\"\n  }\n}\n\n{\n  \"packages\": [\n    {\n      \"name\": \"laravel/framework\",\n      \"version\": \"v11.x.x\"\n    }\n  ]\n}",
+      "note": "Nếu `composer.json` đổi mà `composer.lock` chưa được cập nhật đúng cách, team rất dễ gặp lệch dependency giữa các máy."
+    },
+    {
+      "title": "Hai file đó ảnh hưởng gì tới clone, deploy và làm việc nhóm?",
+      "body": "Ảnh hưởng rất lớn. Với app Laravel, `composer.lock` giúp dev A, dev B, CI và production cài ra cùng một bộ package thay vì mỗi nơi tự ra một kết quả khác nhau. Nếu chỉ có `composer.json` mà không khóa bằng `composer.lock`, cùng một lệnh cài ở hai thời điểm khác nhau có thể kéo về dependency khác nhau và sinh bug rất khó đoán.",
+      "bullets": [
+        "Clone project: cần `composer.lock` để dựng đúng môi trường dependency của team.",
+        "Deploy: nên dùng `composer install` để production bám đúng lock file.",
+        "Review code: nếu thấy `composer.lock` đổi, nên hiểu là dependency graph của project cũng đã đổi theo."
+      ],
+      "note": "Với application như Laravel app, thường phải commit cả `composer.json` và `composer.lock`. Khác với library thuần PHP, nơi câu chuyện có thể linh hoạt hơn."
+    },
+    {
+      "title": "Vừa clone dự án về mà không thấy `vendor/` thì làm gì?",
+      "body": "Đó là chuyện bình thường. Hầu hết team không đẩy `vendor/` lên git vì thư mục này rất lớn, có thể tái tạo và không nên version-control. Sau khi clone về, việc đầu tiên thường là đọc `README`, kiểm tra phiên bản PHP cần dùng, rồi chạy `composer install` để kéo dependency đúng theo `composer.lock`.",
+      "bullets": [
+        "Kiểm tra xem project yêu cầu `PHP`, `Composer`, `Node`, `DB`, `.env` hay service nào khác.",
+        "Nếu chưa có file `.env`, thường sẽ cần copy từ `.env.example` rồi cấu hình tiếp.",
+        "Nếu project có cả frontend, sau Composer thường còn phải chạy thêm `npm install`."
+      ],
+      "code": "git clone <repo-url>\ncd <project-folder>\ncomposer install\ncp .env.example .env\nphp artisan key:generate",
+      "note": "Chạy `composer install` vì bạn muốn dựng lại đúng môi trường dependency mà project đã khóa sẵn, không phải tự ý nâng package lên phiên bản mới.",
+      "links": [
+        {
+          "href": "./php-commands.html",
+          "label": "Xem site Lệnh PHP & Artisan",
+          "desc": "Giải thích kỹ vì sao chạy `php artisan key:generate`, `migrate`, `serve`, `config:clear` và các lệnh nền khi mới dựng project."
+        }
+      ]
+    },
+    {
+      "title": "Tại sao sau `composer install` lại hay có thêm `php artisan key:generate`?",
+      "body": "Vì nhiều project Laravel cần `APP_KEY` để mã hóa session, cookie, signed value và một số dữ liệu nhạy cảm khác. Khi mới copy `.env.example` sang `.env`, key này thường chưa có hoặc đang là placeholder. `php artisan key:generate` sẽ tạo key phù hợp rồi ghi vào `.env` để app chạy đúng và tránh lỗi như 'No application encryption key has been specified'.",
+      "bullets": [
+        "Không phải mọi lệnh `php artisan` đều liên quan tới Composer, nhưng sau bước dựng dependency thì chúng thường là bước kế tiếp để hoàn tất bootstrap app.",
+        "`key:generate` giải quyết cấu hình ứng dụng, không cài package.",
+        "Nhiều project sau đó còn cần `php artisan migrate`, `storage:link`, `config:clear` hoặc `optimize:clear` tùy trạng thái repo."
+      ],
+      "code": "cp .env.example .env\nphp artisan key:generate\nphp artisan migrate",
+      "links": [
+        {
+          "href": "./php-commands.html",
+          "label": "Mở topic lệnh `php` riêng",
+          "desc": "Topic này gom toàn bộ lệnh khởi tạo, database, cache, queue và debug của Laravel để bạn hiểu theo nhóm công việc."
+        }
+      ]
+    },
+    {
+      "title": "`composer install` khác `composer update` ở chỗ nào?",
+      "body": "`composer install` cài đúng phiên bản đã khóa trong `composer.lock`, rất phù hợp khi clone project hoặc deploy để tránh lệch môi trường. `composer update` thì đi giải lại version theo constraint trong `composer.json`, nghĩa là có thể kéo phiên bản mới hơn và làm thay đổi `composer.lock`. Dự án thật thường cần phân biệt cực rõ hai lệnh này.",
+      "code": "composer install\ncomposer update\ncomposer update spatie/laravel-permission",
+      "bullets": [
+        "`install`: dựng lại đúng dependency hiện tại của team.",
+        "`update`: giải lại version, có thể làm thay đổi hành vi project.",
+        "`update <package>`: chỉ update có kiểm soát một package cụ thể."
+      ],
+      "note": "Nếu bạn chỉ muốn chạy project sau khi clone về thì gần như luôn bắt đầu bằng `composer install`, không phải `composer update`."
+    },
+    {
+      "title": "Khi nào `composer.lock` nên thay đổi và khi nào không?",
+      "body": "Lock file nên thay đổi khi bạn chủ động thêm package, remove package, update package hoặc làm thay đổi dependency graph. Nếu bạn chỉ sửa code trong `app/` mà `composer.lock` tự nhiên đổi thì đó là tín hiệu cần kiểm tra lại. Trong review, thay đổi lock file luôn đáng được nhìn kỹ vì nó ảnh hưởng toàn bộ môi trường chạy.",
+      "bullets": [
+        "Thêm package mới: `composer.json` đổi, `composer.lock` cũng nên đổi.",
+        "Update package: lock file sẽ đổi để chốt version mới.",
+        "Không động gì tới dependency mà lock file vẫn đổi: cần xem lại bạn đã chạy lệnh gì."
+      ]
+    },
+    {
+      "title": "Cách đọc nhanh `composer.json` khi vừa mở một repo lạ",
+      "body": "Đừng chỉ nhìn `require`. Hãy đọc cả `require-dev`, `autoload`, `autoload-dev`, `scripts`, `config`, `extra`, `repositories`. Chỉ vài phút với file này là bạn đã biết project dùng framework version nào, test bằng gì, quality tool nào đang có, có package nội bộ không, và sau install thì script nào sẽ tự chạy."
+    },
+    {
+      "title": "Những lỗi cực hay gặp khi chạy `composer install`",
+      "body": "Các lỗi phổ biến gồm: sai version PHP, thiếu extension như `ext-mbstring`, `ext-zip`, `ext-bcmath`, xung đột package, `composer.lock` quá cũ so với PHP hiện tại, hoặc package không tương thích với version Laravel đang dùng. Cách xử lý đúng là đọc kỹ error đầu tiên, không đoán mò theo cảm giác.",
+      "bullets": [
+        "Lỗi `Your lock file does not contain a compatible set of packages` thường liên quan tới version PHP hoặc conflict package.",
+        "Lỗi thiếu `ext-*` nghĩa là máy bạn thiếu PHP extension mà package yêu cầu.",
+        "Lỗi script sau install có thể đến từ `post-autoload-dump` hoặc artisan command chạy sau Composer."
+      ],
+      "code": "php -v\ncomposer check-platform-reqs\nphp --ini\ncomposer install -vvv",
+      "note": "`composer install -vvv` hữu ích khi cần nhìn log chi tiết hơn để biết Composer đang fail ở bước nào."
+    },
+    {
+      "title": "Autoload, PSR-4 và vì sao class trong `app/` tự tìm thấy nhau",
+      "body": "Composer quản lý autoload cho project. Với chuẩn `PSR-4`, namespace được map vào thư mục. Nếu bạn tạo class mới mà Laravel không nhận, một nguyên nhân hay gặp là namespace sai, tên file sai hoặc cần `composer dump-autoload` để cập nhật lại map autoload.",
+      "code": "composer dump-autoload\ncomposer dump-autoload -o",
+      "bullets": [
+        "`dump-autoload`: refresh lại autoload map.",
+        "`dump-autoload -o`: tối ưu autoload, hay dùng hơn ở production hoặc khi cần map class gọn hơn."
+      ],
+      "note": "Nếu class không load được, trước tiên hãy kiểm tra namespace và đường dẫn file trước khi đổ lỗi cho Composer."
+    },
+    {
+      "title": "Không sửa trực tiếp trong `vendor/` trừ khi bạn biết rõ hậu quả",
+      "body": "Đây là nguyên tắc cực quan trọng. `vendor/` là code được tái tạo từ dependency. Nếu sửa trực tiếp trong đó, lần sau chạy `composer install` hoặc update là sửa đổi sẽ mất. Tệ hơn nữa, team khác clone về cũng không có thay đổi đó. Nếu cần custom hành vi, hãy tìm hook chính thức, config, macro, extend class, override service provider hoặc fork package có kiểm soát.",
+      "code": "php artisan vendor:publish\ncomposer update <package-name>",
+      "bullets": [
+        "`vendor:publish` dùng khi package cho phép publish config, view, migration hoặc asset ra ngoài để custom đúng cách.",
+        "Nếu package không cho custom qua hook chính thức, mới cân nhắc wrapper, override binding hoặc fork."
+      ],
+      "note": "Sửa trong `vendor/` thường chỉ là giải pháp tạm bợ lúc hoảng. Về lâu dài nó gần như luôn quay lại cắn bạn hoặc cắn team."
+    },
+    {
+      "title": "Nếu package chưa hợp ý thì nên custom theo cách nào?",
+      "body": "Thứ tự tư duy thường là: xem package có config không, có event hay extension point không, có thể bind interface khác không, có thể viết wrapper hoặc adapter không. Nếu thật sự bị chặn, hãy cân nhắc fork package hoặc tách logic riêng của bạn ra thành service hoặc local package thay vì chọc thẳng vào `vendor/`.",
+      "bullets": [
+        "Custom nhẹ: config, view publish, event listener, macro, service container binding.",
+        "Custom vừa: wrapper service, adapter, facade riêng, class kế thừa.",
+        "Custom nặng: fork package, local package, hoặc viết lại phần cần thiết."
+      ]
+    },
+    {
+      "title": "Khi nào nên tự tạo lib, package nội bộ hoặc module riêng?",
+      "body": "Nếu một đoạn logic đủ lớn, được tái dùng ở nhiều project, có ranh giới rõ và không nên nằm lẫn trong `app/`, đó là lúc nghĩ tới local package hoặc internal library. Nhưng đừng tách quá sớm chỉ vì muốn đẹp kiến trúc. Chỉ tách khi lợi ích reuse, isolation hoặc versioning thực sự rõ.",
+      "code": "\"autoload\": {\n  \"psr-4\": {\n    \"App\\\\\": \"app/\",\n    \"Domain\\\\Shared\\\\\": \"src/Domain/Shared/\"\n  }\n}",
+      "note": "Trước khi tách thành package thật, nhiều team sẽ thử tách nội bộ bằng namespace và thư mục riêng trong chính project để xem logic đó có thật sự đủ ổn định hay chưa."
+    },
+    {
+      "title": "`composer install`: lệnh dựng dependency chuẩn khi clone hoặc deploy",
+      "body": "Đây gần như là lệnh đầu tiên khi bạn vừa clone một Laravel app hoặc deploy lên môi trường mới. Nó đọc `composer.lock` để cài đúng bộ package mà project đã khóa, giúp các máy khác nhau không tự resolve ra version mới linh tinh.",
+      "code": "composer install\ncomposer install --no-dev --optimize-autoloader",
+      "bullets": [
+        "Dùng khi vừa clone project, dựng CI, dựng staging hoặc production.",
+        "Dùng vì bạn muốn bám đúng dependency hiện tại của team.",
+        "Biến thể `--no-dev` thường hợp cho production để bỏ package dev.",
+        "Biến thể `--optimize-autoloader` giúp autoload gọn hơn khi deploy."
+      ],
+      "note": "Nếu mục tiêu chỉ là chạy project hiện có, hãy nghĩ `install` trước khi nghĩ `update`."
+    },
+    {
+      "title": "`composer update`: chỉ dùng khi bạn chủ động thay đổi dependency",
+      "body": "Lệnh này giải lại version dựa trên constraint trong `composer.json`, nên có thể kéo package mới hơn và làm thay đổi `composer.lock`. Nó không phải lệnh mặc định để 'chạy thử project'.",
+      "code": "composer update\ncomposer update spatie/laravel-permission",
+      "bullets": [
+        "Dùng khi bạn muốn nâng package hoặc làm mới dependency graph.",
+        "Dùng `composer update <package-name>` khi chỉ muốn update có kiểm soát một package.",
+        "Sau khi update, cần đọc kỹ thay đổi trong `composer.lock` và chạy test lại."
+      ],
+      "note": "Nhiều bug môi trường bắt đầu từ việc ai đó vô thức chạy `composer update` rồi commit lock file mới."
+    },
+    {
+      "title": "`composer require` và `composer require --dev`: thêm package mới đúng ngữ cảnh",
+      "body": "Khi project cần thư viện mới, đây là lệnh chính thống để thêm package và đồng thời cập nhật cả `composer.json` lẫn `composer.lock`. Bản `--dev` dành cho package chỉ phục vụ môi trường phát triển hoặc test.",
+      "code": "composer require spatie/laravel-permission\ncomposer require --dev barryvdh/laravel-debugbar",
+      "bullets": [
+        "Dùng `require` cho package chạy cùng app trên production.",
+        "Dùng `require --dev` cho tool debug, test, code style, local-only.",
+        "Sau khi require package Laravel, thường cần đọc docs để biết có phải publish config, migrate hay register gì thêm không."
+      ]
+    },
+    {
+      "title": "`composer remove`: gỡ package sạch thay vì xóa tay trong file",
+      "body": "Nếu một package không còn cần nữa, dùng `composer remove` để gỡ dependency đúng cách. Composer sẽ cập nhật lại file manifest và lock, thay vì để project ở trạng thái nửa còn nửa mất.",
+      "code": "composer remove laravel/sanctum",
+      "bullets": [
+        "Dùng khi bạn thật sự bỏ package khỏi project.",
+        "Sau khi remove, kiểm tra lại config, service provider, migration, code import và tài liệu onboarding liên quan."
+      ]
+    },
+    {
+      "title": "`composer dump-autoload` và `composer dump-autoload -o`: sửa autoload hoặc tối ưu map class",
+      "body": "Khi bạn thêm class mới, đổi namespace, đổi thư mục hoặc nghi ngờ autoload bị lệch, đây là lệnh rất đáng thử. Bản `-o` tạo optimized class map, thường dùng thêm trong production build hoặc khi muốn autoload rõ ràng hơn.",
+      "code": "composer dump-autoload\ncomposer dump-autoload -o",
+      "bullets": [
+        "Dùng khi gặp lỗi `Class not found` nhưng code tưởng như đã đúng.",
+        "Dùng sau khi đổi namespace hoặc cấu trúc thư mục liên quan tới PSR-4.",
+        "Nếu vẫn lỗi sau khi dump, quay lại kiểm tra namespace, path file và `autoload` trong `composer.json`."
+      ]
+    },
+    {
+      "title": "`composer show`, `why`, `why-not`: bộ lệnh đọc dependency graph",
+      "body": "Đây là nhóm lệnh cực hữu ích khi bạn muốn hiểu project đang cài gì, package nào kéo package kia vào, hoặc vì sao một version cụ thể không thể cài được.",
+      "code": "composer show\ncomposer show spatie/laravel-permission\ncomposer why symfony/console\ncomposer why-not laravel/framework 12.0",
+      "bullets": [
+        "`show`: xem toàn bộ package hiện có hoặc chi tiết một package cụ thể.",
+        "`why`: trả lời 'package này xuất hiện trong project vì ai kéo nó vào?'.",
+        "`why-not`: trả lời 'vì sao version/package này không thể cài ngay bây giờ?'."
+      ],
+      "note": "Khi debug xung đột dependency, `why` và `why-not` tiết kiệm rất nhiều thời gian so với đoán mò."
+    },
+    {
+      "title": "`composer outdated`: kiểm tra project đang cũ ở đâu trước khi nâng cấp",
+      "body": "Lệnh này giúp nhìn nhanh package nào đang có bản mới hơn. Nó đặc biệt hữu ích trước một đợt cleanup, audit kỹ thuật hoặc chuẩn bị nâng Laravel hay package quan trọng.",
+      "code": "composer outdated",
+      "bullets": [
+        "Dùng khi muốn lên kế hoạch nâng cấp thay vì update mù.",
+        "Kết hợp tốt với changelog package và test suite trước khi quyết định nâng."
+      ]
+    },
+    {
+      "title": "`composer check-platform-reqs`: kiểm tra máy hiện tại có đáp ứng requirement không",
+      "body": "Nhiều lỗi Composer thực ra không phải lỗi package mà là lỗi môi trường: sai version PHP, thiếu extension như `mbstring`, `zip`, `bcmath`, `intl` hoặc extension database. Lệnh này giúp xác nhận nền tảng hiện tại có khớp yêu cầu hay không.",
+      "code": "composer check-platform-reqs",
+      "bullets": [
+        "Dùng khi project clone về mà install fail khó hiểu.",
+        "Rất hữu ích khi đổi máy, đổi Docker image hoặc setup CI mới."
+      ]
+    },
+    {
+      "title": "`composer validate`, `composer audit`, `composer clear-cache`: nhóm lệnh ít dùng hơn nhưng rất đáng biết",
+      "body": "Đây không phải nhóm lệnh chạy hàng giờ như `install` hay `require`, nhưng lại rất hữu ích ở những tình huống đúng của nó: kiểm tra file manifest, rà lỗ hổng bảo mật và dọn cache khi Composer cư xử kỳ lạ.",
+      "code": "composer validate\ncomposer audit\ncomposer clear-cache",
+      "bullets": [
+        "`validate`: kiểm tra `composer.json` có hợp lệ và sạch cảnh báo cơ bản không.",
+        "`audit`: rà package có advisory bảo mật đã biết hay không.",
+        "`clear-cache`: dùng khi nghi cache cũ hoặc metadata lỗi đang làm Composer hành xử bất thường."
+      ]
+    },
+    {
+      "title": "Nhìn `composer.json` để đọc 'tính cách' của dự án",
+      "body": "Một `composer.json` cho bạn biết rất nhiều: framework version, package auth nào đang dùng, công cụ test gì, tool quality nào đã có, script nào chạy sau cài đặt, có local package hay path repository không. Nhiều khi chỉ cần đọc file này là đã hiểu khá nhiều về độ trưởng thành của project."
+    },
+    {
+      "title": "Package phổ biến trong hệ Laravel và tư duy dùng chúng",
+      "body": "Ngoài package lõi như `laravel/sanctum`, `laravel/tinker`, bạn sẽ hay gặp nhóm `spatie/*`, `barryvdh/*`, `maatwebsite/excel`, `livewire/livewire`, `inertiajs/*`, tool debug, permission, media hoặc activity log. Đừng học chúng như một danh sách tên. Hãy nhóm chúng theo bài toán: auth, file, admin, permission, debug, import-export, frontend integration."
+    },
+    {
+      "title": "Tư duy chọn package: ít hơn nhưng đúng hơn",
+      "body": "Chỉ thêm package khi bạn hiểu bài toán, hiểu tradeoff và biết cách bỏ nó ra nếu cần. Hãy xem package đó có còn được maintain không, tài liệu có rõ không, có khóa chặt vào version Laravel nào không, có rủi ro bảo mật không, và có làm app phụ thuộc quá mạnh vào implementation riêng của package đó không."
+    },
+    {
+      "title": "Tư duy khi đã làm nhiều dự án hơn",
+      "body": "Làm một hai project đầu thường khiến Composer trông như công cụ cài thư viện. Nhưng làm nhiều dự án hơn bạn sẽ thấy đây còn là bài toán đồng bộ môi trường, kiểm soát dependency graph, quản lý version, giảm rủi ro nâng cấp và giữ codebase không lệ thuộc bừa bãi vào package ngoài."
+    },
+    {
+      "title": "274. `scripts` trong `composer.json` đáng để đọc vì sao?",
+      "body": "Nhiều project gắn các bước hậu cài đặt hoặc hậu update vào `post-autoload-dump`, `post-install-cmd`, `post-update-cmd`. Nếu bạn không đọc phần này, bạn sẽ dễ thắc mắc vì sao vừa chạy Composer xong mà app tự chạy thêm lệnh khác."
+    },
+    {
+      "title": "275. Case thật: merge conflict ở `composer.lock` không nên sửa kiểu đoán mò",
+      "body": "Lock file là dependency graph đã giải ra, không phải file text thường. Nếu conflict phức tạp, cách an toàn hơn thường là hiểu nhánh nào đang đổi package gì rồi cho Composer giải lại có kiểm soát thay vì chắp vá bằng tay."
+    },
+    {
+      "title": "276. Khi nào `minimum-stability` hoặc `prefer-stable` trở thành thứ cần hiểu?",
+      "body": "Khi project kéo package alpha, beta, dev branch hoặc package nội bộ chưa stable. Đây là vùng người mới ít đụng, nhưng dự án thật đôi khi phải dùng vì lý do tương thích hoặc custom package."
+    },
+    {
+      "title": "277. Case thật: máy local cài được nhưng CI hoặc production fail vì platform requirement",
+      "body": "Một package có thể cần extension PHP, version PHP hoặc binary nào đó mà local bạn đang có sẵn nhưng CI không có. Vì vậy dependency đúng không chỉ là tên package, mà còn là platform nó cần để chạy."
+    },
+    {
+      "title": "278. Nếu bắt buộc phải vá package bên ngoài, hãy nghĩ tới patch có kiểm soát trước khi nghĩ tới sửa `vendor/`",
+      "body": "Fork package, path repository, patch package hoặc wrapper riêng thường bền hơn nhiều so với sửa tay trong `vendor/`. Điều quan trọng là team sau còn nhìn ra mình đã custom ở đâu và vì sao."
+    },
+    {
+      "title": "279. Tip bổ sung: dependency tốt không phải dependency nhiều, mà là dependency mà team còn dám nâng cấp",
+      "body": "Có những project kéo package rất nhanh ở giai đoạn đầu rồi vài năm sau không ai dám update gì nữa. Đó là dấu hiệu hệ sinh thái package đã vượt quá khả năng kiểm soát của team."
+    },
+    {
+      "title": "280. Ví dụ flow clone project Laravel có Composer để chạy được lần đầu",
+      "body": "Đây là chuỗi lệnh rất điển hình khi bạn vừa clone một repo Laravel về máy.",
+      "code": "composer install\ncp .env.example .env\nphp artisan key:generate\nphp artisan migrate\nnpm install\nnpm run dev",
+      "bullets": [
+        "`composer install` cài đúng dependency theo `composer.lock`.",
+        "Copy `.env` để app có config runtime tối thiểu.",
+        "`php artisan key:generate` tạo `APP_KEY` để session, encryption và nhiều phần khác hoạt động đúng.",
+        "`php artisan migrate` dựng schema cần thiết cho database.",
+        "Nếu repo có frontend, bạn còn phải cài npm package và build/dev asset."
+      ]
+    },
+    {
+      "title": "281. Ví dụ vài lệnh Composer thường dùng và ngữ cảnh thật",
+      "body": "Khi đã vào dự án, bạn sẽ gặp những lệnh này nhiều hơn mức tưởng tượng.",
+      "code": "composer require laravel/sanctum\ncomposer require --dev pestphp/pest\ncomposer remove vendor/package\ncomposer dump-autoload\ncomposer why laravel/framework\ncomposer why-not laravel/framework 12.0",
+      "bullets": [
+        "`require` thêm dependency runtime thật cho app.",
+        "`require --dev` thêm tool chỉ phục vụ phát triển hoặc test.",
+        "`remove` dọn package không còn dùng.",
+        "`dump-autoload` rất hữu ích khi namespace hoặc file autoload vừa đổi.",
+        "`why` và `why-not` cực kỳ hợp khi debug conflict hoặc chuẩn bị upgrade."
+      ]
+    },
+    {
+      "title": "282. Ví dụ phần `composer.json` và ý nghĩa thực tế của từng khối",
+      "body": "Đọc được file này giúp bạn hiểu project đang phụ thuộc vào gì và boot runtime ra sao.",
+      "code": "{\n  \"require\": {\n    \"php\": \"^8.2\",\n    \"laravel/framework\": \"^11.0\"\n  },\n  \"require-dev\": {\n    \"pestphp/pest\": \"^2.0\"\n  },\n  \"autoload\": {\n    \"psr-4\": {\n      \"App\\\\\": \"app/\"\n    }\n  },\n  \"scripts\": {\n    \"post-autoload-dump\": [\n      \"Illuminate\\\\Foundation\\\\ComposerScripts::postAutoloadDump\",\n      \"@php artisan package:discover --ansi\"\n    ]\n  }\n}",
+      "note": "`require` nói app cần gì để chạy, `require-dev` nói team cần gì để phát triển, `autoload` quyết định namespace map, còn `scripts` mô tả các hook Composer sẽ chạy quanh lifecycle cài đặt."
+    }
+  ]
+}

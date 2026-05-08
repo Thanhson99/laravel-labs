@@ -1,0 +1,597 @@
+{
+  "heading": "DevOps",
+  "intro": "The `devops` question bank is focused on runtime, deploys, environment, queue workers, proxies, health checks, incidents, and cost. In this branch, interviewers are not only asking whether you know a command; they are asking whether you understand how the system behaves when it fails, scales, deploys, rolls back, or stops behaving as nicely as local development.",
+  "questionNumbered": true,
+  "questionStyle": "interview",
+  "breaks": [
+    {
+      "start": 1,
+      "title": "Runtime Environment, Config, And Process Behavior",
+      "description": "Questions about local, staging, production, config, secrets, containers, and runtime processes.",
+      "tone": "amber"
+    },
+    {
+      "start": 11,
+      "title": "Deploys, Rollbacks, And Release Safety",
+      "description": "Focused on shipping safely, migration risk, release checklists, rollback strategy, and blast-radius reduction.",
+      "tone": "coral"
+    },
+    {
+      "start": 21,
+      "title": "Queues, Schedulers, Workers, And Async Operations",
+      "description": "Goes deeper into worker lifecycle, queue lag, scheduler behavior, retry storms, concurrency, and async correctness.",
+      "tone": "amber"
+    },
+    {
+      "start": 31,
+      "title": "Proxies, Networks, TLS, Storage, And Dependencies",
+      "description": "This section asks about Nginx, load balancers, trusted proxies, TLS, file permissions, S3/CDN, and common network failure modes.",
+      "tone": "coral"
+    },
+    {
+      "start": 41,
+      "title": "Incidents, Cost, Monitoring, And On-Call Thinking",
+      "description": "The final group focuses on incident response, health checks, alerts, post-deploy verification, cloud cost, and real operational thinking.",
+      "tone": "amber"
+    }
+  ],
+  "items": [
+    {
+      "title": "What is the practical difference between local, staging, and production beyond just 'they are different servers'?",
+      "body": "The difference includes config, traffic shape, data volume, secrets, queue workers, cron, proxies, log paths, cache paths, file permissions, third-party dependencies, and blast radius. The more real systems you run, the more you see that `same code` under a different environment can behave very differently.",
+      "bullets": [
+        "This is a foundation question for seeing whether you treat runtime as a system.",
+        "A large number of production bugs come from environment differences rather than new code logic."
+      ],
+      "tip": "A strong line is: `production differs from local not only by server, but by data, traffic, secrets, and the way long-lived processes behave`."
+    },
+    {
+      "title": "Why do `.env` and `config:cache` often cause painful bugs after deploy?",
+      "body": "Because the application may still be reading cached configuration rather than the latest environment values. If you change an environment variable without understanding configuration caching, the app can appear to ignore the new value even when `.env` is correct.",
+      "bullets": [
+        "This is one of the most common Laravel production problems.",
+        "Interviewers often ask this to test whether you have touched real runtime issues."
+      ],
+      "code": "php artisan config:clear\nphp artisan config:cache"
+    },
+    {
+      "title": "If an interviewer asks how you configure basic `nginx` for Laravel, what should you say?",
+      "body": "You should explain that the `root` should point to `public/`, static files should be served directly, unmatched requests should fall through to `index.php`, and PHP is usually handled by `php-fpm`. That is the basic execution frame for Laravel behind Nginx.",
+      "bullets": [
+        "The most important point is that `public/` is the web root, not the project root.",
+        "If you can explain why `try_files` matters, the answer becomes much stronger."
+      ],
+      "code": "server {\n    listen 80;\n    server_name example.com;\n    root /var/www/app/public;\n\n    index index.php;\n\n    location / {\n        try_files $uri $uri/ /index.php?$query_string;\n    }\n\n    location ~ \\.php$ {\n        include fastcgi_params;\n        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;\n        fastcgi_pass php:9000;\n    }\n}"
+    },
+    {
+      "title": "When should you use `config:cache`, and when should you be careful with it?",
+      "body": "It is useful in production because it makes config loading faster and more stable, but only if the team is disciplined about reading config through config files rather than calling `env()` randomly in business code. Without that discipline, `config:cache` creates confusing runtime bugs.",
+      "bullets": [
+        "This connects coding conventions to runtime safety.",
+        "A good DevOps answer sees the relationship between developer habits and production behavior."
+      ]
+    },
+    {
+      "title": "How do you think about secret management in a practical way?",
+      "body": "Secrets should not be scattered through code, chat history, random local files, or accidental commits. What matters is having a clear secret lifecycle: ownership, access boundaries, rotation policy, and a rollback story if something goes wrong.",
+      "bullets": [
+        "This question separates tool familiarity from operational responsibility.",
+        "Mistakes around secrets often cause more damage than ordinary code bugs."
+      ]
+    },
+    {
+      "title": "If the app runs in Docker or containers, what changes in the way you think?",
+      "body": "You need to think about which processes live in which containers, which data is ephemeral, where logs go, where uploads live, how environment values are injected, who calls health checks, and what disappears when a container restarts.",
+      "bullets": [
+        "Containers do not automatically make a system production-ready.",
+        "DevOps maturity shows in understanding what is stateful and what is not."
+      ]
+    },
+    {
+      "title": "Why do `localhost` and Docker service names often create confusing bugs?",
+      "body": "Because `localhost` inside a container usually means that container itself, not the host machine and not another service container. If you do not understand this network boundary, DB, Redis, or other service configuration goes wrong very easily.",
+      "bullets": [
+        "This is a very real local setup issue.",
+        "Many people think the app is broken when the real problem is only the hostname."
+      ],
+      "code": "DB_HOST=mysql\nREDIS_HOST=redis"
+    },
+    {
+      "title": "What do you think about using `chmod 777` as a quick fix?",
+      "body": "It usually means you do not yet understand process user, ownership, group permissions, and which paths truly require write access. It may make the app run temporarily, but it hides root cause and introduces unnecessary security risk.",
+      "bullets": [
+        "This is a great maturity question in operations.",
+        "Fixing permissions correctly is far better than opening them blindly."
+      ],
+      "note": "A mature answer often begins with `I want to know which process user is running and which path truly needs write access before changing permissions`."
+    },
+    {
+      "title": "If local works but staging fails to connect to DB or Redis, where do you begin?",
+      "body": "Check host, port, credentials, network reachability, firewall or security groups if relevant, DNS name, whether the environment is actually loaded on that server, whether config cache is stale, and whether the target service is even running.",
+      "bullets": [
+        "This is a very real multi-layer environment bug.",
+        "The important skill is narrowing layer by layer instead of changing random config values."
+      ]
+    },
+    {
+      "title": "What is a reverse proxy, and why does a Laravel app behind one need correct configuration?",
+      "body": "A reverse proxy sits in front of the application, receives requests, and forwards them to one or more upstreams. If forwarding headers are wrong, the app may misunderstand the original scheme, host, path, or client IP and produce bad redirects, wrong logs, or broken generated URLs.",
+      "bullets": [
+        "This is a foundation concept for understanding `trusted proxies` later.",
+        "A proxy does not only route traffic; it changes how the application perceives the request."
+      ]
+    },
+    {
+      "title": "If an interviewer asks what `proxy_pass` does in `nginx`, how should you answer?",
+      "body": "`proxy_pass` forwards the incoming request from Nginx to another upstream, such as a Node app, another HTTP app, or an internal service. Once you use it, you also need to think about forwarded headers, timeouts, body size, and how the upstream reconstructs the original request context.",
+      "bullets": [
+        "This is a very common real configuration question.",
+        "Knowing the keyword is not enough; you need to understand where the request goes and what context may be lost."
+      ],
+      "code": "location /api/ {\n    proxy_set_header Host $host;\n    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;\n    proxy_set_header X-Forwarded-Proto $scheme;\n    proxy_pass http://api-upstream;\n}"
+    },
+    {
+      "title": "If deploy succeeds but assets are broken or the UI still looks old, what do you think about?",
+      "body": "The build may not have run, the manifest may be stale, the browser or CDN may still hold old assets, the release symlink may point incorrectly, or the app may be serving the wrong build path. This is a very common Vite or asset-pipeline release issue.",
+      "bullets": [
+        "Not every 'frontend' problem comes from frontend logic.",
+        "Release artifacts and cache behavior are a core part of deploy quality."
+      ]
+    },
+    {
+      "title": "If an application must be both safe and fast to release, how do you standardize the release path?",
+      "body": "Through clear artifacts, a small but meaningful checklist, clear config injection points, good health checks, a real rollback path, short smoke tests, and explicit ownership of post-deploy observation. Good DevOps makes release behavior repeatable instead of heroic.",
+      "bullets": [
+        "This is systematized release thinking.",
+        "Sustainable speed comes more from standardization than from typing commands faster."
+      ]
+    },
+    {
+      "title": "If you use Docker Compose for a Laravel app, which services usually appear and why?",
+      "body": "You often see `app` or `php`, `nginx`, `mysql/postgres`, `redis`, and sometimes a separate `queue worker`, `scheduler`, or `mailhog`. The reason is that each service has a different lifecycle, logging pattern, scaling behavior, and debugging surface.",
+      "bullets": [
+        "This is very practical because many Laravel teams learn and run with Docker-based environments.",
+        "A strong answer usually makes clear that one container should not own every concern forever if you want clean operations."
+      ],
+      "code": "services:\n  app:\n    build: .\n  nginx:\n    image: nginx:alpine\n  mysql:\n    image: mysql:8\n  redis:\n    image: redis:7"
+    },
+    {
+      "title": "If an interviewer asks what a Docker `volume` is for, how should you answer?",
+      "body": "A `volume` lets data survive container recreation, or lets files such as code or config be mounted into containers. In Laravel, volumes commonly affect local development source mounts, database persistence, storage paths, or other data that should not disappear with the container.",
+      "bullets": [
+        "This is a basic question that is still often answered too vaguely.",
+        "The important distinction is what data should be persistent and what can stay ephemeral."
+      ]
+    },
+    {
+      "title": "If the web app, queue worker, and scheduler all use the same Docker image, why are they still often split into separate containers?",
+      "body": "Because even if the image is the same, the runtime processes are not. The web app has different readiness needs, the worker has different restart and concurrency needs, and the scheduler has different execution rhythm. Splitting the containers makes each role easier to operate and scale correctly.",
+      "bullets": [
+        "This is a very good question for distinguishing image thinking from container/process thinking.",
+        "Many Docker beginners assume same image means everything should run together."
+      ]
+    },
+    {
+      "title": "What should a safe release checklist include?",
+      "body": "At minimum: environment changes, migration impact, dependency risk, cache clear or rebuild needs, queue restart needs, smoke tests, rollback path, and who is watching immediately after release.",
+      "bullets": [
+        "A good checklist is short but tied to real risk.",
+        "A giant checklist nobody follows is useless."
+      ],
+      "code": "1. Confirm artifact/version\n2. Check env/config change\n3. Review migration risk\n4. Deploy\n5. Restart long-lived workers if needed\n6. Smoke test\n7. Watch errors and queue lag"
+    },
+    {
+      "title": "What is a good rollback, and why is rollback not always simple?",
+      "body": "A good rollback is a clear path back that does not create more damage and is thought through before the incident. It becomes hard when there are non-backward-compatible schema changes, in-flight jobs, data already written in a new format, or external side effects already emitted.",
+      "bullets": [
+        "This question connects deploys with data and async systems.",
+        "People with real experience are usually careful before saying `we can just roll back`."
+      ]
+    },
+    {
+      "title": "When should you use canary, phased rollout, or feature flags instead of deploying everything at once?",
+      "body": "When blast radius is large, traffic is large, or change risk is high. These approaches reduce the radius of failure before all users are affected and create better observation windows.",
+      "bullets": [
+        "This shows release as strategy, not only mechanics.",
+        "Not every system needs canary every time, but you should know when it is worth it."
+      ]
+    },
+    {
+      "title": "If a migration may run a very long time on a large table, how do you make the release safer?",
+      "body": "Think in multiple steps: deploy compatible code first, backfill separately, use non-blocking schema changes when possible, choose a maintenance strategy if needed, and reduce locking surprise on live traffic.",
+      "bullets": [
+        "This is a DevOps question with deep data implications.",
+        "Do not bundle everything into one migration and hope for the best."
+      ]
+    },
+    {
+      "title": "If a release fails halfway through, how do you avoid making things worse while trying to recover?",
+      "body": "Separate clearly what has already changed from what has not, what can safely be rolled back, and what now needs fix-forward treatment. Panic plus many uncontrolled actions easily turns one failure into a much larger incident.",
+      "bullets": [
+        "This is a calm operational judgment question.",
+        "Runbooks and good release markers help enormously here."
+      ]
+    },
+    {
+      "title": "Why is direct `git pull` on production often considered fragile?",
+      "body": "Because it is hard to reproduce, easy to drift, dependent on the state of the machine you happen to be on, and unclear about which exact artifact is now running. Artifact-based or image-based deploys give much stronger traceability and repeatability.",
+      "bullets": [
+        "This is a classic question for seeing whether you care about repeatability.",
+        "Direct `git pull` is not always instantly wrong, but it becomes weak as systems grow."
+      ]
+    },
+    {
+      "title": "Why can a queue still run old code after deploy?",
+      "body": "Because queue workers are long-lived processes. If you deploy new code but do not restart or recycle workers, they may keep old code or old config in memory.",
+      "bullets": [
+        "This is one of the most common Laravel production surprises.",
+        "Anyone who has really deployed Laravel has probably hit this at least once."
+      ],
+      "code": "php artisan queue:restart"
+    },
+    {
+      "title": "If queue backlog grows quickly after a release, what do you inspect first?",
+      "body": "Check whether workers restarted correctly, whether jobs became heavier, whether downstream systems slowed down, whether retries increased, whether queue priority changed incorrectly, whether schema and code are mismatched, and what the error logs say.",
+      "bullets": [
+        "This is both a technical and operational failure mode.",
+        "Adding more workers is not automatically the right first answer."
+      ]
+    },
+    {
+      "title": "If you use `supervisor` or `systemd` to keep workers alive, what should you understand at interview level?",
+      "body": "You should understand that they are process managers: they start processes, restart them when they die, keep the desired number of processes alive, and provide a place to configure commands, autostart, autorestart, log handling, and sometimes resource limits. The point is not memorizing every directive, but understanding the operational role.",
+      "bullets": [
+        "This is common because production queue workers are rarely managed by hand in a serious setup.",
+        "A process manager is the bridge between application code and runtime stability."
+      ],
+      "code": "[program:laravel-worker]\ncommand=php /var/www/app/artisan queue:work --sleep=3 --tries=3\nnumprocs=2\nautostart=true\nautorestart=true"
+    },
+    {
+      "title": "What kinds of problems do schedulers and cron jobs commonly cause?",
+      "body": "The most common are jobs never running, running twice, timezone drift, long overlaps, running on the wrong node, or cron shell environments that differ from interactive shells. These failures can remain invisible for a long time without logs or metrics.",
+      "bullets": [
+        "This area is often underestimated in smaller applications.",
+        "Many important tasks die silently because scheduler behavior is not observed."
+      ]
+    },
+    {
+      "title": "How do you think about retry policy for queues or outbound HTTP calls?",
+      "body": "Retries are useful, but they can also create retry storms, duplicate side effects, and downstream collapse. Good DevOps thinking does not stop at `should we retry`; it also asks `how many times`, `how long apart`, `is the operation idempotent`, and `who absorbs that extra load`.",
+      "bullets": [
+        "Bad retry policy can amplify an incident dramatically.",
+        "This is a very real-world question."
+      ]
+    },
+    {
+      "title": "When does `withoutOverlapping()` or locking around jobs become important?",
+      "body": "Whenever the same task should not run concurrently, such as billing sync, data imports, reconciliation, or any work that touches shared mutable resources. Without proper locking, scheduler or queue concurrency can produce race conditions that are very hard to debug.",
+      "bullets": [
+        "This is where app logic meets runtime scheduling.",
+        "People with real production experience are usually cautious about overlap."
+      ]
+    },
+    {
+      "title": "If failed jobs suddenly increase but the website still looks healthy, do you treat that as an incident?",
+      "body": "Possibly yes. Many systems appear healthy at the web layer while important side effects such as mail, sync, billing, or notifications are failing in the background. DevOps maturity means observing the async system, not only the web response path.",
+      "bullets": [
+        "This is a good total-observability question.",
+        "Business impact often hides in queues rather than in web status codes."
+      ]
+    },
+    {
+      "title": "How do you handle long-running workers to avoid memory leak or stale state?",
+      "body": "Use recycle strategy, memory limits, restart policy, and observe memory growth over time. In Laravel, stale state and memory accumulation in long-lived workers are very real production concerns.",
+      "bullets": [
+        "A long-running process is not automatically a healthy process.",
+        "This separates command knowledge from process-behavior understanding."
+      ]
+    },
+    {
+      "title": "What is a trusted proxy, and why can Laravel misunderstand client IP or HTTPS?",
+      "body": "When the app sits behind a reverse proxy or load balancer, headers such as `X-Forwarded-For` or `X-Forwarded-Proto` tell the app about the original client and scheme. If trusted proxy handling is wrong, the app may think requests are HTTP instead of HTTPS or may log the wrong client IP.",
+      "bullets": [
+        "This is a very confusing bug if you only inspect application code.",
+        "It tests your ability to connect network layers with app behavior."
+      ]
+    },
+    {
+      "title": "If `nginx` returns `502 Bad Gateway`, what do you think about first?",
+      "body": "Usually you think about the upstream being down, PHP-FPM not running, wrong socket or port, timeout, socket permissions, or the upstream failing in a way Nginx surfaces only as a gateway error. `502` usually means Nginx cannot talk to its backend properly.",
+      "bullets": [
+        "This is a very common runtime and configuration problem.",
+        "A strong answer should mention checking both `nginx` error logs and the upstream logs."
+      ]
+    },
+    {
+      "title": "Why can large file uploads fail before the request even reaches the Laravel controller?",
+      "body": "Because the request can be blocked by Nginx, Apache, a load balancer, PHP upload limits, or timeouts before Laravel ever receives it. If you do not understand the full request chain, you may debug the controller even though it never ran.",
+      "bullets": [
+        "This is a perfect example of failure happening before the app layer.",
+        "Good DevOps thinking asks which layer dropped the request."
+      ],
+      "code": "client_max_body_size 50m;\npost_max_size=50M\nupload_max_filesize=50M"
+    },
+    {
+      "title": "If the website sometimes enters a redirect loop or shows mixed-content issues after enabling HTTPS, what do you think about?",
+      "body": "Think about trusted proxy settings, `APP_URL`, URL generation scheme, hardcoded `http` assets, reverse-proxy headers, or stale config cache. These problems are common when TLS termination is introduced through a proxy layer.",
+      "bullets": [
+        "This is a very real environment bug.",
+        "Many people try to fix it in Blade while the real issue is proxy or config behavior."
+      ]
+    },
+    {
+      "title": "How are S3, local disk, and CDN different from an operational point of view?",
+      "body": "Local disk is simple but tied to the running machine. S3 separates storage from compute and scales more naturally. A CDN accelerates file delivery but adds another cache and invalidation layer that must be understood. File path, URL, permission, and cache behavior differ across all three.",
+      "bullets": [
+        "This is very practical for any app with uploads or media.",
+        "Storage cannot be treated only as a code-level `disk` abstraction."
+      ]
+    },
+    {
+      "title": "If you use AWS S3 for real uploads, what operational risks should you think about beyond simply 'the file is stored'?",
+      "body": "You need to think about bucket policy, object ACL or IAM, naming strategy, public versus private objects, signed URL expiration, lifecycle rules, region placement, egress cost, retry behavior on failed uploads, and the possibility that DB records drift away from the real objects on S3.",
+      "bullets": [
+        "This is where many people know how to code uploads but not how to operate them safely.",
+        "S3 is not only a file path; it is a subsystem with permissions, cost, and consistency behavior."
+      ],
+      "tip": "A strong line is: `I treat file storage as a subsystem, not only as a place to put an object`."
+    },
+    {
+      "title": "When should the client upload directly to S3 instead of sending the file through the app server?",
+      "body": "When files are large, upload traffic is heavy, or the app server should not absorb the full bandwidth and waiting time. But in exchange you must handle presigned URLs, a finalize step, object verification, and only persist DB state once the upload is truly complete.",
+      "bullets": [
+        "Direct-to-S3 reduces load on the app but increases flow complexity.",
+        "This is a strong higher-level DevOps question because it touches cost, scale, and correctness together."
+      ],
+      "code": "1. App issues presigned URL\n2. Client uploads directly to S3\n3. Client calls finalize callback\n4. App verifies object before writing DB state"
+    },
+    {
+      "title": "If DNS, TLS, or certificates break, how does the application often appear to fail?",
+      "body": "You may see timeouts, SSL errors, hostname mismatches, webhook failures, callback failures, browser warnings, or service-to-service connectivity failure. These problems are often misread as app bugs if the debugger never looks above the application layer.",
+      "bullets": [
+        "This question checks whether you think about dependencies outside the app.",
+        "Many production incidents are caused by expired certificates or DNS drift."
+      ]
+    },
+    {
+      "title": "What should a health check cover?",
+      "body": "You must distinguish `liveness` from `readiness`. `Liveness` asks whether the process is alive. `Readiness` asks whether the app is ready to serve traffic safely. Depending on the system, readiness may need to touch DB, Redis, or another critical dependency.",
+      "bullets": [
+        "This is a basic question that is still often answered too shallowly.",
+        "Good health checks help orchestration and incident handling a great deal."
+      ],
+      "code": "Route::get('/health/live', fn () => response()->json(['ok' => true]));\nRoute::get('/health/ready', fn () => Cache::store()->get('ping') !== null\n    ? response()->json(['ok' => true])\n    : response()->json(['ok' => false], 503));"
+    },
+    {
+      "title": "If the health check is green but users still report errors, what does that tell you?",
+      "body": "It tells you the health check may be too shallow, or the issue may exist in a dependency, a path, a tenant, a permission state, a cache state, or a specific flow the health check does not exercise. Green health does not guarantee healthy user experience.",
+      "bullets": [
+        "This is important for avoiding false confidence from monitoring.",
+        "DevOps maturity includes understanding the limits of your signals."
+      ]
+    },
+    {
+      "title": "What makes an alert good enough to avoid alert fatigue?",
+      "body": "An alert should be tied to an important symptom, have a clear owner, lead to a meaningful action, and avoid spamming with noise. If alerts trigger constantly without helpful action, on-call engineers gradually stop trusting all of them.",
+      "bullets": [
+        "A smaller number of meaningful alerts is much better than a flood of meaningless ones.",
+        "This is a human-factors question in operations."
+      ]
+    },
+    {
+      "title": "What do you watch first right after a release?",
+      "body": "Usually error rate, queue lag, latency, health endpoints, smoke-test flow, new error logs, business metrics nearest to the change, and the most fragile dependencies. The goal is to catch blast radius as early as possible.",
+      "bullets": [
+        "This tests whether you have post-deploy discipline.",
+        "A successful deploy is not the same thing as a healthy release."
+      ]
+    },
+    {
+      "title": "If only one tenant or one customer segment is failing, how do you organize debugging?",
+      "body": "Ask what is different about that segment: custom config, different data shape, different plan, different traffic pattern, different permission model, different region, or a different integration. Multi-tenant incidents are rarely solved by looking only at global averages.",
+      "bullets": [
+        "This is very relevant for SaaS systems.",
+        "Good DevOps thinking segments the signal instead of staring only at averages."
+      ]
+    },
+    {
+      "title": "If the cloud bill spikes after a small change, what do you think about first?",
+      "body": "Think about traffic increase, cache misses, heavier queries or jobs, exploding log volume, increased egress, retry storms, or a feature change that created more downstream calls. Cost spikes are sometimes reliability symptoms, not only finance problems.",
+      "bullets": [
+        "This is very real in cloud environments.",
+        "Cost and reliability are often tightly connected."
+      ]
+    },
+    {
+      "title": "If you are on call and still do not know the system deeply, what do you need most in order not to make the incident worse?",
+      "body": "You need real runbooks, meaningful metrics, clear ownership, recent release context, and a way to reduce blast radius before changing too much. New on-call engineers do not need to know everything, but they need an environment that helps them act safely.",
+      "bullets": [
+        "This is a strong organizational-readiness question.",
+        "Good on-call is a product of system support, not only individual talent."
+      ],
+      "note": "A hard-to-recover system with weak runbooks, weak metrics, and unclear ownership is a sign of immature DevOps practice."
+    },
+    {
+      "title": "If the system is live and you must move to a new database with almost no downtime, what kind of rollout path do you think about?",
+      "body": "Do not think in terms of one big cutover step. Usually you need phases: prepare compatible schema, replicate or backfill data, introduce dual-read or dual-write where appropriate, verify consistency, choose a cutover window, and keep a rollback plan. This is a data, application, and operations problem at the same time.",
+      "bullets": [
+        "This is exactly the kind of hard higher-level question strong DevOps candidates should be ready for.",
+        "People with real experience usually answer in phases rather than saying `backup, import, and change config`."
+      ],
+      "code": "Phase 1: create new DB + schema\nPhase 2: backfill historical data\nPhase 3: keep old and new DB in sync\nPhase 4: verify reads and metrics\nPhase 5: cut over traffic\nPhase 6: monitor and keep rollback window"
+    },
+    {
+      "title": "What are the advantages and dangers of `dual-write` during a zero-downtime database migration?",
+      "body": "It helps the system keep serving while writes go to both the old and the new database, but it massively increases complexity: partial failure, write ordering, idempotency, reconciliation, and observability all get harder. `Dual-write` is never a free trick.",
+      "bullets": [
+        "This question separates people who understand the pattern from people who only know the name of the pattern.",
+        "Without good reconciliation, dual-write easily creates false confidence that both sides are identical."
+      ]
+    },
+    {
+      "title": "If you cut over to the new database and then discover data drift, how do you think about avoiding data loss?",
+      "body": "You need to know the temporary source of truth, whether parts of the write path can be frozen, whether replay logs or CDC are available, whether you have audit trails or outbox records for rebuild, and whether rollback means only rolling back the app path or also rolling back data ownership. There is no single magic answer; this requires a prepared runbook.",
+      "bullets": [
+        "This tests whether you think about failure modes before the migration actually happens.",
+        "In larger systems, rolling back data is not the same thing as rolling back code."
+      ],
+      "note": "A mature line is: `rolling back the application path and rolling back the data state are two different problems`."
+    },
+    {
+      "title": "What separates someone who only knows a few DevOps commands from someone who truly has DevOps thinking?",
+      "body": "Someone with real DevOps thinking sees the full lifecycle of change: build, config, deploy, worker behavior, dependencies, health, rollback, logs, incident response, and learning after failure. They do not only remember commands; they understand which layer each command touches and what risk travels with it.",
+      "bullets": [
+        "This is the right closing question for this branch.",
+        "DevOps maturity is system judgment, not command memorization."
+      ],
+      "tip": "A strong line is: `I want to understand how the system is actually living before I touch commands against it`."
+    },
+    {
+      "title": "If a DB replica becomes stale but the app still reads from it, what kinds of consequences do you think about?",
+      "body": "A user may update something and immediately read old data back, permission or status changes may not appear yet, reconciliation jobs may make the wrong decision, and dashboards may reflect a different truth from the transactional flow. Good DevOps thinking understands that replica lag is not only a metric problem; it is an application-semantics problem.",
+      "bullets": [
+        "This is a strong question for read/write split awareness.",
+        "Stale replicas often create 'it only fails sometimes' bugs."
+      ]
+    },
+    {
+      "title": "If you fail over to another DB or node and then suspect `split-brain`, what do you think about?",
+      "body": "You should think about the possibility that two places now believe they are the source of truth, that write paths were not locked properly, that replication has not converged, that caches are still stale, or that service discovery updated inconsistently. This is dangerous because the system may still appear alive while the data truth has silently split.",
+      "bullets": [
+        "This is one of the more brutal high-level production questions.",
+        "Strong answers usually emphasize containment before repair."
+      ],
+      "note": "If split-brain is suspected, the first priority is often to stop additional incorrect writes before optimizing user experience."
+    },
+    {
+      "title": "If an event or webhook is replayed and the system charges money twice, what protection layers do you think about?",
+      "body": "Think about idempotency keys, unique business keys, dedup logs, processing state, outbox or inbox tables, or reconciliation jobs. At this level you cannot assume the event bus or webhook provider will deliver exactly once.",
+      "bullets": [
+        "This is a very real reliability and financial-risk problem.",
+        "Duplicate protection must live at the business boundary, not only in the transport layer."
+      ]
+    },
+    {
+      "title": "If the CDN accidentally caches a private file as public, how do you respond urgently?",
+      "body": "First stop further exposure: revoke the URL pattern, purge cache, lock the affected route or bucket policy, rotate signed URL secrets if needed, and only then assess blast radius and audit access. This kind of incident may be both a security problem and a legal problem.",
+      "bullets": [
+        "This is a strong test of containment thinking.",
+        "Not every incident begins with root cause; some incidents must be contained first."
+      ],
+      "tip": "A good order is: `contain -> verify exposure -> communicate -> root cause -> harden`."
+    },
+    {
+      "title": "If a secret or access key leaks, how do you react operationally?",
+      "body": "Do not stop at deleting the file or changing one local variable. Rotate the secret, estimate blast radius, inspect access logs, identify everywhere the secret is used, invalidate related tokens or sessions if needed, and fix the process that allowed the leak. A secret leak is a lifecycle incident, not only a configuration incident.",
+      "bullets": [
+        "This is very real in cloud and CI/CD environments.",
+        "Strong answers usually mention `rotation` and `audit`, not only `hide it again`."
+      ]
+    },
+    {
+      "title": "If a data migration completes but analytics or BI suddenly reports wrong numbers everywhere, which layer do you suspect?",
+      "body": "It may be semantic drift in fields, timezone changes, duplication, missing backfill, changed join keys, enum remapping, or event pipeline incompatibility. This is no longer a simple app bug; it is a data-contract incident between the app and its analytics consumers.",
+      "bullets": [
+        "This is a strong question for systems with serious downstream reporting.",
+        "Many organizations only discover migration problems through business dashboards rather than through API errors."
+      ]
+    },
+    {
+      "title": "What are the distinct roles of `nginx` and `php-fpm` in a typical Laravel stack?",
+      "body": "`nginx` receives HTTP requests, serves static assets, routes traffic, and forwards PHP execution work onward. `php-fpm` is the process manager that actually runs PHP workers. If you do not separate these roles mentally, it becomes hard to debug gateway, timeout, or static-file issues correctly.",
+      "bullets": [
+        "This is a basic but very important runtime question.",
+        "Many people use the stack daily without being able to explain the layer boundary clearly."
+      ]
+    },
+    {
+      "title": "If `php-fpm` has too few workers or the process manager is tuned badly, how can the app behave?",
+      "body": "Requests may queue up, latency may spike suddenly under traffic, `502/504` responses may appear, or CPU and memory may look poorly balanced. This is where runtime process capacity directly shapes user-facing behavior.",
+      "bullets": [
+        "Not every HTTP bottleneck comes from slow code.",
+        "The capacity of `php-fpm` workers directly affects how much traffic the app can absorb."
+      ]
+    },
+    {
+      "title": "If an interviewer asks what a `Dockerfile` is for, how do you answer at a deeper level than the beginner version?",
+      "body": "A `Dockerfile` defines how the image is built: which base image is used, which dependencies are installed, which files are copied, and which command starts the runtime. At a deeper level, it defines a repeatable runtime artifact and affects image size, security surface, build caching, and startup behavior.",
+      "bullets": [
+        "It is not only a file 'for running Docker'.",
+        "A good image improves deploy stability and debugging clarity."
+      ],
+      "code": "FROM php:8.3-fpm\nWORKDIR /var/www/app\nCOPY composer.json composer.lock ./\nRUN composer install --no-dev --prefer-dist --no-interaction\nCOPY . ."
+    },
+    {
+      "title": "Why is multi-stage build in Docker often recommended?",
+      "body": "Because it separates build-time concerns from runtime concerns, reduces final image size, removes unnecessary tools from the production image, and often shrinks the security surface. It is especially useful when the app needs Composer, npm, or binary build steps.",
+      "bullets": [
+        "Not every project must use it, but understanding its value is a strong plus.",
+        "Smaller images usually improve pull speed and reduce deployment blast radius."
+      ]
+    },
+    {
+      "title": "If you use Docker Compose, what does `depends_on` mean and what does it not solve?",
+      "body": "`depends_on` helps with startup ordering at a basic level, but it does not guarantee that the dependency is truly ready to serve traffic. A DB container may be started but still not accept connections, so retry logic or explicit health checks are still needed.",
+      "bullets": [
+        "This is a very common local and staging setup trap.",
+        "Understanding the limits of a tool is often more important than memorizing its options."
+      ]
+    },
+    {
+      "title": "If asked how `ENTRYPOINT` and `CMD` differ in Docker, how should you answer?",
+      "body": "`ENTRYPOINT` usually defines the main executable of the container, while `CMD` often provides default arguments or a default command that is easier to override. You do not need every syntax rule from memory, but you should understand how they shape startup behavior.",
+      "bullets": [
+        "This helps distinguish copy-paste Docker usage from true runtime understanding.",
+        "Startup command behavior matters a lot for workers, schedulers, and web processes."
+      ]
+    },
+    {
+      "title": "What is Redis commonly used for in Laravel besides cache?",
+      "body": "Besides cache, Redis is often used for queues, sessions, rate limiting, locks, throttling, pub/sub, or presence data depending on the system. That means when Redis has trouble, the blast radius can reach far beyond cache misses.",
+      "bullets": [
+        "This is a very good question because many people reduce Redis to 'just cache'.",
+        "Knowing the true roles helps you debug much faster when Redis slows down or disconnects."
+      ]
+    },
+    {
+      "title": "If Redis runs out of memory or eviction happens in the wrong place, how can the application behave?",
+      "body": "Cache entries may disappear abruptly, sessions may drop, queue-related behavior may become unstable if configured badly, rate limits may stop working, or locks may vanish too early. The impact depends on which responsibilities Redis is carrying.",
+      "bullets": [
+        "This is very real in apps that use Redis for many things at once.",
+        "A Redis outage or misconfiguration is not nearly as 'lightweight' as some people assume."
+      ]
+    },
+    {
+      "title": "What does a load balancer in front of several app nodes help with, and what new problems can it introduce?",
+      "body": "It helps distribute traffic, improve availability, and support horizontal scale. But it also introduces questions around health checks, sticky sessions if you still depend on local session state, trusted proxy headers, TLS termination, and traffic imbalance if configured badly.",
+      "bullets": [
+        "This is a strong way to connect infrastructure with application behavior.",
+        "Horizontal scale is not only 'add more machines'; it is also about state and request semantics."
+      ]
+    },
+    {
+      "title": "If DNS changes but traffic still goes to the old place for a while, what does that tell you?",
+      "body": "It tells you DNS changes are not instant everywhere because of TTL and caching across multiple layers. This is why DNS-based cutovers need to account for propagation timing and rollback strategy rather than assuming a record change takes effect immediately everywhere.",
+      "bullets": [
+        "This is a classic networking question during cutover and migration planning.",
+        "Many incidents come from underestimating DNS propagation behavior."
+      ]
+    },
+    {
+      "title": "What is TLS termination, and why does it affect the app behind it?",
+      "body": "TLS termination means a proxy or load balancer decrypts HTTPS before forwarding traffic to the backend app. If that layer does not forward `X-Forwarded-Proto` correctly or trusted proxy settings are wrong, the backend may think the request is plain HTTP and generate wrong redirects or wrong URLs.",
+      "bullets": [
+        "This is an infrastructure-rooted bug with application-level symptoms.",
+        "It is a very good question for distinguishing production-flow understanding from code-only understanding."
+      ]
+    },
+    {
+      "title": "If `nginx` returns `502 Bad Gateway`, what do you think about first?",
+      "body": "Usually you think about the upstream being down, PHP-FPM not running, the wrong socket or port, timeout, socket permissions, or the upstream failing in a way Nginx only surfaces as a gateway error. `502` usually means Nginx cannot talk to its backend properly.",
+      "bullets": [
+        "This is a very common runtime and configuration issue.",
+        "A strong answer should mention checking both `nginx` error logs and upstream logs."
+      ]
+    }
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "anchor": "laravel-overview",
+  "type": "list",
+  "heading": "Laravel không chỉ là CRUD, route và Blade",
+  "intro": "Khi học đủ lâu, bạn sẽ thấy Laravel giống một thành phố hơn là một framework đơn lẻ. Có lõi vận hành, có lớp xây tính năng, có hệ sinh thái package, có công cụ debug, có câu chuyện deploy và có cả bài toán bảo trì về sau. Trang tổng quan này được viết để bạn nhìn ra toàn cảnh đó trước khi đi sâu vào từng site con.",
+  "items": [
+    {
+      "title": "Tầng nền: cách Laravel vận hành mỗi request",
+      "body": "Đây là nơi bạn nắm route, controller, middleware, Blade, validation, migration, model và toàn bộ những thứ tạo nên nhịp cơ bản của một ứng dụng Laravel."
+    },
+    {
+      "title": "Tầng ứng dụng: cách code bớt rối khi project lớn dần",
+      "body": "Khi app không còn nhỏ nữa, bạn sẽ phải nghĩ tới service class, policy, form request, action, queue, cache và cách tách logic để code sống lâu hơn."
+    },
+    {
+      "title": "Tầng hệ sinh thái: package, tool và môi trường chạy thật",
+      "body": "Composer, vendor, npm, Vite, Sail, Redis, Horizon, testing, logging và deploy nằm ở đây. Đây là phần kéo Laravel ra khỏi mức làm demo để đi gần hơn với project thực tế."
+    },
+    {
+      "title": "Tầng mở rộng: những gì project thật sớm muộn cũng chạm tới",
+      "body": "API, upload, search, realtime, team workflow, role hoặc permission, tích hợp dịch vụ ngoài và các bài toán hiệu năng thường xuất hiện khi sản phẩm bắt đầu có người dùng thật."
+    },
+    {
+      "title": "Một điểm bắt đầu thực hành ngắn nếu bạn mới quay lại với Laravel",
+      "body": "Thay vì đọc ngẫu nhiên, hãy chạy một vòng lệnh nhỏ rồi map kết quả đó sang từng site con trong portal này.",
+      "code": "composer install\ncp .env.example .env\nphp artisan key:generate\nphp artisan migrate\nnpm install\nnpm run dev\nphp artisan route:list",
+      "bullets": [
+        "Nếu bạn vướng ở `composer install`, hãy sang site `Composer & vendor`.",
+        "Nếu bạn chưa hiểu `key:generate`, `migrate` hoặc `route:list`, hãy sang site `Lệnh PHP & Artisan`.",
+        "Nếu bạn vướng ở `npm install` hoặc `npm run dev`, hãy sang site `Node, npm, and the frontend layer around Laravel`.",
+        "Khi app đã chạy lên, tiếp tục đọc `Cấu trúc app`, `Request flow` và `Blade & UI` để nối lại toàn cảnh."
+      ],
+      "note": "Trang tổng quan tốt không chỉ nói Laravel rộng ra sao, mà còn cho bạn một đường vào đủ cụ thể để bắt đầu lại mà không bị ngợp."
+    }
+  ]
+}

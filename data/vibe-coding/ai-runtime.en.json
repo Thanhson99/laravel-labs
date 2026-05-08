@@ -1,0 +1,204 @@
+{
+  "heading": "Vibe Coding AI Runtime",
+  "intro": "This branch focuses on the most dangerous side of Vibe Coding: when AI starts touching Docker, queues, deploy flow, env, secrets, migrations, and real runtime behavior. Here guardrails matter more than speed.",
+  "type": "list",
+  "breaks": [
+    {
+      "start": 1,
+      "title": "Runtime Topics Worth Covering",
+      "description": "Few people explain these clearly, but they become extremely valuable once learners touch a real running environment.",
+      "tone": "amber"
+    },
+    {
+      "start": 5,
+      "title": "How Runtime Flow Should Be Taught",
+      "description": "Runtime content gets dry fast if it only talks about config. You need visible before/after behavior.",
+      "tone": "coral"
+    },
+    {
+      "start": 9,
+      "title": "Strong Runtime Cases",
+      "description": "These cases feel real and connect Laravel directly to production thinking.",
+      "tone": "amber"
+    }
+  ],
+  "items": [
+    {
+      "title": "What is the first runtime topic worth studying with AI in the loop?",
+      "body": "A strong opening topic is `what Sail or Docker Compose is for, which services the app needs, and why local should stay close to production before letting AI edit runtime setup`."
+    },
+    {
+      "title": "What should a queue worker module explain?",
+      "body": "Explain what a queue is, why background workers exist, and why old code can continue running after deploy if workers are not restarted.",
+      "code": "php artisan queue:work\nphp artisan queue:restart\n",
+      "tip": "This is also a good place to contrast `web request` and `background job` clearly."
+    },
+    {
+      "title": "How can env drift be demonstrated?",
+      "body": "Change `.env`, show the app still behaving the old way because of `config:cache`, then clear cache and retest so the difference is visible."
+    },
+    {
+      "title": "What should a deploy checklist include?",
+      "body": "At minimum: build, migrate, cache, restart workers, smoke test, and rollback thinking.",
+      "code": "php artisan migrate --force\nphp artisan config:cache\nphp artisan route:cache\nphp artisan queue:restart\n",
+      "note": "A deploy section that never mentions rollback or smoke tests feels incomplete."
+    },
+    {
+      "title": "Should runtime work start from behavior first or config first?",
+      "body": "Show behavior first: for example a worker not processing, upload failing, or the app reading stale config. Then open the config or container setup."
+    },
+    {
+      "title": "Should terminal and dashboard views be shown together?",
+      "body": "Yes, when the topic is queue lag, failed jobs, process restarts, or health checks. Runtime topics are clearer when learners can see multiple signals at once."
+    },
+    {
+      "title": "How can a health-check case be demonstrated?",
+      "body": "Create a tiny endpoint, then demonstrate how the response changes when the database or Redis is unhealthy.",
+      "code": "Route::get('/health', function () {\n    return response()->json(['ok' => true]);\n});\n"
+    },
+    {
+      "title": "What should a Docker-for-Laravel module avoid?",
+      "body": "Do not turn it into a generic Docker lecture. Tie Docker back to concrete Laravel questions such as `why the app needs mysql, redis, mailpit` or `why localhost inside a container is not the host machine`."
+    },
+    {
+      "title": "Which runtime cases are worth analyzing?",
+      "body": "Great cases include `queue running old code`, `config change not taking effect`, `upload failing before controller`, `HTTPS loop behind a proxy`, `cron not running`, and `worker lag`."
+    },
+    {
+      "title": "What is a common mistake when letting AI touch runtime concerns?",
+      "body": "Letting AI edit config, deploy flow, or secret handling without a clear symptom and without a verification checklist. Runtime is where a wrong output can do far more damage than a normal feature flow."
+    },
+    {
+      "title": "Should AI be allowed to edit Dockerfiles or compose files?",
+      "body": "It can help draft changes, but you must inspect build layers, user permissions, exposed ports, volumes, entrypoints, and service dependencies carefully. Small Docker mistakes can create huge local/production drift."
+    },
+    {
+      "title": "What must be checked if AI touches Nginx or proxy config?",
+      "body": "Check `root`, `try_files`, upstream/proxy targets, trusted proxy handling, HTTPS redirects, forwarded headers, and the path pointing to Laravel's `public/` directory."
+    },
+    {
+      "title": "Should AI be trusted to edit real secrets or env files?",
+      "body": "Not as a blind action. It can explain or suggest, but real secret handling, key rotation, domain changes, or production env edits still need direct human control."
+    },
+    {
+      "title": "How should AI-generated deploy commands be verified?",
+      "body": "Compare them against the real runbook, release order, rollback plan, health checks, migration impact, and worker restart strategy.",
+      "code": "deploy -> migrate --force -> config cache -> route cache -> restart workers -> smoke test -> watch logs\n"
+    },
+    {
+      "title": "What is the most important guardrail near production?",
+      "body": "Every change needs a clear scope, a clear reviewer, a tested environment first, and a clear way back. Never let AI push you into a state where `the app is running but nobody is sure what it just changed`."
+    },
+    {
+      "title": "What is a runtime case where AI easily makes people overconfident?",
+      "body": "AI suggests a few lines for `docker-compose`, `nginx`, or `env`, everything still boots locally, but production drifts on headers, proxy behavior, or health checks. This class of bug is easy to underestimate during review."
+    },
+    {
+      "title": "When should AI be blocked from touching a runtime zone?",
+      "body": "You should heavily restrict or completely block it around live billing, real secrets, DNS, TLS certificates, live data migration, private file access, backup/restore flow, and production access control."
+    },
+    {
+      "title": "What is a safe workflow when letting AI assist with deploys?",
+      "body": "Let AI draft the checklist or runbook, but the human must still approve the final commands, the final environment, the rollback plan, and the post-deploy watch points.",
+      "code": "AI drafts -> human reviews -> run on staging -> verify health -> run on production with observer -> watch logs -> confirm rollback still works\n"
+    },
+    {
+      "title": "Should you blindly follow AI advice to clear caches or restart everything?",
+      "body": "No. That should not become a reflex. Understand the symptom first, because blanket clearing can hide the real root cause or create larger side effects than necessary."
+    },
+    {
+      "title": "What is a sign that you are overusing AI in runtime work?",
+      "body": "You can no longer describe which layers the app runs through, which services depend on each other, or which deploy step can disturb queue, cache, cron, or proxy behavior. At that point the AI is leading you instead of assisting you."
+    },
+    {
+      "title": "What should a runtime checklist contain before trusting an AI patch?",
+      "body": "Inspect `service graph`, `secrets`, `health checks`, `rollback`, `queue workers`, `cron`, `proxy`, `cache`, and `migration impact`.",
+      "code": "Runtime verify:\n- affected services?\n- health endpoints?\n- queue restart needed?\n- rollback path clear?\n- proxy/header impact?\n- secret/env touched?\n"
+    },
+    {
+      "title": "Where does AI often fail around Nginx or proxy setup?",
+      "body": "When the app sits behind multiple layers such as CDN, load balancer, reverse proxy, and only then the web server. Misunderstanding one layer can corrupt redirects, scheme handling, host handling, or IP trust."
+    },
+    {
+      "title": "What is a strong workflow for using AI near deploy or runtime?",
+      "body": "Let AI explain the current config, draft a small change, list risks, and then let a human verify on staging before touching production. The model should never be the final decision-maker for the last operational command.",
+      "tip": "The closer you are to production, the more AI should act like an advisor rather than an operator."
+    },
+    {
+      "title": "When should AI runtime output be discarded in favor of the old runbook?",
+      "body": "When the model starts suggesting changes whose system impact you cannot explain yourself, or when the patch touches too many layers at once such as proxy, env, workers, and deploy flow."
+    },
+    {
+      "title": "What is a Docker case AI often gets wrong?",
+      "body": "Wrong service names, broken volume mounts, useless cache layers, or using localhost incorrectly inside container networking. These mistakes may half-work locally but explode when the rest of the team pulls them."
+    },
+    {
+      "title": "At which deploy steps does AI often make users overconfident?",
+      "body": "Migration, config caching, queue restarts, file permissions, and health checks. These steps look simple, but a wrong order can produce wide damage."
+    },
+    {
+      "title": "What should a safe AI Runtime prompt contain?",
+      "body": "Always state the environment, the involved services, what must not be touched, and require a risk list before any patch is proposed.",
+      "code": "Environment: staging\nServices: nginx, php-fpm, redis, mysql\nDo not touch secrets.\nList risks before proposing any config patch.\n"
+    },
+    {
+      "title": "When should AI only explain the current runtime instead of patching it?",
+      "body": "When you just entered an unfamiliar stack, do not yet know which container serves what, or are unsure what a restart command will affect. Explanation first is often much safer than patch first."
+    },
+    {
+      "title": "What is the biggest red flag in AI Runtime work?",
+      "body": "The app temporarily starts working again so people assume the fix is real, while nobody actually understands why it broke or why it recovered. That is how recurring incidents get planted."
+    }
+  ,
+    {
+      "title": "What is a strong tip in AI Runtime work?",
+      "body": "Always force the model to state the `blast radius` first. Knowing which services, queues, headers, secrets, or deploy steps are touched increases review quality dramatically."
+    },
+    {
+      "title": "When should AI only draft a runbook instead of patching config?",
+      "body": "When you are not yet sure where the symptom comes from, or when the patch would touch traffic-serving runtime zones. A draft runbook keeps the human brain in the driver seat."
+    },
+    {
+      "title": "What is an anti-pattern in AI Runtime work?",
+      "body": "Letting AI propose a long command sequence, running it blindly, seeing the app come back, and calling the job done. That skips impact analysis, real rollback thinking, and understanding why the commands were needed."
+    }
+    ,
+    {
+      "title": "Why does observability matter when AI works near runtime?",
+      "body": "Without logs, metrics, health signals, or at least a clear observation point, you cannot tell whether the AI patch is helping or merely hiding the symptom. Runtime work needs evidence before and after the change."
+    },
+    {
+      "title": "When should you force the model to list a rollback plan before patching?",
+      "body": "As soon as the patch touches deploy flow, cache, workers, proxies, migrations, or service dependencies. A weak rollback plan is a sign that the patch is not ready to run."
+    },
+    {
+      "title": "What is a quiet runtime failure AI can easily cause?",
+      "body": "The patch brings the app back, but queues slowly lag, cron stops running, health checks become misleading, or logs lose useful signal. This kind of failure is easy to miss if you only look at the main web response."
+    },
+    {
+      "title": "What is a strong workflow for using AI in dangerous runtime zones?",
+      "body": "Explain the current config first, list the blast radius, list the rollback path, and then allow only the smallest patch that can address the symptom. Dangerous runtime zones are not the place for elegant but fuzzy refactors."
+    },
+    {
+      "title": "Why does staging parity matter when AI is used in runtime work?",
+      "body": "If staging is too different from production, you may think the AI patch is safe because staging looks green, while production later fails on proxy behavior, queue volume, secrets, storage, or network paths."
+    },
+    {
+      "title": "When should AI only write verification commands instead of repair commands?",
+      "body": "When you are still unsure whether the symptom lives in the queue, proxy, Redis, storage, or config cache layer. Verification first helps prevent patching the wrong layer and creating fresh noise."
+    },
+    {
+      "title": "Why is secret scrubbing a required skill when using AI around runtime?",
+      "body": "Because runtime logs, `.env` files, deploy output, and config dumps often contain tokens, keys, internal domains, or sensitive operational data. Without scrubbing, you may end up prompting with the exact thing you most needed to protect."
+    },
+    {
+      "title": "When does change freeze matter more than fast AI-assisted repair?",
+      "body": "When the system is already in a major incident, traffic is unstable, or you are inside a sensitive release window. Adding another AI-driven patch into a shaking system can hide root cause or expand blast radius."
+    },
+    {
+      "title": "Which verification commands should a good runtime prompt force AI to list first?",
+      "body": "At minimum it should be forced to list health, queue, process, network, log, and config verification commands before suggesting a patch.",
+      "code": "Verify first:\n- php artisan about\n- php artisan queue:failed\n- php artisan config:show app\n- tail -n 100 storage/logs/laravel.log\n- curl -I https://app.example.com/health\n"
+    }
+  ]
+}

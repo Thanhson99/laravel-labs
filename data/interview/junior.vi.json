@@ -1,0 +1,705 @@
+{
+  "heading": "Junior",
+  "intro": "Bộ câu hỏi `junior` dành cho người đã làm vài project Laravel thật, đã đụng CRUD, auth, validation, upload, database, API hoặc dashboard quản trị. Ở level này, nhà tuyển dụng thường không chỉ hỏi khái niệm nữa mà muốn thấy bạn biết tổ chức feature, debug bug, và hiểu tại sao code nên đặt ở đâu.",
+  "questionNumbered": true,
+  "questionStyle": "interview",
+  "breaks": [
+    {
+      "start": 1,
+      "title": "CRUD Flow Và Request Handling",
+      "description": "Nhóm câu hỏi về cách bạn tổ chức một feature CRUD thật từ route đến response.",
+      "tone": "amber"
+    },
+    {
+      "start": 11,
+      "title": "Validation, Auth Và Form Flow",
+      "description": "Đây là phần rất hay bị hỏi vì hầu như project Laravel junior nào cũng đụng tới.",
+      "tone": "coral"
+    },
+    {
+      "start": 19,
+      "title": "Database, Query Và Eloquent",
+      "description": "Không cần level performance chuyên sâu, nhưng phải biết model, relationship, eager loading, transaction và query rõ ràng.",
+      "tone": "amber"
+    },
+    {
+      "start": 29,
+      "title": "Upload, API Và Frontend Flow",
+      "description": "Nhóm này bám sát các feature thực tế như upload file, trả JSON, filter list và làm việc với Vite hoặc Blade.",
+      "tone": "coral"
+    },
+    {
+      "start": 37,
+      "title": "Cấu Trúc Code Và Tách Lớp",
+      "description": "Junior tốt thường bắt đầu biết controller không nên ôm hết mọi thứ và code cần được tách hợp lý.",
+      "tone": "amber"
+    },
+    {
+      "start": 45,
+      "title": "Debug, Vận Hành Nhẹ Và Thảo Luận Project",
+      "description": "Phần cuối tập trung vào bug thật, command thật, cách đọc lỗi và cách nói về trải nghiệm làm project.",
+      "tone": "coral"
+    },
+    {
+      "start": 49,
+      "title": "Teamwork, Ownership Và Cách Làm Việc",
+      "description": "Nhóm này giúp đánh giá không chỉ code, mà còn cách bạn nhận task, phối hợp, truyền đạt, và tự chủ trong công việc.",
+      "tone": "amber"
+    },
+    {
+      "start": 62,
+      "title": "URL, Request Trace Và Câu Hỏi Tư Duy",
+      "description": "Nhóm bổ sung để đánh giá khả năng lần flow qua nhiều lớp, hiểu web stack cơ bản, và trình bày cách suy nghĩ khi gặp bài toán lạ.",
+      "tone": "coral"
+    }
+  ],
+  "items": [
+    {
+      "title": "Bạn thường làm một CRUD feature trong Laravel theo flow nào?",
+      "body": "Một câu trả lời tốt thường đi theo `route -> Form Request -> controller hoặc action -> model hoặc service -> response` thay vì chỉ nói chung chung là 'em làm controller và model'.",
+      "code": "Route::post('/posts', [PostController::class, 'store']);\n\npublic function store(StorePostRequest $request)\n{\n    $post = Post::create($request->validated());\n\n    return redirect()->route('posts.show', $post);\n}",
+      "bullets": [
+        "Nên nói được dữ liệu vào qua validation trước khi save.",
+        "Nên nói được response cuối là redirect hay JSON tùy flow.",
+        "Nếu có business logic hơn một chút, bạn có thể nhắc tới service hoặc action."
+      ],
+      "tip": "Khung an toàn là: `route nhận request -> request validate -> controller điều phối -> model save -> trả response`."
+    },
+    {
+      "title": "Khi nào bạn để logic trong controller, khi nào nên tách ra chỗ khác?",
+      "body": "Controller nên giữ vai trò điều phối. Nếu logic bắt đầu dài, có nhiều bước, nhiều điều kiện hoặc có side effect như mail, file, event, bạn nên nghĩ tới tách lớp.",
+      "bullets": [
+        "Validation có thể tách sang Form Request.",
+        "Authorize có thể tách sang Policy.",
+        "Business logic dài có thể tách sang service hoặc action."
+      ],
+      "note": "Điểm nhà tuyển dụng muốn thấy là bạn bắt đầu có ý thức giữ controller gọn."
+    },
+    {
+      "title": "Khác nhau giữa `store` và `update` trong một flow CRUD là gì ngoài chuyện tạo mới hay sửa?",
+      "body": "Ngoài thao tác tạo hay sửa, chúng còn khác ở cách validate unique rule, cách xử lý file cũ, cách redirect, và đôi khi khác quyền truy cập.",
+      "bullets": [
+        "Rule unique ở `update` thường cần bỏ qua record hiện tại.",
+        "Nếu có upload ảnh, `update` còn phải nghĩ tới xóa hoặc thay file cũ.",
+        "Authorization ở `update` thường chặt hơn `create`."
+      ]
+    },
+    {
+      "title": "Route model binding là gì và có ích gì?",
+      "body": "Route model binding giúp Laravel tự lấy model từ route parameter, làm controller gọn hơn và giảm lặp đoạn query lấy record.",
+      "code": "Route::get('/posts/{post}', [PostController::class, 'show']);\n\npublic function show(Post $post)\n{\n    return view('posts.show', compact('post'));\n}",
+      "bullets": [
+        "Nó giúp controller đỡ phải viết `Post::findOrFail($id)` lặp lại nhiều nơi.",
+        "Nếu record không tồn tại, Laravel có thể tự trả `404`."
+      ],
+      "tip": "Đây là một câu rất đúng level junior vì nó cho thấy bạn đã làm route và controller thật."
+    },
+    {
+      "title": "Khác nhau giữa `redirect`, `view` và `response()->json()` là gì?",
+      "body": "`view()` dùng để render giao diện, `redirect()` dùng để chuyển request sang route khác, còn `response()->json()` dùng cho flow API hoặc AJAX cần trả dữ liệu dạng JSON.",
+      "bullets": [
+        "Web CRUD thường dùng `redirect()` sau khi create hoặc update thành công.",
+        "API CRUD thường trả JSON thay vì redirect."
+      ]
+    },
+    {
+      "title": "Vì sao không nên nhét query dài hoặc validation dài trực tiếp vào view Blade?",
+      "body": "Vì như vậy view sẽ khó đọc, khó test, và làm trách nhiệm giữa render với xử lý dữ liệu bị lẫn vào nhau.",
+      "bullets": [
+        "View nên tập trung vào hiển thị.",
+        "Chuẩn bị data nên làm từ controller, action, view model hoặc layer hỗ trợ phù hợp."
+      ],
+      "tip": "Một câu trả lời trưởng thành là: `view nên nhận data đã đủ sạch để render`."
+    },
+    {
+      "title": "Nếu một form create thành công nhưng người dùng refresh trang rồi tạo trùng, bạn nghĩ tới điều gì?",
+      "body": "Ở mức junior, bạn nên nghĩ tới redirect sau POST, validation unique, transaction ở case nhạy cảm, hoặc idempotency nếu bài toán nghiêm túc hơn.",
+      "bullets": [
+        "POST rồi redirect giúp giảm việc resubmit vô ý khi refresh.",
+        "Validation chỉ là lớp đầu; dữ liệu quan trọng còn nên có constraint ở DB."
+      ],
+      "note": "Đây là câu tình huống tốt để thể hiện bạn đã từng gặp vấn đề tạo trùng hoặc ít nhất đã nghĩ tới nó."
+    },
+    {
+      "title": "Nếu một route web cứ ra `404` dù bạn nghĩ đã khai đúng, bạn kiểm tra gì đầu tiên?",
+      "body": "Kiểm tra route file đúng chưa, method đúng chưa, prefix có đổi không, route cache có gây lệch không, và link gọi tới có đúng URL không.",
+      "bullets": [
+        "Dùng `php artisan route:list` là thói quen rất nên kể.",
+        "Đừng chỉ nhìn code một chỗ; hãy nhìn cả method, path và middleware group."
+      ],
+      "tip": "Câu này rất hợp để nhắc `route:list` nếu interviewer hỏi cách debug."
+    },
+    {
+      "title": "`find()`, `findOrFail()` và `firstOrFail()` khác nhau thế nào?",
+      "body": "`find()` trả về model hoặc `null`, `findOrFail()` ném lỗi nếu không có record với id đó, còn `firstOrFail()` phù hợp cho query builder hoặc Eloquent query có điều kiện khác id.",
+      "bullets": [
+        "Dùng `OrFail` giúp flow rõ hơn khi resource bắt buộc phải tồn tại.",
+        "Câu này cho thấy bạn đọc Eloquent API không chỉ ở mức cơ bản nhất."
+      ]
+    },
+    {
+      "title": "Một list page có search hoặc filter cơ bản thường làm như thế nào?",
+      "body": "Bạn thường lấy input từ query string, build query có điều kiện, rồi paginate kết quả thay vì tải toàn bộ record về.",
+      "code": "$posts = Post::query()\n    ->when($request->filled('keyword'), function ($query) use ($request) {\n        $query->where('title', 'like', '%'.$request->keyword.'%');\n    })\n    ->latest()\n    ->paginate(10);",
+      "bullets": [
+        "Search và filter rất hay xuất hiện trong bài test junior.",
+        "Điểm cộng là biết dùng `when()` hoặc tách query filter rõ ràng."
+      ]
+    },
+    {
+      "title": "Validation nên đặt ở controller hay Form Request?",
+      "body": "Case nhỏ có thể validate trong controller, nhưng với project nghiêm túc hoặc form có nhiều rule, `Form Request` thường sạch hơn, dễ reuse hơn và dễ đọc hơn.",
+      "code": "class StorePostRequest extends FormRequest\n{\n    public function rules(): array\n    {\n        return [\n            'title' => ['required', 'string', 'max:255'],\n            'body' => ['required', 'string'],\n        ];\n    }\n}",
+      "bullets": [
+        "Junior tốt nên biết khi nào tách để controller đỡ phình.",
+        "Form Request còn có thể chứa `authorize()`."
+      ],
+      "tip": "Nếu interviewer hỏi ngắn, trả lời: `app nhỏ có thể để controller, app nghiêm túc nên tách sang Form Request`."
+    },
+    {
+      "title": "Khác nhau giữa `required`, `nullable`, `sometimes` trong validation là gì?",
+      "body": "`required` bắt buộc phải có giá trị, `nullable` cho phép `null`, còn `sometimes` thường chỉ áp dụng rule nếu field đó thực sự xuất hiện trong request.",
+      "bullets": [
+        "Đây là câu junior rất hay gặp vì liên quan trực tiếp form update.",
+        "Nếu trả lời tốt, bạn cho thấy mình đã đụng validation đủ nhiều."
+      ]
+    },
+    {
+      "title": "Unique validation ở `update` thường phải làm gì khác `create`?",
+      "body": "Ở `update`, bạn thường phải bỏ qua record hiện tại để không tự va vào chính giá trị cũ của nó.",
+      "code": "'slug' => ['required', Rule::unique('posts', 'slug')->ignore($post->id)]",
+      "bullets": [
+        "Đây là lỗi rất hay gặp ở project CRUD đầu đời.",
+        "Một ứng viên từng sửa lỗi này thường trả lời rất tự nhiên."
+      ]
+    },
+    {
+      "title": "Authentication và authorization nên gắn vào flow như thế nào?",
+      "body": "Authentication kiểm tra user đã đăng nhập chưa; authorization kiểm tra user đó có được phép làm action này không.",
+      "bullets": [
+        "Bạn có thể dùng middleware để chặn người chưa login.",
+        "Bạn có thể dùng Policy hoặc Gate để kiểm soát quyền sửa, xóa, xem resource."
+      ],
+      "tip": "Điểm cộng là nối đúng `auth middleware` với `policy` thay vì gom tất cả thành một khái niệm."
+    },
+    {
+      "title": "Policy trong Laravel dùng để làm gì?",
+      "body": "Policy là nơi gom rule quyền truy cập theo resource để controller hoặc Blade không phải viết điều kiện quyền lặp lại khắp nơi.",
+      "code": "public function update(User $user, Post $post): bool\n{\n    return $user->id === $post->user_id;\n}",
+      "bullets": [
+        "Nó phù hợp cho rule như user nào được sửa post nào.",
+        "Junior biết Policy thường được đánh giá tốt hơn junior chỉ biết middleware."
+      ]
+    },
+    {
+      "title": "Nếu một user sửa được bài viết của user khác ngoài ý muốn, bạn nghĩ tới lỗi ở đâu?",
+      "body": "Hãy nghĩ tới authorization bị thiếu hoặc sai, route model binding lấy đúng record nhưng không có policy check, hoặc query update không giới hạn theo ownership.",
+      "bullets": [
+        "Đây là lỗi rất thực tế trong dashboard quản trị hoặc CRUD nhiều user.",
+        "Không chỉ là bug giao diện; nó là bug quyền truy cập."
+      ],
+      "note": "Một câu trả lời tốt cần nhắc tới `policy` hoặc ít nhất `ownership check`."
+    },
+    {
+      "title": "Khác nhau giữa `@error`, `$errors`, `old()` trong form Blade là gì?",
+      "body": "`old()` giúp đổ lại input cũ, `$errors` là bag lỗi validation, còn `@error` là cú pháp gọn để render lỗi của một field.",
+      "bullets": [
+        "Đây là phần UX form rất đúng level junior.",
+        "Nếu từng build admin CRUD, bạn gần như chắc đã đụng nhóm này."
+      ]
+    },
+    {
+      "title": "Password reset flow cơ bản bạn nên biết gì ở level junior?",
+      "body": "Không cần thuộc toàn bộ internals, nhưng nên biết có flow gửi email reset, token reset, form đổi mật khẩu và bước lưu password đã hash.",
+      "bullets": [
+        "Đây là điểm cộng nếu bạn từng dùng Breeze hoặc Jetstream.",
+        "Ít nhất phải nhớ password không được lưu plain text."
+      ]
+    },
+    {
+      "title": "Mass assignment là gì và vì sao `$fillable` quan trọng?",
+      "body": "Mass assignment là việc gán nhiều field từ request vào model cùng lúc. Nếu không giới hạn, bạn có thể vô tình cho phép user set field nhạy cảm.",
+      "bullets": [
+        "Junior nên biết nối `validated()` với `$fillable`.",
+        "Validation tốt nhưng model mở quá vẫn có thể nguy hiểm."
+      ]
+    },
+    {
+      "title": "Khi nào bạn dùng `with()` trong Eloquent?",
+      "body": "Khi bạn biết sẽ cần dữ liệu quan hệ để render hoặc xử lý tiếp, `with()` giúp eager load để tránh query lặp kiểu N+1.",
+      "code": "$posts = Post::with('user')->latest()->paginate(10);",
+      "bullets": [
+        "Nếu list post hiển thị tên user, rất dễ cần eager loading.",
+        "Đây là một trong các câu junior rất hay bị hỏi về Eloquent."
+      ],
+      "tip": "Một câu gọn đẹp: `em dùng with khi biết chắc sẽ đụng relation để tránh query lặp`."
+    },
+    {
+      "title": "N+1 query là gì ở mức junior?",
+      "body": "Đó là tình huống app query danh sách chính một lần, rồi lại query từng relation riêng cho từng item, làm số query tăng rất nhanh.",
+      "bullets": [
+        "Một list 100 post mà mỗi post lại query user riêng là ví dụ điển hình.",
+        "Biết gọi tên và biết dùng `with()` để tránh là đủ ổn ở level junior."
+      ]
+    },
+    {
+      "title": "Khác nhau giữa `hasMany`, `belongsTo`, `belongsToMany` là gì?",
+      "body": "`hasMany` là một record cha có nhiều record con, `belongsTo` là record con thuộc về một cha, còn `belongsToMany` là quan hệ nhiều-nhiều qua bảng trung gian.",
+      "bullets": [
+        "User - Posts là ví dụ `hasMany` hoặc `belongsTo` tùy phía nhìn.",
+        "Users - Roles là ví dụ dễ hiểu cho `belongsToMany`."
+      ]
+    },
+    {
+      "title": "Pivot table là gì và khi nào nó xuất hiện?",
+      "body": "Pivot table là bảng trung gian cho quan hệ nhiều-nhiều, ví dụ `role_user`, `post_tag`, `course_student`.",
+      "bullets": [
+        "Nó thường chỉ chứa hai foreign key, nhưng có thể có thêm cột như `assigned_at`.",
+        "Câu này đúng level junior nếu bạn từng làm role, tag hoặc feature tương tự."
+      ]
+    },
+    {
+      "title": "Khi nào bạn dùng transaction trong Laravel?",
+      "body": "Khi một thao tác gồm nhiều bước ghi dữ liệu mà bạn muốn tất cả cùng thành công hoặc cùng rollback nếu có lỗi.",
+      "code": "DB::transaction(function () use ($request) {\n    $order = Order::create($request->validated());\n    OrderItem::create([\n        'order_id' => $order->id,\n        'product_id' => 1,\n    ]);\n});",
+      "bullets": [
+        "Ví dụ tạo `order` rồi tạo `order_items` là case rất dễ hiểu.",
+        "Junior không cần mô tả isolation level sâu, chỉ cần hiểu `all or nothing`."
+      ]
+    },
+    {
+      "title": "Nếu dữ liệu bị tạo nửa chừng rồi fail giữa chừng, bạn nghĩ tới gì?",
+      "body": "Hãy nghĩ tới transaction thiếu hoặc chưa đặt đúng chỗ, hoặc flow có side effect ngoài DB mà chưa xử lý rollback hợp lý.",
+      "bullets": [
+        "Đây là cách biến câu chuyện transaction thành một tình huống thực tế.",
+        "Trả lời tốt sẽ nhắc tới `DB::transaction()`."
+      ]
+    },
+    {
+      "title": "Khác nhau giữa `paginate()` và `get()` là gì?",
+      "body": "`get()` lấy toàn bộ kết quả theo query hiện tại, còn `paginate()` lấy theo trang và kèm metadata phân trang.",
+      "bullets": [
+        "List admin hoặc user-facing table thường nên nghĩ tới paginate.",
+        "Dùng `get()` bừa với dữ liệu lớn có thể làm trang nặng không cần thiết."
+      ]
+    },
+    {
+      "title": "Nếu list trang admin rất chậm, bạn kiểm tra gì đầu tiên?",
+      "body": "Junior tốt thường nghĩ tới số query, relation có bị N+1 không, có paginate không, có select quá nhiều field không, và có filter nào viết chưa hợp lý không.",
+      "bullets": [
+        "Không cần nhảy ngay vào cache nếu chưa biết bottleneck ở đâu.",
+        "Đây là câu tốt để nói về thói quen nhìn vấn đề có thứ tự."
+      ],
+      "tip": "Đừng mở đầu bằng `em sẽ cache`. Hãy mở đầu bằng `em sẽ đo query và relation trước`."
+    },
+    {
+      "title": "Foreign key và relationship trong Eloquent liên hệ với nhau thế nào?",
+      "body": "Foreign key là ràng buộc ở database, còn relationship trong Eloquent là cách bạn mô hình hóa và truy cập quan hệ đó trong code Laravel.",
+      "bullets": [
+        "Một bên là lớp data integrity, một bên là lớp code convenience.",
+        "Trả lời được vậy cho thấy bạn không nhầm DB với framework layer."
+      ]
+    },
+    {
+      "title": "Upload file trong Laravel cơ bản thường đi theo flow nào?",
+      "body": "Bạn thường validate file, lưu file qua `Storage` hoặc disk phù hợp, rồi lưu đường dẫn hoặc metadata vào database nếu cần.",
+      "code": "$path = $request->file('avatar')->store('avatars', 'public');\n$user->update(['avatar_path' => $path]);",
+      "bullets": [
+        "Đừng quên validate mime hoặc kích thước.",
+        "Nếu là update avatar, còn phải nghĩ tới file cũ."
+      ]
+    },
+    {
+      "title": "Vì sao không nên chỉ lấy nguyên tên file người dùng upload rồi lưu thẳng?",
+      "body": "Vì dễ đụng tên, khó kiểm soát, và có thể gây rối khi xử lý đường dẫn hoặc hiển thị. Thường nên dùng tên sinh ra an toàn hơn.",
+      "bullets": [
+        "Đây là một câu nhỏ nhưng thể hiện bạn đã làm upload thật.",
+        "Có thể nhắc tới storage path hoặc generated filename."
+      ]
+    },
+    {
+      "title": "Khi một form upload file fail nhưng text field vẫn lên, bạn nghĩ tới gì?",
+      "body": "Hãy nghĩ tới `enctype`, rule validation của file, giới hạn upload, và cách bạn đọc dữ liệu file từ request.",
+      "bullets": [
+        "Đây là dạng bug rất thực tế ở project junior.",
+        "Nếu bạn kể từng gặp rồi, câu trả lời sẽ nghe rất thật."
+      ]
+    },
+    {
+      "title": "Nếu làm API create resource, bạn nên trả gì về sau khi thành công?",
+      "body": "Tùy bài toán, nhưng thường bạn nên trả JSON nhất quán, có resource mới tạo hoặc thông báo đủ dùng, và status code hợp lý như `201` cho create.",
+      "bullets": [
+        "Không nên trả mỗi chuỗi text mơ hồ nếu project có API contract rõ.",
+        "Một junior tốt nên biết API response cần nhất quán."
+      ]
+    },
+    {
+      "title": "Khác nhau giữa web form submit và AJAX/API submit là gì trong trải nghiệm người dùng?",
+      "body": "Web form submit thường dẫn tới redirect hoặc reload flow, còn AJAX/API submit thường cập nhật một phần giao diện mà không reload toàn bộ.",
+      "bullets": [
+        "Junior không cần deep frontend, nhưng nên hiểu khác biệt flow.",
+        "Điều này giúp bạn trả lời tốt hơn khi bị hỏi route web và API khác nhau ra sao."
+      ]
+    },
+    {
+      "title": "Khi làm search/filter list, vì sao nên giữ query string trên URL?",
+      "body": "Vì nó giúp người dùng share link, refresh vẫn giữ điều kiện, và backend dễ đọc state filter hơn.",
+      "bullets": [
+        "Đây là một chi tiết nhỏ nhưng rất product-minded.",
+        "Junior có trải nghiệm làm admin panel thường sẽ nói được."
+      ]
+    },
+    {
+      "title": "Nếu frontend báo API trả data không như mong đợi, bạn kiểm tra ở đâu?",
+      "body": "Kiểm tra query thật, shape response thật, key field có đúng không, resource hoặc transform layer có đổi tên field không, và contract giữa frontend-backend có thống nhất không.",
+      "bullets": [
+        "Đừng chỉ nói `backend em đúng rồi`; hãy kiểm tra response thực tế.",
+        "Đây là nơi câu `JSON contract` bắt đầu có ý nghĩa ở level junior."
+      ]
+    },
+    {
+      "title": "Khi nào nên tách service class hoặc action class ở level junior?",
+      "body": "Khi controller bắt đầu có nhiều bước phối hợp, logic business được dùng lại, hoặc một use case đã đủ lớn để tách thành đơn vị dễ đọc hơn.",
+      "bullets": [
+        "Không cần tách chỉ để trông có kiến trúc.",
+        "Nếu chỉ là CRUD rất ngắn, controller vẫn có thể đủ."
+      ],
+      "note": "Một câu trả lời chín hơn là nói `tách theo độ phức tạp và mức reuse`, không phải tách theo trào lưu."
+    },
+    {
+      "title": "Repository pattern có phải lúc nào cũng cần không?",
+      "body": "Không. Ở level junior, câu trả lời tốt thường là `không phải lúc nào cũng cần`; chỉ nên dùng khi nó thực sự giúp tách nguồn dữ liệu, giảm coupling hoặc hỗ trợ test rõ hơn.",
+      "bullets": [
+        "Nếu app còn nhỏ, lạm dụng repository có thể chỉ tăng ceremony.",
+        "Đây là câu khá hay để kiểm tra bạn có tư duy tradeoff hay không."
+      ]
+    },
+    {
+      "title": "Bạn thường đặt business rule đơn giản ở đâu?",
+      "body": "Tùy mức độ, nhưng một junior tốt sẽ biết tránh nhét hết vào view hoặc route closure. Rule có thể ở controller ngắn, request, policy, model method, service hoặc action tùy loại logic.",
+      "bullets": [
+        "Rule quyền đi về policy.",
+        "Rule validate đi về request.",
+        "Flow xử lý nhiều bước có thể vào service hoặc action."
+      ]
+    },
+    {
+      "title": "Nếu controller đã 300 dòng, bạn nghĩ tới việc tách như thế nào?",
+      "body": "Hãy nhìn xem phần nào là validation, phần nào là auth, phần nào là query, phần nào là business flow, phần nào là response formatting để tách đúng trách nhiệm.",
+      "bullets": [
+        "Đừng tách bừa chỉ theo cảm xúc.",
+        "Tách tốt là tách khiến người sau đoán đúng nơi cần mở."
+      ],
+      "tip": "Câu này rất hợp để thể hiện bạn đã bắt đầu biết `review code smell`."
+    },
+    {
+      "title": "Logging ở level junior nên hiểu đến đâu?",
+      "body": "Ít nhất nên biết log giúp gì khi debug, và khi nào nên thêm log có ngữ cảnh thay vì `dd()` mọi nơi.",
+      "bullets": [
+        "Log có thể cho bạn biết request đi đến đâu, id nào đang fail, hoặc flow dừng ở bước nào.",
+        "`dd()` tiện ở local nhưng không thay thế logging có ngữ cảnh."
+      ]
+    },
+    {
+      "title": "Nếu một job hoặc mail chưa dùng tới, junior có cần nhắc queue không?",
+      "body": "Có thể nhắc ở mức vừa phải nếu bài toán liên quan, nhưng không cần cố nhét queue vào mọi câu trả lời. Quan trọng là biết khi nào request bắt đầu nặng hoặc side effect nên tách nền.",
+      "bullets": [
+        "Đây là ranh giới rất hay để phân biệt junior biết thực tế với junior chỉ học thuộc buzzword.",
+        "Nếu chưa làm queue thật, nên trung thực."
+      ]
+    },
+    {
+      "title": "Nếu một bug chỉ xảy ra trên production hoặc staging, bạn sẽ nói sao trong phỏng vấn?",
+      "body": "Nói rõ bạn sẽ tái hiện theo dữ liệu gần giống, đọc log, so config môi trường, xem DB state và hạn chế đoán bừa từ local nếu chưa có đủ bằng chứng.",
+      "bullets": [
+        "Điểm cộng là biết `local ổn` không có nghĩa `production ổn`.",
+        "Junior không cần biết mọi infra detail, nhưng nên có tư duy so sánh môi trường."
+      ]
+    },
+    {
+      "title": "Khi clone repo về mà chạy không lên, bạn nên nghĩ theo checklist nào?",
+      "body": "Nghĩ theo nhóm: PHP dependency, `.env`, database, cache, frontend dependency, storage link nếu có, và các service ngoài nếu project phụ thuộc.",
+      "bullets": [
+        "Nếu cứ chạy lệnh ngẫu nhiên sẽ rất dễ rối.",
+        "Checklist có thứ tự là một dấu hiệu rất tốt ở level junior."
+      ]
+    },
+    {
+      "title": "Nếu sửa `.env` mà app không đổi hành vi, bạn nghĩ tới gì?",
+      "body": "Hãy nghĩ tới config cache hoặc state cũ đang được giữ lại, đặc biệt nếu project từng chạy `config:cache`.",
+      "code": "php artisan config:clear\nphp artisan cache:clear",
+      "bullets": [
+        "Đây là lỗi cực phổ biến sau khi clone hoặc đổi môi trường.",
+        "Nếu kể đúng tình huống này, nhà tuyển dụng thường thấy bạn đã từng bươn project thật."
+      ]
+    },
+    {
+      "title": "Nếu queue worker chạy code cũ sau deploy, bạn nghĩ tới gì?",
+      "body": "Junior khá ổn thường biết worker là process sống lâu và có thể cần restart để nhận code mới.",
+      "code": "php artisan queue:restart",
+      "bullets": [
+        "Không cần biến câu này thành deep DevOps, chỉ cần hiểu bản chất worker sống lâu.",
+        "Đây là câu junior+ rất hay được dùng để test việc bạn có đụng deploy thật chưa."
+      ]
+    },
+    {
+      "title": "Bạn sẽ mô tả một bug mình từng sửa sao cho nghe có giá trị hơn?",
+      "body": "Đừng chỉ kể bug là gì. Hãy nói bối cảnh, triệu chứng, cách bạn khoanh vùng, sửa thế nào, và sau đó bạn học được gì hoặc đổi gì để tránh lặp lại.",
+      "bullets": [
+        "Context ngắn -> vấn đề -> cách debug -> cách fix -> bài học.",
+        "Đó là format kể bug rất mạnh trong phỏng vấn junior."
+      ],
+      "tip": "Nếu chưa có bug lớn, kể một bug nhỏ nhưng thật còn tốt hơn bịa bug to."
+    },
+    {
+      "title": "Nếu interviewer hỏi 'Em làm phần này một mình hay theo code có sẵn?', nên trả lời sao?",
+      "body": "Hãy trung thực. Nếu bạn dựa trên scaffold hoặc project có sẵn, hãy nói rõ phần nền nào có sẵn và phần nào bạn tự hiểu rồi tự chỉnh hoặc mở rộng.",
+      "bullets": [
+        "Nhà tuyển dụng không sợ bạn dùng scaffold; họ sợ bạn không hiểu thứ mình đang dùng.",
+        "Một câu trả lời tốt sẽ chỉ ra được bạn đã sửa hoặc mở rộng gì."
+      ]
+    },
+    {
+      "title": "Một junior Laravel tốt thường khác một fresher ở điểm nào?",
+      "body": "Junior thường đã đi qua vài feature thật, biết tách vấn đề, biết debug có thứ tự hơn, và biết nói về tradeoff nhỏ thay vì chỉ nhắc lại khái niệm.",
+      "bullets": [
+        "Biết route, request, controller, model thôi chưa đủ.",
+        "Điểm khác lớn là đã bắt đầu biết `vì sao code nên để ở đâu`."
+      ],
+      "note": "Đây cũng là cách tự check xem mình đã thật sự lên level junior chưa."
+    },
+    {
+      "title": "Khi được giao một task mới, bạn thường bắt đầu như thế nào?",
+      "body": "Một câu trả lời tốt thường không lao vào code ngay. Bạn nên nói rằng mình đọc yêu cầu, xác nhận phạm vi, tìm flow liên quan trong code, rồi mới bắt đầu chia bước làm.",
+      "bullets": [
+        "Đọc mô tả task và hỏi lại nếu còn mơ hồ.",
+        "Tìm route, controller, model, view hoặc API liên quan.",
+        "Chia task thành các bước nhỏ để tránh sửa lan."
+      ],
+      "tip": "Khung trả lời đẹp là: `hiểu yêu cầu -> định vị code -> chia bước -> làm -> tự test lại`."
+    },
+    {
+      "title": "Nếu nhận một task nhưng chưa hiểu hết yêu cầu, bạn xử lý sao?",
+      "body": "Bạn nên hỏi lại sớm thay vì đoán sai rồi code lệch. Điều quan trọng là hỏi rõ nhưng có chuẩn bị, ví dụ nêu ra chỗ bạn đang hiểu và chỗ bạn đang chưa chắc.",
+      "bullets": [
+        "Không nên im lặng rồi làm theo suy đoán.",
+        "Câu hỏi tốt thường đi kèm ví dụ hoặc flow bạn đang hiểu hiện tại."
+      ],
+      "note": "Đây là câu để đánh giá cách giao tiếp, không chỉ kỹ thuật."
+    },
+    {
+      "title": "Nếu bạn làm một mình một feature, làm sao để người sau vẫn dễ đọc code?",
+      "body": "Hãy giữ tên biến, tên method, flow controller và cấu trúc file rõ ràng, tránh nhét quá nhiều logic vào một chỗ, và để lại commit hoặc mô tả đủ nghĩa.",
+      "bullets": [
+        "Code dễ đọc là một phần của teamwork, kể cả khi bạn đang làm một mình.",
+        "Junior tốt bắt đầu biết viết code cho người sau chứ không chỉ cho mình hiện tại."
+      ]
+    },
+    {
+      "title": "Nếu làm việc nhóm, bạn nghĩ điều gì hay gây khó chịu nhất trong code handoff?",
+      "body": "Thường là code thiếu ngữ cảnh, tên biến mơ hồ, flow đổi ở nhiều nơi nhưng không nói rõ, hoặc bug đã biết mà không truyền lại đầy đủ.",
+      "bullets": [
+        "Một câu trả lời tốt nên cho thấy bạn hiểu nỗi đau của người đọc code sau mình.",
+        "Đây cũng là dấu hiệu bạn có tư duy maintain hơn một chút."
+      ]
+    },
+    {
+      "title": "Khi review code của người khác ở mức junior, bạn sẽ nhìn gì đầu tiên?",
+      "body": "Bạn có thể nhìn flow chính có đúng không, validation có đủ chưa, query có rõ không, quyền truy cập có ổn không, và code có bị đặt sai chỗ quá rõ ràng hay không.",
+      "bullets": [
+        "Không cần giả vờ review như senior, nhưng nên có checklist cơ bản.",
+        "Review tốt không chỉ nhìn style mà còn nhìn behavior."
+      ],
+      "tip": "Một checklist đơn giản: `đúng flow -> đúng data -> đúng quyền -> dễ đọc`."
+    },
+    {
+      "title": "Nếu teammate góp ý code của bạn, bạn nên phản ứng thế nào?",
+      "body": "Tốt nhất là hỏi để hiểu lý do, phân biệt góp ý về style với góp ý về bug hoặc maintainability, rồi sửa theo tinh thần hợp tác thay vì phòng thủ ngay.",
+      "bullets": [
+        "Không phải mọi góp ý đều là công kích cá nhân.",
+        "Thái độ nhận feedback là một phần rất quan trọng ở level junior."
+      ]
+    },
+    {
+      "title": "Nếu bạn không đồng ý với cách làm của teammate, bạn nên trao đổi sao cho ổn?",
+      "body": "Hãy nói theo lý do kỹ thuật hoặc ảnh hưởng tới maintainability, không nói kiểu cảm tính. Tốt nhất là so sánh theo flow, rủi ro, độ dễ đọc và khả năng sửa sau này.",
+      "bullets": [
+        "Đưa ví dụ cụ thể thay vì nói `em thấy không thích`.",
+        "Nếu có hai cách đều ổn, đôi khi consistency của team còn quan trọng hơn ý thích cá nhân."
+      ]
+    },
+    {
+      "title": "Bạn sẽ mô tả năng lực của mình ở level junior như thế nào cho trung thực mà vẫn có điểm?",
+      "body": "Hãy nói rõ mình làm được feature mức nào, đã đụng những phần nào, phần nào còn yếu, và cách mình bù bằng việc đọc docs, đọc code cũ và hỏi đúng lúc.",
+      "bullets": [
+        "Đừng nhận mình biết sâu những thứ chưa từng làm.",
+        "Nhưng cũng đừng hạ thấp quá mức nếu bạn đã thực sự build được project có flow thật."
+      ],
+      "tip": "Khung tốt là: `em làm được A, B, C khá chắc; phần D em mới chạm mức cơ bản nhưng em biết cách học tiếp`."
+    },
+    {
+      "title": "Nếu bị hỏi 'Em mạnh nhất phần nào trong Laravel?', nên trả lời ra sao?",
+      "body": "Hãy chọn một phần thật sự bạn đã làm nhiều, ví dụ CRUD + validation, auth flow, admin dashboard, upload file, hoặc API cơ bản, rồi kể bằng project thật.",
+      "bullets": [
+        "Câu này không cần trả lời quá rộng.",
+        "Chọn đúng phần mạnh thật sẽ nghe tự nhiên hơn nhiều."
+      ]
+    },
+    {
+      "title": "Nếu bị hỏi 'Phần nào em còn yếu?', nên trả lời thế nào để không tự làm mình yếu hẳn?",
+      "body": "Chọn một mảng bạn chưa làm sâu nhưng vẫn có hướng học rõ, ví dụ queue, deploy, realtime hoặc performance tuning; sau đó nói bạn đã học hoặc chạm tới đâu rồi.",
+      "bullets": [
+        "Đừng trả lời kiểu `em yếu tất cả`.",
+        "Cũng đừng chọn một phần sống còn nếu JD đang cần đúng phần đó mà bạn hoàn toàn không biết."
+      ],
+      "note": "Điểm mạnh ở câu này là sự tự nhận thức và cách bạn nói về lộ trình học."
+    },
+    {
+      "title": "Nếu bạn làm chậm hơn dự kiến, bạn nên xử lý và truyền đạt ra sao?",
+      "body": "Hãy báo sớm, nói rõ đang vướng ở đâu, đã thử gì rồi, cần hỗ trợ gì hoặc cần cắt phạm vi chỗ nào. Đừng im lặng tới sát deadline mới báo.",
+      "bullets": [
+        "Đây là câu rất thực tế để đánh giá tinh thần trách nhiệm.",
+        "Junior tốt không phải là người không bao giờ chậm, mà là người biết báo và xử lý đúng."
+      ]
+    },
+    {
+      "title": "Nếu được giao sửa bug trong phần code bạn chưa từng đụng, bạn bắt đầu sao?",
+      "body": "Hãy lần theo flow gây bug, đọc route hoặc entry point, đọc nơi nhận request, rồi lần ra query, service, view hoặc response liên quan thay vì mở repo ngẫu nhiên.",
+      "bullets": [
+        "Đây là nơi tư duy đọc code quan trọng hơn trí nhớ.",
+        "Bạn không cần biết sẵn toàn bộ repo để sửa bug nếu biết cách lần flow."
+      ],
+      "tip": "Một câu trả lời tốt là: `em bám theo flow của bug chứ không đọc folder từ trên xuống`."
+    },
+    {
+      "title": "Điều gì cho thấy một junior đã bắt đầu có ownership tốt?",
+      "body": "Họ không chỉ code xong là thôi, mà còn tự test lại, kiểm tra case phụ, nghĩ tới ảnh hưởng ở chỗ khác, và biết báo lại kết quả hoặc rủi ro cho người liên quan.",
+      "bullets": [
+        "Ownership không có nghĩa là ôm tất cả mọi thứ một mình.",
+        "Nó nghĩa là có trách nhiệm với phần việc mình chạm vào."
+      ]
+    },
+    {
+      "title": "Nếu gõ URL `/posts/12?tab=comments` vào một app Laravel, request thường đi qua những lớp nào?",
+      "body": "Ở mức junior, bạn nên mô tả được chuỗi cơ bản: browser gửi request, web server nhận request, request đi vào `public/index.php`, bootstrap app, chạy middleware, match route, vào controller, có thể qua service hoặc model, rồi trả response về browser.",
+      "bullets": [
+        "Không cần kể hết internals framework, nhưng phải lần được flow chính.",
+        "Đây là câu rất tốt để đánh giá bạn có hiểu request lifecycle thật không."
+      ],
+      "code": "Browser\n-> Nginx/Apache\n-> public/index.php\n-> bootstrap/app.php\n-> middleware\n-> route\n-> controller\n-> service / model\n-> response"
+    },
+    {
+      "title": "Nếu cùng một URL trả sai dữ liệu, bạn sẽ trace theo checklist nào?",
+      "body": "Hãy kiểm tra route có đúng không, parameter có nhận đúng không, request data có bị lệch không, query hoặc service có lọc sai không, policy hoặc middleware có chặn ngầm không, rồi mới nhìn view hoặc JSON transform.",
+      "bullets": [
+        "Junior tốt không nhảy ngay vào random file.",
+        "Câu này đo cách bạn cô lập bug theo flow."
+      ],
+      "tip": "Một flow an toàn là: `route -> request -> authorize -> query/service -> response shape`."
+    },
+    {
+      "title": "`DNS`, web server, `PHP-FPM`, `public/index.php`, middleware, route, controller, service, model, response` khác nhau vai trò ra sao?",
+      "body": "`DNS` giúp tìm địa chỉ server; web server như Nginx nhận HTTP request; `PHP-FPM` chạy PHP process; `public/index.php` là entry point của app; middleware lọc hoặc chuẩn bị request; route chọn điểm vào; controller điều phối; service xử lý flow phức tạp; model hoặc query layer lo dữ liệu; response trả kết quả cho client.",
+      "bullets": [
+        "Đây là câu rất hay để xem bạn có phân biệt được web stack với code app không.",
+        "Không cần nói như devops senior, nhưng phải phân vai tương đối rõ."
+      ]
+    },
+    {
+      "title": "Nếu user tự sửa query string hoặc path parameter trên URL, app nên làm gì?",
+      "body": "App không nên tin dữ liệu từ URL chỉ vì nó đến từ route. Cần validate, cast đúng kiểu, check quyền, và nếu cần thì giới hạn giá trị hợp lệ. URL là input của user nên vẫn có thể sai hoặc bị cố tình sửa.",
+      "bullets": [
+        "Ví dụ `?page=-1`, `?role=admin`, hoặc đổi `/posts/12` thành `/posts/999999`.",
+        "Đây là giao điểm của validation, authorization và defensive coding."
+      ],
+      "note": "Câu trả lời tốt nên có ý `mọi input từ user đều phải được kiểm tra, kể cả input nằm trên URL`."
+    },
+    {
+      "title": "Nếu người dùng gõ thẳng URL tới file private hoặc ảnh upload không nên public, bạn bảo vệ thế nào?",
+      "body": "Không nên lưu file private trong nơi public là tải thẳng được. Bạn có thể lưu ở private disk, chỉ cho tải qua controller hoặc signed URL, và kiểm tra quyền trước khi trả file.",
+      "bullets": [
+        "Junior tốt nên hiểu public file và private file là hai bài toán khác nhau.",
+        "Đây là câu rất thực tế với app admin, tài liệu nội bộ hoặc hóa đơn."
+      ],
+      "code": "Route::get('/documents/{document}/download', function (Document $document) {\n    abort_unless(auth()->user()->can('view', $document), 403);\n\n    return Storage::disk('private')->download($document->path);\n});"
+    },
+    {
+      "title": "Nếu interviewer cho bài toán 'có 1000 số thiếu 1 số', bạn nên trả lời sao để thể hiện tư duy tốt hơn mức chỉ đọc đáp án?",
+      "body": "Trước hết hãy chốt giả định: dãy là `1..1000`, chỉ thiếu một số, không có số trùng. Sau đó đưa hướng đơn giản như dùng tổng kỳ vọng trừ tổng thực tế, rồi nói nếu giả định thay đổi thì cách giải cũng có thể thay đổi.",
+      "bullets": [
+        "Điểm cộng lớn là nói được giả định trước khi code.",
+        "Junior tốt không chỉ ném công thức, mà còn biết tại sao công thức áp dụng được."
+      ]
+    },
+    {
+      "title": "Nếu dữ liệu quá lớn không thể load hết vào memory, bạn sẽ đổi cách nghĩ bài toán missing number thế nào?",
+      "body": "Khi đó bạn phải nghĩ tới xử lý theo dòng, theo chunk, hoặc tận dụng công thức/tổng trong lúc đọc dần dữ liệu thay vì giữ hết vào mảng. Điều nhà tuyển dụng muốn thấy là bạn biết nhận ra giới hạn bộ nhớ và đổi strategy.",
+      "bullets": [
+        "Đây là bước chuyển từ lời giải đúng sang lời giải phù hợp điều kiện thực tế.",
+        "Không cần đi quá xa vào tối ưu cực đoan, chỉ cần cho thấy bạn biết `memory` là constraint thật."
+      ],
+      "tip": "Một câu tốt là: `nếu dữ liệu lớn, em cố tránh phụ thuộc vào việc phải load toàn bộ vào RAM`."
+    },
+    {
+      "title": "Nếu gặp một bài toán lạ trong phỏng vấn mà chưa từng gặp, làm sao trình bày để vẫn được đánh giá tốt?",
+      "body": "Hãy chia nhỏ bài toán, hỏi lại input hoặc constraint, nói hướng brute-force trước, rồi nếu còn thời gian mới tối ưu thêm. Nhà tuyển dụng thường đánh giá tư duy có cấu trúc, cách giao tiếp và độ bình tĩnh chứ không chỉ đáp án cuối.",
+      "bullets": [
+        "Đừng im lặng quá lâu hoặc nhảy sang tối ưu khi chưa có lời giải nền.",
+        "Một junior biết nói ra suy nghĩ sẽ dễ được đánh giá đúng hơn."
+      ],
+      "note": "Đây là câu tình huống rất tốt để đánh giá cách bạn làm việc dưới áp lực nhẹ."
+    },
+    {
+      "title": "Nếu requirement đang mơ hồ nhưng PM hoặc lead hỏi khi nào xong, junior nên phản ứng thế nào?",
+      "body": "Đừng đưa ra con số chắc chắn khi bài toán chưa rõ. Hãy nói phần nào đã rõ, phần nào còn cần làm rõ, ước lượng theo giả định hiện tại, và nhấn rằng estimate có thể đổi nếu scope đổi.",
+      "bullets": [
+        "Đây là kỹ năng làm việc thực tế, không chỉ kỹ năng kỹ thuật.",
+        "Ước lượng tốt bắt đầu từ việc làm rõ phạm vi."
+      ],
+      "tip": "Một câu tốt là: `với giả định hiện tại em nghĩ khoảng X, nhưng em cần chốt thêm A và B để estimate chắc hơn`."
+    },
+    {
+      "title": "Nếu làm xong feature nhưng chưa chắc đủ test case, junior nên tự hỏi gì?",
+      "body": "Hãy tự hỏi happy path đã chạy chưa, input sai thì sao, user không có quyền thì sao, dữ liệu rỗng thì sao, submit lặp thì sao, và có chỗ nào dễ hỏng khi sửa tiếp không. Đây là cách nghĩ theo risk chứ không chỉ theo flow đẹp nhất.",
+      "bullets": [
+        "Nhiều bug junior đến từ việc chỉ test đúng một case đẹp.",
+        "Câu này đo khả năng tự mở rộng góc nhìn trước khi giao code."
+      ]
+    },
+    {
+      "title": "Nếu API trả đúng dữ liệu nhưng frontend vẫn hiển thị sai, bạn phối hợp với frontend như thế nào?",
+      "body": "Bạn nên nói rõ request nào, response nào, field nào đang gửi về, ví dụ payload thật, và chỗ nào bạn nghĩ là contract đã khác kỳ vọng. Mục tiêu là cùng nhìn một dữ liệu chung thay vì tranh luận cảm tính.",
+      "bullets": [
+        "Junior tốt không chỉ nói `backend em đúng rồi` rồi dừng lại.",
+        "Cách truyền đạt rõ payload rất quan trọng khi phối hợp team."
+      ],
+      "code": "{\n  \"id\": 12,\n  \"status\": \"draft\",\n  \"published_at\": null\n}"
+    },
+    {
+      "title": "Nếu sửa một bug nhỏ nhưng thấy ảnh hưởng lan sang chỗ khác, bạn nên xử lý ra sao?",
+      "body": "Hãy dừng lại để xác định boundary ảnh hưởng, test lại các flow liên quan, báo cho người phụ trách nếu risk tăng, và nếu cần thì thu nhỏ phạm vi fix để an toàn hơn. Junior tốt không cố âm thầm sửa dây chuyền mà không báo.",
+      "bullets": [
+        "Đây là dấu hiệu bạn bắt đầu có ownership và awareness về side effect.",
+        "Không phải mọi bug nhỏ đều an toàn như vẻ ngoài."
+      ],
+      "note": "Câu này rất hợp để đánh giá độ cẩn thận và cách làm việc có trách nhiệm."
+    },
+    {
+      "title": "CORS là browser enforcement, vậy backend nên hiểu và cấu hình nó như thế nào ở mức junior?",
+      "body": "Bạn nên hiểu origin nào được phép gọi, method nào được phép, header nào được phép, và vì sao không nên mở `*` bừa với credential nhạy cảm. Ở level junior, điều quan trọng là hiểu CORS là policy của browser chứ không phải auth mechanism.",
+      "bullets": [
+        "Rất nhiều bạn mới nhầm CORS với phân quyền API.",
+        "CORS sai có thể gây cả lỗi 'không gọi được API' lẫn mở policy quá rộng."
+      ]
+    },
+    {
+      "title": "Nếu một endpoint upload hoặc API nội bộ bị lộ quá rộng, junior nên nghĩ tới các lớp bảo vệ nào?",
+      "body": "Ít nhất phải nghĩ tới auth, authorization, validation, rate limit, file type check, size limit và logging đủ để biết ai đã gọi gì. Không nên nhìn API chỉ như chỗ 'nhận request rồi trả data'.",
+      "bullets": [
+        "Đây là bước chuyển từ code feature sang nghĩ tới bề mặt tấn công.",
+        "Một endpoint làm đúng nghiệp vụ nhưng mở sai quyền vẫn là bug lớn."
+      ],
+      "tip": "Một câu ngắn gọn là: `đúng flow chưa đủ, còn phải đúng quyền và đúng guardrail`."
+    }
+  ]
+}

@@ -1,0 +1,896 @@
+{
+  "heading": "Fresher",
+  "intro": "This bank gathers the questions a fresher PHP or Laravel candidate is most likely to face: PHP foundations, HTTP, MVC, Blade, forms, validation, database basics, Artisan, project setup, and how to talk about a real project. The goal is not memorization. The goal is understanding well enough to answer clearly, briefly, and with real examples.",
+  "questionNumbered": true,
+  "questionStyle": "interview",
+  "breaks": [
+    {
+      "start": 1,
+      "title": "PHP Foundations",
+      "description": "Early-round questions about the language, request data, sessions, cookies, and basic syntax.",
+      "tone": "amber"
+    },
+    {
+      "start": 13,
+      "title": "OOP And Code Organization",
+      "description": "This group checks whether you understand classes, objects, traits, namespaces, and Composer.",
+      "tone": "coral"
+    },
+    {
+      "start": 20,
+      "title": "Laravel Basics",
+      "description": "From what Laravel is to request lifecycle, MVC, routes, and middleware.",
+      "tone": "amber"
+    },
+    {
+      "start": 26,
+      "title": "Blade, Forms, And Validation",
+      "description": "This area is asked often because it maps directly to the first CRUD features most Laravel freshers build.",
+      "tone": "coral"
+    },
+    {
+      "start": 32,
+      "title": "Database And Eloquent",
+      "description": "You do not need deep performance tuning here, but you should understand models, migrations, and simple relationships.",
+      "tone": "amber"
+    },
+    {
+      "start": 39,
+      "title": "Artisan, Running A Project, And Basic HTTP",
+      "description": "This group is close to what happens when you clone a real project, fix a real bug, and explain real commands.",
+      "tone": "coral"
+    },
+    {
+      "start": 45,
+      "title": "Real Interview Situations",
+      "description": "These final questions help you talk about your project, your learning habits, and how you respond when you do not know an answer.",
+      "tone": "amber"
+    },
+    {
+      "start": 74,
+      "title": "Web Foundations, URLs, Basic Networking, And Thinking Style",
+      "description": "Adds common early-round questions such as what OOP is, what a URL contains, what DNS/IP/port mean, and how you approach a simple logic puzzle.",
+      "tone": "coral"
+    }
+  ],
+  "items": [
+    {
+      "title": "What is PHP and where does it usually run?",
+      "body": "PHP is a server-side scripting language that is commonly used to process requests, work with data, and return HTML or JSON back to the client.",
+      "bullets": [
+        "PHP can run in a web-server context or from the CLI.",
+        "In a web app, the browser sends a request, the server runs PHP, then a response is returned.",
+        "In Laravel, PHP is the language underneath the framework."
+      ],
+      "tip": "Start with one very short sentence, then add an example. For example: `PHP is the server-side language, and Laravel is the PHP framework used to organize the app.`",
+      "note": "A good fresher answer clearly separates the `language` from the `framework`."
+    },
+    {
+      "title": "What is the difference between a variable and a constant in PHP?",
+      "body": "A variable can change during execution, while a constant is defined once and treated as a fixed value.",
+      "bullets": [
+        "Variables begin with `$`.",
+        "Constants are often declared with `const` or `define()`.",
+        "Constants fit values that are intended to stay fixed or represent configuration-like meaning."
+      ]
+    },
+    {
+      "title": "What are superglobals in PHP, and which ones should you know first?",
+      "body": "Superglobals are special variables that are always available and are used to access request data, session state, cookies, and server environment information.",
+      "bullets": [
+        "`$_GET`: query-string data.",
+        "`$_POST`: form data sent with POST.",
+        "`$_FILES`: uploaded-file data.",
+        "`$_SESSION`: session data on the server side.",
+        "`$_COOKIE`: cookie data from the browser.",
+        "`$_SERVER`: request, host, method, path, and execution environment details."
+      ]
+    },
+    {
+      "title": "What is the difference between `GET` and `POST`?",
+      "body": "`GET` is typically used for reading data and representing state in the URL, while `POST` is commonly used for sending data that changes application state, such as creating records or submitting forms.",
+      "bullets": [
+        "`GET` is bookmarkable and shareable because the parameters are part of the URL.",
+        "`POST` does not place the payload in the query string, which makes it more suitable for form submission and write operations.",
+        "Do not say `POST` is automatically fully secure. It simply does not expose data in the URL the same way `GET` does."
+      ],
+      "tip": "If you get stuck, answer with 3 points: `purpose`, `where the data appears`, and `what it is commonly used for`."
+    },
+    {
+      "title": "What does it mean when HTTP is called `stateless`?",
+      "body": "It means each request is fundamentally independent; the server does not automatically remember the previous request unless something like `session`, `cookie`, a token, or another state mechanism is involved.",
+      "bullets": [
+        "This is why sessions and cookies matter in web applications.",
+        "Without a state mechanism, the next request does not automatically know what happened in the previous one."
+      ],
+      "tip": "A compact answer is: `HTTP does not remember previous requests by default, so extra mechanisms are needed to keep state`."
+    },
+    {
+      "title": "How are sessions and cookies different?",
+      "body": "Cookies are stored in the browser, while session data is generally kept on the server and the browser only carries the session identifier.",
+      "code": "// concept example, not a full Laravel snippet\n$_SESSION['user_id'] = 15;\nsetcookie('theme', 'dark', time() + 3600);",
+      "bullets": [
+        "Cookies are useful for small preferences such as theme choice.",
+        "Sessions are more suitable for login state and temporary user flow data.",
+        "In Laravel you usually work through the session API instead of touching raw superglobals."
+      ],
+      "tip": "This answer becomes stronger if you add: `the browser usually keeps the session id, while the main session data stays on the server`.",
+      "note": "A common wrong answer is to say the session itself lives in the browser. Usually only the session id does."
+    },
+    {
+      "title": "Why do HTML upload forms often need `enctype=\"multipart/form-data\"`?",
+      "body": "Because when a form includes file upload, the browser must send the request body in a format that can carry file data correctly instead of only normal text fields.",
+      "code": "<form method=\"POST\" action=\"/avatar\" enctype=\"multipart/form-data\">\n    @csrf\n    <input type=\"file\" name=\"avatar\">\n    <button type=\"submit\">Upload</button>\n</form>",
+      "bullets": [
+        "Without `multipart/form-data`, the file may not arrive correctly on the server.",
+        "This is a very practical question for CRUD projects with images or attachments."
+      ]
+    },
+    {
+      "title": "What is the difference between `include`, `require`, `include_once`, and `require_once`?",
+      "body": "All of them load another PHP file, but `require` is stricter when the file is missing or broken.",
+      "bullets": [
+        "`include`: emits a warning and execution may continue depending on the situation.",
+        "`require`: is treated more critically and usually stops execution when the file cannot be loaded.",
+        "`_once`: ensures the file is only loaded one time to avoid redeclaring classes or functions."
+      ],
+      "note": "Modern projects rely heavily on Composer autoloading, but this is still a common foundation question."
+    },
+    {
+      "title": "What is an array in PHP, and which forms should you know first?",
+      "body": "An array is a data structure that stores multiple values in one variable. At a basic level, you should know indexed arrays and associative arrays.",
+      "code": "$names = ['An', 'Binh'];\n$user = ['name' => 'An', 'role' => 'editor'];",
+      "bullets": [
+        "Indexed arrays are accessed by numeric position.",
+        "Associative arrays are accessed by meaningful keys.",
+        "Laravel uses arrays constantly in config, request data, validation rules, and responses."
+      ]
+    },
+    {
+      "title": "How are indexed arrays and associative arrays different, and what loop is most common?",
+      "body": "Indexed arrays use numeric indexes, while associative arrays use named keys. For both, `foreach` is the most readable basic loop.",
+      "bullets": [
+        "For indexed arrays, `foreach ($items as $item)` is often enough.",
+        "For associative arrays, `foreach ($user as $key => $value)` is common.",
+        "A fresher does not need to show off every loop style; a clear `foreach` answer is enough."
+      ]
+    },
+    {
+      "title": "What is the difference between `==` and `===` in PHP?",
+      "body": "`==` is loose comparison, while `===` is strict comparison of both value and type.",
+      "code": "1 == '1'   // true\n1 === '1'  // false",
+      "bullets": [
+        "When you want to avoid confusing implicit type conversion, `===` is usually safer.",
+        "This is a very basic question, but it shows whether you are careful about types."
+      ]
+    },
+    {
+      "title": "How are `isset()` and `empty()` different?",
+      "body": "`isset()` is usually used to check whether a variable or key exists and is not `null`, while `empty()` checks whether a value is considered empty in PHP terms.",
+      "bullets": [
+        "`empty('')`, `empty(0)`, `empty('0')`, and `empty([])` can all return true.",
+        "Using these two incorrectly can easily create form-input bugs.",
+        "In interviews, it is good to emphasize that `isset` is about existence, while `empty` is about emptiness."
+      ],
+      "note": "This is a very common PHP foundation question because it maps directly to input handling."
+    },
+    {
+      "title": "What is a function in PHP, and why is it useful to keep functions small?",
+      "body": "A function is a named block of logic that can be reused. Small functions usually make code easier to read, easier to test, and less repetitive.",
+      "code": "function formatUserName(string $name): string\n{\n    return trim(mb_strtoupper($name));\n}",
+      "bullets": [
+        "A good function usually has a clear single purpose.",
+        "If the same logic appears in multiple places, a function or method is often the right next step."
+      ],
+      "note": "A good answer usually highlights `reuse`, `readability`, and `maintainability`."
+    },
+    {
+      "title": "What is the `??` operator used for in PHP?",
+      "body": "This is the null coalescing operator. It is often used to provide a fallback value when the value on the left is missing or `null`.",
+      "code": "$name = $_GET['name'] ?? 'guest';",
+      "bullets": [
+        "It is cleaner than writing repeated `isset()` checks for simple fallback cases.",
+        "You see it often in real code when reading input or config values."
+      ]
+    },
+    {
+      "title": "What are a class and an object in PHP?",
+      "body": "A class is a blueprint that describes data and behavior, while an object is a concrete instance created from that class.",
+      "bullets": [
+        "Properties store state and methods describe behavior.",
+        "Laravel uses classes everywhere: controllers, requests, models, middleware, jobs, and commands.",
+        "When giving an example, use a real class such as `PostController` or a `User` model."
+      ]
+    },
+    {
+      "title": "How do `public`, `private`, and `protected` differ?",
+      "body": "These are access modifiers that control where properties and methods can be used.",
+      "code": "class UserService\n{\n    public function createUser() {}\n\n    protected function normalizeEmail() {}\n\n    private function hashPassword() {}\n}",
+      "bullets": [
+        "`public`: can be called from outside the class.",
+        "`protected`: can be used inside the class and inside child classes.",
+        "`private`: can only be used inside the class that defines it."
+      ],
+      "note": "At fresher level you do not need a deeply academic answer. Correct access scope is enough."
+    },
+    {
+      "title": "What is the difference between an interface and an abstract class?",
+      "body": "An interface defines a contract that a class must follow, while an abstract class is a base class that can contain both abstract methods and shared implementation.",
+      "bullets": [
+        "Interfaces fit cases where very different classes must promise the same behavior.",
+        "Abstract classes fit families of classes that should share some common code.",
+        "At fresher level, it is enough to understand `contract` versus `shared base logic`."
+      ],
+      "tip": "There is no need to force deep SOLID language here. Distinguishing `contract` from `base implementation` is enough."
+    },
+    {
+      "title": "What is a trait in PHP?",
+      "body": "A trait is a way to reuse a group of methods across multiple classes without deep inheritance.",
+      "bullets": [
+        "A trait does not replace classes or interfaces.",
+        "It is helpful for reused logic that does not justify a new service yet.",
+        "Using traits everywhere without discipline can make responsibility harder to trace."
+      ]
+    },
+    {
+      "title": "What is a namespace in PHP?",
+      "body": "A namespace helps avoid name collisions and keeps code organized by directory and domain.",
+      "bullets": [
+        "Laravel depends heavily on namespaces and PSR-4 autoloading.",
+        "For example, `App\\Http\\Controllers\\PostController` already tells you where the class belongs.",
+        "A short answer can simply say namespaces prevent class-name conflicts in larger projects."
+      ]
+    },
+    {
+      "title": "What is Composer used for in a PHP or Laravel project?",
+      "body": "Composer is PHP's dependency manager. It reads `composer.json`, installs packages into `vendor/`, and generates autoloading so classes can be used automatically.",
+      "code": "composer install\ncomposer require laravel/sanctum\ncomposer dump-autoload",
+      "bullets": [
+        "`composer.json` describes dependencies and autoload configuration.",
+        "`vendor/` contains the installed packages and is normally not committed to git.",
+        "After cloning a Laravel project, not having `vendor/` yet is normal."
+      ],
+      "note": "A solid fresher-level detail is being able to distinguish `composer install` from `composer require`."
+    },
+    {
+      "title": "What is autoloading in a PHP or Laravel project?",
+      "body": "Autoloading is the mechanism that lets classes be loaded automatically when needed instead of manually requiring each file yourself.",
+      "bullets": [
+        "In modern projects, Composer generates the autoloading setup for you.",
+        "This keeps class usage cleaner and reduces missing-include mistakes."
+      ],
+      "note": "A useful connection: if someone asks what `vendor/autoload.php` is for, tie it back to Composer autoloading."
+    },
+    {
+      "title": "What is Laravel?",
+      "body": "Laravel is an open-source PHP framework for building web applications with clearer structure through routing, middleware, Blade, validation, Eloquent, Artisan, and other built-in tools.",
+      "bullets": [
+        "Laravel is not a separate language; it runs on PHP.",
+        "Its value is not just speed, but also clearer conventions and maintainability.",
+        "A decent answer should mention MVC and the integrated ecosystem."
+      ],
+      "tip": "Do not stop at `Laravel is a popular framework`. Add what it gives you: `routes`, `middleware`, `Blade`, `validation`, and `Eloquent`."
+    },
+    {
+      "title": "Why do many teams choose Laravel instead of plain PHP?",
+      "body": "Because Laravel already provides the basic application layers such as routing, validation, auth, migration, ORM, and command-line tooling, which reduces repetition and improves structure.",
+      "bullets": [
+        "Plain PHP is not wrong, but applications become messy faster if every foundational layer is built from scratch.",
+        "Laravel helps onboarding because many conventions are already established.",
+        "You can emphasize productivity, structure, and ecosystem."
+      ]
+    },
+    {
+      "title": "What does MVC mean in Laravel?",
+      "body": "MVC is a way to separate responsibility: models handle data concerns, views handle display, and controllers coordinate request and response flow.",
+      "bullets": [
+        "In real Laravel apps there are more layers than just MVC, such as requests, middleware, policies, services, jobs, and events.",
+        "But at fresher level, explaining the core responsibilities correctly is enough."
+      ]
+    },
+    {
+      "title": "Which Laravel folders should a fresher remember first?",
+      "body": "You do not need to memorize the full tree immediately, but you should know the core places that help you orient yourself in a repo.",
+      "bullets": [
+        "`routes/`: web and API route definitions.",
+        "`app/Http/Controllers`: controllers.",
+        "`resources/views`: Blade views.",
+        "`app/Models`: Eloquent models.",
+        "`database/migrations`: database schema changes.",
+        "`public/`: public web entry point.",
+        "`storage/`: logs, cache, and runtime files."
+      ],
+      "code": "routes/\napp/\n  Http/Controllers/\n  Models/\nresources/views/\ndatabase/migrations/\npublic/\nstorage/"
+    },
+    {
+      "title": "How does an HTTP request move through Laravel at a high level?",
+      "body": "A request enters `public/index.php`, Laravel bootstraps the application, loads service providers, dispatches through the router, runs middleware, then executes the controller or closure and returns a response.",
+      "code": "browser -> web server -> public/index.php -> bootstrap/app.php\n-> middleware -> route -> controller -> response",
+      "bullets": [
+        "You do not need to recite every internal kernel detail in a fresher round.",
+        "A good signal is simply knowing middleware runs before the controller."
+      ],
+      "tip": "If you cannot remember everything, keep the short flow: `public/index.php -> route -> middleware -> controller -> response`."
+    },
+    {
+      "title": "How are `routes/web.php` and `routes/api.php` different?",
+      "body": "`web.php` is usually for browser-facing routes that use session, cookies, and CSRF. `api.php` is usually for more stateless API-style traffic.",
+      "bullets": [
+        "The `web` middleware group provides session state and CSRF support.",
+        "API routes more often return JSON and do not follow Blade-form flow.",
+        "Not every API must live in `api.php`, but this is the standard starting point."
+      ]
+    },
+    {
+      "title": "What is a route parameter in Laravel?",
+      "body": "It is the dynamic part of a URL used to pass values like an `id` or `slug` into a route and then into the controller flow.",
+      "code": "Route::get('/posts/{post}', [PostController::class, 'show']);",
+      "bullets": [
+        "It is commonly used to fetch the specific record the user wants to view or edit.",
+        "A fresher answer does not need deep route-model-binding internals; `dynamic URL value` is enough."
+      ]
+    },
+    {
+      "title": "What is middleware in Laravel?",
+      "body": "Middleware is a layer that can inspect, filter, or modify a request and response as they move through the application.",
+      "bullets": [
+        "Common examples are auth checks, CSRF checks, and maintenance-mode checks.",
+        "Middleware prevents shared rules from being repeated inside every controller.",
+        "A strong short answer ties it to something like `auth` or `verified`."
+      ]
+    },
+    {
+      "title": "What is Blade?",
+      "body": "Blade is Laravel's template engine. It makes views easier to write with directives such as `@if`, `@foreach`, `@csrf`, and `@error`.",
+      "bullets": [
+        "Blade files usually end with `.blade.php`.",
+        "Blade is ultimately compiled into PHP.",
+        "It helps keep the view layer cleaner than mixing raw PHP heavily into HTML."
+      ]
+    },
+    {
+      "title": "How are `{{ }}` and `{!! !!}` different?",
+      "body": "`{{ }}` escapes output for safety, while `{!! !!}` renders raw HTML and should only be used when the data is trusted.",
+      "code": "<p>{{ $post->title }}</p>\n<div>{!! $trustedHtml !!}</div>",
+      "bullets": [
+        "Prefer `{{ }}` by default.",
+        "Using raw HTML carelessly can create XSS risk when content comes from users."
+      ],
+      "tip": "A stronger answer adds: `I only use raw HTML when the content is trusted or tightly controlled`.",
+      "note": "This is a very common check for whether you understand basic output safety."
+    },
+    {
+      "title": "What is XSS at a very basic level?",
+      "body": "XSS is a vulnerability where malicious script can end up rendered in the user's browser, usually because output was displayed without proper escaping or control.",
+      "bullets": [
+        "A very close example is rendering raw HTML from untrusted user data.",
+        "Blade's default `{{ }}` escaping helps reduce this risk compared to raw rendering."
+      ],
+      "tip": "You do not need a deep security explanation here. Connecting XSS with unsafe output rendering is enough."
+    },
+    {
+      "title": "What is the role of a controller in Laravel?",
+      "body": "A controller receives a request that already passed routing and middleware, calls the necessary application logic, then returns a view or a JSON response.",
+      "bullets": [
+        "Controllers should not absorb every piece of business logic forever.",
+        "At fresher level, it is enough to understand that controllers coordinate request flow.",
+        "As applications grow, more logic may move into requests, policies, services, or actions."
+      ]
+    },
+    {
+      "title": "What is CSRF, and why do Laravel forms often contain `@csrf`?",
+      "body": "CSRF is an attack where a browser that is already logged in is tricked into sending an unwanted request. `@csrf` adds a token so Laravel can verify that the request truly came from your application flow.",
+      "code": "<form method=\"POST\" action=\"/posts\">\n    @csrf\n    <input name=\"title\">\n    <button type=\"submit\">Save</button>\n</form>",
+      "bullets": [
+        "Without the token, many web POST, PUT, PATCH, or DELETE requests may be rejected.",
+        "Do not explain CSRF as if it were a Laravel bug. It is a web protection mechanism."
+      ]
+    },
+    {
+      "title": "Where should validation usually live in Laravel?",
+      "body": "For small cases it can be written in a controller, but in real projects it is often cleaner to move validation into a Form Request.",
+      "bullets": [
+        "Validation stops bad data before it reaches your main data layer.",
+        "Validation does not replace database constraints such as unique indexes.",
+        "In a short answer, saying `controller or Form Request`, with a preference for `Form Request` as apps grow, is good enough."
+      ],
+      "tip": "A clean answer is: `small apps can validate in the controller, but serious apps usually move that into a Form Request`."
+    },
+    {
+      "title": "What are `old()` and `$errors` used for in Blade forms?",
+      "body": "`old()` repopulates what the user typed after validation fails, and `$errors` exposes the validation messages for display.",
+      "code": "<input name=\"title\" value=\"{{ old('title') }}\">\n@error('title')\n    <p>{{ $message }}</p>\n@enderror",
+      "bullets": [
+        "This improves form UX because the user does not lose everything after a failed submit.",
+        "If you have built CRUD forms before, this is a strong practical example to mention."
+      ]
+    },
+    {
+      "title": "What is a migration in Laravel?",
+      "body": "A migration is code that describes database schema changes, allowing a team to version and replay schema changes instead of editing databases manually on each machine.",
+      "bullets": [
+        "Migrations can create tables, alter columns, add indexes, and define foreign keys.",
+        "The main value is reproducibility across environments and team members.",
+        "A good fresher answer says migrations help avoid manual one-off database setup."
+      ]
+    },
+    {
+      "title": "What is a foreign key in a database?",
+      "body": "A foreign key is a key used to connect data between tables and help guarantee that a child record points to a valid parent record.",
+      "bullets": [
+        "For example, `posts.user_id` can reference `users.id`.",
+        "It helps keep relationships enforced at the data layer instead of existing only in application assumptions.",
+        "This is an important foundation when talking about Eloquent relationships."
+      ],
+      "tip": "A simple answer is: `a foreign key links and constrains relationships between tables`."
+    },
+    {
+      "title": "What is a seeder in Laravel?",
+      "body": "A seeder is code that inserts sample or initial data into the database, often for local setup, tests, or default system data.",
+      "code": "php artisan db:seed\nphp artisan migrate --seed",
+      "bullets": [
+        "A seeder is different from a migration: a migration handles `schema`, while a seeder handles `data`.",
+        "A simple example is creating a default admin user or demo records."
+      ],
+      "note": "A good short answer to `migration vs seeder` is simply `schema` versus `data`."
+    },
+    {
+      "title": "What is Eloquent?",
+      "body": "Eloquent is Laravel's ORM. It lets you work with database tables through PHP models instead of writing raw SQL for every common operation.",
+      "bullets": [
+        "Each model usually represents a table.",
+        "You can create, read, update, delete, and define relationships from models.",
+        "Eloquent is especially convenient for ordinary CRUD applications."
+      ],
+      "tip": "Tie it to a real example such as a `Post` model or `User` model so it sounds less memorized."
+    },
+    {
+      "title": "What is the difference between Eloquent and Query Builder?",
+      "body": "Eloquent works through models and feels more object-oriented, while Query Builder is a flexible query API that stays closer to query construction without full model behavior.",
+      "bullets": [
+        "Eloquent is often easier to read in ordinary app features.",
+        "Query Builder is useful when the query shape is more custom or you do not need model-level behavior.",
+        "At fresher level, `model style` versus `query style` is the important distinction."
+      ]
+    },
+    {
+      "title": "What is `$fillable` used for?",
+      "body": "`$fillable` declares which attributes may be mass-assigned, helping protect the model from unintended assignment when request data is used directly.",
+      "code": "class Post extends Model\n{\n    protected $fillable = ['title', 'body'];\n}",
+      "bullets": [
+        "Without mass-assignment control, you may accidentally allow sensitive fields to be set.",
+        "A good answer should connect `$fillable` to model-side protection."
+      ],
+      "note": "A fresher who can connect `$fillable` with `validated()` data is already thinking correctly."
+    },
+    {
+      "title": "What is soft delete?",
+      "body": "Soft delete means marking a record as deleted without removing it permanently from the table, usually through a `deleted_at` column.",
+      "bullets": [
+        "It is useful when you may need restoration or an audit trail.",
+        "Soft delete does not mean the record disappears from the database physically.",
+        "At this level, `soft delete` versus `hard delete` is the essential distinction."
+      ]
+    },
+    {
+      "title": "What is a one-to-many relationship in Eloquent?",
+      "body": "It is a relationship where one parent record has many child records, such as one user having many posts or one post having many comments.",
+      "code": "// User model\npublic function posts()\n{\n    return $this->hasMany(Post::class);\n}",
+      "bullets": [
+        "On the child side, the inverse is usually `belongsTo()`.",
+        "This is one of the most common Eloquent relationship questions for freshers."
+      ]
+    },
+    {
+      "title": "What is the difference between authentication and authorization?",
+      "body": "Authentication answers `who are you`; authorization answers `are you allowed to do this`.",
+      "bullets": [
+        "Logging in is authentication.",
+        "Checking whether a user may edit this post is authorization.",
+        "Many freshers mix these two up, so it is worth getting completely clear."
+      ]
+    },
+    {
+      "title": "What is Artisan in Laravel?",
+      "body": "Artisan is Laravel's command-line tool. It is used for development, migrations, clearing caches, generating scaffolding files, and many runtime support tasks.",
+      "code": "php artisan list\nphp artisan make:controller PostController\nphp artisan migrate\nphp artisan route:list",
+      "bullets": [
+        "It is better to know a handful of real commands you actually use than to memorize a giant list.",
+        "If you have cloned and run a Laravel project, mention which Artisan commands you really needed."
+      ],
+      "tip": "If the interviewer wants something short, name 3 practical commands: `migrate`, `route:list`, and `make:controller`."
+    },
+    {
+      "title": "After cloning a Laravel project, what do you usually run?",
+      "body": "A common flow is to install PHP dependencies, create `.env`, generate the app key, configure the database, then run migrations if the project requires them.",
+      "code": "composer install\ncp .env.example .env\nphp artisan key:generate\nphp artisan migrate\nnpm install\nnpm run dev",
+      "bullets": [
+        "It is normal for `vendor/` to be missing right after clone.",
+        "If the project uses Vite, frontend dependencies also need to be installed.",
+        "Do not present this as a fixed law for every repo; some projects add seed or storage steps."
+      ]
+    },
+    {
+      "title": "Why do people often run `php artisan key:generate` after creating `.env`?",
+      "body": "That command generates `APP_KEY`, which Laravel uses for application-level encryption and related internal security behavior.",
+      "bullets": [
+        "Without a valid `APP_KEY`, the project may fail or behave incorrectly.",
+        "At fresher level, you do not need deep cryptography details; just know that the key is required."
+      ]
+    },
+    {
+      "title": "What does `php artisan migrate` do?",
+      "body": "It applies the migrations that have not yet been run, bringing the database schema in line with the codebase.",
+      "bullets": [
+        "It does not automatically create business data unless seeding is also part of the flow.",
+        "If the database connection in `.env` is wrong, migration will fail."
+      ]
+    },
+    {
+      "title": "What is `.env` used for in Laravel?",
+      "body": "`.env` stores environment-specific values such as app name, database connection, mail configuration, cache driver, queue driver, and secrets.",
+      "bullets": [
+        "Real secrets should not be committed to git.",
+        "Projects usually provide `.env.example` to describe the expected variables.",
+        "If `.env` changes do not seem to take effect, config caching may be involved."
+      ]
+    },
+    {
+      "title": "At a basic level, what should you understand about `404`, `419`, `422`, and `500`?",
+      "body": "These are very common statuses in Laravel work, and knowing them helps you debug with less guesswork.",
+      "bullets": [
+        "`404`: route or resource not found.",
+        "`419`: often related to session or CSRF on web forms.",
+        "`422`: validation failed; the submitted data was not acceptable.",
+        "`500`: a server-side runtime or application error."
+      ],
+      "note": "You do not need every HTTP status code as a fresher, but these four are worth knowing."
+    },
+    {
+      "title": "What is the basic difference between `200` and `201`?",
+      "body": "`200` usually means the request succeeded in general, while `201` is typically used when the server successfully created a new resource.",
+      "bullets": [
+        "For example, a successful create action in an API may fit `201` better than `200`.",
+        "Freshers do not need every status code, but knowing `201 = created` is a useful detail."
+      ]
+    },
+    {
+      "title": "When someone asks, 'What project have you worked on?', how should you answer?",
+      "body": "Pick a real project, explain the problem briefly, explain your role, describe the main flow you built, then mention one issue or lesson you handled yourself.",
+      "bullets": [
+        "Start with short context: what the app does.",
+        "Be clear about the part you personally touched, such as auth, CRUD, upload, validation, or admin pages.",
+        "If you can mention a concrete bug or learning moment, the answer becomes much stronger."
+      ],
+      "tip": "A safe structure is: `what the project does -> what I built -> what was difficult -> what I learned`."
+    },
+    {
+      "title": "How should you describe your debugging process for a simple bug?",
+      "body": "Describe a sequence instead of vague statements like 'I just search on Google'.",
+      "code": "1. Reproduce the bug\n2. Read the error or log\n3. Check route / request / input\n4. Check controller / validation / query\n5. Fix it and re-run the same flow",
+      "bullets": [
+        "If you also mention a test or reproduction note, that is even better.",
+        "Interviewers often want to see process, not just instincts."
+      ]
+    },
+    {
+      "title": "If a form submit ends with a `419` error, what would you think about first?",
+      "body": "At a basic level, you should immediately think about the `CSRF token`, the `session`, and whether the request is going through the expected web middleware flow.",
+      "bullets": [
+        "Check whether the form contains `@csrf`.",
+        "Check whether the request is really using the normal web route flow.",
+        "Check whether session and cookies are behaving correctly on local."
+      ],
+      "tip": "A good answer does not need to fully fix it on the spot. It only needs to show sensible first debugging steps."
+    },
+    {
+      "title": "If `composer install` fails after cloning a project, what would you check?",
+      "body": "Think first about PHP version mismatch, missing extensions, dependency conflicts, or a lock file that does not fit the current machine.",
+      "bullets": [
+        "Read the first real error message instead of firing random commands.",
+        "Check the current PHP version.",
+        "Check required extensions such as `mbstring`, `openssl`, or `pdo`."
+      ],
+      "note": "Interviewers usually like structured troubleshooting more than fake confidence about every package."
+    },
+    {
+      "title": "If `php artisan migrate` fails, what basic causes would you check?",
+      "body": "At fresher level, common causes are wrong `.env` values, the database service not running, missing permissions, or a schema problem in the migration itself.",
+      "bullets": [
+        "Check `DB_CONNECTION`, `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME`, and `DB_PASSWORD`.",
+        "Check whether the database service is actually running.",
+        "Read which migration failed instead of only saying `migration is broken`."
+      ],
+      "tip": "A stronger answer adds: `I would read the failing migration itself and compare it to the current DB state`."
+    },
+    {
+      "title": "What is JSON, and why does it appear so often in modern web apps?",
+      "body": "JSON is a lightweight text format for structured data. It is widely used because it is easy for clients and servers to exchange and process.",
+      "code": "{\n  \"name\": \"An\",\n  \"role\": \"editor\"\n}",
+      "bullets": [
+        "APIs often return JSON instead of HTML.",
+        "JavaScript works with JSON very naturally.",
+        "Laravel commonly returns JSON from API routes or AJAX flows."
+      ]
+    },
+    {
+      "title": "At a basic level, what should you understand about REST APIs?",
+      "body": "At fresher level, it is enough to understand that REST APIs are often organized around resources and HTTP methods such as `GET`, `POST`, `PUT`, and `DELETE`.",
+      "bullets": [
+        "`GET /posts`: list resources.",
+        "`POST /posts`: create a resource.",
+        "`GET /posts/1`: fetch one resource.",
+        "`PUT` or `PATCH`: update a resource.",
+        "`DELETE`: remove a resource."
+      ],
+      "tip": "You do not need deep REST philosophy here. `resource + HTTP method + JSON response` is enough."
+    },
+    {
+      "title": "What is a RESTful API?",
+      "body": "A RESTful API is an API designed in the `REST` style: it revolves around `resources`, uses `HTTP methods` for clear intent, and often returns data in formats such as `JSON` so systems can communicate cleanly.",
+      "bullets": [
+        "It is not a separate language or framework.",
+        "The key idea is organizing URLs and methods around resource meaning.",
+        "Examples include `GET /posts`, `POST /posts`, `GET /posts/1`, and `DELETE /posts/1`."
+      ],
+      "tip": "If you need a short answer: `A RESTful API is an API design style that uses resources and standard HTTP methods so client-server communication stays clear`.",
+      "note": "Many candidates reduce RESTful APIs to `an API that returns JSON`. JSON is common, but the core idea is still `resources + HTTP semantics`."
+    },
+    {
+      "title": "What does `resource` mean in an API context?",
+      "body": "In API terms, a `resource` is the object or data entity the system manages, such as a `post`, `user`, `comment`, or `order`.",
+      "bullets": [
+        "RESTful APIs usually organize URLs around resources.",
+        "For example, `/posts` is a collection resource, while `/posts/1` is one concrete resource.",
+        "If you understand `resource`, it becomes easier to see why API routes are usually named as nouns instead of verbs."
+      ],
+      "tip": "A short answer can be: `a resource is the data entity the API is managing`."
+    },
+    {
+      "title": "How is an API route different from a web route in Laravel?",
+      "body": "A web route usually serves browser-facing views with `session`, `cookies`, and `CSRF`, while an API route usually serves clients expecting `JSON` and is more `stateless` in style.",
+      "code": "// web route\nRoute::get('/posts', [PostController::class, 'index']);\n\n// api route\nRoute::get('/api/posts', [ApiPostController::class, 'index']);",
+      "bullets": [
+        "Web routes often render Blade views.",
+        "API routes often return JSON.",
+        "In interviews, it is already good if you can explain `view flow` versus `JSON flow` clearly."
+      ]
+    },
+    {
+      "title": "At a basic level, how are `PUT` and `PATCH` different?",
+      "body": "Both are used for updates, but `PUT` is usually understood as replacing the full resource, while `PATCH` is usually used for a partial update.",
+      "bullets": [
+        "Real applications may still use them flexibly, but understanding the conceptual difference is valuable.",
+        "For example, updating all user fields suggests `PUT`, while changing only the `avatar` or `name` suggests `PATCH`."
+      ],
+      "note": "At fresher level, you do not need deep RFC debate. `full update` versus `partial update` is enough."
+    },
+    {
+      "title": "What is AJAX?",
+      "body": "AJAX is a way to send requests to the server without reloading the entire page, often used to fetch data or submit smaller actions more smoothly.",
+      "bullets": [
+        "The frontend can call an API and update only part of the interface.",
+        "Today many apps use `fetch` or HTTP client libraries, but the core idea is still the same.",
+        "In Laravel projects, AJAX often appears in small forms, quick search, filters, or buttons like like/favorite."
+      ],
+      "tip": "A compact answer is: `AJAX lets a page exchange data with the server without a full page reload`."
+    },
+    {
+      "title": "What is CORS at a basic level?",
+      "body": "CORS is the browser mechanism that controls whether a page from one origin is allowed to access resources from another origin.",
+      "bullets": [
+        "It often appears when frontend and backend run on different origins.",
+        "If CORS is configured incorrectly, a browser request may be blocked even though the API itself is running.",
+        "This is mainly a browser policy issue, not just a Laravel bug."
+      ],
+      "tip": "A short answer is: `CORS is the browser rule for cross-origin requests`."
+    },
+    {
+      "title": "How is `localStorage` different from `session` and `cookie`?",
+      "body": "`localStorage` keeps data on the client side and survives reloads or new tabs; a `cookie` can be sent with requests; and a Laravel `session` usually refers to server-side session data tied to a browser-held session id.",
+      "bullets": [
+        "`localStorage` is not automatically sent to the server on every request.",
+        "`cookie` is often sent automatically by the browser when the domain and path match.",
+        "A Laravel session usually depends on a session identifier the browser keeps."
+      ],
+      "note": "Many beginners collapse all of these into `browser storage`, but their roles and request flow are different."
+    },
+    {
+      "title": "What is Git used for in day-to-day development work?",
+      "body": "Git is used to manage code history, track changes, work in branches, and collaborate more safely with other developers.",
+      "bullets": [
+        "You can mention real commands such as `git status`, `git add`, `git commit`, and `git pull`.",
+        "Even a fresher should understand why losing track of changes or editing without version control becomes dangerous quickly."
+      ],
+      "note": "If the company asks about teamwork, Git almost always becomes part of the conversation."
+    },
+    {
+      "title": "What is password hashing, and why should plain passwords never be stored?",
+      "body": "Password hashing transforms a password into a one-way derived value so the system does not need to store the original password. Plain passwords should not be stored because a data leak would expose users directly.",
+      "bullets": [
+        "During login, the application hashes the incoming password and compares it to the stored hash.",
+        "Laravel already provides safer password hashing support, so you do not hand-roll it casually.",
+        "This is a very common foundation check for basic security awareness."
+      ],
+      "tip": "A short answer is: `passwords should be hashed, not stored as plain text`."
+    },
+    {
+      "title": "If you do not yet have real company experience, how should you answer without sounding weak?",
+      "body": "Do not pretend you have worked in a large team. Say clearly that you have not worked in a company yet, but you have built real projects, cloned repos, read docs, fixed bugs, and practiced a workflow that is close to real work.",
+      "bullets": [
+        "Honesty is better than inflated experience.",
+        "You can compensate with real side projects, learning habits, and structured debugging.",
+        "If you have done a team school project, you can mention that smaller coordination experience too."
+      ],
+      "tip": "A strong frame is: `I do not have company experience yet, but I have tried to work through projects in a way that is close to real-world development`."
+    },
+    {
+      "title": "What are common fresher mistakes in technical interviews?",
+      "body": "A common pattern is pretending to know more than you do, using vague terms, or talking about a project for too long without being clear about what you actually built yourself.",
+      "bullets": [
+        "Not separating PHP from Laravel.",
+        "Memorizing names without tying them to real examples.",
+        "Trying to sound senior while being shaky on fundamentals."
+      ],
+      "note": "At this level, strong basics are more valuable than trying to perform as a senior."
+    },
+    {
+      "title": "What should you do if you do not know the answer?",
+      "body": "State clearly what you do know, admit what you are unsure about, and explain how you would verify it with documentation, existing code, or a small reproduction.",
+      "bullets": [
+        "Honesty is better than guessing wildly.",
+        "But do not stop at 'I do not know'; show how you learn and verify."
+      ]
+    },
+    {
+      "title": "What should a fresher Laravel GitHub or portfolio show?",
+      "body": "It does not need dozens of repositories, but it should show a few runnable projects with a basic README, migrations, understandable routes, and code that another developer can follow.",
+      "bullets": [
+        "A small number of real projects is better than many abandoned repos.",
+        "Auth, CRUD, validation, upload, or a little testing already make a project more credible.",
+        "The README should explain how to run the project, not remain empty."
+      ]
+    },
+    {
+      "title": "What do companies usually expect from a fresher PHP or Laravel candidate?",
+      "body": "They usually do not expect deep architecture ownership yet. They expect clear fundamentals, willingness to learn, the ability to read an existing codebase, handle small features, and communicate honestly.",
+      "bullets": [
+        "Understand the basics of PHP, HTTP, forms, databases, and request-response flow.",
+        "Know basic Git, how to run a project locally, and how to read an error.",
+        "Be able to explain at least one project you actually worked on without sounding vague."
+      ],
+      "note": "The right fresher level is strong basics, small-feature delivery, and learning speed, not pretending to be a lead."
+    },
+    {
+      "title": "What is object-oriented programming (`OOP`) in PHP?",
+      "body": "`OOP` is a way of organizing code around `classes` and `objects` instead of only writing disconnected functions. In PHP and Laravel, OOP helps code become easier to split, reuse, and maintain as the project grows.",
+      "bullets": [
+        "Laravel uses many classes such as controllers, requests, models, jobs, policies, and commands.",
+        "Do not stop at saying `OOP means classes and objects`; also explain why that structure is useful."
+      ],
+      "tip": "A short answer is: `OOP organizes code through objects so related data and behavior stay together`."
+    },
+    {
+      "title": "How should you understand the four basic OOP ideas: `encapsulation`, `inheritance`, `polymorphism`, and `abstraction`?",
+      "body": "`Encapsulation` means hiding internal details and exposing only what should be used. `Inheritance` means a child class can reuse behavior from a parent class. `Polymorphism` means different objects can respond through the same interface in their own way. `Abstraction` means keeping only the important shape for the current problem.",
+      "bullets": [
+        "A fresher does not need textbook-heavy definitions, but should be able to explain the intent with a small example.",
+        "If you can connect this to controllers, interfaces, services, or models, your answer sounds stronger."
+      ],
+      "code": "interface Notifier\n{\n    public function send(string $message): void;\n}\n\nclass MailNotifier implements Notifier\n{\n    public function send(string $message): void\n    {\n        // send email\n    }\n}"
+    },
+    {
+      "title": "What parts usually make up a URL?",
+      "body": "A URL often contains a `scheme` such as `https`, a `domain` or `host`, sometimes a `port`, then a `path`, a `query string`, and a `fragment`.",
+      "bullets": [
+        "Example: `https://example.com:8443/posts/12?tab=comments#history`.",
+        "`/posts/12` is the `path`, `?tab=comments` is the `query`, and `#history` is the `fragment`."
+      ],
+      "code": "https://example.com:8443/posts/12?tab=comments#history\n\\___/ \\__________/ \\______/ \\___________/ \\______/\nscheme   host:port    path      query       fragment"
+    },
+    {
+      "title": "How are `domain`, `DNS`, `IP`, and `port` different?",
+      "body": "A `domain` is a human-friendly name such as `example.com`. `DNS` is the system that translates that name into an `IP` address. The `IP` is the network address of the target machine. A `port` identifies a specific service on that machine, such as `80`, `443`, or `3306`.",
+      "bullets": [
+        "You can think of the domain as the store name and the IP as the exact street address.",
+        "One server can run many services on different ports."
+      ],
+      "note": "This is a very common basic networking group of questions used to check whether you understand web apps beyond just writing code."
+    },
+    {
+      "title": "At a basic level, what happens when you type a URL into the browser?",
+      "body": "The browser resolves the server `IP` through `DNS`, opens a connection, sends an `HTTP request`, the server processes it and returns a `response`, and the browser renders what it receives. In a Laravel app, the server-side flow then continues through the web server, `public/index.php`, bootstrap, routes, and controllers before the response goes back.",
+      "bullets": [
+        "A fresher does not need to go deep into TCP internals, but should know the big chain: `DNS -> request -> server processing -> response -> browser render`.",
+        "If you can attach Laravel to that flow, your answer immediately becomes stronger."
+      ],
+      "code": "Browser -> DNS -> Web Server (Nginx/Apache) -> public/index.php\n-> bootstrap/app.php -> middleware -> route -> controller -> response -> Browser"
+    },
+    {
+      "title": "If the URL is `https://example.com/posts/12?tab=comments#history`, which parts go to the server and which do not?",
+      "body": "The `path` and `query string` go to the server for processing. The `fragment` such as `#history` is not sent to the server; it is handled by the browser on the client side, often for in-page navigation or UI state.",
+      "bullets": [
+        "`/posts/12` and `?tab=comments` may affect what Laravel returns.",
+        "`#history` usually never reaches the Laravel route or controller."
+      ],
+      "tip": "This is a very good question for separating people who truly understand URLs from people who only see them as long strings."
+    },
+    {
+      "title": "What usually happens if a user types a direct URL to a file or path they should not be allowed to access?",
+      "body": "That depends on whether the resource is public or private. If the path does not exist, the app may return `404`. If it exists but access is not allowed, it may return `403`, redirect to login, or require a signed URL or token. A private file should not become downloadable just because someone guessed its name.",
+      "bullets": [
+        "This is where auth, authorization, public/private storage, and web server configuration all start to matter together.",
+        "A strong answer should mention that not everything with a URL should be public."
+      ]
+    },
+    {
+      "title": "If the interviewer asks, 'You have the numbers 1 to 1000 and one is missing. How would you find it?', how should you approach it?",
+      "body": "A basic approach is to take the expected sum of `1..1000` and subtract the actual sum of the array. In many interviews the point is not only whether you know the formula, but whether you can start from a clear and reasonable idea.",
+      "bullets": [
+        "You can also mention sorting or marking, but the sum approach is short and elegant.",
+        "State your assumptions clearly: the range is `1..1000`, only one number is missing, and there are no duplicates."
+      ],
+      "code": "$expected = 1000 * 1001 / 2;\n$actual = array_sum($numbers);\n$missing = $expected - $actual;"
+    },
+    {
+      "title": "If you do not solve a logic question immediately, how should you present your thinking so you still earn points?",
+      "body": "Say what assumptions you want to confirm, what first direction you want to try, and why that direction is reasonable. Many interviewers evaluate your thinking process, your questions, and your calmness as much as the final answer.",
+      "bullets": [
+        "Do not stay silent for too long and then guess wildly.",
+        "Also do not jump straight into code before you clarify the input assumptions."
+      ],
+      "tip": "A strong frame is: `I want to confirm the assumptions first, then I will try the simplest correct approach before optimizing if needed`."
+    },
+    {
+      "title": "Why should you not rely only on frontend validation?",
+      "body": "Frontend validation can help users get faster feedback, but data sent to the server can still be changed through other tools, crafted requests, or client-side bugs. The server still needs to validate again.",
+      "bullets": [
+        "Client-side validation is good for user experience.",
+        "Server-side validation is the final layer for correctness and safety."
+      ],
+      "note": "This is a strong foundation question for checking whether you separate UX from security and correctness."
+    },
+    {
+      "title": "If asked, 'How do you understand a requirement before coding?', how should a fresher answer?",
+      "body": "You can say that before coding you want to clarify the input, the expected output, who uses the feature, what failure cases exist, and whether there are special constraints. That shows you do not jump into code while the problem is still vague.",
+      "bullets": [
+        "Even a fresher should develop the habit of clarifying requirements.",
+        "This is a very practical work skill, not only a coding skill."
+      ]
+    },
+    {
+      "title": "At a basic level, what is browser cache, and why do you sometimes still see the old UI after changing code?",
+      "body": "The browser may keep old CSS, JS, or image files in cache to load faster. That means you can change code but still see old assets until the browser refreshes them, you rebuild correctly, or the asset version changes.",
+      "bullets": [
+        "This is a very common beginner web issue.",
+        "Sometimes `the code is not changing` is really an old asset problem, not a logic problem."
+      ]
+    },
+    {
+      "title": "If a user says, 'I clicked but nothing happened', what basic possibilities should a fresher think about first?",
+      "body": "The form may not have submitted, the route may be wrong, JavaScript may have failed, validation may have failed without being shown, the request may never reach the server, or the response may come back but the UI may not update correctly. The important part is to think in flow, not randomly.",
+      "bullets": [
+        "This is a small but useful test of flow-based debugging.",
+        "You can break it into `frontend -> request -> backend -> response -> UI update`."
+      ],
+      "tip": "A good answer is: `I would trace from the user action to the request and response instead of opening random files`."
+    },
+    {
+      "title": "What is `HTTPS`, and why do modern web apps almost always need it?",
+      "body": "`HTTPS` is `HTTP` protected with `TLS`, which makes traffic between browser and server much harder to read or alter in transit. It is especially important for login, cookies, forms, tokens, and any sensitive data.",
+      "bullets": [
+        "A fresher does not need to go deep into the handshake, but should understand the core value of encrypted transport.",
+        "A stronger answer ties `HTTPS` to protecting users, not only to being 'more secure somehow'."
+      ]
+    },
+    {
+      "title": "At a basic level, what do `HttpOnly` and `Secure` cookie flags mean?",
+      "body": "`HttpOnly` reduces the chance that client-side JavaScript can read that cookie, while `Secure` means the cookie should only be sent over `HTTPS`. These are common protective layers for sensitive cookies such as session cookies.",
+      "bullets": [
+        "You do not need to answer like a security engineer, but you should understand what they are for.",
+        "This is a very suitable fresher-plus security question."
+      ],
+      "tip": "A short answer is: `HttpOnly reduces JS access to the cookie, and Secure forces it onto HTTPS`."
+    }
+  ]
+}

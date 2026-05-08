@@ -1,0 +1,513 @@
+{
+  "anchor": "laravel-auth-security",
+  "type": "list",
+  "heading": "Authentication, authorization, and security: from basic login to real defensive thinking in Laravel apps",
+  "intro": "This is one of the most important topics in the whole Laravel group. The hard part of auth is not making a login form work. The hard part is keeping identity, permissions, sessions, tokens, and user behavior safe once the product has real users, real flows, and real attack surfaces.",
+  "breaks": [
+    {
+      "start": 1,
+      "title": "Auth Foundations",
+      "description": "What authentication is, what authorization is, and why this area is much larger than one login form.",
+      "tone": "amber"
+    },
+    {
+      "start": 13,
+      "title": "Sessions, Cookies, And Web Auth Flow",
+      "description": "Traditional web login, logout, remember me, session fixation, CSRF, and the web-auth bugs teams hit repeatedly.",
+      "tone": "copper"
+    },
+    {
+      "start": 27,
+      "title": "Sanctum, APIs, SPAs, And Tokens",
+      "description": "SPA and API auth, stateful domains, token flow, CSRF cookies, revocation, and the cases where login looks correct but later requests still fail.",
+      "tone": "olive"
+    },
+    {
+      "start": 43,
+      "title": "Policies, Gates, Roles, And Permissions",
+      "description": "Access control by use case, resource, role, and permission instead of scattering `if admin` across the codebase.",
+      "tone": "ocean"
+    },
+    {
+      "start": 57,
+      "title": "Passwords, Resets, Verification, And 2FA",
+      "description": "Password hashing, change/reset flows, email verification, two-factor auth, and the places where shallow implementation causes real damage.",
+      "tone": "indigo"
+    },
+    {
+      "start": 71,
+      "title": "Foundational Protections And Common Weaknesses",
+      "description": "CSRF, XSS, mass assignment, brute force, rate limiting, secure cookies, trusted proxies, and the 'small' mistakes that create real weak doors.",
+      "tone": "rose"
+    },
+    {
+      "start": 87,
+      "title": "Real Cases, Audit, And Long-Term Security Thinking",
+      "description": "Login loops, policy drift, revocation, audit trails, suspicious access, security logging, and how to think about auth across the life of the product.",
+      "tone": "slate"
+    }
+  ],
+  "items": [
+    {
+      "title": "1. What is authentication?",
+      "body": "Authentication answers the question 'who are you'. It is the identity-verification layer of the request."
+    },
+    {
+      "title": "2. What is authorization?",
+      "body": "Authorization answers the question 'what are you allowed to do'. A valid logged-in user may still be forbidden from touching a specific resource or action.",
+      "code": "Route::get('/posts/{post}/edit', function (Post $post) {\n    $this->authorize('update', $post);\n\n    return view('posts.edit', compact('post'));\n});",
+      "note": "Authentication proves identity. Authorization decides whether that identity may edit this specific `Post`."
+    },
+    {
+      "title": "3. Why must authentication and authorization stay clearly separate?",
+      "body": "Because once they blur together, the code quickly turns into a pile of unclear checks. You start seeing logic like 'if the user is logged in, that probably means access is fine', and that is where permission bugs grow."
+    },
+    {
+      "title": "4. How is auth in Laravel bigger than a login form?",
+      "body": "It includes registration, email verification, login, session continuity, remember-me behavior, password changes, password reset, logout, access revocation, policies, roles, permissions, security logs, abuse handling, and more."
+    },
+    {
+      "title": "5. Practical question: if an account can log in, does that mean the auth system is already good?",
+      "body": "Not at all. You still need to ask whether the session is safe, whether permissions are correct, whether password reset is trustworthy, whether tokens can be revoked, whether brute force is limited, and whether the logs are good enough to investigate incidents."
+    },
+    {
+      "title": "6. How do Breeze, Jetstream, Fortify, and Sanctum differ?",
+      "body": "Breeze is a lean starting point. Jetstream adds larger product layers such as browser sessions or teams. Fortify focuses on backend auth actions. Sanctum solves very common SPA and API auth cases in Laravel.",
+      "code": "composer require laravel/breeze --dev\nphp artisan breeze:install\nphp artisan migrate\n\n# or if the project needs Sanctum-style SPA/API auth\nphp artisan install:api",
+      "note": "Not every project needs all of them. Pick the package that matches the flow you are actually building."
+    },
+    {
+      "title": "7. Why should auth packages not be learned as a flat list of names?",
+      "body": "Because each package solves a different layer of the system. Memorizing names can leave you installing the right library while still misunderstanding the flow you are building."
+    },
+    {
+      "title": "8. Where can identity come from in a Laravel app?",
+      "body": "A user session, an API token, a personal access token, a remember-me cookie, a trusted-device flow, or an external SSO layer depending on the system."
+    },
+    {
+      "title": "9. Real case: many apps have auth that technically works but no real security model",
+      "body": "Everyone knows how to log in, but nobody can clearly explain what identity signal is trusted, how access expires, how revocation works, or what events are logged."
+    },
+    {
+      "title": "10. Foundational tip: think of auth as a chain of user states",
+      "body": "A user may be a guest, registered but unverified, authenticated, remembered, locked out, suspended, or revoked. Thinking in states makes the flow much easier to reason about."
+    },
+    {
+      "title": "11. What does good auth architecture do for the product?",
+      "body": "It makes the team more confident about adding features, changing access rules, handling incidents, and investigating bugs. Bad auth often looks fine until the day it hurts badly."
+    },
+    {
+      "title": "12. Core insight: good auth does not only protect the system, it protects the team from guessing during incidents",
+      "body": "When there is a login loop, a broken revocation, token abuse, or a complaint about access, a clear auth system saves many hours of investigation."
+    },
+    {
+      "title": "13. How does session-based auth work in a Laravel web app?",
+      "body": "After a successful login, Laravel ties the user identity to a session. Future requests carry that session identifier so the backend knows which user the request belongs to.",
+      "code": "if (Auth::attempt($credentials)) {\n    $request->session()->regenerate();\n\n    return redirect()->intended('/dashboard');\n}",
+      "note": "The important proof is not only that `attempt()` succeeds, but that later requests still carry the right session cookie."
+    },
+    {
+      "title": "14. What role do cookies play in the web auth flow?",
+      "body": "Cookies are usually how the browser carries the session identity into later requests. If cookie domain, secure flags, or same-site settings are wrong, the auth flow quickly becomes fragile."
+    },
+    {
+      "title": "15. What does a basic web login flow include?",
+      "body": "Render the form, submit credentials, validate the input, authenticate the user, regenerate the session, redirect appropriately, and preserve authenticated state for later requests."
+    },
+    {
+      "title": "16. Why should the session be regenerated after login?",
+      "body": "To reduce session fixation risk. It is a small step with meaningful security value."
+    },
+    {
+      "title": "17. What is session fixation?",
+      "body": "It is a situation where an attacker tries to force the victim into using a session identifier the attacker already knows. If the app does not rotate sessions properly, the risk grows."
+    },
+    {
+      "title": "18. What should a proper logout really do?",
+      "body": "Not just redirect to the login page. It should invalidate the session, rotate or clear related state, and make sure future requests no longer treat the user as authenticated.",
+      "code": "Auth::logout();\n\n$request->session()->invalidate();\n$request->session()->regenerateToken();\n\nreturn redirect('/login');",
+      "note": "Common mistake: only calling `Auth::logout()` and redirecting. That is weaker than cleaning up the full session state."
+    },
+    {
+      "title": "19. Where is `remember me` useful, and where is it risky?",
+      "body": "It improves convenience, but it also extends the lifetime of access on a device. Without good device awareness or revocation, that convenience becomes a security weakness."
+    },
+    {
+      "title": "20. Do browser sessions have real product value?",
+      "body": "Yes. Real users care where their account is currently active, whether old sessions can be revoked, and whether suspicious access can be noticed."
+    },
+    {
+      "title": "21. Real case: where do login loops usually come from?",
+      "body": "Session drivers, cookie domains, secure-cookie settings, proxy headers, auth or guest middleware, and redirect logic can all create painful login loops."
+    },
+    {
+      "title": "22. Real case: local login works but production keeps throwing users out",
+      "body": "That often points to proxies, HTTPS, secure cookies, session stores, domains, or stale environment configuration rather than the login controller itself."
+    },
+    {
+      "title": "23. What does CSRF protect inside the web flow?",
+      "body": "It protects state-changing requests from being sent from the wrong context without the user's intent. It is a foundational web protection.",
+      "code": "<form method=\"POST\" action=\"{{ route('profile.update') }}\">\n    @csrf\n    @method('PATCH')\n    <input name=\"name\" value=\"{{ old('name', $user->name) }}\">\n    <button type=\"submit\">Save</button>\n</form>",
+      "note": "Without `@csrf`, state-changing web requests are likely to fail with `419`, or worse, become vulnerable to CSRF."
+    },
+    {
+      "title": "24. Why does 419 confuse so many people?",
+      "body": "Because it usually points to token, cookie, or session mismatch rather than business logic. Without understanding the web auth flow, developers often debug the wrong layer."
+    },
+    {
+      "title": "25. Practical tip: web auth bugs often live in cookies, sessions, or proxies as much as in the login code",
+      "body": "That is why environment-aware debugging matters more than staring only at the form controller."
+    },
+    {
+      "title": "26. Web-auth reality: getting login to work is only the first half of the story",
+      "body": "The rest is about how the session lives, how logout cleans up, how redirects behave, and how access is revoked when something goes wrong."
+    },
+    {
+      "title": "27. What problem does Sanctum solve?",
+      "body": "Sanctum solves common auth cases for SPAs and APIs in a way that fits naturally with Laravel, especially when the clients live near the same domain ecosystem."
+    },
+    {
+      "title": "28. How is Sanctum SPA auth different from simple API bearer token auth?",
+      "body": "It can rely on stateful cookie and session behavior rather than only stateless bearer-token logic. That difference is what confuses many developers."
+    },
+    {
+      "title": "29. What does a typical Sanctum flow for an SPA look like?",
+      "body": "Fetch the CSRF cookie, send the login request, create the session, then let later requests carry the right cookies so the backend recognizes the user.",
+      "code": "await axios.get('/sanctum/csrf-cookie', { withCredentials: true });\nawait axios.post('/login', payload, { withCredentials: true });\nconst { data } = await axios.get('/api/user', { withCredentials: true });",
+      "note": "Seeing these three requests in sequence usually explains Sanctum faster than memorizing the word 'stateful'."
+    },
+    {
+      "title": "30. Why does `SANCTUM_STATEFUL_DOMAINS` matter?",
+      "body": "It affects which origins are treated as stateful. If it is wrong, login may seem successful but later requests still behave like they came from a guest."
+    },
+    {
+      "title": "31. Real case: Sanctum login returns 200 but the next request still gets 401",
+      "body": "This often happens because cookies are not being sent, domains are wrong, same-site rules are wrong, secure settings are wrong, credentials are missing from the frontend request, or the origin is not treated as stateful.",
+      "code": "SANCTUM_STATEFUL_DOMAINS=localhost,127.0.0.1,app.test\nSESSION_DOMAIN=.app.test\n\naxios.defaults.withCredentials = true;",
+      "bullets": [
+        "Check the Network tab to see whether cookies are actually set and sent back.",
+        "Check whether `SESSION_DOMAIN` and `SANCTUM_STATEFUL_DOMAINS` match the current environment.",
+        "Check whether the frontend request enables `withCredentials`."
+      ]
+    },
+    {
+      "title": "32. Why must Sanctum debugging inspect the request after login?",
+      "body": "Because auth is only proven when the next request carries the correct identity back to the server, not when the login endpoint returns a pretty response."
+    },
+    {
+      "title": "33. When should you think in terms of token auth?",
+      "body": "When the client is not a classic browser session flow, or when mobile apps, integrations, CLI tools, or external use cases need their own access model."
+    },
+    {
+      "title": "34. What should be watched closely with personal access tokens?",
+      "body": "Scopes, revocation, rotation, expiry, and how tokens are issued or shown. These areas are often handled too casually despite their real risk."
+    },
+    {
+      "title": "35. Is token revocation a side detail?",
+      "body": "No. If a token is leaked, revocation is a real defensive capability. A token system without clear revocation is a security debt system."
+    },
+    {
+      "title": "36. Real case: what goes wrong when tokens live too long?",
+      "body": "They create a larger damage window when leaked or when a user leaves the system but access keeps living."
+    },
+    {
+      "title": "37. Practical tip: SPA auth fails more often in what the browser sends than in what the controller receives",
+      "body": "Credentials, cookies, origins, CSRF headers, and same-site rules are all worth checking carefully."
+    },
+    {
+      "title": "38. What should good API auth errors look like?",
+      "body": "They should clearly distinguish unauthenticated, invalid token, expired access, and insufficient permission. If everything collapses into one vague failure, clients cannot respond correctly."
+    },
+    {
+      "title": "39. Real case: where do web admin, SPA, and mobile auth start to get messy when they share one system?",
+      "body": "Each client type expects different state, token, cookie, and UX assumptions. If they are blended without clear boundaries, maintenance becomes painful."
+    },
+    {
+      "title": "40. API auth lesson: choosing the right flow for the right client matters more than choosing the right package name",
+      "body": "Packages are tools. The real question is what trust model your system is actually using."
+    },
+    {
+      "title": "41. Maintenance tip: do not let web auth, SPA auth, and token auth collide in one nameless pile of logic",
+      "body": "Each flow should have boundaries and naming clear enough that later developers still know which auth style they are debugging."
+    },
+    {
+      "title": "42. Intermediate conclusion: Sanctum is powerful when you understand it as a specific stateful/token flow, not as magical universal auth",
+      "body": "This is where many developers install the right package but still solve the wrong problem."
+    },
+    {
+      "title": "43. What is a policy for?",
+      "body": "A policy groups permission rules around a resource or action such as view, update, delete, publish, refund, or invite.",
+      "code": "class InvoicePolicy\n{\n    public function refund(User $user, Invoice $invoice): bool\n    {\n        return $user->team_id === $invoice->team_id\n            && $user->can('billing.refund')\n            && $invoice->status === 'paid';\n    }\n}",
+      "note": "A strong policy reads almost like business language instead of a pile of scattered `if` statements."
+    },
+    {
+      "title": "44. How are Gates different from policies?",
+      "body": "Gates fit smaller or more global permission checks. Policies are usually clearer when access rules belong to a specific resource or model."
+    },
+    {
+      "title": "45. Why should roles and permissions be modeled instead of sprinkling `if admin` everywhere?",
+      "body": "Because real products rarely stay in a simple admin-versus-user world. Access often grows by feature, team, plan, tenant, or workflow."
+    },
+    {
+      "title": "46. Real case: where does hardcoded `if admin` start to hurt?",
+      "body": "As soon as the product introduces managers, finance users, reviewers, approvers, support roles, or scoped admins, the old logic starts exploding."
+    },
+    {
+      "title": "47. What is policy drift?",
+      "body": "It happens when access rules are copied into many places: controllers, Blade templates, services, and frontend conditions. Over time those checks diverge and nobody knows where the real rule lives."
+    },
+    {
+      "title": "48. Why must backend permission checks exist even if the frontend hides the button?",
+      "body": "Because hidden buttons are only UX. A forged request can still be sent to the server."
+    },
+    {
+      "title": "49. Is Blade `@can` convenient enough by itself?",
+      "body": "It is convenient for rendering UI, but the backend still needs to protect the real action in controllers, services, or route guards.",
+      "code": "@can('update', $post)\n    <a href=\"{{ route('posts.edit', $post) }}\">Edit post</a>\n@endcan",
+      "note": "Hiding a button is only UI behavior. The backend endpoint must still call `authorize()` or enforce the rule elsewhere."
+    },
+    {
+      "title": "50. How does multi-tenant permission make things harder?",
+      "body": "A user may be allowed in one tenant but not another. If tenant context is not built into authorization rules, access leakage becomes much more likely."
+    },
+    {
+      "title": "51. Real case: a valid user sees another team's data",
+      "body": "That is a dangerous authorization or scoping failure, much more serious than a UI bug. It usually comes from missing query scope or permissions enforced at the wrong place."
+    },
+    {
+      "title": "52. Where does a permission package like `spatie/laravel-permission` really help?",
+      "body": "It helps model roles and permissions more systematically, but only if the team understands the product's real access model. A package does not invent business meaning for you."
+    },
+    {
+      "title": "53. Practical tip: a good permission rule should read like business language, not like a technical riddle",
+      "body": "For example, `canRefund($user, $invoice)` is easier to reason about than a long mixed condition spread across controllers."
+    },
+    {
+      "title": "54. What should be asked in a permission-related PR review?",
+      "body": "Is the rule placed in the right layer, is it duplicated elsewhere, does it consider tenant or team scope, and is it accidentally widening access just to make a feature work quickly?"
+    },
+    {
+      "title": "55. Authorization lesson: access rules change more slowly than UI, but hurt much more when wrong",
+      "body": "When authorization is wrong, users may do things they should never do, or they may be blocked from important actions they should be allowed to perform."
+    },
+    {
+      "title": "56. Permission conclusion: identity is the entry door, but authorization is the real fence around the business",
+      "body": "Many apps stop at login and forget this second line entirely."
+    },
+    {
+      "title": "57. Why does password hashing matter so much?",
+      "body": "Passwords should never be stored in plaintext or with weak hashing. Laravel gives strong defaults, but you still need to understand that this layer is critical.",
+      "code": "use Illuminate\\Support\\Facades\\Hash;\n\n$user->password = Hash::make($request->string('password'));\n$user->save();",
+      "note": "Very dangerous mistake: storing raw passwords or inventing your own weak hash such as `md5` or `sha1`."
+    },
+    {
+      "title": "58. What should be considered when a user changes their password?",
+      "body": "Not only the field update. You should think about invalidating old sessions, revoking remembered access or tokens where appropriate, logging the security event, and notifying the user if needed."
+    },
+    {
+      "title": "59. Where do password-reset flows commonly go wrong?",
+      "body": "Reset tokens, token lifetime, rate limiting, email delivery, overly detailed error messages, and user enumeration are all common weak points."
+    },
+    {
+      "title": "60. Is email verification actually valuable?",
+      "body": "Yes, especially when email is the primary identity channel and matters for billing, recovery, or important communication. But not every product needs the exact same strictness."
+    },
+    {
+      "title": "61. When should 2FA be considered?",
+      "body": "When the account value is higher, the data is more sensitive, or the product carries real account-takeover risk. Not every app needs it on day one, but many real products should think about it early.",
+      "code": "if ($user->two_factor_secret) {\n    return redirect()->route('two-factor.challenge');\n}",
+      "note": "If you add 2FA, think about backup codes, trusted devices, and recovery support at the same time."
+    },
+    {
+      "title": "62. Real case: 2FA damages UX badly if recovery is not designed well",
+      "body": "Backup codes, trusted devices, recovery paths, and support processes are essential. Two-factor auth without recovery just creates pain."
+    },
+    {
+      "title": "63. How strict should password policy be?",
+      "body": "That depends on the product, but the policy should match real risk. An internal demo and a high-value billing product should not automatically share the same assumptions."
+    },
+    {
+      "title": "64. Real case: reset flow is one of the first places attackers try to abuse",
+      "body": "It often enables user enumeration, email spam, reset token brute force, or social-engineering paths."
+    },
+    {
+      "title": "65. Practical tip: auth UX and security should not be treated as absolute enemies",
+      "body": "A thoughtful design can stay meaningfully safer without making users miserable."
+    },
+    {
+      "title": "66. Where does device trust or browser-session management create product value?",
+      "body": "It gives users visibility and control over where their account is active. That is both a security feature and a trust feature."
+    },
+    {
+      "title": "67. Is it worth logging password changes, resets, and failed logins?",
+      "body": "Very much so. These events are useful when investigating account complaints or suspicious behavior."
+    },
+    {
+      "title": "68. Maintenance tip: auth flows change rarely, but when they change they have a very wide blast radius",
+      "body": "That is why login, reset, verify, and 2FA changes deserve strong tests and good logging."
+    },
+    {
+      "title": "69. Password/verification conclusion: this is where the product proves it is trustworthy, not merely functional",
+      "body": "Real users feel the quality of these flows very clearly."
+    },
+    {
+      "title": "70. What does CSRF protection defend against?",
+      "body": "It defends state-changing requests from being sent from the wrong context without the user's intention."
+    },
+    {
+      "title": "71. Why is XSS still a real Laravel problem even though Blade escapes by default?",
+      "body": "Because developers can still output raw HTML, trust unsanitized content, or pass dangerous data into JS or the frontend layer carelessly."
+    },
+    {
+      "title": "72. What is mass assignment, and why is it still dangerous?",
+      "body": "If a model can be filled with sensitive fields such as role, status, or ownership too casually, an attacker may escalate privileges or alter state through that opening.",
+      "code": "// dangerous\nUser::create($request->all());\n\n// safer\nUser::create($request->only('name', 'email', 'password'));",
+      "note": "Common mistake: assuming the form does not show a `role` field, so the backend is safe. An attacker can still send that field manually."
+    },
+    {
+      "title": "73. What do `fillable` and `guarded` protect?",
+      "body": "They help you control which attributes may be mass-assigned. This is a very practical defensive layer."
+    },
+    {
+      "title": "74. Where does rate limiting matter beyond login?",
+      "body": "Password resets, OTP flows, verify-email resend, invitations, public search, public uploads, or webhook endpoints can all need meaningful throttling."
+    },
+    {
+      "title": "75. Why is brute force bigger than the password screen?",
+      "body": "It also appears in OTP, reset tokens, verification flows, and other sensitive endpoints."
+    },
+    {
+      "title": "76. Why are secure cookies, same-site rules, and trusted proxies worth understanding?",
+      "body": "Because a small environment or proxy mismatch can make auth both weaker and more broken in ways that are hard to see if you only read PHP code."
+    },
+    {
+      "title": "77. Real case: apps behind proxies or CDNs can accidentally weaken auth",
+      "body": "If scheme, host, or cookie settings drift, signed URLs, secure cookies, and redirect auth flows can behave very differently from local development."
+    },
+    {
+      "title": "78. How is an audit log different from ordinary debug logging?",
+      "body": "An audit log records meaningful security or product events such as who logged in, who changed permissions, who revoked tokens, or who deleted a user. It has much higher investigation value than generic debug output.",
+      "code": "activity('security')\n    ->causedBy($user)\n    ->withProperties([\n        'ip' => $request->ip(),\n        'user_agent' => $request->userAgent(),\n        'action' => 'password_changed',\n    ])\n    ->log('User changed password');",
+      "note": "Debug logs help fix bugs. Audit logs help answer who did what when abuse or disputes appear."
+    },
+    {
+      "title": "79. Real case: the app has lots of logs but still cannot explain a security incident",
+      "body": "That happens when the logs are plentiful but not focused on auth and access events that actually matter."
+    },
+    {
+      "title": "80. Practical tip: logs should help answer 'who did what, when, to which resource, and from where'",
+      "body": "That question set is extremely useful when investigating permission bugs, contested actions, or suspicious access."
+    },
+    {
+      "title": "81. Which signals should count as suspicious access?",
+      "body": "Unknown devices, unusual IPs, repeated failed logins, sudden password changes, repeated reset requests, or token usage patterns that do not fit normal behavior are all useful signals."
+    },
+    {
+      "title": "82. Access revocation is a product capability, not only a technical operation",
+      "body": "It should be clear to admins, clear to users, and visible in audit trails. If access is 'revoked' but stale sessions still live, trust drops fast."
+    },
+    {
+      "title": "83. Real case: a user is suspended or revoked, but old sessions are still alive",
+      "body": "This is a dangerous mismatch between business state and auth state. Suspending a user should trigger thinking about sessions, tokens, and background workers that still assume access is valid.",
+      "code": "$user->update(['suspended_at' => now()]);\n$user->tokens()->delete();\n\nAuth::logoutOtherDevices($currentPassword);",
+      "note": "The point is that revocation is not only a database flag. You must also think about access that is still alive in sessions or tokens."
+    },
+    {
+      "title": "84. Real case: the UI hides the action, but the API still allows it",
+      "body": "This is one of the most common authorization failures. The frontend and backend fences no longer match."
+    },
+    {
+      "title": "85. What should a security review ask in a PR?",
+      "body": "Does this flow create a new attack surface, is it rate-limited, is policy enforcement present, is output sanitized, could it enumerate users, are important events logged, and has access revocation been considered?"
+    },
+    {
+      "title": "86. Practical lesson: many vulnerabilities do not come from framework weakness, but from temporary product shortcuts that live far too long",
+      "body": "Skipping email verification for a demo, bypassing a policy to hit a deadline, or relaxing login constraints in staging and forgetting about them are all very common sources of real security debt."
+    },
+    {
+      "title": "87. Final lesson: good auth means identity, permission, and the path to revoke access are all clear",
+      "body": "That means knowing who someone is, what they may do, how long access lives, and how cleanly it can be cut off when needed."
+    },
+    {
+      "title": "88. The more real users a product has, the more auth becomes part of product trust, not only backend mechanics",
+      "body": "Users never see your code, but they feel unstable login, weak reset flows, confusing permissions, or unsafe sessions very quickly."
+    },
+    {
+      "title": "89. A good auth system does not require endless technology, but it does require a clear model",
+      "body": "You can build a strong result with sessions, Sanctum, policies, and a few solid protections, as long as the team understands the trust model and applies it consistently."
+    },
+    {
+      "title": "90. Final question for self-review: if the most important account in the product were compromised today, would the team know which logs to inspect, what to revoke, and what to tell the user?",
+      "body": "If that answer is still vague, the auth and security layer still has room to mature."
+    },
+    {
+      "title": "91. Where does a basic Laravel auth configuration usually begin?",
+      "body": "Usually with `config/auth.php`, the `User` model, the active guard, and the user provider. This is where you should look first when you need to know whether the app is authenticating through sessions or tokens and where it is loading users from.",
+      "code": "'defaults' => [\n    'guard' => 'web',\n    'passwords' => 'users',\n],\n\n'guards' => [\n    'web' => [\n        'driver' => 'session',\n        'provider' => 'users',\n    ],\n],\n\n'providers' => [\n    'users' => [\n        'driver' => 'eloquent',\n        'model' => App\\\\Models\\\\User::class,\n    ],\n]"
+    },
+    {
+      "title": "92. Why do `guard` and `provider` matter so much?",
+      "body": "Because the guard defines the auth mechanism while the provider defines where users come from. If the app has separate admins, normal users, or multiple account types, you will hit guard/provider design very quickly."
+    },
+    {
+      "title": "93. A basic web login code example, and why it is written this way",
+      "body": "Use `Auth::attempt()` to verify credentials, then regenerate the session to reduce session-fixation risk. Redirecting after login keeps the web flow predictable.",
+      "code": "public function store(LoginRequest $request)\n{\n    if (! Auth::attempt($request->only('email', 'password'), $request->boolean('remember'))) {\n        return back()->withErrors([\n            'email' => 'The provided credentials are incorrect.',\n        ]);\n    }\n\n    $request->session()->regenerate();\n\n    return redirect()->intended('/dashboard');\n}"
+    },
+    {
+      "title": "94. A basic logout code example, and why all steps matter",
+      "body": "Proper logout is more than `Auth::logout()`. You should also invalidate the session and rotate the CSRF token so old sensitive state is not kept alive accidentally.",
+      "code": "public function destroy(Request $request)\n{\n    Auth::logout();\n\n    $request->session()->invalidate();\n    $request->session()->regenerateToken();\n\n    return redirect('/login');\n}"
+    },
+    {
+      "title": "95. A Blade form example with `@csrf`, and why it exists",
+      "body": "A state-changing web form needs a CSRF token so Laravel can verify the request came from the app's real flow instead of some outside context piggybacking on the user's browser.",
+      "code": "<form method=\"POST\" action=\"{{ route('login') }}\">\n    @csrf\n    <input type=\"email\" name=\"email\">\n    <input type=\"password\" name=\"password\">\n    <button type=\"submit\">Login</button>\n</form>"
+    },
+    {
+      "title": "96. A basic policy example, and why policies are worth separating",
+      "body": "Policies centralize permission rules. Instead of scattering `if ($user->id === $post->user_id)` across multiple places, you define one rule that controllers, Blade, and services can all trust.",
+      "code": "class PostPolicy\n{\n    public function update(User $user, Post $post): bool\n    {\n        return $user->id === $post->user_id;\n    }\n}\n\n// Controller\n$this->authorize('update', $post);"
+    },
+    {
+      "title": "97. Where should you look for a minimal Sanctum SPA setup?",
+      "body": "Look at `.env`, `config/session.php`, `config/sanctum.php`, and the frontend client code. If the stateful domain or cookie setup is wrong, login may return 200 while the actual auth flow is still broken.",
+      "code": "SANCTUM_STATEFUL_DOMAINS=localhost,127.0.0.1,app.test\nSESSION_DOMAIN=.app.test\nSESSION_DRIVER=file\n\n// frontend request\naxios.get('/sanctum/csrf-cookie', { withCredentials: true })\naxios.post('/login', payload, { withCredentials: true })"
+    },
+    {
+      "title": "98. Why does Sanctum often need `/sanctum/csrf-cookie` before login?",
+      "body": "Because the browser needs the correct CSRF cookie in the right context before sending later stateful requests. Without that step, many SPA auth flows fail in ways that feel mysterious to newer developers."
+    },
+    {
+      "title": "99. A `fillable` example to reduce mass-assignment risk, and why it matters",
+      "body": "If the model can accept sensitive fields too casually, requests may escalate roles or change ownership unexpectedly. `fillable` is a small but very practical defensive layer.",
+      "code": "class User extends Model\n{\n    protected $fillable = [\n        'name',\n        'email',\n        'password',\n    ];\n}"
+    },
+    {
+      "title": "100. Good auth configuration and code are not only about correct syntax, but about the right trust model",
+      "body": "The reason you regenerate sessions, add `@csrf`, separate policies, configure Sanctum domains correctly, and limit mass assignment is not just 'because Laravel says so'. Each step closes a specific weak door in the system."
+    },
+    {
+      "title": "101. Example of a basic web login with `Auth::attempt()` and why session regeneration matters",
+      "body": "This is a very classic Laravel web-login flow.",
+      "code": "if (Auth::attempt($request->only('email', 'password'))) {\n    $request->session()->regenerate();\n\n    return redirect()->intended('/dashboard');\n}\n\nreturn back()->withErrors([\n    'email' => 'Invalid credentials.',\n]);",
+      "note": "`regenerate()` helps reduce session-fixation risk after a successful login."
+    },
+    {
+      "title": "102. Example of a safer logout flow instead of only calling `Auth::logout()`",
+      "body": "A proper logout is not only about removing the user from the current guard.",
+      "code": "Auth::logout();\n\n$request->session()->invalidate();\n$request->session()->regenerateToken();\n\nreturn redirect('/');",
+      "bullets": [
+        "`invalidate()` destroys the old session state.",
+        "`regenerateToken()` creates a fresh CSRF token for the next request.",
+        "This makes the logout flow cleaner from a session-state perspective."
+      ]
+    },
+    {
+      "title": "103. Example of a policy and controller authorization call",
+      "body": "This is a common way to keep permission rules close to the use case without hardcoding checks like `if ($user->is_admin)` directly in views or controller bodies.",
+      "code": "class PostPolicy\n{\n    public function update(User $user, Post $post): bool\n    {\n        return $user->id === $post->user_id;\n    }\n}\n\n$this->authorize('update', $post);",
+      "note": "Policies do not only make code cleaner. They also make permission rules easier to test, reuse, and keep out of random hardcoded branches."
+    }
+  ]
+}

@@ -1,0 +1,204 @@
+{
+  "anchor": "laravel-structure",
+  "type": "list",
+  "heading": "Laravel app structure: read it as a flow, not only as folders",
+  "intro": "Many learners look at a Laravel repo as a list of folder names to memorize. That is not enough. A friendlier way is to read the app as a flow: where the request enters, where logic lives, which layer handles data, where views are built, and how the code should evolve once the project grows.",
+  "items": [
+    {
+      "title": "First mental model: Laravel often starts as MVC, but should not stay only MVC",
+      "body": "At the beginning, it is useful to understand Laravel through `Model - View - Controller`: models represent data, Blade or components render the interface, and controllers receive requests and coordinate the flow. But as the project grows, business logic should not stay crammed into controllers or models. That is where service classes, actions, policies, form requests, events, jobs, and other supporting layers start to matter.",
+      "code": "Route::post('/posts', [PostController::class, 'store']);\n\nclass PostController extends Controller\n{\n    public function store(StorePostRequest $request)\n    {\n        $post = Post::create($request->validated());\n\n        return redirect()->route('posts.show', $post);\n    }\n}",
+      "note": "This is a very basic MVC-style flow. Once the problem grows, authorization, business logic, or side effects are usually extracted out of the controller."
+    },
+    {
+      "title": "Read the repo through the request lifecycle",
+      "body": "The easiest path is to start from `public/index.php`, then move into bootstrap, routes, middleware, controllers, services or actions, models or queries, and finally the Blade view or JSON response. If you understand that flow, unfamiliar Laravel repos become much easier to navigate.",
+      "code": "public/index.php\n-> bootstrap/app.php\n-> routes/web.php\n-> middleware\n-> controller\n-> service/action\n-> model/query\n-> view/json response",
+      "note": "Common mistake: opening a repo from `Models` or `views` and trying to infer everything backwards. A friendlier approach is to follow the request lifecycle from the entry point."
+    },
+    {
+      "title": "`app/`: the heart of the application layer",
+      "body": "This is where you usually find `Http/Controllers`, `Models`, `Providers`, `Console`, and sometimes `Services`, `Actions`, `Repositories`, `Policies`, or feature-based modules. In a small app, `app/` stays compact. In a larger app, it needs stronger internal structure so business logic does not get scattered across controllers and models."
+    },
+    {
+      "title": "Look more closely at `app/Http`: controllers, middleware, requests",
+      "body": "This is often the first area you touch while building features. `Controllers` coordinate flow. `Middleware` guards or wraps the request. `Requests` hold validation and authorization rules. When these areas start stealing each other's responsibilities, readability drops quickly.",
+      "code": "app/Http/\n  Controllers/\n    OrderController.php\n  Middleware/\n    EnsureUserIsSubscribed.php\n  Requests/\n    StoreOrderRequest.php",
+      "bullets": [
+        "Controllers coordinate the flow and should not become the only place that holds business logic.",
+        "Middleware blocks or enriches the request before it reaches the controller.",
+        "Form Requests keep validation and sometimes authorization together."
+      ]
+    },
+    {
+      "title": "`app/Models` should not become a dumping ground for all business logic",
+      "body": "Models should stay close to data concerns: relationships, casts, accessors, mutators, scopes, and a reasonable amount of domain behavior. Once a model starts doing heavy queries, external service calls, permission checks, and side effects, the codebase becomes much harder to maintain."
+    },
+    {
+      "title": "`app/Providers` is where many critical behaviors are plugged into the system",
+      "body": "Beginners often skip this folder, but providers are where bindings, observers, policies, macros, and package integration are frequently registered. If an application behavior seems to appear from nowhere, the provider layer is often the reason.",
+      "code": "class AppServiceProvider extends ServiceProvider\n{\n    public function register(): void\n    {\n        $this->app->bind(PaymentGateway::class, StripeGateway::class);\n    }\n\n    public function boot(): void\n    {\n        Gate::policy(Order::class, OrderPolicy::class);\n    }\n}",
+      "note": "When the app seems to 'do something automatically', the provider layer is one of the first places worth opening to see what is being wired into runtime."
+    },
+    {
+      "title": "`app/Console`, `Jobs`, `Events`, `Listeners`, and `Notifications` reveal whether the app lives beyond web requests",
+      "body": "A real Laravel app usually does more than respond to browser requests. It may have manual commands, queued jobs, event-driven behavior, mail flows, notifications, or scheduled work. These areas tell you whether the application is still simple CRUD or already moving into richer backend life."
+    },
+    {
+      "title": "`routes/`: the system's entry map",
+      "body": "Files like `web.php`, `api.php`, `console.php`, and `channels.php` tell you which kinds of flows the application exposes. `web.php` usually belongs to session-based pages and Blade. `api.php` usually belongs to token-based JSON APIs. Reading `routes/` is one of the fastest ways to understand who the app serves and how.",
+      "code": "// routes/web.php\nRoute::get('/dashboard', [DashboardController::class, 'index']);\n\n// routes/api.php\nRoute::middleware('auth:sanctum')->get('/me', function (Request $request) {\n    return $request->user();\n});",
+      "note": "Once you clearly separate `web.php` from `api.php`, request flow and auth become much easier to reason about."
+    },
+    {
+      "title": "`resources/`: where the interface is assembled",
+      "body": "Here you will often find `views/` for Blade and maybe `js/`, `css/`, or other frontend assets. If the project leans heavily on Blade, this is the View layer in the classical MVC sense. If it uses Livewire, Inertia, Vue, or React, this folder also reveals how Laravel is paired with modern frontend tooling."
+    },
+    {
+      "title": "How `resources/views` differs from `resources/js` or `resources/css`",
+      "body": "`views` usually contains server-rendered Blade templates. `js` and `css` contain source assets or frontend code that will be built through Vite. By comparing these areas, you can quickly tell whether the app leans toward classic Blade, Livewire, or something closer to SPA behavior.",
+      "code": "resources/\n  views/\n    posts/\n      index.blade.php\n  js/\n    app.js\n  css/\n    app.css",
+      "note": "That tree alone is enough to guess which parts render on the server and which parts go through the asset or frontend pipeline."
+    },
+    {
+      "title": "`database/`: the shape of data and seed data",
+      "body": "Migrations describe the schema. Seeders create initial or sample data. Factories support testing and fake data generation. If you want to understand what the app stores, how relationships work, and how data will grow, `database/` often teaches more than the visible UI."
+    },
+    {
+      "title": "Do not read only migrations; also inspect seeders and factories",
+      "body": "Migrations tell you the schema. Seeders tell you what startup data matters. Factories tell you how the team imagines test data should look. Together, those three layers give a much fuller picture of the application's data model."
+    },
+    {
+      "title": "`config/` and `.env`: what controls the app's behavior",
+      "body": "Many important Laravel behaviors do not live in controllers at all. They live in configuration: database, mail, queue, cache, filesystem, services, auth, session, and more. `config/` shows the capabilities of the app, while `.env` explains the environment context the app is running in.",
+      "code": "// config/queue.php\n'default' => env('QUEUE_CONNECTION', 'database'),\n\n# .env\nQUEUE_CONNECTION=redis",
+      "note": "Common mistake: changing `.env` and forgetting about config cache or the real runtime environment. The fix is to read `config/` and `.env` together."
+    },
+    {
+      "title": "What belongs in `config/` versus what belongs in `.env`?",
+      "body": "`config/` defines the structure of application configuration. `.env` supplies environment-specific values such as hosts, keys, passwords, and active drivers. Do not put business logic in `.env`, and do not hardcode secrets directly into config files."
+    },
+    {
+      "title": "`public/`, `storage/`, `bootstrap/`: the operational foundation",
+      "body": "`public/` is the web server entry point. `storage/` holds logs, cache, sessions, uploads, or generated files. `bootstrap/` handles framework startup and bootstrap caches. These areas are easy to ignore when learning, but they become critical in real debugging and deployment work."
+    },
+    {
+      "title": "`storage/logs`, `storage/framework`, and `bootstrap/cache` are practical debugging zones",
+      "body": "Many local or production bugs are not caused by business logic at all. They come from stale config cache, route cache, session files, or hidden runtime errors. Understanding these directories makes real-environment debugging much faster."
+    },
+    {
+      "title": "`tests/`: the safety map for changing code",
+      "body": "A Laravel repo with strong tests usually signals that the team has enough discipline to upgrade and refactor safely. Look at how the project splits `Feature`, `Unit`, database-heavy tests, or fake service tests. It reveals a lot about technical maturity.",
+      "code": "tests/\n  Feature/\n    Auth/\n    Orders/\n  Unit/\n    Services/\n    Support/",
+      "note": "A repo can have tests and still be hard to trust if every test lives in one messy pile. Clear grouping by flow or feature is a much better maintenance signal."
+    },
+    {
+      "title": "`vendor/` and `composer.*`: the body of the PHP ecosystem",
+      "body": "Laravel runs on top of many packages. `vendor/` is where that package code lives, while `composer.json` and `composer.lock` tell you what the project depends on. In a real Laravel app, understanding which packages control auth, debugging, permissions, Excel, or queues matters a lot."
+    },
+    {
+      "title": "As the app grows: move from simple MVC toward feature-based structure",
+      "body": "MVC is a good starting point, but large apps benefit from thinking in features such as `Auth`, `Billing`, `Posts`, `Teams`, `Admin`, or `Notifications`. Each feature may carry its own controller, request, service, policy, job, view, and test coverage. That structure is friendlier for long-term maintenance because readers do not need to jump across too many disconnected layers."
+    },
+    {
+      "title": "A practical order for reading an unfamiliar Laravel repo",
+      "body": "When opening a new codebase, start with `composer.json`, then `routes/`, `config/`, `app/Http`, `app/Models`, `database/migrations`, and finally `resources/views` or the frontend layer. This approach gives you a much faster structural picture than opening random files."
+    },
+    {
+      "title": "What does a 'healthy' Laravel repo usually feel like?",
+      "body": "Routes are traceable, controllers are not too long, requests are separated, policies are clear, models are not bloated, config is organized, migrations are meaningful, tests follow real flows, and very few files make you stop and ask 'why is this code even here'. That is usually the sign that the structure is helping the reader instead of fighting them."
+    },
+    {
+      "title": "What smells usually show that a Laravel repo is hard to live in?",
+      "body": "You often see unusually long controllers, models carrying too many responsibilities, oversized route files, folders with unclear names, helpers scattered without convention, services placed arbitrarily, business logic drifting across many layers, and request flow that is hard to predict. These are the smells experienced developers notice very quickly."
+    },
+    {
+      "title": "A senior-level tip: do not read a repo top-down by folder tree alone",
+      "body": "Newer developers often open folders one by one and get lost quickly. More experienced readers usually follow a use case or request flow instead: which route hits this screen, which controller handles it, which request validates it, which service runs, which model touches data, and which view returns the result. That approach makes large repos much less intimidating."
+    },
+    {
+      "title": "Another senior-level tip: inspect what looks swollen before what looks pretty",
+      "body": "Well-structured repos often have many clean-looking files. But the most educational places are usually the swollen ones: a 500-line controller, an over-smart model, a huge route file, a god-class service, or an overloaded provider. Those files reveal the real structural pressure points."
+    },
+    {
+      "title": "Common anti-pattern: splitting too early just because architecture looks elegant",
+      "body": "Many developers learn services, repositories, actions, and DTOs and then want to split everything immediately. But if the project is not large enough yet, that early splitting only increases file count, jump cost, and confusion. Good architecture is not the maximum number of layers; it is the right amount of layers for the current problem."
+    },
+    {
+      "title": "The opposite anti-pattern: leaving everything inside controllers and models forever",
+      "body": "Some teams go the other way: because they want speed, they keep logic inside controllers or models for too long. That may survive early on, but if the app grows and structure never evolves, the repo reaches a point that becomes very hard to rescue. A common sign is that one feature requires scrolling through hundreds of lines before it makes sense."
+    },
+    {
+      "title": "A practical checklist when you first enter an unfamiliar Laravel repo",
+      "body": "Ask quickly: is this app mainly web or API, where does auth live, which major packages shape behavior, are the route files clean, are controllers too long, where does validation live, where do complex queries live, is the frontend Blade or Inertia or Livewire, and do tests follow real flows? If you can answer those, you already understand the repo's backbone."
+    },
+    {
+      "title": "Final practical insight: a good structure lets the next developer guess the right file to open",
+      "body": "That is a very real benchmark. A strong repo does not only look nice in architecture diagrams; it also helps a new developer guess fairly well where routes, validation, business logic, authorization, and UI will be found. If the repo does that, it is serving the team well."
+    },
+    {
+      "title": "Practical question: where should new code go so you do not hate yourself six months later?",
+      "body": "Put it where the real responsibility belongs, not wherever feels convenient. Validation belongs in requests, permission rules in policies or the right layer, orchestration in controllers or actions, business flow in services or feature classes, and data shape in models or query layers. Misplacing that early creates repo smell fast.",
+      "code": "class StoreOrderRequest extends FormRequest {}\nclass OrderPolicy {}\nclass OrderController extends Controller {}\nclass CreateOrderAction {}\nclass Order extends Model {}",
+      "bullets": [
+        "Validation usually starts in a `FormRequest`.",
+        "Permission rules should not be shoved directly into Blade or controllers when they belong in a `Policy`.",
+        "Flows like order creation or payments often fit an `Action` or `Service` better than a plain model."
+      ],
+      "note": "Common mistake: adding code to whichever file is already open. Better fix: ask what the true responsibility is before placing it."
+    },
+    {
+      "title": "Should `app/Support`, `app/Helpers`, and `app/Traits` grow without limits?",
+      "body": "These are very easy places to turn into junk drawers. If everything with no obvious home gets thrown into `Support` or `Traits`, the repo looks tidy on the surface but becomes harder to read over time.",
+      "code": "app/\n  Support/\n    SlugHelper.php\n  Helpers/\n    price.php\n  Traits/\n    LogsActivity.php",
+      "note": "Common mistake: whenever placement is unclear, create another helper or trait. Better fix: first ask whether the code belongs to a feature, policy, query, or service."
+    },
+    {
+      "title": "A maintainable Laravel repo usually has reasonably clear feature boundaries",
+      "body": "For example, when you open the `orders` feature, you can trace its routes, requests, policies, services, queries, views, or API resources without jumping through too many unrelated areas. Experienced developers value that feeling a lot.",
+      "code": "app/\n  Orders/\n    Actions/\n    Policies/\n    Queries/\n    Requests/\nresources/views/orders/\nroutes/web.php",
+      "note": "If one feature is scattered across twelve unrelated places with no pattern, new developers will struggle to trace the real flow."
+    },
+    {
+      "title": "Real case: a repo is often not bad because it lacks architecture, but because everyone adds code where they feel most comfortable",
+      "body": "One developer always uses controllers, another always uses models, another keeps adding global helpers. After a few months, the app still runs, but the repo no longer has strong enough rules for a new developer to predict the path.",
+      "code": "// overloaded controller\npublic function store(Request $request)\n{\n    // validate\n    // authorize\n    // query DB\n    // call payment API\n    // send mail\n    // return view\n}",
+      "note": "Common mistake: every flow ends in a 300-line controller. Better fix: split by responsibility gradually before the repo becomes too painful to rescue."
+    },
+    {
+      "title": "Extra tip: read repo structure through the flow of the current change, not only through the folder tree",
+      "body": "When a real task arrives, open the related route, request, controller or action, query or model, then the relevant test or view. That teaches you the structure as it actually lives, not just the structure as a diagram.",
+      "code": "1. open route\n2. open request or middleware\n3. open controller / action\n4. open query or model\n5. open view / resource\n6. open related test",
+      "note": "Common mistake: reading every folder top-down and getting lost quickly. Better fix: follow one real flow you need to fix or learn."
+    },
+    {
+      "title": "Example of a minimal Laravel directory tree that helps new learners orient themselves",
+      "body": "You do not need to memorize the whole repository at once. Knowing the main entry points already reduces confusion a lot.",
+      "code": "app/\n  Http/\n    Controllers/\n    Requests/\n  Models/\n  Providers/\nroutes/\nresources/\n  views/\ndatabase/\n  migrations/\ntests/\npublic/\nstorage/\nconfig/",
+      "bullets": [
+        "`routes/` is usually the first place to look when you want to know where a request goes.",
+        "`app/Http/Controllers` is often where web or API orchestration starts.",
+        "`resources/views` is where you inspect server-rendered UI.",
+        "`database/migrations` shows how data is being shaped."
+      ],
+      "note": "If the repo is larger, keep mapping real features onto this tree instead of trying to memorize every folder in one pass."
+    },
+    {
+      "title": "Example of tracing one feature from route to request, controller, service, and view",
+      "body": "This is one of the most practical ways to read a repository when you just received a new task.",
+      "code": "Route::post('/orders', [OrderController::class, 'store']);\n\nclass OrderController extends Controller\n{\n    public function store(StoreOrderRequest $request, OrderService $service)\n    {\n        $order = $service->create($request->validated());\n\n        return redirect()->route('orders.show', $order);\n    }\n}",
+      "bullets": [
+        "From the route, you know which controller action owns the behavior.",
+        "From `StoreOrderRequest`, you know where validation lives.",
+        "From `OrderService`, you know whether business flow has been extracted.",
+        "From `redirect()->route(...)`, you can continue into the next screen or test."
+      ]
+    },
+    {
+      "title": "A small shell command that is very useful when opening an unfamiliar Laravel repo",
+      "body": "Instead of randomly expanding folders, quickly scan the main entry points first.",
+      "code": "rg --files routes app/Http app/Models resources/views database/migrations tests",
+      "note": "This does not replace reading code, but it gives you a starting map so you do not have to click around blindly."
+    }
+  ]
+}

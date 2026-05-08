@@ -1,0 +1,207 @@
+{
+  "heading": "Vibe Coding AI Review",
+  "intro": "Nhánh này dành cho phần quan trọng nhất của Vibe Coding: review output AI, trace lỗi do AI sinh ra hoặc AI che mờ, rồi refactor lại để code trở về cấu trúc có thể sống lâu.",
+  "type": "list",
+  "breaks": [
+    {
+      "start": 1,
+      "title": "Các Case Debug Đáng Làm",
+      "description": "Chọn bug đủ thật, có nguyên nhân rõ và có bài học rút ra sau khi sửa.",
+      "tone": "amber"
+    },
+    {
+      "start": 5,
+      "title": "Flow Trace Và Sửa",
+      "description": "Một workflow debug tốt nên cho thấy cách nghĩ chứ không chỉ cho thấy kết quả cuối.",
+      "tone": "coral"
+    },
+    {
+      "start": 9,
+      "title": "Refactor Có Giá Trị Khi Nào",
+      "description": "Refactor đáng làm khi nó làm sáng trách nhiệm hoặc giảm bug lặp, không phải chỉ đổi style cho đẹp.",
+      "tone": "amber"
+    }
+  ],
+  "items": [
+    {
+      "title": "Bug kiểu nào hay lộ ra khi dùng AI code?",
+      "body": "Các bug như `419 form submit`, `upload lỗi`, `N+1`, `queue chạy code cũ`, `config đổi mà app không đổi`, `route nhận sai data` rất hay lộ ra khi AI sinh code quá nhanh mà không hiểu hết context."
+    },
+    {
+      "title": "Mở đầu một workflow review AI output nên làm gì?",
+      "body": "Nên cho xem symptom thật trước: output AI đang làm sai gì, behavior lệch ở đâu, và vì sao người dùng hoặc team không thể chấp nhận nó."
+    },
+    {
+      "title": "Cách trace bug nên đi theo flow nào?",
+      "body": "Đi theo chuỗi `reproduce -> đọc lỗi -> khoanh vùng lớp -> thêm log/inspect -> xác nhận giả thuyết -> sửa -> test lại`.",
+      "code": "1. Reproduce\n2. Read the first useful error\n3. Narrow the layer\n4. Add log or inspect state\n5. Confirm the hypothesis\n6. Fix\n7. Retest",
+      "tip": "Người xem học được nhiều nhất ở phần bạn loại trừ giả thuyết sai như thế nào."
+    },
+    {
+      "title": "Khi debug có nên show log thật không?",
+      "body": "Có, miễn là log đủ sạch và có context. Log thật giúp người xem hiểu cách đọc request id, exception message, file path hoặc stack trace."
+    },
+    {
+      "title": "Một case 419 nên nói những gì?",
+      "body": "Nên nói về `@csrf`, session, cookie, form hết hạn, khác nhau giữa web route và API route, và vì sao local chạy được mà production có thể fail."
+    },
+    {
+      "title": "Một case refactor output AI controller béo nên chia thế nào?",
+      "body": "Cho người xem thấy controller hiện tại làm quá nhiều việc, sau đó tách từng phần như request validation, action/service, event hoặc view preparation.",
+      "code": "public function store(StoreOrderRequest $request, CreateOrderAction $action)\n{\n    $order = $action->handle($request->validated(), $request->user());\n\n    return redirect()->route('orders.show', $order);\n}\n",
+      "note": "Refactor tốt là refactor làm rõ trách nhiệm, không chỉ tạo thêm file."
+    },
+    {
+      "title": "Khi nào debug nên dừng ở fix nhỏ, khi nào nên kéo sang refactor?",
+      "body": "Nếu bug lộ ra một cấu trúc lỗi lặp lại, nên kéo sang refactor. Nếu bug chỉ là sai config hoặc typo đơn lẻ, sửa gọn rồi chốt bài học là đủ."
+    },
+    {
+      "title": "Có nên giữ cả bug lúc demo fail không?",
+      "body": "Có thể giữ một phần ngắn nếu nó giúp tăng tính thật. Nhưng đừng để workflow sa vào một lỗi phụ không liên quan trọng tâm chính."
+    },
+    {
+      "title": "Refactor nào hợp để tách thành nhiều bước?",
+      "body": "Rất hợp với các case như `controller béo`, `Blade lẫn logic`, `service vô chủ`, `query chậm`, `upload flow rối`, `đọc config sai chỗ`."
+    },
+    {
+      "title": "Sai lầm lớn khi review/refactor code do AI sinh là gì?",
+      "body": "Sai lầm là chỉ vá bề mặt cho chạy lại mà không sửa pattern sinh bug ở dưới. Nếu prompt, boundary hoặc checklist không đổi, AI sẽ lặp đúng lỗi đó ở lần sau."
+    },
+    {
+      "title": "Khi nào nên yêu cầu AI tự review code nó vừa sinh?",
+      "body": "Có thể dùng bước này như một lớp phụ, ví dụ yêu cầu nó tìm security risk, boundary smell, hoặc chỗ chưa test. Nhưng đừng coi đó là review cuối cùng."
+    },
+    {
+      "title": "Một prompt review hữu ích nên viết sao?",
+      "body": "Hãy ép AI review theo checklist thay vì hỏi chung chung `có bug gì không`.",
+      "code": "Review this Laravel change for:\n- validation gaps\n- auth / policy gaps\n- file handling risks\n- query inefficiency\n- unrelated file edits\n- missing tests\n"
+    },
+    {
+      "title": "Khi refactor output AI, chỗ nào hay cần cắt nhỏ nhất?",
+      "body": "Thường là controller, query nặng, Blade logic, helper vô chủ và các đoạn condition lồng quá sâu. Đây là nơi AI hay sinh ra code 'đúng cú pháp nhưng khó sống'."
+    },
+    {
+      "title": "Có nên để AI tự refactor nhiều file cùng lúc không?",
+      "body": "Chỉ nên khi bạn đã khóa boundary rất rõ. Nếu không, AI dễ lan sang các file liên quan xa, làm diff lớn và khó review hơn nhiều."
+    },
+    {
+      "title": "Khi nào nên dừng refactor AI-suggested?",
+      "body": "Khi improvement mới chỉ là đổi style hoặc đặt thêm lớp mà không giảm bug, không rõ trách nhiệm hơn và không giúp người sau đọc tốt hơn."
+    },
+    {
+      "title": "Một case review khó với output AI là gì?",
+      "body": "Case khó là khi AI sinh code nhìn rất sạch, tách lớp đẹp, nhưng thực chất boundary lại sai. Đây là lúc người review phải quay về business flow thay vì bị đánh lừa bởi hình thức."
+    },
+    {
+      "title": "Có nên cho AI diff cũ và diff mới để tự so sánh không?",
+      "body": "Có, đây là cách tốt để bắt regression risk hoặc scope creep. Nhưng vẫn phải tự xác nhận ở những phần rủi ro như auth, file, migration, query và runtime."
+    },
+    {
+      "title": "Một workflow mạnh để sửa bug do AI sinh là gì?",
+      "body": "Reproduce bug trước, khoanh lớp sai, yêu cầu AI giải thích tại sao code hiện tại dẫn tới bug, rồi mới yêu cầu patch. Cách này tốt hơn nhiều so với việc ném lỗi và bảo AI sửa đại.",
+      "code": "1. Reproduce\n2. Identify wrong layer\n3. Ask AI to explain root cause\n4. Ask AI for minimal patch\n5. Retest\n6. Decide whether refactor is needed\n"
+    },
+    {
+      "title": "Khi nào nên bỏ hẳn output AI và viết lại tay?",
+      "body": "Khi diff đã quá nhiễu, patch chạm quá nhiều file ngoài scope, hoặc khi bạn nhận ra nó đang kéo cả flow đi theo một giả định sai ngay từ đầu."
+    },
+    {
+      "title": "Red flag lớn khi AI review code là gì?",
+      "body": "AI chỉ lặp lại những gì bạn đã nghi ngờ mà không phát hiện được failure mode mới. Nếu review nghe quá chung chung, nên đổi prompt thành checklist sắc hơn hoặc tự review tay sâu hơn."
+    },
+    {
+      "title": "Một checklist mạnh khi review diff AI là gì?",
+      "body": "Nên nhìn `scope`, `boundary`, `auth`, `validation`, `query`, `file edit ngoài vùng`, `runtime risk`, và `test impact`.",
+      "code": "Check:\n- is the bug actually reproduced?\n- which layer is wrong?\n- did AI change unrelated files?\n- does patch add new hidden side effects?\n- do tests cover the real failure?\n"
+    },
+    {
+      "title": "Khi AI giải thích root cause nghe rất thuyết phục thì sao?",
+      "body": "Vẫn phải kiểm lại bằng symptom và flow thật. Root cause nghe hợp lý không có nghĩa là đúng. AI rất giỏi kể một câu chuyện sạch về nguyên nhân, kể cả khi câu chuyện đó sai."
+    },
+    {
+      "title": "Một strong workflow cho review/refactor là gì?",
+      "body": "Reproduce, isolate layer, ask AI to explain, compare with your own hypothesis, request minimal patch, test lại, rồi mới quyết định có refactor rộng hơn hay không.",
+      "tip": "Đừng nhảy thẳng từ symptom sang refactor lớn nếu root cause còn chưa chắc."
+    },
+    {
+      "title": "Khi nào review tay nên thay thế hoàn toàn review AI?",
+      "body": "Khi bug đụng auth, session, cache invalidation, transaction, queue side effect, private file hoặc deploy/runtime. Đây là các vùng AI có thể hỗ trợ, nhưng không nên là người gác cổng cuối."
+    },
+    {
+      "title": "Một dấu hiệu patch AI đang chữa triệu chứng chứ không chữa gốc là gì?",
+      "body": "Patch thêm if, thêm clear cache, thêm null check, hoặc thêm retry nhưng không giải thích được vì sao flow ban đầu sai. Đây thường là cách chữa đau ngắn hạn chứ không chữa nguyên nhân."
+    },
+    {
+      "title": "Nếu AI đề xuất refactor rất đẹp nhưng diff quá to thì sao?",
+      "body": "Thường nên dừng lại, bóc nhỏ refactor, rồi yêu cầu patch tối thiểu trước. Diff quá to làm mất khả năng review thật và dễ lẫn bug cũ với bug mới."
+    },
+    {
+      "title": "Một prompt hay cho root-cause analysis là gì?",
+      "body": "Đừng bảo AI sửa ngay. Hãy bắt nó trace trước.",
+      "code": "Do not patch yet.\nExplain the most likely root cause.\nList 3 competing hypotheses.\nSay what evidence would confirm each one.\n"
+    },
+    {
+      "title": "Khi nào nên yêu cầu AI chỉ tạo patch tối thiểu?",
+      "body": "Khi bạn đã xác định đúng nguyên nhân và chỉ cần fix an toàn, nhanh, ít ảnh hưởng. Patch tối thiểu đặc biệt hữu ích trong bug nóng hoặc production fix."
+    },
+    {
+      "title": "Red flag lớn nhất của AI Review là gì?",
+      "body": "Nó làm bạn có cảm giác là đã review, trong khi thực ra bạn chỉ đọc một lời giải thích đẹp. Review thật phải đi qua symptom, code, flow và verify."
+    }
+  ,
+    {
+      "title": "Một tip mạnh khi AI review code là gì?",
+      "body": "Đừng chỉ hỏi `có bug gì không`. Hãy bắt nó review theo lens: auth lens, validation lens, query lens, file upload lens, runtime lens. Cùng một diff nhưng mỗi lens sẽ lộ ra lỗi khác nhau."
+    },
+    {
+      "title": "Khi nào nên cho AI viết lại explanation thay vì patch?",
+      "body": "Khi explanation đầu tiên quá mơ hồ, hoặc khi nó đang nhảy quá nhanh vào giải pháp. Viết lại explanation buộc nó làm rõ causal chain trước khi đụng code."
+    },
+    {
+      "title": "Một anti-pattern trong AI Review là gì?",
+      "body": "Nhìn patch đã đẹp, có test, có class tách ra, rồi mặc định coi đó là improvement. Hình thức sạch thường che đi chuyện boundary, side effect hoặc missing edge case."
+    },
+    {
+      "title": "Một root-cause prompt tốt nên trông như nào?",
+      "body": "Đừng bảo AI sửa ngay. Hãy bắt nó trace trước và so sánh nhiều giả thuyết.",
+      "code": "Do not patch yet.\nExplain the most likely root cause.\nList 3 competing hypotheses.\nSay what evidence would confirm each one.\n"
+    },
+    {
+      "title": "Khi nào nên dùng snapshot trước khi refactor output AI?",
+      "body": "Khi diff lớn hơn mức bạn có thể review thoải mái hoặc khi bạn nghi patch mới sẽ làm mờ symptom cũ. Snapshot giúp bạn còn một điểm tựa để so behavior trước và sau."
+    },
+    {
+      "title": "Một case AI Review dễ bị bỏ sót regression là gì?",
+      "body": "Patch sửa được bug chính nhưng làm hỏng log format, queue dispatch, file cleanup hoặc policy check vì review chỉ tập trung vào path người dùng đang nhìn thấy."
+    },
+    {
+      "title": "Khi nào nên yêu cầu AI chỉ liệt kê test cần có thay vì viết test luôn?",
+      "body": "Khi bạn còn chưa chắc behavior đúng nên khóa là gì. Danh sách test tốt sẽ giúp bạn tự chọn case quan trọng thay vì nhận một đống test nông."
+    },
+    {
+      "title": "Một strong workflow để review diff do AI sinh ra là gì?",
+      "body": "Đọc symptom trước, đọc diff sau, map symptom vào đúng lớp, rồi mới hỏi AI thêm. Nếu đọc diff trước mà quên symptom, rất dễ bị cấu trúc đẹp làm mờ bug thật."
+    },
+    {
+      "title": "Vì sao không nên quá tin vào một diff nhìn rất sạch?",
+      "body": "Vì AI có thể tạo diff rất đẹp về hình thức nhưng boundary vẫn sai, dependency vẫn bị kéo lệch, hoặc flow dữ liệu vẫn không đúng business. Sạch không đồng nghĩa với đúng."
+    },
+    {
+      "title": "Khi nào `test xanh` vẫn chưa đủ để merge output AI?",
+      "body": "Khi bug gốc liên quan dữ liệu cũ, race condition, quyền truy cập, side effect ngoài test, hoặc behavior chỉ lộ trong runtime thật. Test xanh chỉ là một tín hiệu, không phải bằng chứng cuối cùng."
+    },
+    {
+      "title": "Một bẫy review AI khá kín là gì?",
+      "body": "Patch dùng API, helper, package method hoặc behavior của framework version khác repo hiện tại. Nhìn diff thì rất hợp lý nhưng thực ra app hiện tại không có đúng primitive đó.",
+      "code": "Review version drift:\n- package really installed?\n- helper exists in this Laravel version?\n- config key exists?\n- facade method available?\n"
+    },
+    {
+      "title": "Khi review output AI có nên soi dependency và version không?",
+      "body": "Có. Đây là lớp rất hay bị quên vì người review bị hút vào logic feature. Nhưng version mismatch hoặc package assumption sai có thể làm patch chết ngay khi chạy thật."
+    },
+    {
+      "title": "Một strong prompt để review diff AI nên thêm gì ngoài bug logic?",
+      "body": "Ngoài logic, nên hỏi thêm `framework/version mismatch`, `dependency assumption`, `runtime risk`, và `test illusion`. Những lớp này thường lộ ra các lỗi mà review bề mặt bỏ qua."
+    }
+  ]
+}

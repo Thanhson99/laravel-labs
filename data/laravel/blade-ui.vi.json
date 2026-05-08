@@ -1,0 +1,642 @@
+{
+  "anchor": "laravel-blade-ui",
+  "type": "list",
+  "heading": "Blade, component và lớp UI server-rendered: bản đồ chi tiết cho người học Laravel thật sự",
+  "intro": "Site này gom một lượng nội dung rất dày cho Blade. Mục tiêu không chỉ là biết Blade là gì, mà còn biết cách dùng biến, loop, include, component, form, CSRF, old input, escaping, PHP trong view, tip/trick, anti-pattern và kinh nghiệm maintain UI server-rendered trong project Laravel thật.",
+  "breaks": [
+    {
+      "start": 1,
+      "title": "Nền tảng Blade",
+      "description": "Khái niệm, output dữ liệu, escaping và cách Blade ngồi trên PHP.",
+      "tone": "amber"
+    },
+    {
+      "start": 22,
+      "title": "Điều kiện, Loop và Render Flow",
+      "description": "Các directive điều khiển hiển thị như `@if`, `@foreach`, `@forelse`, `$loop` và include cơ bản.",
+      "tone": "copper"
+    },
+    {
+      "start": 46,
+      "title": "Layout, Stack và Tái Sử Dụng View",
+      "description": "Tổ chức shell giao diện, section, stack script/style và cách chia view lớn dễ sống hơn.",
+      "tone": "olive"
+    },
+    {
+      "start": 55,
+      "title": "Form, Validation và Input UX",
+      "description": "Những thứ Blade đụng rất nhiều trong app thật: CSRF, old input, error bag, method spoofing và UX form.",
+      "tone": "ocean"
+    },
+    {
+      "start": 66,
+      "title": "Component, Slot và Kiến Trúc UI",
+      "description": "Anonymous/class component, slot, props, naming, tổ chức thư mục view và cách chuẩn hóa UI.",
+      "tone": "indigo"
+    },
+    {
+      "start": 82,
+      "title": "Directive Nâng Cao và Bridge Sang JS",
+      "description": "Các helper/directive như `@class`, `@props`, `@json`, view cache và những chỗ Blade chạm sang frontend.",
+      "tone": "rose"
+    },
+    {
+      "start": 113,
+      "title": "Anti-pattern, Tip và Review Mindset",
+      "description": "Các lỗi hay gặp, kinh nghiệm maintain UI server-rendered và checklist để không làm view layer già đi xấu.",
+      "tone": "slate"
+    }
+  ],
+  "items": [
+    {
+      "title": "1. Blade là gì?",
+      "body": "Blade là templating engine của Laravel. Nó giúp bạn viết HTML động phía server bằng cú pháp gọn hơn PHP thuần nhưng vẫn cho phép rơi về PHP khi cần."
+    },
+    {
+      "title": "2. Blade có thay thế hoàn toàn PHP không?",
+      "body": "Không. Blade là lớp cú pháp tiện dụng ở trên PHP. Cuối cùng view Blade vẫn được compile thành PHP để Laravel render."
+    },
+    {
+      "title": "3. Server-rendered UI là gì?",
+      "body": "Đó là kiểu giao diện mà HTML được dựng sẵn từ server rồi gửi về browser. Với Laravel truyền thống, Blade là trung tâm của kiểu render này."
+    },
+    {
+      "title": "4. Vì sao Blade vẫn đáng học trong thời đại SPA?",
+      "body": "Vì nhiều hệ thống business, admin panel, dashboard CRUD, CMS và flow form nhiều bước không cần SPA nặng. Blade giúp đi nhanh và bền hơn cho rất nhiều bài toán."
+    },
+    {
+      "title": "5. File Blade thường nằm ở đâu?",
+      "body": "Mặc định chúng nằm trong `resources/views`. Tên file thường có đuôi `.blade.php`."
+    },
+    {
+      "title": "6. Vì sao file lại là `.blade.php`?",
+      "body": "Vì đó vẫn là view PHP, chỉ có thêm lớp cú pháp Blade ở giữa. Laravel nhận diện đuôi này để compile đúng."
+    },
+    {
+      "title": "7. View Blade được trả về từ đâu?",
+      "body": "Thường từ controller qua `return view(...)`, nhưng cũng có thể từ route closure, mail, notification hoặc component class."
+    },
+    {
+      "title": "8. Cách trả về một view đơn giản",
+      "body": "Bạn thường dùng `return view('users.index');` trong controller để render file `resources/views/users/index.blade.php`.",
+      "code": "return view('users.index');"
+    },
+    {
+      "title": "9. Truyền data từ controller sang Blade như thế nào?",
+      "body": "Thường qua mảng key-value ở hàm `view()`, hoặc dùng `compact()`. Blade sẽ nhận các biến đó để render.",
+      "code": "return view('users.index', ['users' => $users]);\nreturn view('users.index', compact('users'));"
+    },
+    {
+      "title": "10. Tên biến trong Blade lấy từ đâu?",
+      "body": "Từ key bạn truyền sang view. Nếu truyền `users`, thì trong Blade bạn dùng biến `$users`."
+    },
+    {
+      "title": "11. `{{ }}` là gì?",
+      "body": "Đây là cú pháp echo an toàn của Blade. Nó sẽ escape HTML trước khi render để giảm rủi ro XSS.",
+      "code": "{{ $user->name }}"
+    },
+    {
+      "title": "12. `{!! !!}` là gì?",
+      "body": "Đây là cú pháp echo raw, không escape HTML. Chỉ nên dùng khi bạn chắc dữ liệu an toàn hoặc đã được sanitize trước đó.",
+      "code": "{!! $post->content !!}"
+    },
+    {
+      "title": "13. `{{ }}` và `{!! !!}` khác nhau ở đâu?",
+      "body": "`{{ }}` escape output để an toàn hơn. `{!! !!}` render thẳng HTML nên mạnh hơn nhưng nguy hiểm hơn nếu dữ liệu đến từ người dùng."
+    },
+    {
+      "title": "14. Khi nào tuyệt đối cẩn thận với `{!! !!}`?",
+      "body": "Khi dữ liệu đến từ form, editor, comment, mô tả hoặc bất cứ nội dung nào user có thể nhập. Dùng sai chỗ rất dễ mở cửa cho XSS."
+    },
+    {
+      "title": "15. Blade có thể gọi helper Laravel không?",
+      "body": "Có. Bạn có thể dùng các helper như `route()`, `asset()`, `old()`, `auth()`, `csrf_token()` ngay trong view."
+    },
+    {
+      "title": "16. In một chuỗi tĩnh trong Blade",
+      "body": "Bạn có thể viết HTML bình thường hoặc dùng `{{ 'text' }}` nếu thật sự cần echo qua Blade. Đa số trường hợp HTML thuần là đủ."
+    },
+    {
+      "title": "17. Dùng toán tử null coalescing trong Blade",
+      "body": "Bạn có thể fallback khi dữ liệu có thể null để UI đỡ vỡ.",
+      "code": "{{ $user->nickname ?? $user->name }}"
+    },
+    {
+      "title": "18. Dùng ternary trong Blade",
+      "body": "Có thể dùng để render text hoặc class theo điều kiện nhỏ, nhưng đừng lạm dụng cho logic dài.",
+      "code": "{{ $user->is_admin ? 'Admin' : 'Member' }}"
+    },
+    {
+      "title": "19. Có nên viết quá nhiều expression trong `{{ }}` không?",
+      "body": "Không nên. Nếu expression dài hoặc chứa nhiều điều kiện, view sẽ khó đọc. Nên chuẩn bị dữ liệu sẵn ở controller hoặc view model."
+    },
+    {
+      "title": "20. Blade có hỗ trợ comment riêng không?",
+      "body": "Có. Dùng `{{-- --}}` để comment mà output HTML không thấy phần comment đó.",
+      "code": "{{-- Đây là comment Blade --}}"
+    },
+    {
+      "title": "21. Comment HTML và comment Blade khác nhau gì?",
+      "body": "Comment HTML vẫn ra source browser. Comment Blade bị loại bỏ khi compile nên an toàn hơn cho ghi chú nội bộ."
+    },
+    {
+      "title": "22. `@if` dùng khi nào?",
+      "body": "Dùng để render có điều kiện một block view khi điều kiện đúng.",
+      "code": "@if($user)\n  <p>{{ $user->name }}</p>\n@endif"
+    },
+    {
+      "title": "23. `@elseif` và `@else`",
+      "body": "Dùng khi UI có nhiều nhánh trạng thái như `loading`, `empty`, `success`, `error`."
+    },
+    {
+      "title": "24. `@unless` là gì?",
+      "body": "Đây là cách viết ngược của `@if`. Hợp khi bạn muốn đọc theo kiểu 'nếu không phải điều này'.",
+      "code": "@unless($users->count())\n  <p>Không có dữ liệu.</p>\n@endunless"
+    },
+    {
+      "title": "25. `@isset` dùng để làm gì?",
+      "body": "Dùng khi cần kiểm tra biến có tồn tại và không null trước khi render.",
+      "code": "@isset($profile)\n  <p>{{ $profile->bio }}</p>\n@endisset"
+    },
+    {
+      "title": "26. `@empty` là gì?",
+      "body": "Dùng để render khi biến rỗng. Nó tiện cho một số ca data optional, nhưng đừng lạm dụng nếu logic dữ liệu đã nên được chuẩn hóa từ controller."
+    },
+    {
+      "title": "27. `@auth` và `@guest`",
+      "body": "Đây là shorthand để hiển thị UI theo trạng thái đăng nhập hoặc chưa đăng nhập.",
+      "code": "@auth\n  <a href=\"{{ route('dashboard') }}\">Dashboard</a>\n@endauth"
+    },
+    {
+      "title": "28. `@can` và `@cannot`",
+      "body": "Dùng để ẩn hiện UI dựa trên quyền hoặc policy. Đây là lớp view-level authorization rất thường gặp trong app thực tế.",
+      "code": "@can('update', $post)\n  <a href=\"#\">Sửa</a>\n@endcan"
+    },
+    {
+      "title": "29. Vì sao `@can` quan trọng?",
+      "body": "Vì UI không nên hiện button hành động mà user không có quyền thực hiện. Nó không thay thế authorization ở backend, nhưng giúp trải nghiệm đúng hơn."
+    },
+    {
+      "title": "30. `@foreach` là gì?",
+      "body": "Dùng để loop qua collection hoặc array trong Blade. Đây là directive bạn dùng rất thường xuyên khi render danh sách.",
+      "code": "@foreach($users as $user)\n  <li>{{ $user->name }}</li>\n@endforeach"
+    },
+    {
+      "title": "31. `@for` dùng khi nào?",
+      "body": "Hợp khi bạn cần loop theo chỉ số hoặc số lần lặp cố định, ít phổ biến hơn `@foreach` nhưng vẫn hữu ích."
+    },
+    {
+      "title": "32. `@while` có thể dùng không?",
+      "body": "Có thể, nhưng hiếm khi là lựa chọn đẹp trong Blade. Nếu bạn phải dùng `@while` nhiều, có thể logic trình bày đang đi hơi xa."
+    },
+    {
+      "title": "33. `@forelse` là gì?",
+      "body": "Đây là directive cực hay cho danh sách có thể rỗng. Nó vừa loop data, vừa có nhánh empty ngay trong cùng block.",
+      "code": "@forelse($users as $user)\n  <li>{{ $user->name }}</li>\n@empty\n  <li>Không có user</li>\n@endforelse"
+    },
+    {
+      "title": "34. Khi nào `@forelse` đẹp hơn `@if + @foreach`?",
+      "body": "Khi bạn đang render một list có empty state rõ ràng. Nó làm code ngắn hơn và đọc liền mạch hơn."
+    },
+    {
+      "title": "35. `$loop` là gì trong `@foreach`?",
+      "body": "Blade cung cấp biến `$loop` để bạn biết vị trí phần tử hiện tại trong vòng lặp.",
+      "code": "{{ $loop->index }}\n{{ $loop->iteration }}"
+    },
+    {
+      "title": "36. `$loop->first` và `$loop->last`",
+      "body": "Rất tiện để style item đầu/cuối, thêm divider, hoặc render label đặc biệt trong list."
+    },
+    {
+      "title": "37. `$loop->even` và `$loop->odd`",
+      "body": "Hữu ích cho zebra rows hoặc các pattern UI xen kẽ."
+    },
+    {
+      "title": "38. Có nên làm query trong `@foreach` không?",
+      "body": "Không nên. Đây là chỗ rất dễ sinh N+1 query và làm UI chậm. Dữ liệu nên được eager load và chuẩn bị trước khi vào view."
+    },
+    {
+      "title": "39. Có thể viết PHP thuần trong Blade không?",
+      "body": "Có, bằng `@php ... @endphp` hoặc tag PHP thuần. Nhưng nên dùng tiết chế vì nó nhanh làm view bẩn.",
+      "code": "@php\n  $total = $items->sum('amount');\n@endphp"
+    },
+    {
+      "title": "40. Khi nào `@php` chấp nhận được?",
+      "body": "Khi đó là biến trình bày nhẹ, tính toán nhỏ, hoặc glue code view-level. Nếu logic bắt đầu dài, đó là tín hiệu nên đẩy ra ngoài."
+    },
+    {
+      "title": "41. Khi nào không nên dùng `@php`?",
+      "body": "Khi bạn đang query DB, gọi service, xử lý nghiệp vụ hoặc viết nhiều nhánh logic phức tạp. View không nên trở thành controller thứ hai."
+    },
+    {
+      "title": "42. `@switch`, `@case`, `@default`",
+      "body": "Hợp khi UI có nhiều trạng thái enum như status `draft`, `published`, `archived`.",
+      "code": "@switch($post->status)\n  @case('draft')\n    <span>Nháp</span>\n    @break\n  @default\n    <span>Khác</span>\n@endswitch"
+    },
+    {
+      "title": "43. `@include` là gì?",
+      "body": "Dùng để nhúng một partial view nhỏ vào view hiện tại. Đây là bước tái sử dụng đơn giản trước khi bạn cần component thực thụ."
+    },
+    {
+      "title": "44. `@includeWhen`, `@includeIf`, `@includeUnless`",
+      "body": "Các biến thể này giúp include theo điều kiện hoặc chỉ include nếu file tồn tại. Hợp cho UI chia nhiều nhánh."
+    },
+    {
+      "title": "45. `@each` dùng khi nào?",
+      "body": "Dùng để render một partial cho từng item của collection. Nó gọn nhưng nhiều team vẫn thích `@foreach` hơn vì rõ ràng hơn."
+    },
+    {
+      "title": "46. Layout là gì?",
+      "body": "Layout là shell chung của nhiều trang như header, sidebar, footer, main container. Nó giúp UI có khung nhất quán."
+    },
+    {
+      "title": "47. `@extends` dùng ra sao?",
+      "body": "View con dùng `@extends` để kế thừa layout cha rồi chèn section phù hợp vào đó."
+    },
+    {
+      "title": "48. `@section` và `@yield`",
+      "body": "`@section` định nghĩa nội dung ở view con. `@yield` là chỗ layout cha chờ nội dung đó."
+    },
+    {
+      "title": "49. `@show` là gì?",
+      "body": "Ít dùng hơn `@yield`, nhưng nó vừa định nghĩa vừa render section ngay tại chỗ."
+    },
+    {
+      "title": "50. `@parent` để làm gì?",
+      "body": "Dùng khi muốn giữ nội dung section của layout cha rồi nối thêm từ view con."
+    },
+    {
+      "title": "51. `@push`, `@stack` là gì?",
+      "body": "Rất hữu ích để đẩy CSS hoặc JS nhỏ từ view con lên layout mà không phải sửa layout liên tục.",
+      "code": "@push('scripts')\n  <script>console.log('hello')</script>\n@endpush"
+    },
+    {
+      "title": "52. `@prepend` là gì?",
+      "body": "Tương tự `@push`, nhưng thêm nội dung vào đầu stack thay vì cuối stack."
+    },
+    {
+      "title": "53. Vì sao `@stack` hữu ích trong dự án lớn?",
+      "body": "Vì layout có thể mở các cổng như `styles` hoặc `scripts`, rồi từng màn hình push nội dung cần thiết vào đúng chỗ."
+    },
+    {
+      "title": "54. `@verbatim` dùng để làm gì?",
+      "body": "Dùng khi bạn có đoạn cú pháp frontend như Vue/Alpine conflict với cú pháp Blade và muốn Blade bỏ qua nó.",
+      "code": "@verbatim\n  <div>{{ vueVariable }}</div>\n@endverbatim"
+    },
+    {
+      "title": "55. `@csrf` là gì?",
+      "body": "Đây là directive render hidden CSRF token cho form. Gần như mọi form POST/PATCH/PUT/DELETE trong Blade đều nên có nó."
+    },
+    {
+      "title": "56. Nếu quên `@csrf` sẽ ra sao?",
+      "body": "Laravel thường từ chối request vì token mismatch. Đây là lỗi cực phổ biến của người mới."
+    },
+    {
+      "title": "57. `@method('PUT')` để làm gì?",
+      "body": "HTML form chỉ hỗ trợ GET và POST. Blade dùng method spoofing để gửi cảm giác như PUT/PATCH/DELETE tới route Laravel."
+    },
+    {
+      "title": "58. `old()` là gì?",
+      "body": "Đây là helper lấy lại giá trị user vừa nhập ở request trước khi validation fail. Nó làm UX form tốt hơn rất nhiều."
+    },
+    {
+      "title": "59. `@error('field')` là gì?",
+      "body": "Directive này giúp hiển thị lỗi validation của một field rất gọn và đúng chỗ."
+    },
+    {
+      "title": "60. `$errors` là gì?",
+      "body": "Đó là error bag mà Laravel đưa vào view sau validation fail. Bạn có thể đọc toàn bộ hoặc từng field."
+    },
+    {
+      "title": "61. Form Blade tốt cần những gì?",
+      "body": "Cần label rõ, `@csrf`, `old()`, error message, trạng thái disabled/loading hợp lý và CTA dễ hiểu."
+    },
+    {
+      "title": "62. Checkbox và radio với `old()` có gì khác?",
+      "body": "Bạn thường phải so sánh giá trị cũ để set `checked` thủ công. Đây là chỗ rất hay lỗi nếu thiếu cẩn thận."
+    },
+    {
+      "title": "63. Select option với `old()`",
+      "body": "Tương tự checkbox, bạn cần so sánh option hiện tại với `old()` hoặc dữ liệu model để đánh dấu `selected`."
+    },
+    {
+      "title": "64. Textarea với `old()`",
+      "body": "Textarea không dùng `value`, nên bạn phải đặt `old()` vào giữa tag mở và tag đóng."
+    },
+    {
+      "title": "65. Có nên nhồi logic format dữ liệu vào form view không?",
+      "body": "Không nên quá nhiều. Nếu field cần dữ liệu format phức tạp, chuẩn bị trước ở controller hoặc object riêng sẽ sạch hơn."
+    },
+    {
+      "title": "66. Blade component là gì?",
+      "body": "Đó là cách đóng gói mảnh UI có thể tái sử dụng với props, slot và đôi khi có class PHP đi kèm."
+    },
+    {
+      "title": "67. Anonymous component là gì?",
+      "body": "Là component chỉ cần file Blade, hợp cho UI đơn giản như alert, button, card nhỏ, input wrapper."
+    },
+    {
+      "title": "68. Class component là gì?",
+      "body": "Là component có class PHP riêng, hợp khi component cần normalize props hoặc chứa chút logic trình bày."
+    },
+    {
+      "title": "69. Slot là gì?",
+      "body": "Slot là vùng nội dung động được truyền vào bên trong component. Nó giúp component linh hoạt hơn include thuần."
+    },
+    {
+      "title": "70. Named slot là gì?",
+      "body": "Là slot có tên như `title`, `footer`, `actions`, giúp component có nhiều vùng chèn nội dung khác nhau."
+    },
+    {
+      "title": "71. Props trong component",
+      "body": "Là các input như `variant`, `size`, `label`, `name`, `error`, `href` để component render nhiều trạng thái."
+    },
+    {
+      "title": "72. Khi nào nên dùng component thay vì `@include`?",
+      "body": "Khi mảnh UI có API rõ, dùng lặp ở nhiều nơi, có nhiều trạng thái hoặc cần ổn định style theo design system."
+    },
+    {
+      "title": "73. Khi nào `@include` vẫn đủ tốt?",
+      "body": "Khi đó chỉ là partial rất nhỏ, ít biến thể và chưa đáng đầu tư thành component."
+    },
+    {
+      "title": "74. Tên component nên nhất quán ra sao?",
+      "body": "Nên đặt theo ý nghĩa UI hoặc feature như `x-button`, `x-form.input`, `x-admin.table`, tránh tên mơ hồ khó đoán."
+    },
+    {
+      "title": "75. Có nên tạo component cho mọi thứ không?",
+      "body": "Không nên. Component hóa quá mức cũng làm code khó tìm và tăng chi phí mental overhead."
+    },
+    {
+      "title": "76. Cách tổ chức `resources/views`",
+      "body": "Thường nên có `layouts/`, `components/`, `shared/`, `auth/`, `dashboard/`, `admin/` hoặc chia theo feature lớn."
+    },
+    {
+      "title": "77. Tư duy view theo feature",
+      "body": "Chia theo feature như `orders`, `billing`, `teams`, `profile` giúp người đọc thấy bối cảnh nghiệp vụ, không chỉ loại file."
+    },
+    {
+      "title": "78. Có nên query DB trong Blade không?",
+      "body": "Không nên. Nó làm view khó test, dễ sinh N+1 và phá ranh giới giữa trình bày với lấy dữ liệu."
+    },
+    {
+      "title": "79. Có nên gọi service trong Blade không?",
+      "body": "Rất nên tránh. Nếu cần tới mức đó, nhiều khả năng controller, presenter hoặc view model đang thiếu trách nhiệm."
+    },
+    {
+      "title": "80. Logic nào chấp nhận được trong Blade?",
+      "body": "Điều kiện hiển thị nhẹ, loop, state visual đơn giản, chọn class theo trạng thái và glue code trình bày nhỏ."
+    },
+    {
+      "title": "81. Logic nào không nên ở Blade?",
+      "body": "Business rule dày, query, lọc dữ liệu nặng, gọi API, xử lý permission phức tạp hoặc tính toán dài."
+    },
+    {
+      "title": "82. `@class` là gì?",
+      "body": "Directive này giúp gán class theo điều kiện gọn và dễ đọc hơn concatenation tay.",
+      "code": "<div @class(['p-4', 'bg-red-500' => $hasError])></div>"
+    },
+    {
+      "title": "83. `@style` là gì?",
+      "body": "Tương tự `@class`, nó giúp build inline style theo điều kiện, nhưng nên dùng tiết chế."
+    },
+    {
+      "title": "84. `@checked`, `@selected`, `@disabled`, `@readonly`, `@required`",
+      "body": "Đây là các directive tiện cho form attribute theo điều kiện và giúp Blade đọc sạch hơn.",
+      "code": "<option value=\"admin\" @selected(old('role') === 'admin')>Admin</option>"
+    },
+    {
+      "title": "85. `@once` dùng để làm gì?",
+      "body": "Dùng khi bạn muốn block nào đó chỉ render một lần dù view được include/component hóa nhiều lần."
+    },
+    {
+      "title": "86. `@aware` là gì trong component?",
+      "body": "Dùng để cho component con biết props từ component cha trong một số pattern component nâng cao."
+    },
+    {
+      "title": "87. `@props` là gì?",
+      "body": "Trong anonymous component, `@props` khai báo các prop mà file component mong đợi nhận vào.",
+      "code": "@props(['variant' => 'primary'])"
+    },
+    {
+      "title": "88. `@slot` dùng ở đâu?",
+      "body": "Dùng khi bạn cần truyền named slot vào component từ nơi sử dụng component."
+    },
+    {
+      "title": "89. `@csrf` có liên quan gì tới JavaScript không?",
+      "body": "Có thể có trong các request AJAX nếu bạn dùng JS gửi form hoặc call endpoint, nhưng trong Blade form truyền thống nó chủ yếu là hidden input."
+    },
+    {
+      "title": "90. Dùng `route()` trong Blade để làm gì?",
+      "body": "Giúp tạo URL theo tên route thay vì hardcode path, giữ cho link và form action bền hơn khi route thay đổi."
+    },
+    {
+      "title": "91. Dùng `asset()` để làm gì?",
+      "body": "Tạo URL tới file public như ảnh, icon, CSS phụ hoặc file tĩnh không đi qua build pipeline."
+    },
+    {
+      "title": "92. Dùng `url()` hoặc `request()` trong Blade",
+      "body": "Đôi khi hữu ích để check URL hiện tại, active menu hoặc build link động, nhưng nên dùng vừa phải."
+    },
+    {
+      "title": "93. Active menu trong Blade làm sao cho gọn?",
+      "body": "Thường dùng route name, request path hoặc helper nhỏ để gán class active, tránh lặp nhiều điều kiện xấu."
+    },
+    {
+      "title": "94. Empty state trong Blade quan trọng ra sao?",
+      "body": "Danh sách rỗng mà không có empty state rõ làm UX rất tệ. `@forelse` là bạn tốt của các màn list."
+    },
+    {
+      "title": "95. Loading state trong UI server-rendered xử lý thế nào?",
+      "body": "Form submit có thể disable button, hiện spinner, đổi text action. Dù không phải SPA, loading state vẫn rất quan trọng."
+    },
+    {
+      "title": "96. Flash message trong Blade",
+      "body": "Thường dùng session flash để hiển thị success, error, warning sau redirect. Đây là pattern cực phổ biến trong Laravel."
+    },
+    {
+      "title": "97. Modal, dropdown, tabs trong Blade thường đi với gì?",
+      "body": "Rất hay đi với Alpine cho tương tác nhẹ. Nếu mọi thứ vẫn ở mức micro-interaction thì chưa cần SPA."
+    },
+    {
+      "title": "98. Blade với Alpine hợp nhất ở đâu?",
+      "body": "Ở các hành vi nhỏ như toggle, open/close, tabs, accordions, quick filters, modal, dropdown."
+    },
+    {
+      "title": "99. Blade với Livewire hợp nhất ở đâu?",
+      "body": "Ở form nhiều bước, bảng lọc động, dashboard có tương tác dày hơn, wizard hoặc UI cần round-trip server thường xuyên."
+    },
+    {
+      "title": "100. Khi nào Blade thuần đã đủ?",
+      "body": "Khi màn hình chủ yếu đọc dữ liệu, render list, mở form, submit form và hiển thị kết quả validation hoặc redirect."
+    },
+    {
+      "title": "101. Khi nào nên thêm Alpine?",
+      "body": "Khi UI cần vài tương tác nhỏ phía client nhưng chưa đáng kéo cả framework frontend lớn vào."
+    },
+    {
+      "title": "102. Khi nào nên nghĩ tới Livewire?",
+      "body": "Khi server-rendered thuần bắt đầu thiếu sức cho interaction, nhưng team vẫn muốn ở gần Laravel hơn là tách SPA."
+    },
+    {
+      "title": "103. Khi nào Blade bắt đầu quá tải?",
+      "body": "Khi state client quá dày, nhiều component phụ thuộc nhau mạnh, cần UX app-like hoặc flow realtime đậm."
+    },
+    {
+      "title": "104. `@json` hoặc `Js::from()` dùng để làm gì?",
+      "body": "Giúp đẩy data từ server sang JavaScript an toàn hơn khi cần bridge state từ Blade sang JS.",
+      "code": "<script>\n  const user = @json($user);\n</script>"
+    },
+    {
+      "title": "105. Có nên nhét nhiều JSON lớn vào Blade không?",
+      "body": "Cần cẩn thận. Data quá lớn làm HTML nặng và khó maintain. Chỉ truyền đúng thứ frontend phần đó cần."
+    },
+    {
+      "title": "106. Escaping và XSS trong Blade",
+      "body": "Hiểu `{{ }}` và `{!! !!}` là bước đầu, nhưng mindset đúng là luôn nghi output user-generated có thể nguy hiểm."
+    },
+    {
+      "title": "107. Hiển thị HTML từ editor rich text thế nào cho an toàn hơn?",
+      "body": "Nếu phải render HTML user nhập, nên sanitize từ backend trước rồi mới cân nhắc `{!! !!}`."
+    },
+    {
+      "title": "108. Blade compile cache là gì?",
+      "body": "Blade view được compile thành PHP và cache lại để render nhanh hơn. Đây là một phần lý do Blade không chậm một cách ngây thơ như nhiều người tưởng."
+    },
+    {
+      "title": "109. Vì sao sửa view rồi đôi khi tưởng không ăn?",
+      "body": "Thường là do cache, build asset hoặc bạn đang sửa nhầm file/component chứ ít khi do Blade 'không update'."
+    },
+    {
+      "title": "110. `view:clear` liên quan gì tới Blade?",
+      "body": "Nó xóa compiled view cache. Hữu ích khi nghi view cache stale hoặc môi trường render lạ."
+    },
+    {
+      "title": "111. Performance của Blade phụ thuộc vào gì?",
+      "body": "Phụ thuộc dữ liệu đã eager load chưa, số lượng component/include, độ nặng của view logic và asset layer quanh nó."
+    },
+    {
+      "title": "112. N+1 trong view là gì?",
+      "body": "Là khi loop trong Blade làm mỗi item gọi thêm query do relation chưa eager load. Đây là lỗi rất phổ biến và rất tốn hiệu năng."
+    },
+    {
+      "title": "113. Accessibility trong Blade",
+      "body": "Blade developer vẫn phải quan tâm label, heading, aria hợp lý, focus, error message dễ hiểu và keyboard flow cơ bản."
+    },
+    {
+      "title": "114. Label trong form không nên xem nhẹ",
+      "body": "Form không có label rõ làm UX kém và a11y kém. Đây là lỗi rất hay gặp ở app admin làm nhanh."
+    },
+    {
+      "title": "115. Tên component và props nên phản ánh ý nghĩa UI",
+      "body": "Ví dụ `variant`, `size`, `label`, `error`, `hint`, `icon` đọc dễ hơn các tên biến mơ hồ như `type2` hay `modeX`."
+    },
+    {
+      "title": "116. Anti-pattern: view quá dài",
+      "body": "Một file Blade vài trăm dòng không tự động sai, nhưng nếu mọi thứ dồn hết vào đó thì maintain rất khổ."
+    },
+    {
+      "title": "117. Anti-pattern: copy-paste UI quá nhiều",
+      "body": "Khi button, input, table, alert lặp khắp nơi mà không chuẩn hóa, app rất nhanh mất nhất quán."
+    },
+    {
+      "title": "118. Anti-pattern: nhét business logic vào view",
+      "body": "Đây là một trong các lỗi làm dự án Laravel già đi xấu nhất. View nên trình bày, không nên trở thành nơi quyết định nghiệp vụ."
+    },
+    {
+      "title": "119. Anti-pattern: component hóa quá mức",
+      "body": "Tạo component cho mọi `<div>` nhỏ sẽ phản tác dụng. UI layer cần abstraction vừa đủ, không phải abstraction tối đa."
+    },
+    {
+      "title": "120. Anti-pattern: tên component không ổn định",
+      "body": "Nếu team không có convention, component càng nhiều càng khó đoán và khó reuse."
+    },
+    {
+      "title": "121. Tip: hãy chuẩn hóa input component sớm",
+      "body": "Các field như text input, select, textarea, checkbox rất đáng chuẩn hóa sớm trong dự án có nhiều form."
+    },
+    {
+      "title": "122. Tip: alert và button là hai thứ rất nên component hóa",
+      "body": "Chúng lặp cực nhiều và là nơi dễ phát sinh lệch style nếu không có convention."
+    },
+    {
+      "title": "123. Tip: dùng `@forelse` cho list business",
+      "body": "Nó làm empty state rõ và giúp màn list bớt bị quên xử lý case rỗng."
+    },
+    {
+      "title": "124. Tip: đừng sợ Blade, sợ view vô tổ chức",
+      "body": "Blade tự nó không phải vấn đề. Vấn đề là kỷ luật tổ chức layout, component, partial, form và data preparation."
+    },
+    {
+      "title": "125. Tip: review UI Blade như review code thật",
+      "body": "Nên xem naming, reuse, accessibility, validation, empty state, state action chứ không chỉ nhìn giao diện có render ra hay không."
+    },
+    {
+      "title": "126. Checklist review một màn Blade",
+      "body": "Hỏi xem có `@csrf` chưa, old input ổn chưa, error hiển thị ổn chưa, component có nên tách không, logic có đang bị đẩy sai chỗ không."
+    },
+    {
+      "title": "127. Checklist khi tạo component mới",
+      "body": "Component này có thật sự được dùng lại không, props có rõ không, slot có cần không, tên có nhất quán với system hiện tại không."
+    },
+    {
+      "title": "128. Checklist khi render HTML raw",
+      "body": "Dữ liệu đến từ đâu, đã sanitize chưa, có thể chứa script không, có thể chuyển sang `{{ }}` được không."
+    },
+    {
+      "title": "129. Cách học Blade cho người mới",
+      "body": "Đi từ variable output, điều kiện, loop, layout, partial, form, validation, component, rồi mới tới Alpine/Livewire. Đừng nhảy cóc quá nhanh."
+    },
+    {
+      "title": "130. Kinh nghiệm cuối: UI server-rendered tốt không hề 'lạc hậu'",
+      "body": "Một app Blade được tổ chức tốt, form làm kỹ, component hóa vừa đủ, dữ liệu chuẩn bị sạch và tăng tương tác đúng chỗ có thể rất mạnh, rất nhanh và rất bền."
+    },
+    {
+      "title": "131. View composer là gì và khi nào đáng biết?",
+      "body": "Khi nhiều view cùng cần một mẩu dữ liệu nền như menu, unread count, tenant info hoặc setting chung, view composer là một cách cấp dữ liệu tập trung. Nhưng nếu lạm dụng, nó cũng làm view tự nhiên có data mà người sau không hiểu từ đâu ra."
+    },
+    {
+      "title": "132. Case thật: Blade chậm không phải vì Blade, mà vì view chạm quá nhiều dữ liệu ngầm",
+      "body": "Một view có thể render chậm vì gọi relation trong loop, include quá nhiều partial nặng, hoặc dựa vào data được tính toán sát giờ render. Nhiều người đổ lỗi cho templating trong khi nguyên nhân là data flow tệ."
+    },
+    {
+      "title": "133. Khi nào một component Blade đã 'quá thông minh'?",
+      "body": "Khi nó vừa query data, vừa quyết định quyền, vừa xử lý trạng thái business, vừa render UI. Component như vậy nhìn tiện lúc đầu nhưng về lâu dài khó đoán và khó test gần như controller mini."
+    },
+    {
+      "title": "134. Case thật: sửa một partial mà hỏng cả đống màn hình vì sao?",
+      "body": "Vì partial hoặc component đã bị tái sử dụng quá rộng nhưng không có contract rõ về props, slot hoặc context dữ liệu. Tái sử dụng mạnh mà không có quy ước rõ là nguồn bug UI rất quen thuộc."
+    },
+    {
+      "title": "135. Tip bổ sung: Blade dễ sống nhất khi data đến view đã được chuẩn bị gọn từ trước",
+      "body": "View nên nhận dữ liệu gần như sẵn để hiển thị, thay vì phải tự suy luận quá nhiều. Khi controller, action hoặc view model chuẩn bị data tử tế, Blade sẽ sạch hơn, dễ đọc hơn và ít bug hơn đáng kể."
+    },
+    {
+      "title": "136. Ví dụ cơ bản: truyền data từ controller sang Blade rồi render bằng `{{ }}`",
+      "body": "Đây là bước căn bản nhưng rất quan trọng để hiểu data đi từ backend sang giao diện server-rendered như thế nào.",
+      "code": "class DashboardController extends Controller\n{\n    public function index()\n    {\n        return view('dashboard', [\n            'user' => auth()->user(),\n            'stats' => ['orders' => 12],\n        ]);\n    }\n}\n\n<h1>Xin chào {{ $user->name }}</h1>\n<p>Bạn có {{ $stats['orders'] }} đơn hàng.</p>",
+      "note": "`{{ }}` sẽ escape output để giảm rủi ro XSS. Đây là mặc định an toàn nên dùng trước."
+    },
+    {
+      "title": "137. Ví dụ điều kiện, loop và empty state trong Blade",
+      "body": "Nhiều màn CRUD chỉ cần hiểu chắc khối này là bạn đã đi được rất xa.",
+      "code": "@forelse ($orders as $order)\n    <li>#{{ $order->id }} - {{ $order->status }}</li>\n@empty\n    <li>Chưa có đơn hàng nào.</li>\n@endforelse\n\n@if ($errors->any())\n    <div class=\"alert\">Form đang có lỗi.</div>\n@endif",
+      "bullets": [
+        "`@forelse` rất hợp cho màn vừa list vừa có empty state.",
+        "`$errors` là data validation error Laravel bơm vào view ở web flow truyền thống.",
+        "Khi conditional logic quá dày, hãy xem lại data preparation ở controller hoặc service."
+      ]
+    },
+    {
+      "title": "138. Ví dụ component Blade và khác biệt giữa `{{ }}` với `{!! !!}`",
+      "body": "Đây là hai chỗ người học Blade đụng rất sớm nhưng hay hiểu chưa tới.",
+      "code": "<x-alert type=\"success\">\n    Đã lưu dữ liệu thành công.\n</x-alert>\n\n<p>{{ $post->title }}</p>\n<div>{!! $trustedHtml !!}</div>",
+      "bullets": [
+        "Component giúp bạn gom markup tái sử dụng thành một contract UI rõ hơn.",
+        "`{{ }}` escape dữ liệu trước khi render.",
+        "`{!! !!}` render raw HTML, chỉ nên dùng khi bạn thật sự tin dữ liệu hoặc đã sanitize kỹ."
+      ],
+      "note": "Nếu chưa thật sự chắc dữ liệu an toàn, hãy ưu tiên `{{ }}`."
+    }
+  ]
+}

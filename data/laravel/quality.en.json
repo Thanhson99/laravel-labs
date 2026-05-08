@@ -1,0 +1,761 @@
+{
+  "anchor": "laravel-quality",
+  "type": "list",
+  "heading": "Testing, debugging, and code quality: from code that works to code that is trustworthy",
+  "intro": "This topic gathers the practical side of testing, debugging, and code quality in Laravel. The goal is not only to write a few tests or use `dd()`, but to understand what tests should protect, how debugging should proceed, how logging should help, when to fake or mock, what static analysis is good for, what code review should actually look for, and how a team can keep shipping fast without sacrificing system trustworthiness.",
+  "breaks": [
+    {
+      "start": 1,
+      "title": "I. Testing, Debugging, And Quality Mindset",
+      "description": "Start with why testing matters, why debugging is a core engineering skill, and why code quality is about the whole system rather than formatting alone.",
+      "tone": "amber"
+    },
+    {
+      "start": 19,
+      "title": "II. Pest, PHPUnit, And Test Layers",
+      "description": "Unit, feature, integration, database tests, the test pyramid, test naming, and choosing the right test layer for the problem.",
+      "tone": "copper"
+    },
+    {
+      "start": 45,
+      "title": "III. Database, HTTP, Queue, Mail, Events, And Fake or Mock",
+      "description": "Testing real Laravel flows across the database, API, queues, notifications, events, storage, and external services with the right level of fake or mock.",
+      "tone": "sand"
+    },
+    {
+      "start": 73,
+      "title": "IV. Debugging, Logging, Exceptions, And Bug Investigation",
+      "description": "Disciplined debugging, useful logs, Telescope, query debugging, production incidents, correlation IDs, and finding root causes instead of symptoms.",
+      "tone": "amber"
+    },
+    {
+      "start": 99,
+      "title": "V. Static Analysis, Style, Refactor Safety, And Review",
+      "description": "Pint, PHPStan, Rector, typing, dead code, code smells, review quality, and code health beyond formatting.",
+      "tone": "copper"
+    },
+    {
+      "start": 121,
+      "title": "VI. CI, Quality Gates, Flaky Tests, And Suite Trustworthiness",
+      "description": "Automated pipelines, parallel testing, flaky test handling, quarantine thinking, branch protection, and practical quality gates.",
+      "tone": "sand"
+    },
+    {
+      "start": 141,
+      "title": "VII. Production Quality, Observability, And Supportability",
+      "description": "When tests are not enough, how observability and support tooling keep the system survivable in production.",
+      "tone": "amber"
+    },
+    {
+      "start": 159,
+      "title": "VIII. Real Cases, Anti-Patterns, And Final Assessment",
+      "description": "Classic failures of weak tests, bad debugging, shallow reviews, and the criteria for deciding whether a Laravel codebase is truly healthy or merely lucky.",
+      "tone": "copper"
+    }
+  ],
+  "items": [
+    {
+      "title": "1. Why is testing important in a Laravel application?",
+      "body": "Because it lets you change code, upgrade versions, refactor, and deploy with more confidence instead of relying only on instinct.",
+      "code": "it('allows an authenticated user to update profile', function () {\n    $user = User::factory()->create();\n\n    $this->actingAs($user)\n        ->patch('/profile', [\n            'name' => 'New Name',\n        ])\n        ->assertRedirect();\n\n    expect($user->fresh()->name)->toBe('New Name');\n});",
+      "note": "Common mistake: treating tests as a cosmetic extra. Fix it by seeing them as the safety net that lets you change real code confidently."
+    },
+    {
+      "title": "2. Is testing mainly about achieving pretty coverage numbers?",
+      "body": "No. Coverage can be a signal, but the main purpose of testing is protecting meaningful behavior and reducing regressions."
+    },
+    {
+      "title": "3. Is debugging only what you do after a bug appears?",
+      "body": "Debugging is the skill of understanding a system while it is wrong, but also the skill of observing systems well enough to spot abnormal signals early."
+    },
+    {
+      "title": "4. What does code quality mean in a real Laravel codebase?",
+      "body": "It means code is understandable, changeable, testable, less bug-prone, less surprising, and more durable as the application grows."
+    },
+    {
+      "title": "5. If an app works, does that mean code quality is fine?",
+      "body": "No. Some code works only because nobody has touched the dangerous areas yet."
+    },
+    {
+      "title": "6. Why do teams often avoid writing tests?",
+      "body": "Because of deadlines, the feeling that tests slow work down, legacy code that is hard to test, or a lack of habit around testable design."
+    },
+    {
+      "title": "7. Why does the absence of tests slow a team down in the long run?",
+      "body": "Because every change becomes a gamble, bugs come back, refactors become scary, and deployment confidence drops sharply."
+    },
+    {
+      "title": "8. How do testing, debugging, and code quality connect?",
+      "body": "Good tests make refactoring safer, good code quality makes tests easier to write, and good debugging helps you understand failures well enough to write better tests."
+    },
+    {
+      "title": "9. What is the right mindset for testing?",
+      "body": "Do not test everything mechanically. Test the places where behavior matters, where regressions are likely, and where the business suffers most if things break."
+    },
+    {
+      "title": "10. What is the right mindset for debugging?",
+      "body": "Do not guess randomly. Gather signals, reproduce the problem, narrow the scope, and verify hypotheses step by step.",
+      "code": "1. reproduce the bug\n2. identify the related request / job / command\n3. add contextual logs\n4. narrow the failing layer\n5. write a reproduction note or test before making aggressive changes",
+      "note": "A common mistake is fixing by instinct. A better path is keeping a repeatable investigation sequence."
+    },
+    {
+      "title": "11. What is the right mindset for code quality?",
+      "body": "Do not reduce it to style. Think about readability, changeability, testability, correctness, and operational supportability."
+    },
+    {
+      "title": "12. What is a senior-level quality tip?",
+      "body": "Good code is not code that makes the original author feel clever, but code that surprises the next maintainer as little as possible."
+    },
+    {
+      "title": "13. What does weak testing usually look like?",
+      "body": "Every PR feels risky, old bugs come back, upgrades drag on, and people still need to manually test the same flows over and over."
+    },
+    {
+      "title": "14. What does poor debugging usually look like?",
+      "body": "People change code at random, scatter `dd()` calls, restart services blindly, and still cannot explain the root cause."
+    },
+    {
+      "title": "15. What does poor code quality usually look like?",
+      "body": "Bloated controllers, scattered logic, vague naming, difficult tests, hard reviews, and bugs spreading through large areas after small edits."
+    },
+    {
+      "title": "16. What is the most important foundation for this topic?",
+      "body": "Understanding that system trustworthiness is a product asset, not merely a matter of developer perfectionism."
+    },
+    {
+      "title": "17. What does a trustworthy system feel like?",
+      "body": "Changes are controlled, bugs are less surprising, logs are usable, deployments are less stressful, and new developers can trace major flows."
+    },
+    {
+      "title": "18. What is the short conclusion of the mindset section?",
+      "body": "Testing, debugging, and code quality do not make a system flashy. They make it less likely to betray the team as it grows."
+    },
+    {
+      "title": "19. What is PHPUnit in the Laravel world?",
+      "body": "It is the long-established PHP testing foundation that Laravel supports very well for many test styles."
+    },
+    {
+      "title": "20. What is Pest?",
+      "body": "Pest is a smoother testing layer built on top of PHPUnit, often making tests feel cleaner and easier to read."
+    },
+    {
+      "title": "21. Is choosing Pest or PHPUnit a life-or-death decision?",
+      "body": "No. What matters more is that the team writes clear, consistent, trustworthy tests."
+    },
+    {
+      "title": "22. What is a unit test?",
+      "body": "It tests a small unit of logic with few outside dependencies, usually quickly and with a narrow focus."
+    },
+    {
+      "title": "23. What is a feature test in Laravel?",
+      "body": "It is a more application-level test that often goes through HTTP, middleware, controllers, validation, the database, and responses.",
+      "code": "it('creates a post', function () {\n    $user = User::factory()->create();\n\n    $this->actingAs($user)\n        ->post('/posts', [\n            'title' => 'Hello',\n            'body' => 'World',\n        ])\n        ->assertRedirect();\n\n    $this->assertDatabaseHas('posts', ['title' => 'Hello']);\n});",
+      "note": "A strong feature test protects a real user flow more than a tiny implementation detail."
+    },
+    {
+      "title": "24. How is an integration test different from a feature test?",
+      "body": "The boundary is flexible, but integration tests usually emphasize that multiple real components work together correctly."
+    },
+    {
+      "title": "25. What is an end-to-end test?",
+      "body": "It is a test that comes closest to real user behavior, often through a browser or a more complete integration environment.",
+      "code": "$browser->visit('/login')\n    ->type('email', 'admin@example.com')\n    ->type('password', 'secret')\n    ->press('Log in')\n    ->assertPathIs('/dashboard');",
+      "note": "E2E tests are more expensive, but they are very valuable for critical flows such as login, checkout, or sensitive permission behavior."
+    },
+    {
+      "title": "26. What is the test pyramid?",
+      "body": "It is the idea of balancing many small fast tests with fewer heavier higher-level tests to keep confidence and speed in tension."
+    },
+    {
+      "title": "27. Should a team rely only on unit tests and skip feature tests?",
+      "body": "Not if the app depends heavily on HTTP flow, auth, middleware, validation, or important database interactions."
+    },
+    {
+      "title": "28. Should a team rely only on feature tests and skip unit tests?",
+      "body": "That is also not ideal. Smaller logic often deserves cheaper, clearer protection at the unit level."
+    },
+    {
+      "title": "29. Which tests should be written first?",
+      "body": "Start with the business flows that matter most and regress most often. There is no need to test everything at once."
+    },
+    {
+      "title": "30. What does good test naming look like?",
+      "body": "It clearly describes who does what, under which condition, and what outcome should happen."
+    },
+    {
+      "title": "31. What should a good test feel like?",
+      "body": "Clear, trustworthy, readable, minimally coupled to implementation details, and helpful when it fails."
+    },
+    {
+      "title": "32. What does a bad test often look like?",
+      "body": "Hard to read, vague in assertions, order-dependent, randomly failing, overburdened with setup, and unclear about what behavior it protects."
+    },
+    {
+      "title": "33. What is the benefit of small and fast tests?",
+      "body": "They create fast feedback loops, encourage regular execution, and help testing stay part of the daily workflow."
+    },
+    {
+      "title": "34. What is the downside of too many integration-heavy tests?",
+      "body": "They run slowly, are harder to diagnose, and can make the whole suite feel like a heavy obstacle."
+    },
+    {
+      "title": "35. Is TDD required to have good tests?",
+      "body": "No, but the habit of thinking about behavior before implementation often leads to more testable design."
+    },
+    {
+      "title": "36. What is a practical tip about test layering?",
+      "body": "Do not turn every problem into a browser-level test. Many behaviors are protected better and more cheaply at the unit or feature layer."
+    },
+    {
+      "title": "37. Should every large response be snapshotted?",
+      "body": "Use caution. Snapshots can be convenient, but they can also hide meaning if they are too broad."
+    },
+    {
+      "title": "38. Should tests contain as many assertions as possible?",
+      "body": "Not by default. What matters is asserting the signals that truly prove the important behavior."
+    },
+    {
+      "title": "39. What is a design smell visible through tests?",
+      "body": "If testing a simple behavior requires bootstrapping half the application, the design may be too tangled."
+    },
+    {
+      "title": "40. How can a strong test suite help framework upgrades?",
+      "body": "It gives you a safety net while bumping versions, fixing breaking changes, and regaining deployment confidence."
+    },
+    {
+      "title": "41. When is coverage useful?",
+      "body": "As a secondary signal for under-protected areas, not as the ultimate goal."
+    },
+    {
+      "title": "42. When does coverage become an anti-pattern?",
+      "body": "When the team writes shallow tests just to raise percentages instead of protecting meaningful behavior."
+    },
+    {
+      "title": "43. What is a senior question when reading tests?",
+      "body": "If this test fails, will it quickly tell me which behavior is broken and where I should start looking?"
+    },
+    {
+      "title": "44. What is the short conclusion about test layers?",
+      "body": "You need balance: low enough for speed, high enough to reflect real flows."
+    },
+    {
+      "title": "45. What do database tests usually protect in Laravel?",
+      "body": "They protect migrations, relationships, query behavior, transactions, state transitions, and business flows tightly tied to persistence."
+    },
+    {
+      "title": "46. What does `RefreshDatabase` help with?",
+      "body": "It keeps test database state clean and prevents tests from contaminating one another.",
+      "code": "uses(RefreshDatabase::class);\n\nit('shows dashboard', function () {\n    $this->get('/dashboard')->assertRedirect('/login');\n});",
+      "note": "If tests depend on leftover state from earlier tests, flaky failures appear quickly."
+    },
+    {
+      "title": "47. Why are factories so important in tests?",
+      "body": "Factories make it much easier to create clear, intentional test data without a lot of manual setup noise."
+    },
+    {
+      "title": "48. Should seeders be used in tests?",
+      "body": "Sometimes, but many tests are healthier when they create only the data they actually need instead of loading a huge seeded world."
+    },
+    {
+      "title": "49. What are Laravel HTTP tests especially strong at?",
+      "body": "They are excellent for routes, middleware, auth, validation, session, redirects, responses, and cross-application state changes.",
+      "code": "$response = $this->postJson('/api/posts', []);\n\n$response->assertStatus(422)\n    ->assertJsonValidationErrors(['title']);",
+      "bullets": [
+        "HTTP tests are ideal for validation, auth, redirects, and response contracts.",
+        "This is one of the most valuable layers in many Laravel teams because it stays close to real flow while remaining fast enough."
+      ]
+    },
+    {
+      "title": "50. What should JSON API tests assert?",
+      "body": "Status codes, response shape, validation errors, authorization behavior, and the important business side effects."
+    },
+    {
+      "title": "51. Should every JSON field be asserted in fine detail?",
+      "body": "Only when it matters. Over-asserting implementation detail makes tests more brittle than necessary."
+    },
+    {
+      "title": "52. What is queue faking for?",
+      "body": "It lets you assert that certain jobs were dispatched without needing real workers to execute them in the test suite."
+    },
+    {
+      "title": "53. What does mail faking help with?",
+      "body": "It confirms which mailables were sent without touching a real mail provider."
+    },
+    {
+      "title": "54. What does notification faking help with?",
+      "body": "It verifies that the right notification went to the right recipients without actually sending anything."
+    },
+    {
+      "title": "55. Where is event faking useful?",
+      "body": "It is helpful when you want to assert that the right event was dispatched without executing every listener side effect."
+    },
+    {
+      "title": "56. What does storage faking help with?",
+      "body": "It lets you test file upload, deletion, paths, and storage side effects without touching a real filesystem."
+    },
+    {
+      "title": "57. How do fake and mock differ conceptually?",
+      "body": "A fake usually replaces a whole subsystem with a test-friendly version, while a mock focuses on controlled behavior and expectations for one dependency.",
+      "code": "// fake\nMail::fake();\n\n// mock\n$gateway = Mockery::mock(PaymentGateway::class);\n$gateway->shouldReceive('charge')->once()->andReturnTrue();",
+      "note": "If you mock too much, tests can stay green without proving any real application flow."
+    },
+    {
+      "title": "58. Should everything be mocked?",
+      "body": "No. Over-mocking makes tests drift away from real behavior and cling too tightly to implementation details."
+    },
+    {
+      "title": "59. When is mocking worth using?",
+      "body": "When a dependency is slow, unstable, external, difficult to control, or when you need to verify a very specific interaction."
+    },
+    {
+      "title": "60. How should external API behavior be tested?",
+      "body": "Usually by faking the HTTP client and testing mapping logic, timeout paths, error paths, and contract expectations rather than calling real providers constantly."
+    },
+    {
+      "title": "61. Are contract tests for outside integrations worthwhile?",
+      "body": "Yes when the provider matters enough that you want to detect integration drift earlier than production."
+    },
+    {
+      "title": "62. Should job tests stop at dispatch assertions or also test `handle()`?",
+      "body": "Usually both layers matter: one test for orchestration and one for meaningful job execution logic."
+    },
+    {
+      "title": "63. What should listener tests care about?",
+      "body": "That listeners react to the right events, produce the right side effects, and handle failure paths sensibly."
+    },
+    {
+      "title": "64. What requires care in file-upload tests?",
+      "body": "Validation, storage, metadata saving, cleanup, and failure paths, not only a `200 OK` response."
+    },
+    {
+      "title": "65. Are browser tests worth having in a Laravel app?",
+      "body": "They can be very valuable for critical UI flows, but should not replace the rest of the test layers."
+    },
+    {
+      "title": "66. Are async flows harder to test than sync flows?",
+      "body": "Yes, because they involve queues, delayed side effects, pending state, and retry behavior beyond the original request."
+    },
+    {
+      "title": "67. What is a practical fake or mock tip?",
+      "body": "Fake external systems to protect flow-level behavior, but do not fake so aggressively that the tests stop protecting anything real."
+    },
+    {
+      "title": "68. What is a bad smell in integration testing?",
+      "body": "Everything is mocked, the suite stays green, and production still fails the moment it touches a real service or serialization boundary."
+    },
+    {
+      "title": "69. Should there be tests with very large seeded datasets?",
+      "body": "Some scenarios justify realistic larger datasets to expose bad query paths, but not the whole suite should become heavy."
+    },
+    {
+      "title": "70. Why do database tests also help query refactoring?",
+      "body": "Because they let you improve Eloquent or query-builder implementation while preserving business-level behavior."
+    },
+    {
+      "title": "71. Are permission tests for APIs worth serious investment?",
+      "body": "Absolutely, because authorization bugs are usually more dangerous than simple UI bugs."
+    },
+    {
+      "title": "72. What is a senior question about integration testing?",
+      "body": "Is this test protecting real system behavior, or only a very friendly simulation of it?"
+    },
+    {
+      "title": "73. Where should good debugging begin?",
+      "body": "With reproducibility if possible, or at least enough clear signal to narrow the problem space.",
+      "code": "Log::info('Checkout start', [\n    'order_id' => $order->id,\n    'user_id' => $user->id,\n    'step' => 'before-charge',\n]);",
+      "note": "Good debugging does not begin with random fixes. It begins with enough signal to support a real hypothesis."
+    },
+    {
+      "title": "74. Why is `dd()` both useful and dangerous?",
+      "body": "It is fast for local inspection, but overusing it creates fragmented, manual debugging that rarely leads to disciplined root-cause understanding."
+    },
+    {
+      "title": "75. How is good logging different from lots of logging?",
+      "body": "Good logging contains useful context and helps investigation. Huge noisy logs only increase friction."
+    },
+    {
+      "title": "76. How should `storage/logs` be viewed?",
+      "body": "As a foundational source of signal, but not the only one. Production-quality debugging needs more than a single local-style log file."
+    },
+    {
+      "title": "77. How does exception handling support quality?",
+      "body": "It makes failures visible, structured, and meaningful instead of allowing them to degrade into confusing or silent behavior."
+    },
+    {
+      "title": "78. When are correlation IDs useful?",
+      "body": "When requests pass through APIs, queues, external services, or multiple layers and you need to reconstruct a full story."
+    },
+    {
+      "title": "79. How does Telescope help with Laravel debugging?",
+      "body": "It provides deep visibility into requests, queries, jobs, cache, mail, and many runtime signals in a debug-friendly environment."
+    },
+    {
+      "title": "80. What should query debugging look at besides query duration?",
+      "body": "Query count, repeated patterns, unexpected relationship loading, and actual execution behavior."
+    },
+    {
+      "title": "81. Should variables be dumped in production?",
+      "body": "Only with great caution, and usually avoided. Dumps can leak private data, break responses, or worsen behavior."
+    },
+    {
+      "title": "82. What makes a bug especially hard to debug?",
+      "body": "It does not reproduce reliably, depends on timing, production-only data, queues, caches, or outside integrations."
+    },
+    {
+      "title": "83. Why is reproduction so valuable in debugging?",
+      "body": "Because once you can reproduce the problem under control, you can test hypotheses, confirm causes, and verify fixes much more reliably."
+    },
+    {
+      "title": "84. How are root causes different from symptoms?",
+      "body": "Symptoms are visible manifestations, while root causes are deeper reasons the system went wrong. Fixing symptoms alone lets bugs return."
+    },
+    {
+      "title": "85. Should a fix be implemented as soon as a possible cause is guessed?",
+      "body": "Not before the hypothesis is reasonably verified. Premature fixes often hide the symptom temporarily without teaching the team anything."
+    },
+    {
+      "title": "86. How is production debugging different from local debugging?",
+      "body": "Production has real data, traffic, queues, caches, and user impact. You need lower-risk interventions and stronger observability."
+    },
+    {
+      "title": "87. Can feature flags help debugging?",
+      "body": "Yes. They allow you to isolate new behavior, compare old and new paths, or disable a suspicious area quickly."
+    },
+    {
+      "title": "88. What is shadow logging?",
+      "body": "It is adding temporary structured signals to compare behavior without immediately changing the product logic."
+    },
+    {
+      "title": "89. What should a debugging playbook contain?",
+      "body": "How to reproduce, which logs to inspect first, which dashboards matter, who owns the subsystem, what rollback options exist, and how to verify the fix.",
+      "code": "1. Reproduce bug with known input\n2. Check request log / job log / provider log\n3. Verify DB state and queue state\n4. Confirm hypothesis with one targeted change\n5. Add regression test after fix",
+      "note": "A playbook prevents the team from debugging by improvisation every time the same class of incident returns."
+    },
+    {
+      "title": "90. What is a practical debugging tip?",
+      "body": "Whenever you are about to make a random fix, stop and explicitly state which hypothesis you think you are proving."
+    },
+    {
+      "title": "91. What is a bad smell in debugging culture?",
+      "body": "People restart services, clear cache, retry jobs, and tweak code randomly until the symptom disappears, with no idea what actually caused it."
+    },
+    {
+      "title": "92. How does supportability relate to debugging?",
+      "body": "Supportable systems leave enough state, logs, IDs, admin tools, and runbooks that real problems can be investigated quickly."
+    },
+    {
+      "title": "93. Should full request payloads always be logged?",
+      "body": "No. Balance debugging value against privacy, PII, and storage cost."
+    },
+    {
+      "title": "94. What is the value of structured logging?",
+      "body": "It makes logs easier to query, filter, and correlate through request IDs, user IDs, tenant IDs, job IDs, or domain context."
+    },
+    {
+      "title": "95. What should a production incident leave behind for the test suite?",
+      "body": "At least one new test or safeguard that makes the same class of failure less likely to return."
+    },
+    {
+      "title": "96. What is a senior question about debugging?",
+      "body": "If this bug comes back next week, will the team know where to look immediately?"
+    },
+    {
+      "title": "97. What is the short conclusion about debugging?",
+      "body": "Good debugging is disciplined investigation, not lucky guessing."
+    },
+    {
+      "title": "98. What is static analysis?",
+      "body": "It is using tools to inspect code without running it, often catching type issues, dead code, contract mismatches, and latent bugs."
+    },
+    {
+      "title": "99. How does PHPStan help Laravel teams?",
+      "body": "It finds type problems, nullability issues, method-call errors, contract mismatches, and other mistakes that hand review may miss."
+    },
+    {
+      "title": "100. What is Laravel Pint for?",
+      "body": "Pint standardizes code style so teams spend less energy arguing over formatting."
+    },
+    {
+      "title": "101. What role does Rector play?",
+      "body": "Rector helps automate certain refactors and syntax modernizations, which can be especially useful during upgrades or disciplined cleanup."
+    },
+    {
+      "title": "102. Is code style the same thing as code quality?",
+      "body": "No. Style is only one small surface. Real quality includes design clarity, correctness, readability, and testability."
+    },
+    {
+      "title": "103. How does type clarity improve maintainability?",
+      "body": "Clear types help IDEs, static analysis, and human readers understand how data moves through the system, reducing guesswork."
+    },
+    {
+      "title": "104. What is dead code, and why should it be removed?",
+      "body": "It is code no longer used but still present, which wastes reader attention and increases accidental complexity."
+    },
+    {
+      "title": "105. What is a code smell?",
+      "body": "A sign that code may be poorly structured or carrying technical debt, even if it is not an immediate bug.",
+      "code": "public function store(Request $request)\n{\n    // validate\n    // charge payment\n    // send mail\n    // write audit log\n    // sync ERP\n    // return response\n}",
+      "note": "A controller doing too many things may not fail immediately, but it is a strong smell of technical debt."
+    },
+    {
+      "title": "106. What are common Laravel code smells?",
+      "body": "Bloated controllers, over-smart models, ownerless helpers, queries in views, giant services, and scattered authorization logic."
+    },
+    {
+      "title": "107. Where is static analysis stronger than tests?",
+      "body": "It is fast, broad, and catches some categories of type and contract issues that tests may not cover well."
+    },
+    {
+      "title": "108. Can static analysis replace testing?",
+      "body": "No. It does not prove real business behavior or side effects."
+    },
+    {
+      "title": "109. What should good code review focus on first?",
+      "body": "Bugs, security, regression risk, design clarity, missing tests, and operational impact before style nits."
+    },
+    {
+      "title": "110. Is review that only catches syntax or formatting enough?",
+      "body": "No. Valuable review evaluates behavior, intent, and long-term risk."
+    },
+    {
+      "title": "111. Why are smaller PRs better for quality?",
+      "body": "They are easier to review, easier to test, and easier to roll back. Huge maintenance PRs are far more likely to hide bugs."
+    },
+    {
+      "title": "112. What is a practical review tip?",
+      "body": "If the reviewer cannot restate the changed flow after a few minutes, the PR may still be too hard to understand."
+    },
+    {
+      "title": "113. How do static tools improve refactor safety?",
+      "body": "When tests and static analysis are both strong, they create two complementary layers of confidence.",
+      "code": "./vendor/bin/pint\n./vendor/bin/phpstan analyse\nphp artisan test",
+      "bullets": [
+        "Pint keeps formatting consistent.",
+        "PHPStan catches type and contract issues early.",
+        "Tests confirm that business behavior still works."
+      ]
+    },
+    {
+      "title": "114. Should high PHPStan levels be forced immediately on a legacy codebase?",
+      "body": "Usually they should be raised gradually. Forcing them too fast often creates resistance or careless suppressions."
+    },
+    {
+      "title": "115. Are warning suppressions risky?",
+      "body": "Yes if used casually. Every suppression should have a clear reason because it becomes a quality debt marker."
+    },
+    {
+      "title": "116. What is an anti-pattern around style tools?",
+      "body": "Spending huge energy on spacing and formatting while bugs, poor naming, and bad queries remain untouched."
+    },
+    {
+      "title": "117. What is a senior question when judging code quality?",
+      "body": "If a different maintainer takes over this area next week, will they understand it fast enough to change it safely?"
+    },
+    {
+      "title": "118. What is the short conclusion about static quality?",
+      "body": "Good tools reduce mechanical mistakes and raise the floor, but they do not replace thoughtful design and serious review."
+    },
+    {
+      "title": "119. What is a CI quality gate?",
+      "body": "It is the set of automated checks that must pass before code is merged or deployed, such as tests, linting, static analysis, and builds."
+    },
+    {
+      "title": "120. Why is CI important for Laravel teams?",
+      "body": "It maintains a minimum standard automatically instead of depending on developers to remember every local check."
+    },
+    {
+      "title": "121. What is the benefit of parallel test execution?",
+      "body": "It reduces feedback time in larger suites and encourages developers to keep tests in their normal workflow.",
+      "code": "php artisan test --parallel",
+      "note": "A good test suite that runs too slowly will eventually be avoided. Feedback speed is part of quality."
+    },
+    {
+      "title": "122. What is a flaky test?",
+      "body": "It is a test that sometimes passes and sometimes fails without meaningful code changes, often due to timing, shared state, or unstable dependencies.",
+      "code": "it('sends the welcome email', function () {\n    Mail::fake();\n\n    UserRegistered::dispatch($user);\n\n    Mail::assertSent(WelcomeMail::class);\n});",
+      "note": "A test like this becomes flaky if events, queues, or mail are not faked or synchronized clearly. Flakiness is often a sign that the test flow depends on vague timing."
+    },
+    {
+      "title": "123. Why are flaky tests dangerous?",
+      "body": "Because they destroy trust in the suite. Once failures stop being credible, the team starts ignoring real signals."
+    },
+    {
+      "title": "124. What is quarantine thinking for flaky tests?",
+      "body": "It means isolating unstable tests in a controlled way while they are being fixed, instead of letting them poison trust in the whole CI pipeline."
+    },
+    {
+      "title": "125. Should tests be skipped casually just to merge faster?",
+      "body": "Only with extreme caution and a clear debt plan. Casual skipping is one of the fastest ways to rot a quality gate."
+    },
+    {
+      "title": "126. How does branch protection help?",
+      "body": "It forces critical checks to pass before merge, keeping a consistent quality bar across the team."
+    },
+    {
+      "title": "127. What should a good CI pipeline contain?",
+      "body": "Tests, linting or formatting, static analysis, and sometimes security auditing and build checks strong enough to catch integration issues early.",
+      "code": "composer install\n./vendor/bin/pint --test\n./vendor/bin/phpstan analyse\nphp artisan test",
+      "note": "A useful CI pipeline does not need to be huge at first. It needs a few checks that reliably stop obvious mistakes before they reach production."
+    },
+    {
+      "title": "128. What is the downside of pipelines that are too slow?",
+      "body": "Developers run them less often, feedback arrives too late, context gets lost, and quality falls because waiting becomes painful."
+    },
+    {
+      "title": "129. Should every browser test run on every pull request?",
+      "body": "That depends on scale, but many teams separate heavy browser suites from faster daily feedback checks."
+    },
+    {
+      "title": "130. Should coverage gates be strict and mechanical?",
+      "body": "Use caution. Hard gating on coverage numbers can reward meaningless tests."
+    },
+    {
+      "title": "131. What is a practical CI tip?",
+      "body": "Pipelines should be strict enough to block real problems, but fast and reliable enough that developers do not hate them."
+    },
+    {
+      "title": "132. Is CI caching useful?",
+      "body": "It can reduce build time significantly, but stale cached state can also create confusing failures if not managed well."
+    },
+    {
+      "title": "133. What is a bad CI smell?",
+      "body": "Checks fail randomly, take too long, nobody trusts the outcome, and merges happen by exception anyway.",
+      "code": "# anti-pattern\n- flaky browser test fails randomly\n- dev reruns CI 3 times before green\n- merge still gets forced because 'CI is always noisy'",
+      "note": "Once CI loses credibility, it stops being a quality gate and becomes an expensive ritual."
+    },
+    {
+      "title": "134. How does release confidence relate to the test suite?",
+      "body": "The more the team trusts the suite, the more willing it is to deploy regularly. Teams that distrust their suite delay change."
+    },
+    {
+      "title": "135. What is a senior CI question?",
+      "body": "If the pipeline is green, how much additional confidence do we truly gain in the critical flows?"
+    },
+    {
+      "title": "136. What is the short conclusion about quality gates?",
+      "body": "A good gate is not the biggest one. It is the one that blocks the right problems at a reasonable cost."
+    },
+    {
+      "title": "137. Why can production quality not rely entirely on tests?",
+      "body": "Because production brings real data, real traffic, real timing, real providers, and rare edge cases that local and CI cannot fully reproduce.",
+      "code": "Log::warning('Webhook retry mismatch', [\n    'provider' => 'stripe',\n    'event_id' => $payload['id'] ?? null,\n    'request_id' => request()->header('X-Request-Id'),\n]);",
+      "note": "Tests protect a lot, but observability is what gives you eyes for behaviors that only production will reveal."
+    },
+    {
+      "title": "138. How does observability improve code quality?",
+      "body": "It turns production into a learnable system instead of a black box that only speaks when customers complain."
+    },
+    {
+      "title": "139. How does support tooling relate to code quality?",
+      "body": "Code that is easier to support is better code in real life, because bugs can be investigated, reproduced, and resolved more quickly."
+    },
+    {
+      "title": "140. Are admin tools or diagnostic endpoints worth building?",
+      "body": "Yes when built safely. They help support and engineers see needed state without raw manual database inspection."
+    },
+    {
+      "title": "141. How do incident runbooks help debugging quality?",
+      "body": "They standardize response, reduce dependence on individuals, and make investigations less emotional and more disciplined."
+    },
+    {
+      "title": "142. What does an easy-to-support app look like?",
+      "body": "Clear request IDs, contextual logs, traceable jobs, visible state, and enough documentation around the major flows."
+    },
+    {
+      "title": "143. What does a hard-to-support app look like?",
+      "body": "Silent failures, hidden state, invisible queues, no correlation IDs, and debugging that depends on manual database intervention."
+    },
+    {
+      "title": "144. How does code quality affect on-call stress?",
+      "body": "A lot. Systems that are hard to debug or support make every incident more painful."
+    },
+    {
+      "title": "145. What is a final tip about production quality?",
+      "body": "If a production bug appears and the team does not know where to begin, the problem is not just missing logs but missing supportable architecture."
+    },
+    {
+      "title": "146. What is a classic production bug caused by weak testing?",
+      "body": "A small refactor breaks auth, validation, or queue flow because no test protected that path."
+    },
+    {
+      "title": "147. What is a classic production bug caused by poor debugging?",
+      "body": "A bug disappears temporarily after clearing cache or restarting workers, then returns later because the root cause was never understood."
+    },
+    {
+      "title": "148. What is a classic bug caused by shallow review?",
+      "body": "A PR looks fine stylistically but quietly introduces an authorization hole, an N+1 issue, or stale-cache behavior."
+    },
+    {
+      "title": "149. What is the biggest anti-pattern in testing?",
+      "body": "Writing tests for appearances while nobody trusts the suite and everyone still manually re-tests everything important."
+    },
+    {
+      "title": "150. What is the biggest anti-pattern in debugging?",
+      "body": "Fixing by instinct without proving the cause, so the same class of bug keeps returning."
+    },
+    {
+      "title": "151. What is the biggest anti-pattern in code quality?",
+      "body": "Reducing quality to formatting while readability, testability, and correctness are neglected."
+    },
+    {
+      "title": "152. What is a senior question before closing a bug fix?",
+      "body": "Have we proven the root cause, or have we only made the symptom disappear?"
+    },
+    {
+      "title": "153. What is a senior question before merging a PR?",
+      "body": "If this change breaks in production, do current logs, tests, and support tools give the team enough leverage to recover quickly?",
+      "code": "// Short merge checklist:\n// - Do critical flows have tests?\n// - Are logs/alerts enough to investigate failures?\n// - Is rollback straightforward if needed?\n// - Which side effects could hit production?",
+      "note": "This is the kind of question that lifts review from 'the code looks fine' to 'can this survive production reality'."
+    },
+    {
+      "title": "154. When can you say a Laravel codebase is healthy in this area?",
+      "body": "When tests are trustworthy, debugging is disciplined, static tools help meaningfully, CI gates add real value, review is deep enough, and production incidents do not leave the team blind."
+    },
+    {
+      "title": "155. What is the value of mutation-testing mindset?",
+      "body": "It forces you to ask whether tests truly catch wrong logic changes or whether they merely execute code without proving much."
+    },
+    {
+      "title": "156. Why does flaky-test ownership matter?",
+      "body": "If flaky tests have no clear owner, the suite slowly loses trust and nobody feels responsible for fixing the decay."
+    },
+    {
+      "title": "157. What is reproduction-note discipline?",
+      "body": "When debugging hard issues, writing down reproduction steps, required data, tried hypotheses, and observed signals prevents the team from restarting the investigation from zero repeatedly."
+    },
+    {
+      "title": "158. What is snapshot abuse?",
+      "body": "It is when snapshots are used so broadly that tests only compare a giant output blob and no longer explain which important behavior is being protected."
+    },
+    {
+      "title": "159. Why does a postmortem-to-test loop matter?",
+      "body": "After a real incident, if the team does not turn the lesson into a new test, logging guard, or better runbook, it will likely pay for the same class of failure again."
+    },
+    {
+      "title": "160. Example of a basic feature test for an auth-protected route",
+      "body": "This is a very practical test and one most Laravel projects benefit from early.",
+      "code": "it('redirects guests away from dashboard', function () {\n    $this->get('/dashboard')\n        ->assertRedirect('/login');\n});",
+      "note": "A feature test like this protects behavior from the user or client perspective, not only the internal implementation."
+    },
+    {
+      "title": "161. Example of faking the queue in a test so no real job runs",
+      "body": "When testing a flow that dispatches a job, you often do not need a real worker to confirm intent.",
+      "code": "Queue::fake();\n\n$this->post('/orders', $payload)\n    ->assertRedirect();\n\nQueue::assertPushed(SendInvoiceMail::class);",
+      "bullets": [
+        "`Queue::fake()` keeps the test fast and independent from a real queue runtime.",
+        "You are testing that the app decided to dispatch the correct job, not testing the mail provider here.",
+        "If you need deeper coverage, add separate tests for the job or integration layer."
+      ]
+    },
+    {
+      "title": "162. Example of quick debugging with contextual logging",
+      "body": "Good debugging is not only `dd()`. For hard-to-reproduce bugs, logs with context hold value much longer.",
+      "code": "Log::info('Checkout failed', [\n    'order_id' => $order->id,\n    'user_id' => $user->id,\n    'gateway' => 'stripe',\n]);",
+      "note": "Good context helps you connect logs back to requests, jobs, or incidents later. It is a core part of supportability."
+    },
+    {
+      "title": "163. Final assessment after review: is the quality topic detailed enough?",
+      "body": "For a learning portal, this is now fairly complete: testing mindset, test layers, fake and mock strategy, debugging discipline, static quality, CI reliability, observability, and production cases are all covered. If you want to go deeper later, the strongest next split would be one dedicated site for advanced testing strategy, one for debugging and incident response, and one for review and static-analysis governance."
+    }
+  ]
+}

@@ -1,0 +1,761 @@
+{
+  "anchor": "php-starter",
+  "badge": "Cấp 1",
+  "actionLabel": "Mở cấp độ khởi đầu",
+  "title": "Cấp 1: Nền tảng PHP, cú pháp và dữ liệu đầu tiên",
+  "summary": "Cấp độ này đi từ những khái niệm nhỏ nhất của PHP sang cú pháp, biến, điều kiện, hàm, file, JSON, input và các nguyên tắc an toàn nền tảng để bạn có nền thật chắc trước khi sang backend thực dụng hơn.",
+  "highlights": [
+    "Bạn sẽ đi từ việc hiểu PHP là gì tới cách file chạy, cách output xuất hiện và cách đọc code nhỏ mà không bị rối.",
+    "Phần này không chỉ có cú pháp mở đầu mà còn có biến, kiểu dữ liệu, toán tử, điều kiện, vòng lặp, helper nhỏ và thói quen debug sớm.",
+    "Bạn cũng chạm các mảnh rất hay gặp trong code thật như `require_once`, `password_hash`, `json_encode`, `file_get_contents`, `htmlspecialchars` và input validation cơ bản.",
+    "Mục tiêu của cấp 1 là tạo nền đủ chắc để khi sang backend, database hay framework, bạn không còn thấy mọi thứ như một chiếc hộp đen."
+  ],
+  "phases": [
+    {
+      "badge": "Bước 1",
+      "title": "PHP là gì",
+      "intro": "Hãy bắt đầu bằng định nghĩa nhỏ nhất trước khi đi sâu vào cú pháp. Bước này giải thích PHP là gì và nó thường dùng cho loại công việc nào.",
+      "topics": [
+        { "term": "Ngôn ngữ lập trình", "body": "PHP là ngôn ngữ lập trình được dùng nhiều cho phát triển web phía server.", "note": "Nó giúp server tạo ra nội dung mà người dùng cuối nhìn thấy." },
+        { "term": "File PHP", "body": "Code PHP thường nằm trong các file có đuôi `.php`.", "note": "Khi thấy `.php`, đó có thể là file chứa code PHP có thể thực thi." },
+        { "term": "Output động", "body": "PHP có thể tạo kết quả dựa trên logic và dữ liệu thay vì chỉ gửi HTML cố định.", "note": "Vì vậy một trang có thể thay đổi theo dữ liệu hoặc theo người dùng." }
+      ],
+      "examples": [
+        {
+          "title": "Một file PHP tối thiểu",
+          "description": "Ví dụ nhỏ nhất hữu ích là một lệnh in text ra output.",
+          "code": "<?php\necho \"Hello, PHP!\";\n"
+        }
+      ]
+    },
+    {
+      "badge": "Bước 2",
+      "title": "Tên gọi, nhà sáng lập và bối cảnh",
+      "intro": "Các chi tiết này tuy nhỏ nhưng giúp người mới hiểu tài liệu dễ hơn và đỡ rối hơn.",
+      "topics": [
+        { "term": "Ý nghĩa của PHP", "body": "PHP là viết tắt của `PHP: Hypertext Preprocessor`.", "note": "Đây là tên chính thức bạn sẽ gặp trong tài liệu và công cụ." },
+        { "term": "Nhà sáng lập", "body": "PHP được Rasmus Lerdorf khởi tạo từ giữa thập niên 1990.", "note": "Đây là cái tên quan trọng nhất nên nhớ trong phần lịch sử PHP." },
+        { "term": "Mục đích ban đầu", "body": "Ban đầu nó là các công cụ thực dụng cho web động và việc theo dõi website.", "note": "PHP ra đời từ nhu cầu web thực tế chứ không phải để phức tạp hóa mọi thứ." },
+        { "term": "Vì sao tồn tại lâu", "body": "PHP phổ biến lâu dài vì thực dụng, dễ bắt đầu và được hỗ trợ rất rộng.", "note": "Sức sống của PHP đến từ tính thực dụng, hosting phổ biến và hệ sinh thái lớn." }
+      ]
+    },
+    {
+      "badge": "Bước 3",
+      "title": "PHP chạy ở đâu",
+      "intro": "Trước khi đọc nhiều script, hãy hiểu PHP thật sự chạy ở đâu và kết quả được gửi tới đâu.",
+      "topics": [
+        { "term": "Chạy phía server", "body": "PHP chạy trên server trước khi trình duyệt nhận nội dung cuối cùng.", "note": "Trình duyệt thường chỉ thấy kết quả do PHP tạo ra, không thấy code PHP gốc." },
+        { "term": "Chế độ CLI", "body": "Bạn có thể chạy trực tiếp PHP trong terminal bằng lệnh như `php hello.php`.", "note": "CLI thường là nơi dễ nhất để thử các file PHP rất nhỏ khi mới học." },
+        { "term": "Chế độ web", "body": "Web server chuyển file `.php` cho PHP, sau đó PHP trả về HTML hoặc kiểu phản hồi khác.", "note": "Luồng cơ bản là: trình duyệt gửi request -> server -> PHP -> kết quả render." },
+        { "term": "Nơi nhận output", "body": "Trong CLI, output thường là text trong terminal. Trong web mode, output thường là HTML.", "note": "Ngôn ngữ là một, nhưng nơi hiển thị kết quả có thể khác nhau." }
+      ],
+      "examples": [
+        {
+          "title": "CLI output",
+          "description": "Ví dụ nhỏ để in nhiều dòng trong terminal.",
+          "code": "<?php\necho \"PHP is running\" . PHP_EOL;\necho \"This line appears below the first one\" . PHP_EOL;\n"
+        }
+      ]
+    },
+    {
+      "badge": "Bước 4",
+      "title": "Nền tảng cú pháp",
+      "intro": "Đây là điểm bắt đầu thật sự của việc đọc code PHP. Mục tiêu chưa phải phức tạp, mà là cấu trúc sạch và dễ đoán.",
+      "topics": [
+        { "term": "Thẻ mở", "body": "Code PHP thường bắt đầu bằng `<?php`." },
+        { "term": "Câu lệnh", "body": "Phần lớn câu lệnh PHP kết thúc bằng dấu chấm phẩy." },
+        { "term": "Comment", "body": "Dùng `//` cho một dòng hoặc `/* ... */` cho nhiều dòng." },
+        { "term": "File nhỏ", "body": "Ở mức basic, hãy giữ mỗi file chỉ chứa một ý học nhỏ." }
+      ],
+      "examples": [
+        {
+          "title": "Thẻ mở và một câu lệnh",
+          "description": "Một mẫu cú pháp rất nhỏ nên nhớ sớm.",
+          "code": "<?php\necho \"Learning starts here\";\n"
+        },
+        {
+          "title": "Các kiểu comment",
+          "description": "Hai dạng comment phổ biến trong file cho người mới.",
+          "code": "<?php\n// Comment một dòng\n/* Comment\n   nhiều dòng */\necho \"Comments do not execute\";\n"
+        }
+      ]
+    },
+    {
+      "badge": "Bước 5",
+      "title": "Output, chuỗi và biến đầu tiên",
+      "intro": "Trước khi sang điều kiện và vòng lặp, hãy quen với việc in nội dung và lưu những giá trị đơn giản nhất.",
+      "topics": [
+        { "term": "Output", "body": "Output là kết quả hiển thị mà code tạo ra sau khi PHP chạy xong." },
+        { "term": "echo và print", "body": "Cả hai đều có thể in text, nhưng `echo` là thói quen phổ biến hơn cho người mới." },
+        { "term": "Chuỗi", "body": "String là dữ liệu văn bản như `\"Hello\"`." },
+        { "term": "Biến", "body": "Biến dùng để lưu giá trị và bắt đầu bằng `$`, ví dụ `$name`." }
+      ],
+      "examples": [
+        {
+          "title": "echo và print",
+          "description": "Cả hai cách đều có thể đưa text ra output.",
+          "code": "<?php\necho \"Using echo\" . PHP_EOL;\nprint \"Using print\" . PHP_EOL;\n"
+        },
+        {
+          "title": "Biến đầu tiên",
+          "description": "Một giá trị đơn giản được lưu rồi in ra lại.",
+          "code": "<?php\n$name = \"Lan\";\necho \"Hello, \" . $name . PHP_EOL;\n"
+        }
+      ]
+    },
+    {
+      "badge": "Bước 6",
+      "title": "Đọc đúng các file nhỏ",
+      "intro": "Bước cuối của phần basic không thêm nhiều cú pháp mới. Nó giúp bạn đọc đúng luồng file và không bị lạc trong các ví dụ ngắn.",
+      "topics": [
+        { "term": "Đọc từ trên xuống dưới", "body": "Hãy đọc file đúng theo thứ tự PHP thực thi." },
+        { "term": "Khoảng trắng", "body": "Giữ thụt lề và khoảng cách sạch để lỗi dễ lộ ra." },
+        { "term": "PHP và HTML", "body": "Một file `.php` có thể chứa cả HTML thường và code PHP." },
+        { "term": "Thói quen review", "body": "Trước khi đi tiếp, hãy chắc rằng bạn đoán được output của một script 5 dòng." }
+      ],
+      "examples": [
+        {
+          "title": "PHP nằm trong HTML",
+          "description": "Ví dụ nhỏ cho thấy PHP được đặt vào trong markup.",
+          "code": "<h1>My first PHP page</h1>\n<?php\necho \"Rendered by PHP\";\n?>\n"
+        },
+        {
+          "title": "Luồng chạy đơn giản",
+          "description": "Một script nhỏ được đọc theo thứ tự từ trên xuống dưới.",
+          "code": "<?php\n// Step 1: print a heading\necho \"Start learning PHP\" . PHP_EOL;\n\n// Step 2: print another line\necho \"Read the file from top to bottom\" . PHP_EOL;\n"
+        }
+      ]
+    },
+    {
+      "badge": "Bước 7",
+      "title": "Giá trị và kiểu dữ liệu cơ bản",
+      "intro": "Khi đã in được text, bước tiếp theo là hiểu PHP có thể lưu những loại giá trị nào. Đây là nền cho gần như mọi chủ đề về sau.",
+      "topics": [
+        { "term": "Integer", "body": "Integer là số nguyên như `1`, `25` hoặc `2026`.", "note": "Dùng integer khi không cần phần thập phân." },
+        { "term": "Float", "body": "Float là số có phần thập phân như `3.14` hoặc `99.5`.", "note": "Float hữu ích cho giá, điểm trung bình hoặc phép đo, nhưng nên cẩn thận về độ chính xác khi làm việc với tiền." },
+        { "term": "String", "body": "String là dữ liệu văn bản như tên, nhãn, thông báo hoặc mảnh HTML.", "note": "Đây là kiểu dữ liệu xuất hiện rất nhiều trong các file PHP cơ bản." },
+        { "term": "Boolean", "body": "Boolean chỉ có hai giá trị: `true` hoặc `false`.", "note": "Đây là kiểu dữ liệu đứng sau các điều kiện như `if` và `else`." },
+        { "term": "Array", "body": "Array dùng để gom nhiều giá trị vào cùng một biến.", "note": "Bạn sẽ dùng array rất nhiều khi sang vòng lặp và xử lý dữ liệu." },
+        { "term": "Null", "body": "`null` nghĩa là biến hiện chưa có giá trị cụ thể.", "note": "Điều này khá thường gặp khi một dữ liệu chưa được gán." }
+      ],
+      "examples": [
+        {
+          "title": "Nhiều kiểu dữ liệu cơ bản",
+          "description": "Một file ngắn lưu thử vài kiểu dữ liệu phổ biến.",
+          "code": "<?php\n$age = 25;\n$price = 19.99;\n$name = \"Lan\";\n$isAdmin = false;\n$tags = [\"php\", \"basic\", \"practice\"];\n$middleName = null;\n"
+        }
+      ]
+    },
+    {
+      "badge": "Bước 8",
+      "title": "Toán tử và so sánh",
+      "intro": "Sau khi có giá trị là tới các thao tác với giá trị đó. Toán tử giúp bạn gán, cộng trừ, nối chuỗi và kiểm tra điều kiện.",
+      "topics": [
+        { "term": "Gán giá trị", "body": "Dùng `=` để gán một giá trị cho biến.", "note": "Đừng nhầm nó với các toán tử so sánh như `==` hoặc `===`." },
+        { "term": "Toán tử toán học", "body": "PHP hỗ trợ `+`, `-`, `*`, `/` và `%` cho các phép tính cơ bản.", "note": "Nên bắt đầu với biểu thức ngắn trước khi đặt nó vào logic dài." },
+        { "term": "Nối chuỗi", "body": "Dùng `.` để nối các chuỗi lại với nhau.", "note": "Đây là toán tử người mới dùng rất nhiều khi in text có kèm biến." },
+        { "term": "So sánh", "body": "Dùng `>`, `<`, `>=`, `<=`, `==` và `===` để so sánh giá trị.", "note": "Ở giai đoạn đầu, nên ưu tiên `===` khi bạn muốn cả giá trị lẫn kiểu dữ liệu phải khớp." },
+        { "term": "Toán tử logic", "body": "Dùng `&&`, `||` và `!` để kết hợp các điều kiện đúng sai.", "note": "Nhóm này rất quan trọng khi `if` bắt đầu dài hơn." }
+      ],
+      "examples": [
+        {
+          "title": "Toán tử số học và nối chuỗi",
+          "description": "Ví dụ ngắn vừa tính toán vừa ghép text.",
+          "code": "<?php\n$total = 8 + 4;\n$name = \"Lan\";\necho \"Hello, \" . $name . PHP_EOL;\necho \"Total: \" . $total . PHP_EOL;\n"
+        },
+        {
+          "title": "So sánh giá trị",
+          "description": "Một kiểm tra nhỏ trả về kết quả đúng hoặc sai.",
+          "code": "<?php\n$age = 20;\n$isAdult = $age >= 18;\nvar_dump($isAdult);\n"
+        }
+      ]
+    },
+    {
+      "badge": "Bước 8B",
+      "title": "Hằng số và giá trị cố định",
+      "intro": "Bên cạnh biến, PHP còn có hằng số cho các giá trị nên ổn định trong suốt quá trình chạy.",
+      "topics": [
+        { "term": "Hằng số", "body": "Hằng số là giá trị được đặt tên nhưng không nên gán lại sau khi khai báo.", "note": "Dùng hằng số khi ý nghĩa của giá trị là cố định như tên app, mode hệ thống hoặc giá trị mặc định chung." },
+        { "term": "`const` và `define`", "body": "Bạn sẽ gặp cả `const` lẫn `define()` trong code PHP.", "note": "Ở mức này chỉ cần hiểu cả hai đều tạo ra tên cho giá trị cố định." },
+        { "term": "Vì sao hữu ích", "body": "Hằng số giúp giảm lặp lại magic value và làm ý nghĩa của code rõ hơn.", "note": "Một tên có nghĩa thường dễ đọc hơn một chuỗi hoặc con số lặp lại nhiều nơi." }
+      ],
+      "examples": [
+        {
+          "title": "Một hằng số rất nhỏ",
+          "description": "Ví dụ nhỏ cho thấy một giá trị nên được giữ cố định.",
+          "code": "<?php\nconst APP_NAME = 'Laravel Labs';\necho APP_NAME;\n"
+        }
+      ]
+    },
+    {
+      "badge": "Bước 8C",
+      "title": "Những helper nhỏ nhưng dùng suốt",
+      "intro": "Nhiều file PHP không khó vì ý tưởng lớn, mà khó vì bạn chưa quen vài helper rất nhỏ nhưng xuất hiện liên tục.",
+      "topics": [
+        { "term": "`isset`", "body": "Dùng `isset()` để kiểm tra một biến hoặc key có tồn tại và khác `null` hay không.", "note": "Rất hay dùng khi đọc `$_GET`, `$_POST`, mảng config hoặc dữ liệu API." },
+        { "term": "`empty`", "body": "Dùng `empty()` khi bạn muốn kiểm tra một giá trị có đang rỗng theo nghĩa thực dụng hay không.", "note": "Nó tiện, nhưng bạn vẫn nên biết mình đang coi những giá trị nào là rỗng." },
+        { "term": "Null coalescing `??`", "body": "Toán tử `??` lấy giá trị bên trái nếu nó có, nếu không thì lấy giá trị mặc định bên phải.", "note": "Đây là công cụ rất hay gặp khi đọc input người dùng hoặc config." },
+        { "term": "`trim`", "body": "`trim()` bỏ khoảng trắng thừa ở đầu và cuối chuỗi.", "note": "Một thói quen nhỏ nhưng rất hữu ích khi đọc tên, email hoặc dữ liệu paste từ form." },
+        { "term": "`explode` và `implode`", "body": "`explode()` tách chuỗi thành mảng, còn `implode()` ghép mảng thành chuỗi.", "note": "Hai hàm này là cầu nối rất tự nhiên giữa text và dữ liệu dạng danh sách." }
+      ],
+      "examples": [
+        {
+          "title": "Giá trị mặc định với `??`",
+          "description": "Ví dụ nhỏ để đọc input mà không bị vỡ khi key chưa tồn tại.",
+          "code": "<?php\n$name = $_GET['name'] ?? 'Guest';\necho 'Hello, ' . $name;\n"
+        },
+        {
+          "title": "Tách và ghép chuỗi",
+          "description": "Ví dụ nhỏ để thấy `explode` và `implode` xuất hiện tự nhiên thế nào trong code thực tế.",
+          "code": "<?php\n$tags = 'php,laravel,backend';\n$parts = explode(',', $tags);\necho implode(' | ', $parts);\n"
+        }
+      ]
+    },
+    {
+      "badge": "Bước 9",
+      "title": "Điều kiện và vòng lặp mà không bị sợ",
+      "intro": "Đây là đoạn mà nhiều người mới bắt đầu thấy căng. Cách đi tốt nhất không phải là viết code thông minh, mà là viết code đọc từng dòng vẫn đoán được nó làm gì.",
+      "topics": [
+        { "term": "if / else", "body": "Dùng `if` khi code chỉ nên chạy nếu điều kiện đúng, và `else` cho trường hợp còn lại.", "note": "Trước khi viết, hãy tự hỏi rõ: mình đang kiểm tra điều kiện nào?" },
+        { "term": "elseif", "body": "Dùng `elseif` khi có nhiều nhánh rõ ràng khác nhau.", "note": "Nếu số nhánh quá nhiều, thường là dấu hiệu nên tách logic thành phần nhỏ hơn." },
+        { "term": "for loop", "body": "`for` phù hợp khi bạn biết trước cần lặp bao nhiêu lần.", "note": "Hãy đọc `for` theo ba phần: bắt đầu từ đâu, dừng khi nào, và tăng giảm thế nào." },
+        { "term": "foreach loop", "body": "Dùng `foreach` để đi qua từng phần tử trong array.", "note": "Với người mới, `foreach` thường dễ đọc hơn `for` khi làm việc với danh sách." },
+        { "term": "Toán tử 3 ngôi", "body": "Toán tử `condition ? value_if_true : value_if_false` là cách viết ngắn cho một nhánh điều kiện đơn giản.", "note": "Chỉ nên dùng khi biểu thức còn ngắn và đọc một lần là hiểu, đừng dùng để nhồi logic dài." },
+        { "term": "Đỡ rối hơn", "body": "Nếu điều kiện hoặc vòng lặp làm bạn rối, hãy tách biến ra từng dòng và in thử giá trị trong lúc debug.", "note": "Một vài `var_dump` hoặc `echo` tạm thời thường tiết kiệm thời gian hơn là đoán." }
+      ],
+      "examples": [
+        {
+          "title": "Một if / else đơn giản",
+          "description": "Bắt đầu bằng một điều kiện và một nhánh còn lại.",
+          "code": "<?php\n$score = 75;\n\nif ($score >= 50) {\n    echo \"Pass\";\n} else {\n    echo \"Fail\";\n}\n"
+        },
+        {
+          "title": "Một vòng lặp for nhỏ",
+          "description": "Hãy đọc chậm: bắt đầu từ 1, tiếp tục khi còn nhỏ hơn hoặc bằng 3, rồi tăng thêm 1.",
+          "code": "<?php\nfor ($i = 1; $i <= 3; $i++) {\n    echo \"Current value: \" . $i . PHP_EOL;\n}\n"
+        },
+        {
+          "title": "Một foreach dễ tiếp cận",
+          "description": "Đây thường là kiểu lặp dễ đọc nhất khi đi qua array.",
+          "code": "<?php\n$names = [\"Lan\", \"Minh\", \"An\"];\n\nforeach ($names as $name) {\n    echo \"Hello, \" . $name . PHP_EOL;\n}\n"
+        },
+        {
+          "title": "Toán tử 3 ngôi ngắn gọn",
+          "description": "Dùng khi bạn chỉ cần chọn một trong hai giá trị đơn giản.",
+          "code": "<?php\n$age = 20;\n$message = $age >= 18 ? 'Adult' : 'Under 18';\necho $message;\n"
+        },
+        {
+          "title": "switch cơ bản",
+          "description": "Khi nhiều nhánh phụ thuộc vào cùng một giá trị đầu vào, `switch` có thể dễ quét mắt hơn.",
+          "code": "<?php\n$role = 'editor';\n\nswitch ($role) {\n    case 'admin':\n        echo 'Full access';\n        break;\n    case 'editor':\n        echo 'Edit content';\n        break;\n    default:\n        echo 'Read only';\n}\n"
+        }
+      ]
+    },
+    {
+      "badge": "Bước 10",
+      "title": "Mẹo, bẫy thường gặp và thói quen debug sớm",
+      "intro": "Rất nhiều sự khó chịu của người mới không đến từ PHP quá khó, mà đến từ vài thói quen nhỏ làm code rối. Bước này tập trung vào cách nhận biết và tránh sớm.",
+      "topics": [
+        { "term": "Khi `if / else` bắt đầu rối", "body": "Nếu một khối `if` lại chứa thêm `if`, rồi thêm nữa, hãy dừng lại và hỏi xem có phần điều kiện nào nên được đưa vào một biến tên rõ ràng hay không.", "note": "Các biến boolean như `$hasPermission` hoặc `$isActiveUser` giúp điều kiện dễ đọc hơn rất nhiều." },
+        { "term": "Khi `for` làm bạn khó theo", "body": "Hãy kiểm tra vòng lặp theo đúng thứ tự: giá trị khởi đầu, điều kiện dừng, bước cập nhật, rồi mới tới thân vòng lặp.", "note": "Nhiều lỗi vòng lặp đến từ điều kiện dừng sai hoặc quên mất biến đếm thay đổi thế nào." },
+        { "term": "Khi nào nên dùng `foreach`", "body": "Nếu bạn đang đi qua một array và không cần chỉ số số học, `foreach` thường sạch hơn `for`.", "note": "Hãy chọn kiểu lặp hợp với dữ liệu, không phải kiểu trông có vẻ cao siêu hơn." },
+        { "term": "Thói quen debug sớm", "body": "Dùng `var_dump`, `print_r` hoặc vài dòng `echo` ngắn để xem giá trị thật trong lúc học.", "note": "Thấy trực tiếp giá trị hiện tại thường tốt hơn đoán xem code có lẽ đã làm gì." },
+        { "term": "Callback lồng nhau", "body": "Kiểu callback hell như JavaScript ít gặp hơn trong PHP thuần, nhưng việc lồng quá nhiều anonymous function hoặc closure vẫn làm code rất khó đọc.", "note": "Nếu một đoạn có quá nhiều callback hoặc closure lồng nhau, hãy tách bớt thành các hàm hoặc method có tên rõ ràng." },
+        { "term": "Ưu tiên dễ đọc hơn ngắn gọn", "body": "Ở giai đoạn đầu, code dễ đọc quan trọng hơn code ngắn.", "note": "Thêm vài dòng vẫn hoàn toàn ổn nếu nó giúp người đọc hiểu logic nhanh hơn." }
+      ],
+      "examples": [
+        {
+          "title": "Điều kiện được đặt tên để dễ đọc hơn",
+          "description": "Tách điều kiện dài thành biến có tên rõ ràng thường dễ đọc hơn viết một dòng `if` quá dài.",
+          "code": "<?php\n$hasEmail = true;\n$isActive = true;\n$hasPermission = true;\n\n$canSendWelcomeMessage = $hasEmail && $isActive && $hasPermission;\n\nif ($canSendWelcomeMessage) {\n    echo \"Send message\";\n}\n"
+        },
+        {
+          "title": "Ví dụ callback lồng nhau nên tránh",
+          "description": "PHP có thể trở nên khó đọc khi nhiều anonymous function bị lồng quá sâu.",
+          "code": "<?php\n$numbers = [1, 2, 3];\n\n$result = array_map(function ($number) {\n    return array_map(function ($inner) use ($number) {\n        return $number + $inner;\n    }, [10, 20]);\n}, $numbers);\n\nprint_r($result);\n"
+        },
+        {
+          "title": "Cùng ý tưởng nhưng tách thành bước rõ hơn",
+          "description": "Đưa từng phần vào hàm có tên rõ ràng thường dễ đọc hơn việc xếp chồng nhiều anonymous function.",
+          "code": "<?php\nfunction addOffsets(int $number, array $offsets): array\n{\n    $result = [];\n\n    foreach ($offsets as $offset) {\n        $result[] = $number + $offset;\n    }\n\n    return $result;\n}\n\n$numbers = [1, 2, 3];\n$output = [];\n\nforeach ($numbers as $number) {\n    $output[] = addOffsets($number, [10, 20]);\n}\n\nprint_r($output);\n"
+        }
+      ]
+    },
+    {
+      "badge": "Bước 11",
+      "title": "Comment, tên hàm và docblock",
+      "intro": "Viết code không chỉ là làm cho nó chạy, mà còn là làm cho người khác đọc được, kể cả chính bạn sau một thời gian dài quay lại.",
+      "topics": [
+        { "term": "Khi nào nên viết comment", "body": "Hãy viết comment khi lý do đằng sau một đoạn code không tự hiển nhiên, chứ không phải khi code vốn đã nói rõ nó đang làm gì.", "note": "Comment tốt thường giải thích vì sao, không lặp lại nguyên xi việc code đang làm." },
+        { "term": "Tránh comment gây ồn", "body": "Đừng viết các comment kiểu `// gán giá trị cho name` ở ngay trên dòng `$name = \"Lan\";`.", "note": "Kiểu comment đó làm file nặng hơn nhưng không thêm ý nghĩa thực tế." },
+        { "term": "Tên hàm", "body": "Tên hàm nên mô tả hành động mà nó thực hiện, ví dụ `sendWelcomeEmail`, `calculateTotal`, hoặc `loadUserProfile`.", "note": "Một tên hàm rõ ràng thường giúp giảm nhu cầu phải viết thêm comment." },
+        { "term": "Docblock", "body": "Docblock hữu ích khi một hàm hoặc class cần giải thích thêm về tham số, kiểu trả về, tác dụng phụ hoặc mục đích sử dụng.", "note": "Bạn không cần docblock cho mọi hàm nhỏ, nhưng nó rất có giá trị khi hành vi không đủ rõ chỉ qua tên hàm và type hint." },
+        { "term": "Ưu tiên code có type trước", "body": "PHP hiện đại có type hint, nên hãy dùng type để tự giải thích trước khi dựa quá nhiều vào comment dài.", "note": "Nếu `function add(int $a, int $b): int` đã đủ rõ thì docblock có thể rất ngắn hoặc không cần." }
+      ],
+      "examples": [
+        {
+          "title": "Một comment có giá trị thật",
+          "description": "Comment này giải thích lý do của quy tắc chứ không chỉ mô tả lại cú pháp.",
+          "code": "<?php\n// Ta trim input vì người dùng thường paste tên với khoảng trắng thừa.\n$name = trim($inputName);\n"
+        },
+        {
+          "title": "Một hàm nhỏ nhưng tên rõ ràng",
+          "description": "Tên hàm tốt thường đã nói ra mục đích chính mà không cần quá nhiều chữ thêm.",
+          "code": "<?php\nfunction calculateFinalPrice(float $basePrice, float $discount): float\n{\n    return $basePrice - $discount;\n}\n"
+        },
+        {
+          "title": "Một docblock hữu ích thật sự",
+          "description": "Docblock kiểu này có ích vì nó giải thích ý nghĩa đầu ra, không chỉ nhắc lại cú pháp.",
+          "code": "<?php\n/**\n * Tạo tên hiển thị ở phần đầu hồ sơ người dùng.\n * Trả về nhãn dự phòng nếu người dùng chưa có tên công khai.\n */\nfunction buildDisplayName(?string $name): string\n{\n    return $name ?: \"Guest\";\n}\n"
+        }
+      ]
+    },
+    {
+      "badge": "Bước 12",
+      "title": "Hàm, tách logic và tái sử dụng",
+      "intro": "Một bước nhảy lớn trong kỹ năng lập trình xuất hiện khi bạn ngừng nhét mọi thứ vào một file hoặc một khối dài, rồi bắt đầu tách logic thành các phần nhỏ có thể dùng lại.",
+      "topics": [
+        { "term": "Hàm là gì", "body": "Hàm là một khối code có tên, làm một việc cụ thể và có thể được gọi lại nhiều lần.", "note": "Hàm giúp tránh copy-paste và làm script ngắn gọn hơn." },
+        { "term": "Một trách nhiệm", "body": "Cố gắng để mỗi hàm tập trung vào một nhiệm vụ chính.", "note": "Nếu một hàm vừa validate input, vừa ghi database, vừa gửi mail, vừa render HTML thì gần như chắc là nó đang làm quá nhiều." },
+        { "term": "Tham số", "body": "Tham số là dữ liệu đầu vào mà hàm nhận được.", "note": "Ưu tiên truyền dữ liệu qua tham số thay vì để hàm phụ thuộc vào quá nhiều biến bên ngoài." },
+        { "term": "Giá trị trả về", "body": "Giá trị trả về là kết quả mà hàm gửi lại sau khi xử lý xong.", "note": "Nhiều trường hợp trả dữ liệu về sẽ sạch hơn là in text trực tiếp trong mọi helper." },
+        { "term": "Tách từng bước nhỏ", "body": "Khi một đoạn code bắt đầu dài, hãy chia nó thành các bước có tên trước khi nghĩ tới tối ưu.", "note": "Việc tách nhỏ để dễ đọc thường giải quyết sự rối nhanh hơn việc cố refactor thông minh quá sớm." }
+      ],
+      "examples": [
+        {
+          "title": "Một hàm tái sử dụng đơn giản",
+          "description": "Hàm này có thể được gọi nhiều lần với các giá trị đầu vào khác nhau.",
+          "code": "<?php\nfunction greetUser(string $name): string\n{\n    return \"Hello, \" . $name;\n}\n\necho greetUser(\"Lan\") . PHP_EOL;\necho greetUser(\"Minh\") . PHP_EOL;\n"
+        },
+        {
+          "title": "Tách một việc thành các hàm nhỏ hơn",
+          "description": "Việc tách từng bước thường dễ đọc hơn là để một khối dài làm hết mọi thứ.",
+          "code": "<?php\nfunction normalizeEmail(string $email): string\n{\n    return strtolower(trim($email));\n}\n\nfunction isCompanyEmail(string $email): bool\n{\n    return str_ends_with($email, \"@company.com\");\n}\n\n$email = normalizeEmail(\"  DEV@company.com \");\n\nif (isCompanyEmail($email)) {\n    echo \"Internal account\";\n}\n"
+        }
+      ]
+    },
+    {
+      "badge": "Bước 13",
+      "title": "Đọc, ghi file và dữ liệu phẳng",
+      "intro": "Trước khi chạm tới database, bạn nên hiểu cách PHP làm việc với file. Đây là cầu nối rất tự nhiên giữa cú pháp cơ bản và xử lý dữ liệu thực tế.",
+      "topics": [
+        { "term": "Đọc file text", "body": "PHP có thể đọc nội dung từ các file như `.txt`, `.json`, `.csv` bằng các hàm như `file_get_contents`.", "note": "Đây thường là bước đầu để hiểu dữ liệu đi từ file vào code như thế nào." },
+        { "term": "Ghi file", "body": "Bạn có thể ghi hoặc append nội dung ra file bằng `file_put_contents`.", "note": "Khi mới học, việc ghi log nhỏ ra file giúp bạn hiểu dữ liệu được lưu lại như thế nào." },
+        { "term": "TXT và log đơn giản", "body": "File `.txt` phù hợp cho các ví dụ nhập môn như lưu note, log nhỏ hoặc dữ liệu demo.", "note": "Đây là loại file dễ quan sát nhất vì mở lên là đọc được ngay." },
+        { "term": "CSV và dữ liệu bảng", "body": "Khi dữ liệu có dạng bảng đơn giản, `csv` thường là bước tự nhiên trước khi học database hoặc Excel.", "note": "CSV nhẹ, dễ tạo và đủ tốt cho rất nhiều bài thực hành cơ bản." },
+        { "term": "JSON cơ bản", "body": "JSON thường dùng để trao đổi dữ liệu có cấu trúc giữa file, API và code PHP.", "note": "Nếu bạn hiểu mảng PHP rồi, việc học `json_encode` và `json_decode` sẽ dễ hơn nhiều." },
+        { "term": "Excel", "body": "File Excel thường không được xử lý thủ công bằng vài hàm cơ bản, mà thường thông qua thư viện như `PhpSpreadsheet`.", "note": "Khi mới học, hãy hiểu trước tư duy đọc dữ liệu bảng qua `csv`, rồi mới đi tiếp sang Excel." },
+        { "term": "Kiểm tra file tồn tại", "body": "Trước khi đọc file, nên kiểm tra bằng `file_exists` hoặc kiểm tra đường dẫn hợp lệ.", "note": "Đây là thói quen rất cơ bản nhưng giúp tránh nhiều lỗi backend ngớ ngẩn." }
+      ],
+      "examples": [
+        {
+          "title": "Đọc file `.txt` cơ bản",
+          "description": "Ví dụ nhỏ để hiểu PHP lấy nội dung từ file ra sao.",
+          "code": "<?php\n$path = __DIR__ . '/notes.txt';\n\nif (!file_exists($path)) {\n    echo 'File not found';\n    return;\n}\n\necho file_get_contents($path);\n"
+        },
+        {
+          "title": "Ghi thêm một dòng log",
+          "description": "Append nội dung vào file giúp bạn hình dung việc lưu dữ liệu thô trước khi học database.",
+          "code": "<?php\n$line = 'User opened the page at ' . date('Y-m-d H:i:s') . PHP_EOL;\nfile_put_contents(__DIR__ . '/app.log', $line, FILE_APPEND);\n"
+        },
+        {
+          "title": "Đọc từng dòng từ file CSV",
+          "description": "Một ví dụ rất thực dụng trước khi đi tới dữ liệu bảng phức tạp hơn.",
+          "code": "<?php\n$rows = file(__DIR__ . '/users.csv', FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);\n\nforeach ($rows as $row) {\n    $columns = str_getcsv($row);\n    print_r($columns);\n}\n"
+        },
+        {
+          "title": "Đổi mảng PHP thành JSON",
+          "description": "Ví dụ nhỏ để thấy dữ liệu có thể được đóng gói thành chuỗi JSON ra sao.",
+          "code": "<?php\n$user = [\n    'name' => 'Lan',\n    'role' => 'admin',\n];\n\necho json_encode($user, JSON_PRETTY_PRINT);\n"
+        }
+      ]
+    },
+    {
+      "badge": "Bước 14",
+      "title": "Database, input và an toàn nền tảng",
+      "intro": "Ngay từ mức cơ bản, bạn nên biết PHP ngoài đời thực thường đi tiếp tới đâu: nhận input người dùng, đọc cấu hình và làm việc với database. Chưa cần đào quá sâu, nhưng nên nắm các nguyên tắc an toàn nền tảng.",
+      "topics": [
+        { "term": "Input người dùng không đáng tin sẵn", "body": "Bất kỳ dữ liệu nào đi vào từ form, query string, file upload hoặc API đều nên được xem là chưa đáng tin.", "note": "Đừng mặc định rằng input của người dùng đã sạch hoặc đúng định dạng." },
+        { "term": "Validate trước khi dùng", "body": "Hãy kiểm tra format, trường bắt buộc và giá trị hợp lệ trước khi đem dữ liệu đi lưu, gửi mail hoặc xử lý tiếp.", "note": "Validate nên xảy ra trước khi dữ liệu chạm tới business logic quan trọng." },
+        { "term": "Escape output", "body": "Khi hiển thị dữ liệu người dùng nhập vào trong HTML, hãy escape trước khi render.", "note": "Đây là thói quen nền tảng để tránh các lỗi kiểu cross-site scripting về sau." },
+        { "term": "Kết nối database", "body": "PHP thường kết nối database thông qua PDO hoặc abstraction của framework.", "note": "Ở mức cơ bản, hãy hiểu rằng phần truy cập database nên tách khỏi phần hiển thị nếu có thể." },
+        { "term": "Prepared statement", "body": "Không nên nối raw user input trực tiếp vào câu SQL.", "note": "Prepared statement là thói quen nền tảng để tránh SQL injection." },
+        { "term": "XSS cơ bản", "body": "Nếu bạn in dữ liệu người dùng nhập vào HTML mà không escape, bạn có thể mở cửa cho mã không mong muốn chạy trong trình duyệt.", "note": "Ở mức nhập môn, chỉ cần nhớ nguyên tắc: dữ liệu người dùng khi render ra HTML phải được escape đúng cách." },
+        { "term": "CSRF cơ bản", "body": "Một form thay đổi dữ liệu thường cần cơ chế xác nhận rằng request đó thật sự đến từ phiên làm việc hợp lệ của người dùng.", "note": "Khi sang framework như Laravel, bạn sẽ gặp CSRF token rất sớm." },
+        { "term": "Hash", "body": "Hash biến dữ liệu thành chuỗi đại diện một chiều để kiểm tra hoặc lưu trữ an toàn hơn.", "note": "Hash không giống mã hóa và thường không dùng để giải ngược về dữ liệu ban đầu." },
+        { "term": "Mật khẩu và hash", "body": "Mật khẩu không nên lưu dạng plain text. PHP có `password_hash` và `password_verify` cho việc này.", "note": "Đây là thói quen rất cơ bản một khi auth trở thành tính năng thật." },
+        { "term": "Cấu hình", "body": "Các giá trị như host database, username, password, API key nên nằm trong file cấu hình hoặc environment, không nên hardcode lung tung trong script.", "note": "Điều này đặc biệt quan trọng khi dự án lớn dần hoặc có nhiều môi trường như local, staging và production." },
+        { "term": "Service liên quan", "body": "Sau database, PHP còn rất hay kết nối tới mail service, storage service, payment gateway hoặc API ngoài.", "note": "Hãy xem đây là các phần mở rộng tự nhiên của backend chứ không phải thứ tách rời khỏi PHP." }
+      ],
+      "examples": [
+        {
+          "title": "Một kiểm tra input rất nhỏ",
+          "description": "Validate đơn giản trước khi dùng dữ liệu vào việc khác.",
+          "code": "<?php\n$email = trim($_POST['email'] ?? '');\n\nif ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {\n    echo \"Invalid email\";\n    return;\n}\n\necho \"Email looks valid\";\n"
+        },
+        {
+          "title": "Một ví dụ PDO nhập môn",
+          "description": "Ví dụ này cho thấy hình dạng chung của kết nối database và truy vấn có prepare.",
+          "code": "<?php\n$pdo = new PDO('mysql:host=127.0.0.1;dbname=app', 'user', 'secret');\n\n$stmt = $pdo->prepare('SELECT * FROM users WHERE email = :email');\n$stmt->execute(['email' => $email]);\n$user = $stmt->fetch();\n"
+        },
+        {
+          "title": "Hash mật khẩu đúng hướng",
+          "description": "Ví dụ nhập môn để thấy password nên được hash trước khi lưu.",
+          "code": "<?php\n$password = 'secret-123';\n$hashedPassword = password_hash($password, PASSWORD_DEFAULT);\n\nif (password_verify('secret-123', $hashedPassword)) {\n    echo 'Password is valid';\n}\n"
+        },
+        {
+          "title": "Escape output rất cơ bản",
+          "description": "Ví dụ nhỏ để nhắc rằng dữ liệu người dùng không nên được in ra HTML một cách thô.",
+          "code": "<?php\n$name = $_POST['name'] ?? '';\necho htmlspecialchars($name, ENT_QUOTES, 'UTF-8');\n"
+        }
+      ]
+    }
+  ],
+  "questionsTitle": "Lưu ý nhập môn và đáp án ngắn",
+  "questions": [
+    {
+      "tag": "Tip",
+      "question": "Một lưu ý quan trọng khi mới học code PHP là gì?",
+      "answer": "Đừng cố nhớ toàn bộ cú pháp trong một lần đọc. Hãy học theo các vòng nhỏ: đọc ví dụ, tự đoán output, chạy thử, rồi sửa đúng một chi tiết như biến, điều kiện hoặc vòng lặp để thấy hành vi thay đổi thế nào."
+    },
+    {
+      "tag": "Helper",
+      "question": "Khi nào nên dùng `isset`, `empty` hoặc `??`?",
+      "answer": "Khi bạn đọc dữ liệu chưa chắc đã tồn tại như input từ form, query string, config hoặc mảng lồng nhau. `??` rất hợp để đặt giá trị mặc định gọn gàng, `isset` hợp khi bạn muốn biết key có tồn tại và khác `null`, còn `empty` hữu ích khi bạn cần một kiểm tra thực dụng cho giá trị rỗng."
+    },
+    {
+      "tag": "Tip",
+      "question": "Khi học `for` hoặc `if`, vì sao nhiều người mới rất nhanh bị rối?",
+      "answer": "Vì họ đọc cả khối code như một đoạn văn dài thay vì tách nó thành từng phần nhỏ. Với `if`, hãy nhìn điều kiện trước rồi mới nhìn nhánh chạy. Với `for`, hãy đọc lần lượt giá trị bắt đầu, điều kiện dừng, bước cập nhật và cuối cùng mới tới thân vòng lặp."
+    },
+    {
+      "tag": "Mistake",
+      "question": "Một sai lầm nhập môn thường gặp khi học backend là gì?",
+      "answer": "Sai lầm phổ biến là chỉ chăm chú vào cú pháp mà quên luồng dữ liệu đi từ đâu tới đâu. Khi học backend, bạn nên luôn hỏi: request vào từ đâu, PHP xử lý chỗ nào, dữ liệu lấy từ đâu, và output cuối cùng được trả về cho ai."
+    },
+    {
+      "tag": "Tip",
+      "question": "Khi gặp lỗi `syntax error`, người mới nên phản ứng thế nào?",
+      "answer": "Đừng sửa loạn cả file. Hãy đọc đúng dòng báo lỗi, nhìn 3 đến 5 dòng xung quanh nó, rồi kiểm tra những thứ cơ bản nhất như thiếu `;`, thiếu dấu ngoặc, thiếu dấu nháy hoặc đóng mở khối chưa cân. Với người mới, phần lớn lỗi cú pháp nằm ở vài chi tiết rất nhỏ chứ không phải ở ý tưởng lớn."
+    },
+    {
+      "tag": "Mindset",
+      "question": "Vì sao nên học đọc và ghi file trước khi phụ thuộc quá sớm vào database?",
+      "answer": "Vì file giúp bạn thấy dữ liệu ở dạng thô và đơn giản nhất. Khi bạn đã hiểu cách đọc text, `csv`, `json`, ghi log và kiểm tra file tồn tại hay không, việc học database sẽ bớt mơ hồ hơn rất nhiều. Bạn sẽ nhìn database như một nơi lưu trữ có cấu trúc, chứ không phải một chiếc hộp đen thần bí."
+    },
+    {
+      "tag": "Security",
+      "question": "Ở mức nhập môn, nên nhớ gì về XSS và SQL injection?",
+      "answer": "Hãy nhớ hai phản xạ nền: dữ liệu người dùng khi in ra HTML thì cần escape đúng cách để tránh XSS, còn dữ liệu người dùng khi đi vào SQL thì không được nối thẳng chuỗi mà nên dùng prepare và bind để tránh SQL injection."
+    }
+  ],
+  "modules": [
+    {
+      "title": "Đúc kết nhỏ cho người mới học PHP",
+      "description": "Những điều này nghe đơn giản nhưng thường là khác biệt giữa học mãi không vào và học chậm mà chắc.",
+      "bullets": [
+        "Đừng học thuộc code mẫu theo kiểu chép nguyên khối. Hãy đổi một biến, đổi một chuỗi hoặc đổi điều kiện rồi chạy lại để thấy điều gì thực sự thay đổi.",
+        "Nếu một ví dụ 10 dòng mà bạn chưa đoán nổi output, hãy giảm nó xuống còn 3 đến 5 dòng rồi học lại từ đoạn nhỏ hơn.",
+        "Người mới tiến bộ nhanh thường có thói quen đặt câu hỏi rất cụ thể như `biến này hiện đang giữ gì` hoặc `vì sao nhánh else lại chạy`."
+      ]
+    },
+    {
+      "title": "Từ file, dữ liệu thô tới backend thực tế",
+      "description": "Trước khi database xuất hiện, PHP đã rất mạnh ở việc thao tác với file và dữ liệu dạng text. Đây là cầu nối rất tốt để hiểu backend một cách tự nhiên.",
+      "bullets": [
+        "Bạn có thể đọc `txt`, `json`, `csv` để hiểu dữ liệu vào ra trước khi học tới query phức tạp.",
+        "Ghi log ra file là một trong những kỹ năng debug backend sớm nhất và hữu ích nhất.",
+        "Một người nắm chắc file và dữ liệu thô thường học DB, API và queue nhanh hơn vì đã quen với tư duy luồng dữ liệu."
+      ]
+    },
+    {
+      "title": "Cách đọc lỗi mà không sợ",
+      "description": "Lỗi là một phần bình thường của việc học. Vấn đề không phải là tránh lỗi tuyệt đối, mà là đọc lỗi theo cách có hệ thống.",
+      "bullets": [
+        "Đọc tên lỗi trước, rồi nhìn file và số dòng.",
+        "Nếu là lỗi cú pháp, hãy kiểm tra các ký tự nhỏ như `;`, `{}`, `()`, dấu nháy và comment chưa đóng.",
+        "Nếu output không như mong đợi mà không có lỗi đỏ, hãy `echo` hoặc `var_dump` giá trị hiện tại để xem code đang nghĩ gì."
+      ]
+    },
+    {
+      "title": "Những mảnh nền hay bị bỏ sót nhưng rất hay dùng",
+      "description": "Nhiều người mới chạm các mảnh này quá muộn trong khi chúng xuất hiện thường xuyên trong code thật.",
+      "bullets": [
+        "`const`, `define`, `switch`, `require`, `include`, `require_once`, `include_once` là những khối đáng biết sớm.",
+        "`password_hash` và `password_verify` là cặp cơ bản nhất khi auth hoặc tài khoản người dùng xuất hiện.",
+        "Khi một helper hoặc config được nạp ở nhiều nơi, hãy tự hỏi nó nên là `require_once` hay `include_once`.",
+        "`isset`, `empty`, `??`, `trim`, `explode` và `implode` là các helper nhỏ nhưng đi cùng bạn rất lâu trong code PHP thật."
+      ]
+    },
+    {
+      "title": "PHP là một ngôn ngữ lập trình",
+      "description": "Ở mức nhỏ nhất cho người mới, hãy bắt đầu bằng câu trả lời trực tiếp: PHP là ngôn ngữ lập trình được dùng nhiều cho phát triển web phía server.",
+      "bullets": [
+        "PHP được viết thành code bên trong các file `.php`.",
+        "Nó giúp tạo ra các trang động thay vì chỉ là file HTML cố định.",
+        "Nó thường được dùng để xử lý request, tạo HTML và làm việc với dữ liệu."
+      ]
+    },
+    {
+      "title": "Tên PHP có nghĩa là gì",
+      "description": "Ngay cả chi tiết này cũng đáng biết với người mới vì tên ngôn ngữ xuất hiện khắp tài liệu và câu lệnh.",
+      "bullets": [
+        "PHP là viết tắt của `PHP: Hypertext Preprocessor`.",
+        "Đây là một recursive acronym, nghĩa là tên của nó chứa chính nó.",
+        "Một số tài liệu cũ cho người mới có thể nhắc tới lịch sử tên gọi trước khi cách đặt tên hiện tại ổn định."
+      ]
+    },
+    {
+      "title": "Bản chất của ngôn ngữ",
+      "description": "Hãy bắt đầu từ bức tranh lớn trước khi đi vào cú pháp. PHP là ngôn ngữ scripting tập trung mạnh vào web và có hệ sinh thái phong phú.",
+      "bullets": [
+        "Chạy phía server nghĩa là PHP xử lý trước khi trang được gửi đến trình duyệt.",
+        "Nó có thể tạo HTML, xử lý form, kết nối database và xây dựng API.",
+        "PHP hiện đại cũng hỗ trợ OOP, package qua Composer và workflow testing."
+      ]
+    },
+    {
+      "title": "Nhà sáng lập và bối cảnh",
+      "description": "Một chút lịch sử giúp bạn hiểu vì sao PHP gắn rất chặt với công việc web thực tế.",
+      "bullets": [
+        "PHP được Rasmus Lerdorf khởi tạo từ giữa thập niên 1990.",
+        "Ban đầu Rasmus tạo các công cụ để theo dõi lượt truy cập cho website cá nhân của mình.",
+        "Mục tiêu ban đầu là tạo các trang web động đơn giản, nhưng ngôn ngữ tiếp tục phát triển mạnh hơn.",
+        "Ngày nay PHP vận hành nhiều hệ thống nội dung, ứng dụng doanh nghiệp và framework như Laravel."
+      ]
+    },
+    {
+      "title": "Vì sao nhiều người dùng PHP",
+      "description": "Người mới nên biết lý do đơn giản vì sao PHP tồn tại lâu và vẫn được dùng nhiều.",
+      "bullets": [
+        "Nó thực dụng cho web và dễ bắt đầu bằng các file nhỏ.",
+        "Nó có lịch sử lâu, cộng đồng lớn và lượng tài liệu học rất nhiều.",
+        "Các framework như Laravel giúp việc phát triển PHP hiện đại có tổ chức hơn nhiều."
+      ]
+    },
+    {
+      "title": "PHP thường xuất hiện ở đâu",
+      "description": "Người mới nên biết PHP xuất hiện trong công việc thực tế ở đâu để ngôn ngữ này không bị quá trừu tượng.",
+      "bullets": [
+        "Các file `.php` độc lập có thể render HTML trực tiếp.",
+        "Script CLI có thể dùng để tự động hóa tác vụ và kiểm tra cục bộ.",
+        "Framework như Laravel tổ chức PHP thành routes, controllers, models, services và commands."
+      ]
+    },
+    {
+      "title": "Một file PHP được thực thi ra sao",
+      "description": "Một request đi vào server, server chuyển file `.php` cho PHP runtime, sau đó runtime trả về kết quả đầu ra.",
+      "bullets": [
+        "Một file PHP chứa các chỉ dẫn cho PHP interpreter.",
+        "Ở chế độ CLI bạn có thể chạy trực tiếp bằng `php file.php`.",
+        "Ở chế độ web server sẽ phân giải request rồi PHP trả về nội dung render.",
+        "Lỗi cú pháp sẽ dừng quá trình chạy, nên việc hiểu đúng format file rất quan trọng ngay từ đầu."
+      ]
+    },
+    {
+      "title": "Chế độ CLI và chế độ Web",
+      "description": "Hai cách chạy này đều quan trọng, nhưng cảm giác học sẽ hơi khác nhau.",
+      "bullets": [
+        "CLI in output trong terminal và thường dùng `PHP_EOL` để xuống dòng.",
+        "Web mode trả về HTML cho trình duyệt và việc xuống dòng thường do thẻ HTML đảm nhiệm.",
+        "Cú pháp PHP vẫn có thể giống nhau dù nơi nhận output là khác nhau."
+      ]
+    },
+    {
+      "title": "Các khối cú pháp cơ bản",
+      "description": "Đây là những quy tắc đầu tiên mà người mới cần trước khi học biến hoặc điều kiện.",
+      "bullets": [
+        "Thẻ mở: `<?php`",
+        "Mỗi câu lệnh thường kết thúc bằng dấu chấm phẩy.",
+        "Dùng `//` hoặc `/* ... */` để comment.",
+        "Dùng `echo` để in nội dung ra output."
+      ]
+    },
+    {
+      "title": "Thẻ mở `<?php`",
+      "description": "Chi tiết nhỏ này là một trong những thứ đầu tiên người mới nhìn thấy trong code PHP.",
+      "bullets": [
+        "Thẻ `<?php` báo cho file biết code PHP bắt đầu từ đây.",
+        "Mọi thứ trong khối PHP sẽ được hiểu là chỉ dẫn PHP.",
+        "Bên ngoài khối PHP, file có thể quay lại nội dung HTML bình thường."
+      ]
+    },
+    {
+      "title": "Vì sao dấu chấm phẩy quan trọng",
+      "description": "Rất nhiều lỗi cú pháp của người mới đến từ việc thiếu dấu chấm phẩy.",
+      "bullets": [
+        "Dấu chấm phẩy thường đánh dấu kết thúc của một câu lệnh PHP.",
+        "Nếu thiếu nó, PHP có thể báo lỗi parse error.",
+        "Tập thói quen này sớm sẽ giúp các file dài hơn dễ debug hơn."
+      ]
+    },
+    {
+      "title": "Tên file và cấu trúc cơ bản",
+      "description": "Một chút kỷ luật về file sẽ giúp bạn đỡ rối ngay từ giai đoạn đầu.",
+      "bullets": [
+        "Dùng đuôi `.php` cho file PHP có thể thực thi.",
+        "Khi luyện tập, mỗi file chỉ nên chứa một ý nhỏ.",
+        "Hãy lưu file, chạy file, đọc output rồi chỉ sửa từng thứ một."
+      ]
+    },
+    {
+      "title": "Chạy PHP bằng command line",
+      "description": "CLI là nơi dễ nhất để thử các script rất nhỏ khi mới học.",
+      "bullets": [
+        "Tạo một file như `hello.php`.",
+        "Chạy file bằng `php hello.php`.",
+        "Nếu có lỗi cú pháp, hãy sửa từng lỗi một theo thông báo từ interpreter."
+      ]
+    },
+    {
+      "title": "Output là gì",
+      "description": "Output đơn giản là kết quả hiển thị mà PHP gửi ra sau khi code chạy xong.",
+      "bullets": [
+        "Trong terminal, output xuất hiện dưới dạng các dòng text.",
+        "Trong trình duyệt, output thường trở thành nội dung HTML.",
+        "Khi người mới dùng `echo`, họ đang tạo ra output."
+      ]
+    },
+    {
+      "title": "Output và cách in nội dung",
+      "description": "Trước khi logic phức tạp hơn, bạn nên quen với việc in chuỗi và giá trị đơn giản ra output.",
+      "bullets": [
+        "Dùng `echo` cho kiểu in ra phổ biến nhất.",
+        "Dùng dấu nháy kép khi về sau bạn muốn nội suy biến.",
+        "Dùng `PHP_EOL` trong script CLI khi muốn xuống dòng."
+      ]
+    },
+    {
+      "title": "echo và print",
+      "description": "Cả hai đều dùng để xuất nội dung, nhưng người mới thường nên bắt đầu với `echo` vì nó phổ biến hơn trong ví dụ hiện đại.",
+      "bullets": [
+        "`echo` thường được dùng để in một hoặc nhiều chuỗi.",
+        "`print` cũng in text, nhưng cách dùng của nó hơi giống biểu thức hơn và ít gặp hơn trong ví dụ cơ bản hiện đại.",
+        "Ở mức basic, nên chọn một kiểu thống nhất. `echo` là lựa chọn mặc định dễ nhất."
+      ]
+    },
+    {
+      "title": "Chuỗi và dấu nháy",
+      "description": "Ngay cả trước khi học biến sâu hơn, bạn cũng nên hiểu text được viết trong PHP như thế nào.",
+      "bullets": [
+        "String là dữ liệu văn bản như `\"Hello\"`.",
+        "Dấu nháy đơn và nháy kép đều tạo string, nhưng nháy kép quan trọng hơn về sau khi chèn biến vào text.",
+        "Người mới trước hết nên tập trung vào việc in ra nội dung rõ ràng, dễ đọc."
+      ]
+    },
+    {
+      "title": "Làm quen rất sớm với biến",
+      "description": "Biến thuộc stage sau khi đi sâu, nhưng level basic vẫn nên giới thiệu trước biến là gì.",
+      "bullets": [
+        "Biến dùng để lưu giá trị và bắt đầu bằng `$` trong PHP.",
+        "Ví dụ: `$name = \"Lan\";`",
+        "Bạn chưa cần quy tắc nâng cao, chỉ cần hiểu rằng giá trị có thể được lưu lại và dùng lại."
+      ]
+    },
+    {
+      "title": "Khoảng trắng và tính dễ đọc",
+      "description": "Code dễ đọc rất quan trọng ngay từ đầu vì lỗi của người mới phần lớn là lỗi đơn giản và có thể nhìn thấy.",
+      "bullets": [
+        "Canh lề các block cho nhất quán.",
+        "Để khoảng trắng nhẹ quanh toán tử khi ví dụ bắt đầu dài hơn.",
+        "Khi mới học, đừng nhồi quá nhiều câu lệnh vào một dòng."
+      ]
+    },
+    {
+      "title": "Trộn PHP với HTML",
+      "description": "Một trong những lý do PHP phổ biến là nó có thể nằm trực tiếp bên trong HTML.",
+      "bullets": [
+        "Một file `.php` có thể chứa cả HTML lẫn PHP.",
+        "Khối PHP bắt đầu bằng `<?php` và ngoài khối đó thì nội dung là HTML thông thường.",
+        "Điều này sẽ rất quan trọng sau này khi bạn học Blade trong Laravel."
+      ]
+    },
+    {
+      "title": "Comment và thói quen đọc code",
+      "description": "PHP cho người mới nên dễ đọc, vì phần lớn lỗi ban đầu đến từ việc chưa hiểu thứ tự thực thi.",
+      "bullets": [
+        "Comment là ghi chú cho con người đọc, không phải lệnh để PHP thực thi.",
+        "Chỉ comment khi dòng code cần thêm ngữ cảnh, không comment cho điều quá hiển nhiên.",
+        "Đọc file từ trên xuống dưới và tự hỏi mỗi câu lệnh in ra gì.",
+        "Giữ file học ban đầu nhỏ để bạn thấy được toàn bộ luồng chạy."
+      ]
+    },
+    {
+      "title": "Checklist tự review cho người mới",
+      "description": "Dùng checklist ngắn này trước khi chuyển từ basic sang phần biến, điều kiện và vòng lặp.",
+      "bullets": [
+        "Bạn có thể giải thích PHP là gì trong một câu ngắn không?",
+        "Bạn có thể tạo file `.php` và chạy nó trong terminal không?",
+        "Bạn có thể dùng đúng `echo`, comment và thẻ mở `<?php` không?",
+        "Bạn có thể đọc một script 5 dòng và đoán output của nó không?"
+      ]
+    },
+    {
+      "title": "Cách luyện tập để nhớ lâu hơn",
+      "description": "Người mới thường tiến bộ nhanh hơn khi lặp lại bằng thay đổi nhỏ chứ không chỉ đọc nhiều lý thuyết.",
+      "bullets": [
+        "Lấy một ví dụ sẵn có rồi đổi một biến, một điều kiện hoặc một chuỗi để xem output đổi thế nào.",
+        "Tạo các file cực nhỏ như `echo-test.php`, `if-test.php`, `array-test.php` để mỗi file chỉ học một ý.",
+        "Nếu hôm nay bạn học một câu lệnh mới, hãy dùng nó ít nhất trong 2 hoặc 3 ví dụ hơi khác nhau."
+      ]
+    }
+  ],
+  "examplesTitle": "Ví dụ khởi đầu",
+  "examples": [
+    {
+      "title": "Hello từ PHP",
+      "description": "Script nhỏ nhất để in ra một chuỗi.",
+      "code": "<?php\necho \"Hello, PHP!\";\n"
+    },
+    {
+      "title": "Thẻ mở và một câu lệnh",
+      "description": "Ví dụ rất nhỏ để thấy PHP bắt đầu ở đâu và một câu lệnh kết thúc ở đâu.",
+      "code": "<?php\necho \"Learning starts here\";\n"
+    },
+    {
+      "title": "Các kiểu comment",
+      "description": "Hai kiểu comment phổ biến trong file dành cho người mới.",
+      "code": "<?php\n// Comment một dòng\n/* Comment\n   nhiều dòng */\necho \"Comments do not execute\";\n"
+    },
+    {
+      "title": "echo và print",
+      "description": "Ví dụ nhỏ cho thấy cả hai cách đều có thể xuất text ra output.",
+      "code": "<?php\necho \"Using echo\" . PHP_EOL;\nprint \"Using print\" . PHP_EOL;\n"
+    },
+    {
+      "title": "CLI output có xuống dòng",
+      "description": "Một script nhỏ in ra nhiều dòng theo cách thân thiện với terminal.",
+      "code": "<?php\necho \"PHP is running\" . PHP_EOL;\necho \"This line appears below the first one\" . PHP_EOL;\n"
+    },
+    {
+      "title": "Biến đầu tiên",
+      "description": "Cái nhìn đầu tiên về cách lưu giá trị rồi in ra lại.",
+      "code": "<?php\n$name = \"Lan\";\necho \"Hello, \" . $name . PHP_EOL;\n"
+    },
+    {
+      "title": "PHP nằm trong HTML",
+      "description": "Ví dụ đơn giản về việc đặt PHP vào trong cấu trúc trang.",
+      "code": "<h1>My first PHP page</h1>\n<?php\necho \"Rendered by PHP\";\n?>\n"
+    },
+    {
+      "title": "Ý tưởng về dấu chấm phẩy",
+      "description": "Ví dụ đúng này nhắc người mới rằng mỗi câu lệnh thường kết thúc bằng dấu chấm phẩy.",
+      "code": "<?php\necho \"First line\";\necho \"Second line\";\n"
+    },
+    {
+      "title": "Luồng chạy đơn giản của file",
+      "description": "Ví dụ này cho thấy PHP đọc từng câu lệnh theo đúng thứ tự.",
+      "code": "<?php\n// Bước 1: in tiêu đề\necho \"Start learning PHP\" . PHP_EOL;\n\n// Bước 2: in dòng tiếp theo\necho \"Read the file from top to bottom\" . PHP_EOL;\n"
+    },
+    {
+      "title": "Kiểm tra lỗi theo cách nhỏ nhất",
+      "description": "Một ví dụ rất nhỏ cho thấy nên dừng sớm nếu input chưa hợp lệ.",
+      "code": "<?php\n$name = trim($_POST['name'] ?? '');\n\nif ($name === '') {\n    echo 'Name is required';\n    return;\n}\n\necho 'Hello, ' . $name;\n"
+    },
+    {
+      "title": "Nhìn dữ liệu bằng var_dump",
+      "description": "Khi chưa chắc biến đang chứa gì, hãy in nó ra thay vì đoán.",
+      "code": "<?php\n$items = [\"php\", \"html\", \"css\"];\nvar_dump($items);\n"
+    }
+  ]
+}

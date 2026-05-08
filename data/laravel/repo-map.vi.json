@@ -1,0 +1,672 @@
+{
+  "anchor": "laravel-repo-map",
+  "type": "list",
+  "heading": "Repo hiện tại khớp vào lộ trình ra sao: dùng chính các lab đang có để học Laravel đúng thứ tự",
+  "intro": "Site này không chỉ nói repo có gì, mà giúp bạn dùng chính các project Laravel hiện có trong repository như một bản đồ học tập. Mục tiêu là biết nên mở lab nào để học phần nào, một lab mạnh ở nhánh kiến thức nào, phần nào repo đã có ví dụ, phần nào còn thiếu và cách đọc một repo thật để nối từ lý thuyết sang thực chiến thay vì học menu nào cũng rời rạc.",
+  "breaks": [
+    {
+      "start": 1,
+      "title": "I. Tư Duy Đọc Repo Theo Lộ Trình",
+      "description": "Bắt đầu từ câu hỏi repo map vào roadmap để làm gì, đọc repo theo flow hay theo folder và vì sao một lab chỉ là điểm tựa chứ không phải toàn bộ Laravel.",
+      "tone": "amber"
+    },
+    {
+      "start": 17,
+      "title": "II. Nhìn Toàn Cảnh 4 Lab Hiện Có",
+      "description": "Bức tranh tổng quan của `breeze`, `chirper`, `jetstream`, `sail`, vai trò của từng lab và vì sao chúng bổ trợ nhau thay vì trùng lặp hoàn toàn.",
+      "tone": "copper"
+    },
+    {
+      "start": 37,
+      "title": "III. Breeze: Cửa Vào Cho Request Flow, Auth Và Blade",
+      "description": "Dùng `breeze` để học vòng request cơ bản, middleware, auth nhẹ, validation, Blade form và cấu trúc app Laravel dễ tiếp cận nhất.",
+      "tone": "sand"
+    },
+    {
+      "start": 59,
+      "title": "IV. Chirper: CRUD, Eloquent, Policy Và Hoàn Thiện Feature",
+      "description": "Dùng `chirper` như bài lab feature-centric hơn để học model, quan hệ, policy, feature flow và cách một tính năng đi từ form tới DB rồi quay lại UI.",
+      "tone": "amber"
+    },
+    {
+      "start": 81,
+      "title": "V. Jetstream: Auth Nâng Cao, Team, Session Và App Có Nhiều Vai",
+      "description": "Dùng `jetstream` để hiểu auth stack nặng hơn, Fortify/Sanctum mindset, team/workspace, profile/security và boundary phức tạp hơn app CRUD cơ bản.",
+      "tone": "copper"
+    },
+    {
+      "start": 103,
+      "title": "VI. Sail: Môi Trường, Docker Và Workflow Gần Production Hơn",
+      "description": "Dùng `sail` để học môi trường chạy, service phụ trợ, database container, queue/cache phụ thuộc hạ tầng và tư duy môi trường dài hạn.",
+      "tone": "sand"
+    },
+    {
+      "start": 123,
+      "title": "VII. Map Từ Repo Sang Các Site Laravel Khác",
+      "description": "Nối từng lab vào các site kiến thức đã tách: request flow, auth, Blade, database, async, performance, realtime, maintenance, v.v.",
+      "tone": "amber"
+    },
+    {
+      "start": 145,
+      "title": "VIII. Khoảng Trống, Thứ Tự Học Và Đánh Giá Cuối",
+      "description": "Những gì repo hiện tại chưa bao phủ mạnh, nên học lab nào trước, và cách dùng repo để tiến từ người học sang người đọc code có chủ đích.",
+      "tone": "copper"
+    }
+  ],
+  "items": [
+    {
+      "title": "1. Vì sao cần một site map repo vào roadmap?",
+      "body": "Vì nếu không map, người học chỉ thấy nhiều lab rời rạc mà không biết mỗi repo đang giúp mình học nhánh Laravel nào.",
+      "code": "breeze -> auth nền + blade + request flow\nchirper -> CRUD + policy + Eloquent\njetstream -> auth nâng cao + team + session\nsail -> môi trường + Docker + runtime",
+      "note": "Sai lầm thường gặp: thấy 4 lab rồi đọc lần lượt như 4 project tách biệt. Cách sửa là gán ngay vai trò học tập cho từng lab trước."
+    },
+    {
+      "title": "2. Repo-map khác gì một danh sách thư mục?",
+      "body": "Danh sách thư mục chỉ cho biết có gì. Repo-map cho biết nên học cái gì từ từng thư mục và nối nó với bức tranh Laravel lớn hơn."
+    },
+    {
+      "title": "3. Một repo học tập tốt nên trả lời được câu hỏi gì?",
+      "body": "Project nào dùng để học auth, project nào hợp để học CRUD, project nào hợp để nhìn môi trường, project nào hợp để đọc feature flow và phần nào hiện chưa có ví dụ mạnh."
+    },
+    {
+      "title": "4. Đọc repo theo folder có đủ không?",
+      "body": "Không. Đọc repo theo flow tính năng hoặc theo câu hỏi học tập sẽ hiệu quả hơn rất nhiều so với chỉ mở thư mục ngẫu nhiên."
+    },
+    {
+      "title": "5. Một lab Laravel có đại diện cho toàn bộ framework không?",
+      "body": "Không. Mỗi lab chỉ sáng ở một số nhánh. Vì vậy cần nhìn repo như tập hợp nhiều góc học bổ trợ nhau."
+    },
+    {
+      "title": "6. Tư duy đúng khi dùng repo để học là gì?",
+      "body": "Không hỏi 'repo này có gì', mà hỏi 'repo này giúp tôi hiểu rõ phần nào của Laravel nhất'."
+    },
+    {
+      "title": "7. Vì sao cùng là Laravel nhưng mỗi lab lại nên giữ vai trò khác nhau?",
+      "body": "Vì nếu tất cả lab đều na ná nhau thì người học chỉ lặp lại cùng một mức độ khó mà không mở rộng bức tranh."
+    },
+    {
+      "title": "8. Có nên ép một lab dạy quá nhiều thứ cùng lúc không?",
+      "body": "Không nên. Lab tốt thường có trọng tâm rõ hơn, rồi được map sang các chủ đề liên quan."
+    },
+    {
+      "title": "9. Repo-map có giúp sau này tách site con dễ hơn không?",
+      "body": "Rất nhiều. Khi đã biết mỗi lab gắn với nhánh kiến thức nào, bạn sẽ mở rộng dữ liệu và ví dụ dễ hơn nhiều."
+    },
+    {
+      "title": "10. Một tip senior khi đọc repo để học là gì?",
+      "body": "Hãy luôn bắt đầu từ một câu hỏi thật, ví dụ 'auth đang đi qua đâu', 'feature này ghi DB như nào', 'policy nằm ở đâu', rồi lần theo code thay vì đọc mù."
+    },
+    {
+      "title": "11. Đọc repo theo request flow có ích gì?",
+      "body": "Nó giúp nối route, middleware, request, controller, validation, model, view hoặc response thành một chuỗi hiểu được."
+    },
+    {
+      "title": "12. Đọc repo theo feature flow có ích gì?",
+      "body": "Nó giúp bạn thấy một tính năng hoàn chỉnh sống ở đâu, đụng model nào, view nào, auth nào, test nào."
+    },
+    {
+      "title": "13. Đọc repo theo hạ tầng có ích gì?",
+      "body": "Nó giúp bạn hiểu môi trường chạy, queue, DB, cache, Docker hoặc service hỗ trợ đang tham gia vào app ra sao."
+    },
+    {
+      "title": "14. Repo-map cũng là công cụ định hướng thứ tự học vì sao?",
+      "body": "Vì không phải lab nào cũng nên học trước. Có lab hợp làm cửa vào, có lab hợp để nâng tầng sau khi đã có nền."
+    },
+    {
+      "title": "15. Một mùi học repo sai cách là gì?",
+      "body": "Mở từng file linh tinh, thấy gì đọc nấy và sau vài giờ vẫn không biết repo mạnh ở nhánh nào."
+    },
+    {
+      "title": "16. Kết luận ngắn của phần mindset là gì?",
+      "body": "Repo-map tốt biến repository thành lộ trình học có chủ đích chứ không phải kho mã nguồn nằm im."
+    },
+    {
+      "title": "17. Repo hiện tại có 4 lab Laravel chính nào?",
+      "body": "Hiện phần Laravel đang xoay quanh `breeze`, `chirper`, `jetstream` và `sail`.",
+      "code": "laravel/\n  breeze/\n  chirper/\n  jetstream/\n  sail/",
+      "note": "Điều quan trọng không phải nhớ tên 4 lab, mà là hiểu chúng đang đại diện cho 4 góc học khác nhau của cùng hệ Laravel."
+    },
+    {
+      "title": "18. Vì sao 4 lab này là một tập hợp hợp lý?",
+      "body": "Vì chúng trải từ mức app cơ bản, feature app, auth/team phức tạp hơn cho tới môi trường và workflow chạy gần production hơn.",
+      "code": "breeze -> auth + blade + request flow\nchirper -> CRUD + validation + relationships\njetstream -> auth nâng cao + team + UI stack\nsail -> môi trường + runtime + deploy mindset",
+      "note": "Nếu không map như vậy, bạn rất dễ đọc repo theo kiểu xem từng file mà không hiểu lab đó đang dạy concept nào."
+    },
+    {
+      "title": "19. `breeze` nên được xem như vai trò gì trong lộ trình?",
+      "body": "Là cửa vào nhẹ nhàng nhất để học request flow, auth cơ bản, Blade, validation và middleware."
+    },
+    {
+      "title": "20. `chirper` nên được xem như vai trò gì?",
+      "body": "Là lab tốt cho CRUD, feature flow, relationship, policy và cách hoàn thiện một tính năng người dùng đầu-cuối."
+    },
+    {
+      "title": "21. `jetstream` nên được xem như vai trò gì?",
+      "body": "Là lab thiên về auth stack nặng hơn, team, session, profile security và app có nhiều role hoặc workspace."
+    },
+    {
+      "title": "22. `sail` nên được xem như vai trò gì?",
+      "body": "Là cánh cửa vào môi trường chạy, Docker, service phụ trợ và cách app Laravel tương tác với hạ tầng."
+    },
+    {
+      "title": "23. 4 lab này có chồng lặp không?",
+      "body": "Có chồng một phần vì đều là Laravel, nhưng giá trị của chúng nằm ở trọng tâm khác nhau chứ không phải trùng 100%."
+    },
+    {
+      "title": "24. Có nên học cả 4 lab như 4 project độc lập không liên quan?",
+      "body": "Không nên hoàn toàn như vậy. Nên xem chúng là 4 góc nhìn của cùng một bản đồ Laravel."
+    },
+    {
+      "title": "25. Vì sao repo hiện tại khá phù hợp cho hướng 'learning portal'?",
+      "body": "Vì nó có đủ ví dụ thực tế ở nhiều mức độ để map vào từng site con Laravel thay vì chỉ toàn lý thuyết."
+    },
+    {
+      "title": "26. Điểm mạnh tổng quát của bộ 4 lab là gì?",
+      "body": "Người học có thể thấy Laravel từ app nhẹ tới app auth/team phức hơn, rồi sang góc môi trường vận hành."
+    },
+    {
+      "title": "27. Điểm còn thiếu tổng quát của bộ 4 lab là gì?",
+      "body": "Chúng chưa bao phủ thật mạnh mọi thứ như realtime đậm, search engine riêng, observability sâu hoặc workflow enterprise nặng."
+    },
+    {
+      "title": "28. Một tip thực chiến khi dùng 4 lab này là gì?",
+      "body": "Đừng cố học đều tất cả cùng lúc. Hãy dùng đúng lab cho đúng câu hỏi học tập."
+    },
+    {
+      "title": "29. Một anti-pattern khi nhìn 4 lab là gì?",
+      "body": "Thấy chúng giống nhau vì cùng là Laravel và bỏ lỡ vai trò rất khác của từng repo."
+    },
+    {
+      "title": "30. Kết luận ngắn về phần tổng quan 4 lab là gì?",
+      "body": "Đây không phải 4 project ngẫu nhiên, mà là 4 điểm neo cho nhiều nhánh kiến thức Laravel khác nhau."
+    },
+    {
+      "title": "31. Vì sao `breeze` hợp làm điểm vào đầu tiên?",
+      "body": "Vì nó gọn, dễ đọc và thường ít lớp complexity hơn `jetstream`, giúp người học hiểu flow nền trước."
+    },
+    {
+      "title": "32. `breeze` map mạnh nhất vào những site nào?",
+      "body": "Nó map mạnh vào `request flow`, `auth-security` cơ bản, `blade-ui`, `frontend` nhẹ, `structure` và `php-commands`."
+    },
+    {
+      "title": "33. `breeze` đặc biệt tốt để học request flow ở đâu?",
+      "body": "Ở login/register/profile/update/password flow vì đó là những luồng dễ lần từ route tới controller, request, validation và redirect."
+    },
+    {
+      "title": "34. `breeze` giúp học middleware ra sao?",
+      "body": "Nó cho người học thấy rõ middleware auth/guest và cách route được bảo vệ trong app nhỏ vừa đủ."
+    },
+    {
+      "title": "35. `breeze` giúp học validation tốt ở điểm nào?",
+      "body": "Các form auth và profile thường cung cấp ví dụ rõ, ít nhiễu để hiểu request validation trong thực tế."
+    },
+    {
+      "title": "36. `breeze` có hợp để học Blade không?",
+      "body": "Rất hợp ở mức đầu vì UI thường còn đủ đơn giản để nhìn layout, form, error, old input và component nhẹ."
+    },
+    {
+      "title": "37. `breeze` có giúp học frontend layer không?",
+      "body": "Có, nhưng ở mức nhẹ. Nó tốt để hiểu cách Laravel nối backend với lớp frontend cơ bản chứ chưa phải case frontend phức tạp."
+    },
+    {
+      "title": "38. `breeze` có dạy tốt auth nâng cao không?",
+      "body": "Không phải là thế mạnh chính. Nó hợp cho auth cơ bản hơn là team, session phức tạp hoặc nhiều vai trò sâu."
+    },
+    {
+      "title": "39. `breeze` có thể được dùng để học test flow nào?",
+      "body": "Auth flow, profile update, password flow, middleware behavior và redirect behavior là các điểm rất đáng test."
+    },
+    {
+      "title": "40. `breeze` giúp học cấu trúc repo thế nào?",
+      "body": "Vì nó ít nhiễu, người học dễ map `routes`, `app/Http`, `resources/views`, `config`, `database` vào nhau."
+    },
+    {
+      "title": "41. Một tip đọc `breeze` hiệu quả là gì?",
+      "body": "Chọn một flow như login rồi lần toàn tuyến từ form, route, controller/request, auth, redirect tới UI phản hồi.",
+      "code": "1. mở form login\n2. tìm route login\n3. tìm request/controller xử lý\n4. xem middleware guest/auth\n5. xem redirect sau thành công hoặc fail",
+      "note": "Nếu đọc `breeze` kiểu này, bạn học được request flow thật thay vì chỉ thấy một màn auth có giao diện."
+    },
+    {
+      "title": "42. Mùi học sai với `breeze` là gì?",
+      "body": "Chỉ nhìn giao diện auth mà không lần ngược middleware, validation và session flow phía sau."
+    },
+    {
+      "title": "43. Kết luận ngắn về `breeze` là gì?",
+      "body": "`breeze` là lab nền rất tốt để bắt đầu đọc Laravel như một hệ thống có flow thật, không chỉ là danh sách thư mục."
+    },
+    {
+      "title": "44. Vì sao `chirper` quan trọng sau `breeze`?",
+      "body": "Vì nó kéo người học từ auth cơ bản sang feature flow có dữ liệu người dùng, CRUD và policy rõ ràng hơn."
+    },
+    {
+      "title": "45. `chirper` map mạnh nhất vào những site nào?",
+      "body": "Nó map mạnh vào `data`, `request-flow`, `blade-ui`, `auth-security`, `container-architecture` nhẹ và `quality` thông qua feature flow."
+    },
+    {
+      "title": "46. `chirper` giúp học CRUD thế nào?",
+      "body": "Nó cho ví dụ đủ thực tế về tạo, sửa, xóa, hiển thị và ràng buộc quyền trên một thực thể người dùng dễ hiểu."
+    },
+    {
+      "title": "47. `chirper` tốt để học Eloquent relationship ở đâu?",
+      "body": "Nó giúp thấy model liên kết với user hoặc các quan hệ điển hình theo feature flow đơn giản."
+    },
+    {
+      "title": "48. `chirper` giúp học policy tốt vì sao?",
+      "body": "Vì policy xuất hiện tự nhiên quanh quyền sửa/xóa dữ liệu thuộc về user, rất dễ thấy ý nghĩa thật của authorization."
+    },
+    {
+      "title": "49. `chirper` có giúp học validation và form flow không?",
+      "body": "Có, vì CRUD thường đi cùng request input, validate, save, redirect và feedback UI."
+    },
+    {
+      "title": "50. `chirper` có ích cho việc học query và performance nhẹ không?",
+      "body": "Có ở mức cơ bản như đọc danh sách, relation, eager loading hoặc query shape quanh feature nhỏ."
+    },
+    {
+      "title": "51. `chirper` có giúp học test kiểu nào?",
+      "body": "Feature test cho CRUD, policy test, validation test và DB state test là những điểm rất hợp."
+    },
+    {
+      "title": "52. `chirper` nối sang `blade-ui` mạnh ở đâu?",
+      "body": "Form submit, error display, edit flow và render list là những nơi người học thấy Blade như công cụ dựng feature chứ không chỉ template."
+    },
+    {
+      "title": "53. `chirper` có dạy môi trường hoặc Docker mạnh không?",
+      "body": "Không phải điểm mạnh chính. Nó hợp hơn với application flow và feature design."
+    },
+    {
+      "title": "54. Một tip đọc `chirper` hiệu quả là gì?",
+      "body": "Chọn một action như sửa hoặc xóa một thực thể, rồi lần từ UI -> route -> auth/policy -> model -> redirect -> state DB.",
+      "code": "UI form/button\n-> route\n-> middleware / policy\n-> controller action\n-> model save/delete\n-> redirect / flash message\n-> test hoặc DB assertion",
+      "note": "`chirper` rất hợp để luyện phản xạ đọc feature trọn tuyến thay vì chỉ nhìn controller hay view riêng lẻ."
+    },
+    {
+      "title": "55. Mùi học sai với `chirper` là gì?",
+      "body": "Xem nó như chỉ là app CRUD đơn giản và bỏ lỡ giá trị của policy, relation và full feature flow."
+    },
+    {
+      "title": "56. Kết luận ngắn về `chirper` là gì?",
+      "body": "`chirper` là cây cầu tốt từ nền Laravel cơ bản sang tư duy hoàn thiện một tính năng người dùng đầu-cuối."
+    },
+    {
+      "title": "57. Vì sao `jetstream` không nên là lab đầu tiên cho nhiều người?",
+      "body": "Vì nó phức tạp hơn, nhiều lớp auth hơn và dễ làm người mới bị ngợp nếu chưa có nền từ `breeze` hoặc flow đơn giản hơn."
+    },
+    {
+      "title": "58. `jetstream` map mạnh nhất vào những site nào?",
+      "body": "Nó map mạnh vào `auth-security`, `request-flow`, `frontend` hoặc stack UI liên quan, `php-commands`, `maintenance-upgrade` nhẹ và `container-architecture` ở góc role/team phức hơn."
+    },
+    {
+      "title": "59. `jetstream` tốt để học auth nâng cao ở đâu?",
+      "body": "Nó cho người học thấy auth không chỉ là login/logout, mà còn profile, session, team/workspace, flow xác minh và các boundary phức tạp hơn."
+    },
+    {
+      "title": "60. `jetstream` giúp học team/workspace mindset thế nào?",
+      "body": "Nó đẩy người học từ tư duy app một user cá nhân sang app có tổ chức, thành viên, context và boundary rõ hơn."
+    },
+    {
+      "title": "61. `jetstream` có ích cho việc học session và security ra sao?",
+      "body": "Các flow liên quan session, profile, thiết bị, auth stack và boundary người dùng thường có chiều sâu hơn trong lab kiểu này."
+    },
+    {
+      "title": "62. `jetstream` có liên quan tới Sanctum/Fortify mindset thế nào?",
+      "body": "Nó là cửa tốt để hiểu auth stack của Laravel không chỉ là UI, mà còn là lớp package, service và security concerns phía sau."
+    },
+    {
+      "title": "63. `jetstream` có giúp học app nhiều vai trò không?",
+      "body": "Có ở mức tư duy. Nó giúp người học thấy app không còn chỉ có một user type phẳng và feature quyền đơn giản."
+    },
+    {
+      "title": "64. `jetstream` có thể dạy gì về complexity thực tế?",
+      "body": "Rằng auth và account management ở app thật luôn sâu hơn vẻ ngoài, kéo theo flow phụ, security edge case và UX phức tạp hơn."
+    },
+    {
+      "title": "65. `jetstream` có hợp để học realtime hay search mạnh không?",
+      "body": "Không phải lab trung tâm cho hai nhánh đó, dù có thể gợi vài liên hệ về UI state hoặc auth boundary."
+    },
+    {
+      "title": "66. `jetstream` giúp học testing ở đâu?",
+      "body": "Nó hợp để nghĩ về test auth flow, session-sensitive path, permission boundary và regression risk trong các flow account phức hơn."
+    },
+    {
+      "title": "67. Một tip đọc `jetstream` hiệu quả là gì?",
+      "body": "Đừng cố hiểu mọi thứ cùng lúc. Hãy chọn một flow như team switching hoặc profile/security rồi map ra các lớp liên quan.",
+      "code": "flow gợi ý:\n- profile update\n- password update\n- browser session logout\n- team switching\n- member invite/remove",
+      "note": "`jetstream` dễ làm người học ngợp. Chia nhỏ theo từng flow account/team sẽ giúp bạn thấy cấu trúc auth nâng cao rõ hơn nhiều."
+    },
+    {
+      "title": "68. Mùi học sai với `jetstream` là gì?",
+      "body": "Chỉ nhìn UI hoặc package name mà không hiểu vì sao lab này đang đại diện cho bài toán auth-app complexity."
+    },
+    {
+      "title": "69. Kết luận ngắn về `jetstream` là gì?",
+      "body": "`jetstream` là lab tốt để người học thấy Laravel bước sang vùng app có account model và boundary phức hơn CRUD cơ bản."
+    },
+    {
+      "title": "70. Vì sao `sail` rất khác 3 lab còn lại?",
+      "body": "Vì trọng tâm của nó không chỉ là feature code, mà là môi trường chạy, Docker workflow và hạ tầng local gần production hơn."
+    },
+    {
+      "title": "71. `sail` map mạnh nhất vào những site nào?",
+      "body": "Nó map mạnh vào `devops`, `php-commands`, `frontend` ở góc môi trường, `data` ở góc service phụ trợ và `maintenance-upgrade` ở góc consistency môi trường."
+    },
+    {
+      "title": "72. `sail` giúp học môi trường Laravel như thế nào?",
+      "body": "Nó giúp người học hiểu app không sống một mình, mà còn có PHP runtime, DB, cache, queue và các service hỗ trợ đi kèm."
+    },
+    {
+      "title": "73. `sail` có ích cho việc học Docker ở mức nào?",
+      "body": "Nó là cửa vào thực tế để thấy Docker không phải khái niệm rời, mà là công cụ giúp nhất quán môi trường chạy cho Laravel."
+    },
+    {
+      "title": "74. `sail` giúp học workflow team ra sao?",
+      "body": "Nó gợi tư duy rằng người trong team nên chạy gần cùng một stack môi trường, giảm bug kiểu 'máy tôi chạy được'."
+    },
+    {
+      "title": "75. `sail` liên quan tới `php-commands` thế nào?",
+      "body": "Nhiều lệnh Artisan, migrate, queue, test hoặc npm/dev trong môi trường container sẽ được hiểu rõ hơn khi đi cùng Sail."
+    },
+    {
+      "title": "76. `sail` có giúp học service phụ trợ nào?",
+      "body": "Tùy stack, nhưng nó thường gợi việc hiểu DB, Redis, mail catcher hoặc dịch vụ đi kèm như một phần của workflow."
+    },
+    {
+      "title": "77. `sail` có liên quan tới deploy thật không?",
+      "body": "Không đồng nhất với production deploy, nhưng là bước đệm rất tốt để hiểu môi trường và service orchestration cơ bản."
+    },
+    {
+      "title": "78. `sail` giúp học maintenance dài hạn ở đâu?",
+      "body": "Nó làm người học sớm thấy version PHP, extension, service image và consistency môi trường cũng là bài toán bảo trì."
+    },
+    {
+      "title": "79. `sail` có hợp để học feature CRUD không?",
+      "body": "Không phải lab tốt nhất cho feature-centric learning. Nó sáng hơn ở lớp môi trường và workflow."
+    },
+    {
+      "title": "80. Một tip đọc `sail` hiệu quả là gì?",
+      "body": "Hãy đặt câu hỏi 'để app này chạy được thì cần những service nào, lệnh nào, env nào' thay vì chỉ nhìn code PHP.",
+      "code": "./vendor/bin/sail up -d\n./vendor/bin/sail artisan about\n./vendor/bin/sail artisan migrate\n./vendor/bin/sail npm run dev",
+      "note": "Sail không dạy bạn feature business nhiều, nhưng dạy rất tốt cảm giác 'để app sống được thì ngoài PHP còn gì nữa'."
+    },
+    {
+      "title": "81. Mùi học sai với `sail` là gì?",
+      "body": "Coi nó như chỉ là cách chạy Docker cho xong, mà bỏ lỡ toàn bộ tư duy môi trường đồng nhất và hạ tầng local."
+    },
+    {
+      "title": "82. Kết luận ngắn về `sail` là gì?",
+      "body": "`sail` là lab nền cho môi trường, workflow và góc nhìn app Laravel như một hệ có nhiều service chứ không chỉ mã nguồn."
+    },
+    {
+      "title": "83. `breeze` nối sang site `request-flow` mạnh ở đâu?",
+      "body": "Auth form, redirect, validation, middleware và session flow là những điểm rất rõ để học vòng request cơ bản."
+    },
+    {
+      "title": "84. `chirper` nối sang site `data` mạnh ở đâu?",
+      "body": "CRUD và quan hệ là nơi rất tự nhiên để học model, query và state DB theo feature."
+    },
+    {
+      "title": "85. `jetstream` nối sang site `auth-security` mạnh ở đâu?",
+      "body": "Nó gợi rõ hơn các khái niệm auth stack, team boundary, profile/session security và complexity của account system."
+    },
+    {
+      "title": "86. `sail` nối sang site `devops` mạnh ở đâu?",
+      "body": "Nó là ví dụ trực tiếp cho môi trường chạy, container, service phụ trợ và consistency local workflow."
+    },
+    {
+      "title": "87. Lab nào hợp nhất để học `blade-ui` ở giai đoạn đầu?",
+      "body": "`breeze` và `chirper` thường là hai điểm vào tốt hơn vì flow UI còn đủ gần gũi và ít quá tải hơn `jetstream`."
+    },
+    {
+      "title": "88. Lab nào hợp nhất để học `php-commands` trong bối cảnh thật?",
+      "body": "`sail` rất hữu ích ở góc môi trường, còn `breeze` hoặc `chirper` dễ hiểu hơn ở góc command phục vụ app flow."
+    },
+    {
+      "title": "89. Lab nào giúp thấy `maintenance-upgrade` sớm nhất?",
+      "body": "`sail` gợi về môi trường và version consistency, còn `jetstream` gợi rõ hơn về dependency/auth complexity khi app lớn hơn."
+    },
+    {
+      "title": "90. Lab nào giúp học `quality` thuận tay nhất?",
+      "body": "`breeze` và `chirper` thường là điểm tốt để bắt đầu test, vì flow đủ thật nhưng chưa quá nhiều lớp phức tạp."
+    },
+    {
+      "title": "91. Lab nào map sang `performance-search` mạnh nhất trong bộ hiện tại?",
+      "body": "`chirper` có thể dùng ở mức đầu để nhìn query và feature flow, nhưng đây không phải nhánh được repo hiện tại bao phủ mạnh bằng auth hoặc môi trường."
+    },
+    {
+      "title": "92. Lab nào map sang `realtime` mạnh nhất?",
+      "body": "Hiện repo chưa có một lab thật sự nổi bật riêng cho realtime. Nếu có liên hệ thì chủ yếu là qua tư duy state và auth boundary từ `jetstream` hoặc feature flow từ `chirper`."
+    },
+    {
+      "title": "93. Bộ lab hiện tại có giúp học `container-architecture` không?",
+      "body": "Có ở mức vừa phải, nhất là khi người học bắt đầu so repo nào gọn, repo nào nhiều lớp hơn và tại sao.",
+      "code": "route -> request/middleware -> controller/action -> model/query -> view/resource -> test",
+      "note": "Cách đọc theo flow này giúp bạn thấy một feature đang được tổ chức gọn hay rải rác, từ đó học kiến trúc thực tế thay vì chỉ học tên thư mục."
+    },
+    {
+      "title": "94. Bộ lab hiện tại có giúp học `api-integration` sâu không?",
+      "body": "Chưa thật mạnh nếu không có ví dụ API hoặc integration đậm hơn. Đây là một khoảng trống hợp lý để mở rộng sau."
+    },
+    {
+      "title": "95. Bộ lab hiện tại có giúp học `files-media` sâu không?",
+      "body": "Có thể có vài điểm nhẹ, nhưng nhìn tổng thể đây cũng chưa phải mảng repo hiện tại bao phủ mạnh."
+    },
+    {
+      "title": "96. Bộ lab hiện tại có giúp học `async` sâu không?",
+      "body": "Một số góc có thể xuất hiện qua queue hoặc flow nền, nhưng nếu muốn học async mạnh thì nên có lab riêng thiên queue/event hơn."
+    },
+    {
+      "title": "97. Một tip map repo sang các site con là gì?",
+      "body": "Mỗi site kiến thức nên hỏi: repo nào đang là ví dụ tốt nhất, repo nào chỉ liên hệ nhẹ và repo nào chưa có ví dụ thật.",
+      "code": "request-flow -> breeze mạnh\nblade-ui -> breeze + chirper\nauth-security -> breeze + jetstream\ndevops -> sail mạnh\nrealtime -> hiện còn thiếu lab thật mạnh",
+      "note": "Map như vậy giúp bạn tránh viết site nào cũng thuần lý thuyết hoặc gán ví dụ repo một cách gượng ép."
+    },
+    {
+      "title": "98. Vì sao việc ghi rõ 'repo nào chưa dạy tốt phần nào' lại quan trọng?",
+      "body": "Vì nó giúp người học không kỳ vọng sai và giúp bạn biết nên bổ sung site con hay lab mới ở đâu."
+    },
+    {
+      "title": "99. Repo-map cũng giúp code review nội dung site như thế nào?",
+      "body": "Nó cho phép bạn kiểm tra mỗi site Laravel đang có ví dụ repo thật hay đang thuần lý thuyết quá mức."
+    },
+    {
+      "title": "100. Kết luận ngắn về phần map sang site khác là gì?",
+      "body": "Giá trị lớn nhất của repo-map là biến các lab có sẵn thành ví dụ neo cho từng nhánh kiến thức Laravel."
+    },
+    {
+      "title": "101. Nếu người mới hoàn toàn, nên đọc lab theo thứ tự nào?",
+      "body": "Thường nên đi `breeze` trước, rồi `chirper`, sau đó `jetstream`, và cuối cùng là `sail` song song với nhu cầu môi trường."
+    },
+    {
+      "title": "102. Vì sao `breeze` nên đứng đầu thứ tự học?",
+      "body": "Vì nó giảm cognitive load và cho nền tốt về request flow, auth và Blade."
+    },
+    {
+      "title": "103. Vì sao `chirper` nên đi sau `breeze`?",
+      "body": "Vì sau khi hiểu flow nền, người học cần thấy một feature sống đầy đủ hơn qua CRUD, relation và policy."
+    },
+    {
+      "title": "104. Vì sao `jetstream` nên đi sau `chirper` với nhiều người?",
+      "body": "Vì lúc đó người học đã đủ nền để không bị auth stack và app complexity làm choáng."
+    },
+    {
+      "title": "105. `sail` nên học ở cuối hay song song?",
+      "body": "Thường nên học song song khi người học bắt đầu quan tâm môi trường chạy, nhưng không nhất thiết phải là lab đầu tiên."
+    },
+    {
+      "title": "106. Nếu muốn học auth sâu, nên đi lối nào qua repo?",
+      "body": "Bắt đầu từ `breeze` để nắm auth cơ bản, rồi chuyển sang `jetstream` để thấy auth phức hơn ở app thật.",
+      "code": "breeze:\n- route login/register\n- middleware guest/auth\n- form request hoặc controller auth\n\njetstream:\n- profile update\n- browser sessions\n- team switching\n- invite/remove member",
+      "note": "Đi theo lộ trình này giúp auth tăng độ khó có kiểm soát, thay vì nhảy ngay vào `jetstream` rồi ngợp bởi quá nhiều lớp cùng lúc."
+    },
+    {
+      "title": "107. Nếu muốn học feature CRUD thực tế, nên đi lối nào?",
+      "body": "Bắt đầu ở `chirper`, rồi đối chiếu lại với `breeze` để thấy phần CRUD đã thêm complexity gì so với app auth nền.",
+      "code": "chirper flow:\n- form tạo chirp\n- route store/update/delete\n- policy authorize\n- model save\n- redirect + flash\n- test xác nhận DB đổi",
+      "note": "Đây là một flow rất tốt để luyện phản xạ đọc feature đầy đủ thay vì chỉ chăm chăm mở controller đầu tiên bạn nhìn thấy."
+    },
+    {
+      "title": "108. Nếu muốn học môi trường và lệnh, nên đi lối nào?",
+      "body": "Dùng `sail` như điểm chính, rồi quay lại `php-commands` và `composer/frontend` để nối lệnh với môi trường thật.",
+      "code": "./vendor/bin/sail up -d\n./vendor/bin/sail artisan migrate\n./vendor/bin/sail composer install\n./vendor/bin/sail npm run dev",
+      "note": "Đi như vậy giúp bạn thấy lệnh không còn là những câu thần chú rời rạc, mà là một phần của runtime thật."
+    },
+    {
+      "title": "109. Nếu muốn học cách đọc repo người khác, nên dùng bộ lab này thế nào?",
+      "body": "Hãy tập đặt câu hỏi giống nhau lên từng lab: route ở đâu, auth ở đâu, model nào trung tâm, UI đi qua đâu, env chạy ra sao."
+    },
+    {
+      "title": "110. Khoảng trống lớn nhất của repo hiện tại là gì?",
+      "body": "Thiếu các ví dụ thật sự đậm cho search engine, realtime, media pipeline, observability sâu hoặc event-driven workflow riêng."
+    },
+    {
+      "title": "111. Có nên thêm lab mới chỉ để phủ khoảng trống không?",
+      "body": "Có thể, nếu khoảng trống đó đủ quan trọng và lặp lại trong roadmap nhiều lần mà chưa có repo thật để neo kiến thức."
+    },
+    {
+      "title": "112. Nếu chưa thêm lab mới thì có thể làm gì?",
+      "body": "Bạn vẫn có thể ghi rõ trong site nào là 'repo hiện tại có ví dụ yếu' để người học biết đang học ở mức lý thuyết hay mức có demo thật."
+    },
+    {
+      "title": "113. Repo-map có thể trở thành checklist nội dung tương lai như thế nào?",
+      "body": "Mỗi nhánh Laravel nào chưa có repo neo mạnh sẽ tự động trở thành ứng viên cho site con hoặc lab mới.",
+      "code": "- realtime: thiếu lab mạnh\n- search engine: thiếu lab mạnh\n- files/media: thiếu flow sâu\n- observability: thiếu repo thiên vận hành\n- async nâng cao: cần lab queue/event đậm hơn",
+      "note": "Đây là cách repo-map biến thành công cụ phát triển nội dung, không chỉ là trang mô tả hiện trạng."
+    },
+    {
+      "title": "114. Một anti-pattern khi duy trì repo-map là gì?",
+      "body": "Nội dung roadmap đã đổi nhưng repo-map không cập nhật, khiến menu lý thuyết và ví dụ thực tế lệch hẳn nhau."
+    },
+    {
+      "title": "115. Một tip thực chiến khi mở rộng repo-map là gì?",
+      "body": "Mỗi khi thêm lab mới, hãy trả lời ngay ba câu: nó sáng ở mảng nào, trùng mảng nào và lấp khoảng trống nào."
+    },
+    {
+      "title": "116. Repo-map có giúp onboarding người mới vào repo không?",
+      "body": "Rất nhiều, vì nó cho họ biết nên mở project nào đầu tiên thay vì bị 4 lab làm ngợp."
+    },
+    {
+      "title": "117. Repo-map có giúp tự học sâu hơn không?",
+      "body": "Có. Nó biến việc xem code thành hành trình có định hướng, từ câu hỏi học tập tới ví dụ repo tương ứng."
+    },
+    {
+      "title": "118. Một câu hỏi senior khi nhìn repo-map là gì?",
+      "body": "Nếu bỏ một lab đi, nhánh kiến thức nào trong roadmap sẽ mất ví dụ thực tế rõ nhất?"
+    },
+    {
+      "title": "119. Một câu hỏi senior khác là gì?",
+      "body": "Những site Laravel nào đang dạy quá nhiều bằng lý thuyết nhưng chưa có lab nào chứng minh đủ mạnh?"
+    },
+    {
+      "title": "120. Kết luận ngắn về khoảng trống và thứ tự học là gì?",
+      "body": "Repo-map tốt không chỉ nói cái đang có, mà còn chỉ thẳng cái đang thiếu và thứ tự nên đi qua để học ít ngợp nhất."
+    },
+    {
+      "title": "121. Một bug tư duy thường gặp khi học qua repo là gì?",
+      "body": "Tưởng repo nào nhìn to hơn thì dạy nhiều hơn, trong khi đôi khi repo gọn như `breeze` lại là điểm vào đúng hơn.",
+      "code": "repo nhỏ != kiến thức ít\nrepo to != nên đọc trước",
+      "note": "Điểm vào tốt nhất thường là repo giúp bạn nhìn rõ flow nhất, không phải repo có nhiều file nhất."
+    },
+    {
+      "title": "122. Một bug tư duy khác là gì?",
+      "body": "Nghĩ rằng xem qua UI hoặc route là đã 'hiểu lab', nhưng chưa lần tới policy, DB, command, env hoặc flow vận hành."
+    },
+    {
+      "title": "123. Làm sao biết mình đang đọc repo hiệu quả?",
+      "body": "Bạn có thể trả lời repo này mạnh ở nhánh nào, có thể chỉ ra một flow rõ ràng và biết nhảy sang lab khác khi cần học phần sâu hơn."
+    },
+    {
+      "title": "124. Làm sao biết repo-map hiện tại đang hữu ích?",
+      "body": "Khi người đọc không còn hỏi 'nên mở repo nào trước' và có thể tự nối từ menu kiến thức sang ví dụ mã nguồn thật."
+    },
+    {
+      "title": "125. Khi nào nên cập nhật lại site repo-map?",
+      "body": "Khi thêm lab mới, đổi trọng tâm roadmap, hoặc khi một site Laravel đã có ví dụ thực tế mạnh hơn trước."
+    },
+    {
+      "title": "126. Mùi nội dung xấu của site repo-map là gì?",
+      "body": "Nó chỉ lặp lại tên repo và vài buzzword mà không giúp người đọc quyết định nên học gì từ đâu."
+    },
+    {
+      "title": "127. Một tiêu chí của repo-map tốt là gì?",
+      "body": "Người học sau khi đọc xong biết ít nhất một đường đi cụ thể cho mục tiêu của họ."
+    },
+    {
+      "title": "128. Một tiêu chí nữa là gì?",
+      "body": "Repo-map phải thành thật về khoảng trống, không cố giả vờ repo hiện tại đã bao phủ mạnh mọi nhánh Laravel."
+    },
+    {
+      "title": "129. Một tiêu chí nữa là gì?",
+      "body": "Nó nên nối được ít nhất từ lab -> site kiến thức -> câu hỏi học tập -> flow đọc code."
+    },
+    {
+      "title": "130. Đánh giá cuối: repo hiện tại mạnh nhất ở đâu?",
+      "body": "Mạnh ở auth nền, feature CRUD flow, policy, Blade/UI cơ bản, request flow và workflow môi trường với `sail`."
+    },
+    {
+      "title": "131. Đánh giá cuối: repo hiện tại yếu nhất ở đâu?",
+      "body": "Yếu hơn ở ví dụ sâu cho realtime, search engine riêng, media pipeline lớn, observability nâng cao hoặc event-driven workflow chuyên biệt."
+    },
+    {
+      "title": "132. Đánh giá cuối: nếu chỉ giữ 4 lab này, roadmap Laravel vẫn dùng tốt không?",
+      "body": "Có, miễn là bạn map trung thực phần nào là ví dụ thật mạnh và phần nào vẫn cần học thêm bằng site lý thuyết hoặc lab mới."
+    },
+    {
+      "title": "133. Một tip cuối về cách dùng site này là gì?",
+      "body": "Mỗi khi học một site Laravel khác, hãy quay lại hỏi: trong 4 lab hiện có, repo nào chứng minh phần đó rõ nhất?"
+    },
+    {
+      "title": "134. Rà soát cuối: site repo-map nên có tối thiểu những mảng nào?",
+      "body": "Ít nhất phải có mindset đọc repo, bức tranh 4 lab, vai trò riêng của từng lab, map sang các site Laravel khác, khoảng trống hiện có và thứ tự học thực dụng."
+    },
+    {
+      "title": "135. Đánh giá sau rà soát: phần repo-map đã đủ chi tiết chưa?",
+      "body": "Ở mức portal học tập thì phần này đã khá đầy: có tư duy đọc repo, role của `breeze`/`chirper`/`jetstream`/`sail`, map sang roadmap, khoảng trống và thứ tự học. Nếu muốn đi sâu hơn nữa sau này, hướng hợp lý nhất là thêm dữ liệu file-level thực tế cho từng lab như route nào, controller nào, test nào nên mở đầu tiên trong từng project."
+    },
+    {
+      "title": "136. Một chiến lược đọc file-level cho `breeze` nên bắt đầu từ đâu?",
+      "body": "Nên bắt đầu từ route auth hoặc profile, rồi sang request/controller tương ứng, sau đó nhìn view và cuối cùng là test nếu có. Mục tiêu là học flow chứ không học file rời."
+    },
+    {
+      "title": "137. Một chiến lược đọc file-level cho `chirper` nên bắt đầu từ đâu?",
+      "body": "Nên bắt đầu từ một action CRUD cụ thể, rồi lần route, controller hoặc action class, policy, model, view và test quanh đúng hành vi đó."
+    },
+    {
+      "title": "138. Một chiến lược đọc file-level cho `jetstream` nên bắt đầu từ đâu?",
+      "body": "Nên chọn một flow account hoặc team cụ thể rồi đọc từ UI entry point và auth boundary liên quan, tránh mở toàn bộ stack một lúc."
+    },
+    {
+      "title": "139. Một chiến lược đọc file-level cho `sail` nên bắt đầu từ đâu?",
+      "body": "Nên bắt đầu từ file môi trường chạy, lệnh khởi động và service phụ trợ trước, rồi mới nối lại về command hoặc app behavior liên quan."
+    },
+    {
+      "title": "140. Đọc chéo giữa các lab có giá trị gì?",
+      "body": "Nó giúp bạn so cùng một khái niệm ở nhiều mức độ khác nhau, ví dụ auth nhẹ ở `breeze` với auth nặng hơn ở `jetstream`, hoặc feature flow gọn ở `breeze` với flow CRUD rõ hơn ở `chirper`."
+    },
+    {
+      "title": "141. Ví dụ vài lệnh nên chạy khi mới muốn map repo hiện tại vào lộ trình học",
+      "body": "Thay vì mở editor và click ngẫu nhiên, hãy quét repo bằng vài lệnh có mục tiêu.",
+      "code": "php artisan route:list\nrg --files app routes resources tests\nrg -n \"class .*Controller|class .*Request|Policy|ShouldQueue\" app routes tests",
+      "bullets": [
+        "`route:list` cho bạn điểm vào theo request flow.",
+        "`rg --files` cho bạn bản đồ nhanh của codebase.",
+        "Tìm theo `Controller`, `Request`, `Policy`, `ShouldQueue` giúp bạn nối repo với các topic Laravel lớn."
+      ]
+    },
+    {
+      "title": "142. Ví dụ chiến lược đọc một feature trong lab theo thứ tự ít lạc nhất",
+      "body": "Đây là thứ tự rất hợp cho người đang học mà vẫn muốn giữ tư duy dự án thật.",
+      "code": "1. route\n2. request / middleware\n3. controller hoặc action\n4. service / model / query\n5. view hoặc API resource\n6. test liên quan",
+      "note": "Nếu bạn đọc theo flow này lặp đi lặp lại ở nhiều lab, repo-map sẽ dần biến thành phản xạ chứ không còn là danh sách lý thuyết."
+    },
+    {
+      "title": "143. Ví dụ một checklist rất ngắn để map một lab vào các topic Laravel lớn",
+      "body": "Đây là dạng checklist giúp bạn nhìn repo theo lộ trình học thay vì chỉ theo thư mục.",
+      "code": "- Có auth flow không?\n- Có request validation không?\n- Có queue hoặc event không?\n- Có Blade hay stack frontend nào?\n- Có test không?\n- Có config môi trường hoặc service ngoài nào nổi bật không?",
+      "note": "Chỉ cần trả lời đều các câu này cho mỗi lab, bạn đã tự map được phần lớn repo vào roadmap tổng."
+    },
+    {
+      "title": "144. Đánh giá cuối sau rà soát thêm: phần repo-map đã đủ chi tiết chưa?",
+      "body": "Ở mức portal học tập thì phần này hiện đã khá đầy và thực dụng: có mindset, vai trò từng lab, map topic, khoảng trống, thứ tự học và cả hướng đọc file-level. Nếu muốn sâu hơn nữa sau này, bước tiếp theo đúng nhất là gắn tên file thật của từng lab vào từng mục để biến site này thành guide đọc code chi tiết hơn."
+    }
+  ]
+}

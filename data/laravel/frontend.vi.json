@@ -1,0 +1,536 @@
+{
+  "anchor": "laravel-frontend",
+  "type": "list",
+  "heading": "Node, npm và lớp frontend quanh Laravel: phần không còn là 'phụ kiện' nữa",
+  "intro": "Nhiều project Laravel hiện đại không chỉ có PHP và Blade. Chúng còn có Node, npm, Vite, Tailwind, Alpine, Livewire hoặc Inertia kèm Vue hay React. Vì thế site này nên được học như một lớp vận hành thật của project, không phải một góc frontend mơ hồ.",
+  "breaks": [
+    {
+      "start": 1,
+      "title": "Nhập Môn Frontend Layer",
+      "description": "Node là gì, npm là gì, asset là gì, build tool là gì và vì sao Laravel phải quan tâm tới các khái niệm này.",
+      "tone": "amber"
+    },
+    {
+      "start": 8,
+      "title": "Project Setup và Dependency",
+      "description": "Cách đọc `package.json`, giữ kỷ luật với `package-lock.json` và dựng project clone về mà không lệch môi trường.",
+      "tone": "copper"
+    },
+    {
+      "start": 15,
+      "title": "Vite, Build và Asset Pipeline",
+      "description": "Dev server, build production, `@vite`, manifest, `vite.config` và các lỗi chỉ lộ khi build.",
+      "tone": "olive"
+    },
+    {
+      "start": 23,
+      "title": "CSS, UI Stack và Chọn Công Nghệ",
+      "description": "Tailwind, Alpine, Livewire, Inertia, Vue/React và cách chọn stack theo độ phức tạp thật của app.",
+      "tone": "ocean"
+    },
+    {
+      "start": 33,
+      "title": "Môi Trường, Lỗi và Deploy",
+      "description": "Docker, WSL, asset path, cache/CDN, artifact build và các lỗi môi trường frontend lặp đi lặp lại.",
+      "tone": "indigo"
+    },
+    {
+      "start": 41,
+      "title": "Checklist, Review và Tư Duy Dài Hạn",
+      "description": "Onboarding, review PR, nâng package, anti-pattern và dấu hiệu frontend đã thành một subsystem riêng.",
+      "tone": "slate"
+    }
+  ],
+  "items": [
+    {
+      "title": "Node là gì?",
+      "body": "Node.js là môi trường chạy JavaScript bên ngoài trình duyệt. Trong bối cảnh Laravel, Node không thay PHP làm backend chính của app, mà thường được dùng để chạy tool frontend như Vite, Tailwind, PostCSS, ESLint hoặc các package build asset khác. Nói ngắn gọn: Laravel dùng PHP để chạy ứng dụng, còn dùng Node để dựng lớp asset và tooling quanh giao diện."
+    },
+    {
+      "title": "npm là gì?",
+      "body": "npm là package manager đi kèm hệ sinh thái Node.js. Nó giúp cài, gỡ, update và quản lý dependency frontend trong project. Nếu Composer kéo package PHP về `vendor/`, thì npm kéo package frontend về `node_modules/`. Ngoài chuyện cài package, npm còn là nơi chạy các script như `npm run dev` hay `npm run build`."
+    },
+    {
+      "title": "Frontend asset là gì trong một project Laravel?",
+      "body": "Frontend asset là những tài nguyên giao diện mà trình duyệt cần dùng: CSS, JavaScript, ảnh, font, SVG, icon, hoặc file tĩnh liên quan. Trong project Laravel hiện đại, các asset này thường không được viết rồi quăng thẳng lên production, mà đi qua một pipeline build để gọn hơn, tối ưu hơn và dễ quản lý hơn."
+    },
+    {
+      "title": "Build tool là gì và vì sao project Laravel hiện đại cần nó?",
+      "body": "Build tool là công cụ giúp biến source frontend thành bộ file sẵn sàng cho local dev hoặc production. Nó có thể gộp module, compile CSS, minify JS, theo dõi file, hot reload và tạo output có hash. Trong Laravel đời mới, Vite thường đóng vai trò build tool chính."
+    },
+    {
+      "title": "Vite là gì?",
+      "body": "Vite là dev server và bundler hiện đại cho frontend. Trong local, nó giúp chạy nhanh, reload nhanh và cập nhật thay đổi gần như tức thì. Trong production, nó build ra bộ asset tối ưu. Laravel tích hợp Vite để nối asset frontend vào Blade hoặc các stack như Vue, React, Inertia một cách thuận tiện hơn nhiều so với cách cũ."
+    },
+    {
+      "title": "Tailwind, Alpine, Vue, React là gì theo cách hiểu rất cơ bản?",
+      "body": "Tailwind là utility-first CSS framework để viết giao diện nhanh hơn. Alpine là thư viện JS nhẹ cho tương tác nhỏ trên HTML server-rendered. Vue và React là frontend framework hoặc library mạnh hơn, phù hợp khi UI có nhiều component và state phức tạp hơn. Trong Laravel, chúng không bắt buộc phải xuất hiện cùng lúc; project sẽ chọn theo độ khó thực tế của giao diện."
+    },
+    {
+      "title": "Vì sao người học Laravel vẫn nên hiểu một chút frontend theory?",
+      "body": "Vì nhiều lỗi 'Laravel không chạy' thật ra không nằm ở route, controller hay database, mà nằm ở asset build, dev server, CSS không compile, JS không load hoặc package frontend lỗi. Nếu không hiểu tối thiểu Node, npm, Vite và asset pipeline, bạn sẽ rất dễ đoán sai hướng khi debug."
+    },
+    {
+      "title": "Vì sao Laravel lại cần Node và npm dù nó là framework PHP?",
+      "body": "Vì frontend hiện đại cần một lớp build asset: gộp file, hot reload, compile CSS, transform JS, optimize bundle, xử lý import module và nhiều thứ khác mà PHP không làm thay vai được. Laravel dùng Node ecosystem để lo phần đó, còn PHP vẫn lo backend và render hoặc API theo vai trò của nó."
+    },
+    {
+      "title": "Cách hiểu nhanh: `composer` lo package PHP, `npm` lo package frontend",
+      "body": "Nếu `composer` quản lý `vendor/` cho backend, thì `npm` quản lý `node_modules/` cho frontend tooling và thư viện phía trình duyệt. Hai hệ này song song nhau. Một Laravel app thật thường có cả hai, và người mới rất hay nhầm rằng cài Composer xong là đủ chạy toàn bộ project."
+    },
+    {
+      "title": "Nhìn `package.json` để hiểu project đang dùng lớp frontend nào",
+      "body": "Chỉ cần mở `package.json` bạn thường biết được project đang theo hướng nào: có dùng Vite không, có Tailwind không, có Vue hay React không, có script build riêng không, có thư viện UI nào nặng không. Nó giống vai trò của `composer.json` nhưng cho mặt frontend.",
+      "code": "{\n  \"private\": true,\n  \"scripts\": {\n    \"dev\": \"vite\",\n    \"build\": \"vite build\"\n  },\n  \"devDependencies\": {\n    \"vite\": \"^5.0.0\",\n    \"laravel-vite-plugin\": \"^1.0.0\",\n    \"tailwindcss\": \"^3.0.0\"\n  }\n}",
+      "bullets": [
+        "Có `vite` và `laravel-vite-plugin`: gần như chắc project dùng Vite làm pipeline chính.",
+        "Có `vue` hoặc `react`: frontend đã đi xa hơn Blade thuần.",
+        "Có `tailwindcss`, `postcss`, `autoprefixer`: project có lớp build CSS hiện đại."
+      ]
+    },
+    {
+      "title": "Nhìn thêm `resources/`, `vite.config.*` và `public/build/` để hiểu pipeline asset",
+      "body": "Đừng chỉ đọc `package.json`. Một repo Laravel có frontend còn lộ nhiều điều qua thư mục và file cấu hình. `resources/js` và `resources/css` cho biết source asset nằm ở đâu. `vite.config.js` hoặc `vite.config.ts` cho biết Vite đang build gì, có alias gì, có plugin gì. `public/build/` hoặc manifest cho biết asset production đang được xuất ra theo cách nào.",
+      "code": "resources/\n  js/\n  css/\n  views/\nvite.config.js\npublic/build/\npublic/build/manifest.json",
+      "bullets": [
+        "`resources/js`: JS entry, component, composable hoặc file frontend chính.",
+        "`resources/css`: CSS nguồn, thường đi với Tailwind hoặc file style riêng.",
+        "`vite.config.*`: nơi xem plugin Vue/React, alias path, entry file, build output.",
+        "`public/build/manifest.json`: giúp backend biết file asset hash production nằm ở đâu."
+      ]
+    },
+    {
+      "title": "`package-lock.json` quan trọng ra sao và vì sao không nên coi nhẹ nó?",
+      "body": "Nếu `package.json` là mong muốn của project, thì `package-lock.json` là ảnh chụp chính xác dependency tree mà npm đã resolve. Nó giữ cho máy dev A, dev B, CI và production build ra cùng một bộ package. Khi lock file bị thay đổi bừa hoặc bị bỏ qua, lỗi build lệch môi trường rất dễ xuất hiện.",
+      "code": "package.json\npackage-lock.json",
+      "bullets": [
+        "Clone project có lock file: nên tôn trọng lock file thay vì để npm tự giải lại từ đầu.",
+        "PR có thay đổi `package-lock.json`: nên review như review dependency thật, không xem là file ồn vô nghĩa.",
+        "Không có kỷ luật lock file: hôm nay build được, mai CI có thể fail dù code app không đổi."
+      ]
+    },
+    {
+      "title": "Flow clone project Laravel có frontend thường gồm những bước gì?",
+      "body": "Ngoài Composer và Artisan, project có frontend thường còn cần dựng `node_modules/` và chạy dev server hoặc build production asset. Nếu bỏ qua phần này, app có thể lên nhưng giao diện vỡ, CSS thiếu hoặc JS không hoạt động.",
+      "code": "composer install\ncp .env.example .env\nphp artisan key:generate\nnpm install\nphp artisan migrate\nnpm run dev",
+      "bullets": [
+        "`npm install`: kéo toàn bộ package frontend theo `package-lock.json` hoặc `package.json`.",
+        "`npm run dev`: bật Vite dev server để CSS hoặc JS được build và hot reload trong local.",
+        "Nếu chỉ chạy PHP mà không chạy phần frontend, bạn rất dễ gặp trang trắng, style thiếu hoặc console error."
+      ],
+      "note": "Một số project sẽ chạy `npm run build` thay vì `npm run dev` nếu chỉ cần kiểm tra asset production đã compile hay chưa."
+    },
+    {
+      "title": "`npm install` dùng khi nào và tại sao nó quan trọng?",
+      "body": "Lệnh này cài toàn bộ dependency frontend vào `node_modules/`. Nó tương đương vai trò của `composer install` bên PHP. Nếu chưa có `node_modules/`, phần asset build hầu như không hoạt động đúng vì Vite, Tailwind, plugin hoặc framework frontend đều chưa tồn tại trên máy.",
+      "code": "npm install\nnpm ci",
+      "bullets": [
+        "`npm install`: dùng khi clone project về, thêm package mới, hoặc thiếu `node_modules/`.",
+        "`npm ci`: hợp với CI hoặc môi trường cần cài sạch theo lock file nhanh và ổn định hơn.",
+        "Nếu repo có `package-lock.json`, nên tôn trọng lock file để các máy không tự resolve lệch version."
+      ]
+    },
+    {
+      "title": "Khi nào nên dùng `npm install` và khi nào nên dùng `npm ci`?",
+      "body": "`npm install` hợp cho máy local khi bạn cần cài dependency bình thường hoặc thêm package. `npm ci` hợp hơn cho CI/CD hoặc build sạch vì nó bám lock file chặt hơn, nhanh hơn và ít phát sinh drift hơn. Nhầm hai lệnh này không phải lúc nào cũng chết ngay, nhưng lâu dài sẽ ảnh hưởng tính ổn định của môi trường build.",
+      "bullets": [
+        "Local dev thông thường: `npm install` là lựa chọn quen thuộc.",
+        "CI, Docker build, staging build hoặc production pipeline: `npm ci` thường đáng tin hơn.",
+        "Nếu lock file và manifest lệch nhau, `npm ci` sẽ lộ vấn đề rõ hơn thay vì âm thầm đi tiếp."
+      ]
+    },
+    {
+      "title": "`npm run dev`: lệnh bạn sẽ chạy đi chạy lại nhiều nhất trong local",
+      "body": "Đây thường là lệnh bật Vite dev server. Nó theo dõi file CSS, JS, Vue, React hoặc asset liên quan, rồi tự build lại khi bạn lưu file. Với project Laravel hiện đại, đây gần như là lệnh đồng hành cùng `php artisan serve` trong lúc phát triển.",
+      "code": "npm run dev",
+      "bullets": [
+        "Dùng khi đang code giao diện hoặc JS và muốn thấy thay đổi ngay.",
+        "Dùng để có hot reload hoặc fast refresh tùy stack.",
+        "Nếu đóng lệnh này, bạn có thể sửa file frontend mà trình duyệt không phản ánh đúng."
+      ]
+    },
+    {
+      "title": "`npm run dev` thật ra đang làm gì phía sau?",
+      "body": "Nó không chỉ 'chạy frontend'. Vite dev server tạo một môi trường phát triển riêng: watch file, serve module qua HTTP, inject HMR client, rebuild phần bị đổi và đồng bộ lại với trang đang mở. Hiểu điều này giúp bạn đoán đúng lỗi hơn, ví dụ phân biệt lỗi Blade render với lỗi dev server không lên.",
+      "bullets": [
+        "Nếu terminal dev server chết, HMR dừng theo dù PHP vẫn đang chạy.",
+        "Nếu trình duyệt báo không kết nối Vite, vấn đề có thể là port, host, proxy hoặc dev server chưa bật.",
+        "Nếu đổi file mà không thấy gì đổi, kiểm tra trước xem bạn đang sửa file trong `resources/` hay đang sửa nhầm file build output."
+      ]
+    },
+    {
+      "title": "`npm run build`: khi cần asset production gọn, tối ưu và sẵn để deploy",
+      "body": "Khác với `dev`, lệnh `build` tạo ra bộ asset tối ưu cho production: bundle gọn hơn, hash filename, tree-shaking, minify và output rõ ràng vào thư mục build. Nếu deploy mà chưa build đúng, site có thể thiếu asset hoặc chạy chậm không cần thiết.",
+      "code": "npm run build",
+      "bullets": [
+        "Dùng trước deploy hoặc để kiểm tra project có build production sạch hay không.",
+        "Nhiều lỗi import, alias, path hoặc plugin chỉ lộ ra khi chạy `build` chứ không lộ rõ trong `dev`.",
+        "Nếu CI có bước frontend, `npm run build` thường là checkpoint rất quan trọng."
+      ]
+    },
+    {
+      "title": "Lỗi hay chỉ lộ ra khi `npm run build` chứ không lộ ở `dev`",
+      "body": "Đây là kinh nghiệm rất thực tế. Dev server thường dễ dãi hơn ở một số tình huống, hoặc ít nhất luồng chạy khác production. Vì vậy có những thứ local nhìn ổn nhưng build production lại fail hoặc ra bundle lỗi.",
+      "bullets": [
+        "Import path sai chữ hoa/thường: local có thể không lộ ngay, build/CI lại fail.",
+        "Alias config chưa chuẩn: dev chạy tạm được nhưng build output hỏng.",
+        "Package nào đó phụ thuộc browser global hoặc env đặc biệt: local không sao nhưng build/minify gặp lỗi.",
+        "Asset reference, font path, image path hoặc dynamic import sai: thường lộ rõ hơn ở build."
+      ],
+      "note": "Kinh nghiệm tốt là: thay đổi frontend đáng kể thì luôn chạy `npm run build` ít nhất một lần trước khi coi như xong."
+    },
+    {
+      "title": "Vite làm gì trong Laravel thực tế?",
+      "body": "Vite là asset bundler/dev server hiện đại mà Laravel dùng thay cho Mix ở nhiều project mới. Nó lo dev server nhanh, HMR, build production, transform module, resolve import, hỗ trợ plugin cho Vue hoặc React, và nối asset đó vào Blade qua `@vite`.",
+      "code": "@vite(['resources/css/app.css', 'resources/js/app.js'])",
+      "bullets": [
+        "Nếu Blade có `@vite(...)`, nghĩa là frontend build đang được Blade gọi vào.",
+        "Khi local không load CSS hoặc JS, hãy kiểm tra Vite server có đang chạy không.",
+        "Khi production lỗi asset path, hãy kiểm tra bước build và file manifest của Vite."
+      ]
+    },
+    {
+      "title": "Hiểu `@vite(...)`, manifest và vì sao production không thể phụ thuộc vào dev server",
+      "body": "Trong local, Blade có thể trỏ tới Vite dev server để lấy asset sống. Nhưng trong production, app phải đọc manifest build để biết file CSS hoặc JS thực tế có tên hash là gì. Vì vậy nếu build chưa chạy, manifest lỗi hoặc file build không được deploy, HTML vẫn render nhưng asset có thể 404.",
+      "code": "@vite(['resources/css/app.css', 'resources/js/app.js'])\n\npublic/build/manifest.json",
+      "bullets": [
+        "Local: Blade thường lấy asset qua Vite dev server.",
+        "Production: Blade cần manifest build để map entry sang file hash thực tế.",
+        "Nếu production chỉ ra HTML mà không có CSS hoặc JS, hãy kiểm tra build artifact trước khi nghi controller hay route."
+      ]
+    },
+    {
+      "title": "Vite config thường là nơi chứa các quyết định frontend quan trọng",
+      "body": "Rất nhiều người mới không đọc `vite.config.js`, nhưng đây lại là nơi thấy rõ app đang build những entry nào, có plugin Vue/React không, alias ra sao, refresh Blade thế nào, output ở đâu. Khi build lỗi hoặc import path lạ, đây thường là một trong các file đầu tiên nên xem.",
+      "code": "import { defineConfig } from 'vite'\nimport laravel from 'laravel-vite-plugin'\n\nexport default defineConfig({\n  plugins: [\n    laravel({\n      input: ['resources/css/app.css', 'resources/js/app.js'],\n      refresh: true,\n    }),\n  ],\n})",
+      "bullets": [
+        "Xem `input` để biết entry file nào thật sự đang được build.",
+        "Xem plugin để biết app đang đi theo Blade thuần, Vue hay React.",
+        "Xem alias và build output để debug import hoặc deploy."
+      ]
+    },
+    {
+      "title": "PostCSS, Autoprefixer và lớp xử lý CSS đứng sau Tailwind",
+      "body": "Trong nhiều project Laravel, Tailwind không chạy một mình mà đi qua PostCSS pipeline. Ở đó có thể có `autoprefixer`, nesting plugin hoặc các bước CSS transform khác. Nếu CSS hoạt động lạ giữa local và build, đừng quên lớp này tồn tại.",
+      "code": "postcss.config.js\n\nexport default {\n  plugins: {\n    tailwindcss: {},\n    autoprefixer: {},\n  },\n}",
+      "bullets": [
+        "`autoprefixer` giúp CSS tương thích trình duyệt tốt hơn ở những rule cần prefix.",
+        "PostCSS config sai có thể làm Tailwind hoặc CSS build ra thiếu hoặc lỗi.",
+        "Khi project có CSS plugin riêng, PostCSS thường là chỗ nên đọc đầu tiên."
+      ]
+    },
+    {
+      "title": "Tổ chức code frontend trong `resources/js` sao cho không thành bãi rác",
+      "body": "Một app nhỏ có thể chỉ cần `app.js`. Nhưng khi frontend lớn dần, nên tách rõ entry, component, pages, composable hoặc util theo một logic dễ tìm. Nếu không, frontend trong Laravel rất nhanh rơi vào trạng thái 'có JS nhưng không ai muốn mở lại'.",
+      "bullets": [
+        "App nhỏ: `app.js` + vài file hỗ trợ là đủ.",
+        "App vừa: nên tách `components/`, `pages/`, `lib/`, `utils/` hoặc theo feature.",
+        "Dùng Inertia/Vue/React: thư mục `Pages`, `Layouts`, `Components` thường nên có quy ước rõ.",
+        "Tên file, alias import và vị trí source nên có logic ổn định từ sớm."
+      ]
+    },
+    {
+      "title": "Blade, Tailwind và Alpine: stack nhẹ nhưng rất thực dụng",
+      "body": "Đây là tổ hợp rất phổ biến cho app Laravel server-rendered. Blade lo render HTML phía server. Tailwind lo utility CSS. Alpine lo tương tác nhỏ ở frontend như toggle, dropdown, modal, tabs, state nhẹ. Với nhiều admin panel hoặc dashboard nội bộ, stack này đã đủ tốt mà không cần SPA nặng.",
+      "bullets": [
+        "Hợp khi app thiên về form, CRUD, dashboard, page flow rõ và không cần client app quá nặng.",
+        "Nhẹ hơn Vue hoặc React ở chi phí tổ chức project và tư duy state.",
+        "Dễ cho team backend mạnh Laravel kiểm soát hơn."
+      ]
+    },
+    {
+      "title": "Tailwind trong Laravel nên được hiểu là một phần của pipeline chứ không chỉ là 'bộ class CSS'",
+      "body": "Tailwind không chỉ là viết class dài trong HTML. Nó còn liên quan tới scan content file, purge class thừa, build CSS qua PostCSS, theme config và đôi khi plugin nội bộ. Nếu cấu hình content sai, class bạn viết có thể không xuất hiện trong bundle final dù local có vẻ vẫn ổn.",
+      "code": "export default {\n  content: [\n    './resources/**/*.blade.php',\n    './resources/**/*.js',\n    './resources/**/*.vue',\n  ],\n  theme: {\n    extend: {},\n  },\n}",
+      "bullets": [
+        "Sai `content` path: build có thể purge mất class đang dùng.",
+        "Theme config là nơi mở rộng spacing, color, font, breakpoint theo design system.",
+        "Nếu app lớn, Tailwind config dần trở thành một phần ngôn ngữ UI của project."
+      ]
+    },
+    {
+      "title": "Khi nào frontend layer bắt đầu cần design system hoặc ít nhất là quy ước UI?",
+      "body": "Ban đầu ai cũng nghĩ chỉ cần vài class Tailwind là đủ. Nhưng khi project lớn lên, nếu không có quy ước cho spacing, màu, button, form, card, modal, typography thì giao diện sẽ trôi dạt rất nhanh. Đây không chỉ là chuyện đẹp xấu, mà là chi phí maintain UI.",
+      "bullets": [
+        "App nhỏ có thể chưa cần design system đầy đủ, nhưng nên có quy ước cơ bản.",
+        "Khi nhiều người cùng sửa UI, thiếu convention sẽ làm code Tailwind rất khó đọc và khó reuse.",
+        "Một số team giải bài toán này bằng component Blade, một số bằng component Vue/React, một số bằng token/config Tailwind."
+      ]
+    },
+    {
+      "title": "Alpine hữu ích nhất ở đâu và kém phù hợp nhất ở đâu?",
+      "body": "Alpine rất mạnh cho UI vi mô: toggle, tab, dropdown, modal, accordion, state nhỏ trên một mảnh giao diện. Nhưng nếu bạn cố biến nó thành hệ quản lý state lớn cho cả màn hình hoặc nhiều luồng phức tạp, code sẽ nhanh rối. Hiểu giới hạn này rất quan trọng.",
+      "bullets": [
+        "Rất hợp cho enhancement nhỏ trên Blade server-rendered.",
+        "Hợp khi bạn muốn ít JS custom nhưng vẫn có tương tác vừa đủ.",
+        "Kém hợp khi state lớn, component lồng nhiều hoặc cần data flow phức tạp kiểu app frontend."
+      ]
+    },
+    {
+      "title": "Livewire là gì và khi nào nó đáng dùng?",
+      "body": "Livewire cho phép bạn viết nhiều tương tác UI hơn nhưng vẫn giữ tư duy gần Laravel backend. Thay vì tự viết nhiều API hoặc state phức tạp phía client, bạn để component Livewire nói chuyện với server theo cách framework hỗ trợ sẵn.",
+      "bullets": [
+        "Hợp khi team mạnh PHP/Laravel hơn là frontend SPA.",
+        "Rất tiện cho form nhiều bước, bảng dữ liệu, filter, action UI vừa phải.",
+        "Nhưng nếu tương tác quá dày, quá realtime hoặc state phía client quá lớn, cần cân nhắc kỹ tradeoff."
+      ]
+    },
+    {
+      "title": "Một sai lầm thường gặp: chọn Livewire hay React theo cảm tính",
+      "body": "Câu hỏi không nên là 'cái nào hot hơn', mà là: ai maintain màn này, state nặng ở server hay client, UX cần realtime đến mức nào, team có quen debug browser-heavy flow không. Nếu chọn sai stack, chi phí bảo trì sẽ đắt hơn lợi ích ban đầu rất nhanh.",
+      "bullets": [
+        "Team backend nặng, app chủ yếu CRUD hoặc dashboard nội bộ: Livewire thường hợp lý.",
+        "UI nhiều interaction phức tạp, offline-ish state, chart dày, workflow như app thật: Vue/React có thể đáng hơn.",
+        "Không có đáp án tốt nếu team không đủ người hiểu stack đã chọn."
+      ]
+    },
+    {
+      "title": "Inertia cùng Vue hoặc React: khi app bắt đầu nghiêng về SPA nhưng vẫn muốn ở trong Laravel",
+      "body": "Inertia không biến Laravel thành API thuần, mà tạo một cây cầu để backend Laravel vẫn điều phối navigation và data theo cách gần gũi, trong khi phần UI dùng Vue hoặc React như một frontend app hiện đại hơn. Nó phù hợp khi app cần trải nghiệm mượt hơn Blade/Alpine nhưng team chưa muốn tách hẳn frontend-backend.",
+      "bullets": [
+        "Hợp cho dashboard lớn, product nội bộ, app nhiều trang nhưng muốn UX mượt hơn reload truyền thống.",
+        "Giúp team giữ Laravel làm trục backend thay vì lập tức chuyển sang kiến trúc API riêng hoàn toàn.",
+        "Đổi lại, complexity frontend cũng tăng lên: component tree, state, build, dependency, bug phía client."
+      ]
+    },
+    {
+      "title": "Inertia giúp gì và không giúp gì?",
+      "body": "Inertia giúp bạn tránh phải thiết kế một API layer riêng chỉ để phục vụ UI web của chính app đó. Nhưng nó không làm complexity frontend biến mất. Khi đã dùng Vue hoặc React, bạn vẫn phải hiểu component, props, state, async flow, error boundary kiểu tương ứng và bài toán tổ chức code frontend.",
+      "bullets": [
+        "Giúp giảm chi phí tách frontend-backend quá sớm.",
+        "Giúp Laravel route và controller vẫn đóng vai trò mạnh trong luồng web app.",
+        "Không giúp bạn né hoàn toàn kiến thức frontend hiện đại nếu app thật sự nhiều tương tác."
+      ]
+    },
+    {
+      "title": "Vue hay React trong Laravel không phải câu hỏi 'thích framework nào hơn' đơn thuần",
+      "body": "Câu hỏi đúng hơn là team đang cần loại app nào, kỹ năng hiện tại ra sao, và có chấp nhận độ phức tạp frontend tăng lên không. Nhiều project Laravel nhỏ hoặc vừa không cần React chỉ để làm CRUD đẹp hơn. Nhưng một số product nhiều tương tác lại rất đáng đầu tư.",
+      "bullets": [
+        "Nếu cần tương tác nhẹ: Blade + Alpine có thể đã đủ.",
+        "Nếu cần state vừa và muốn gần Laravel: Livewire là ứng viên tốt.",
+        "Nếu cần app-like UX mạnh hơn: Inertia + Vue/React đáng cân nhắc.",
+        "Nếu cần frontend tách biệt thật sự: đó đã là câu chuyện kiến trúc khác, không chỉ là submenu này."
+      ]
+    },
+    {
+      "title": "Một ma trận chọn stack frontend nhanh cho project Laravel",
+      "body": "Bạn có thể nghĩ theo mức độ tương tác và kỹ năng team thay vì chọn theo trend.",
+      "bullets": [
+        "Mức 1: page server-rendered, tương tác ít -> Blade + Tailwind + Alpine.",
+        "Mức 2: form phức tạp vừa, bảng dữ liệu động, backend-heavy team -> Livewire.",
+        "Mức 3: dashboard giàu tương tác, trải nghiệm như app -> Inertia + Vue hoặc React.",
+        "Mức 4: frontend tách biệt, mobile/web đa client, backend như platform -> API riêng hoặc kiến trúc tách hẳn."
+      ],
+      "note": "Sai lầm phổ biến là nhảy thẳng lên mức 3 hoặc 4 khi bài toán thực tế mới ở mức 1 hoặc 2."
+    },
+    {
+      "title": "Các lỗi hay gặp khi vừa kéo project Laravel frontend về máy",
+      "body": "Nhiều lỗi tưởng là lỗi Laravel thật ra nằm ở lớp Node hoặc Vite: sai version Node, thiếu `node_modules/`, chưa chạy dev server, package lock lệch, plugin frontend conflict hoặc import path sai.",
+      "code": "node -v\nnpm -v\nnpm install\nnpm run dev\nnpm run build",
+      "bullets": [
+        "Lỗi `npm install`: kiểm tra version Node và lock file.",
+        "Trang không có CSS hoặc JS: kiểm tra `npm run dev` hoặc build asset đã chạy chưa.",
+        "Build fail: đọc kỹ lỗi import, alias, plugin, syntax hoặc dependency conflict."
+      ],
+      "note": "Khi một trang Laravel render ra HTML nhưng giao diện trống style, rất nhiều khả năng lỗi nằm ở asset layer chứ không nằm ở route hay controller."
+    },
+    {
+      "title": "Các lỗi môi trường frontend mà người mới rất hay mất thời gian oan",
+      "body": "Có nhiều ca không phải bug code mà là mismatch môi trường. Càng làm nhiều project bạn càng thấy nhóm lỗi này lặp đi lặp lại.",
+      "bullets": [
+        "Sai major version Node so với package lock hoặc plugin đang dùng.",
+        "Dùng `npm install` trên project người khác nhưng lock file đã cũ hoặc tạo từ môi trường khác.",
+        "Port Vite bị chiếm hoặc dev server bind sai host khi chạy trong Docker/VM.",
+        "Build artifact cũ còn nằm trên server làm bạn tưởng deploy mới chưa ăn.",
+        "CDN, reverse proxy hoặc browser cache giữ asset cũ khiến team đoán sai hướng."
+      ]
+    },
+    {
+      "title": "Docker, WSL, VM và remote dev làm lớp frontend khó hơn ở chỗ nào?",
+      "body": "Khi không chạy trực tiếp trên máy local thuần, Vite dev server có thêm các vấn đề về host, port, file watch, permission và network bridge. Nhiều ca tưởng là lỗi npm thực ra là lỗi môi trường dev container hoặc filesystem event.",
+      "bullets": [
+        "File watcher không bắt thay đổi ổn định trong volume mount lớn.",
+        "Dev server bind sai `host` nên trình duyệt ngoài container không truy cập được.",
+        "Port mapping hoặc reverse proxy làm HMR client không kết nối lại được.",
+        "Môi trường như WSL đôi khi nhạy với path, permission hoặc số lượng file watch."
+      ],
+      "note": "Khi team dùng Docker/WSL, tài liệu onboarding nên ghi rõ cách chạy Vite chứ không chỉ ghi mỗi `npm run dev`."
+    },
+    {
+      "title": "Asset path, image, font và static file là nơi dễ phát sinh bug khó chịu",
+      "body": "Phần frontend không chỉ có JS và CSS. Ảnh, font, SVG, video hoặc file tĩnh cũng hay gây lỗi giữa local và production nếu đường dẫn hoặc cách import không nhất quán.",
+      "bullets": [
+        "Có project để asset trong `resources/` và import qua Vite, có project để thẳng trong `public/`.",
+        "Hai cách này có tradeoff khác nhau về build, hash, cache và cách tham chiếu trong Blade hay component.",
+        "Lỗi font 404, ảnh sai path hoặc SVG không load thường là dấu hiệu cần xem lại chiến lược asset path của repo."
+      ]
+    },
+    {
+      "title": "Một vài lệnh npm hay gặp trong project Laravel",
+      "body": "Đây là nhóm lệnh bạn sẽ gặp đi gặp lại nếu project có frontend layer hiện đại.",
+      "code": "npm install\nnpm ci\nnpm run dev\nnpm run build\nnpm run preview\nnpm outdated\nnpm audit\nnpm remove <package-name>",
+      "bullets": [
+        "`npm install`: cài dependency frontend cho local.",
+        "`npm ci`: cài sạch theo lock file, rất hợp cho CI.",
+        "`npm run dev`: chạy dev server và watch asset.",
+        "`npm run build`: build asset production.",
+        "`npm outdated`: xem package nào cũ.",
+        "`npm audit`: rà advisory bảo mật ở package frontend."
+      ]
+    },
+    {
+      "title": "Khi nào dùng `npm ci`, `npm outdated`, `npm audit` và vì sao chúng đáng biết?",
+      "body": "Nhiều người chỉ biết `npm install`, nhưng vài lệnh còn lại cũng rất thực dụng khi project bắt đầu có CI/CD hoặc dependency nhiều hơn.",
+      "bullets": [
+        "`npm ci`: dùng khi cần cài đúng lock file trong CI hoặc build server, nhanh và ổn định hơn `npm install`.",
+        "`npm outdated`: dùng để lên kế hoạch nâng package thay vì update mò.",
+        "`npm audit`: giúp nhìn advisory bảo mật, nhưng đừng sửa hàng loạt mù quáng nếu chưa hiểu ảnh hưởng build.",
+        "`npm remove`: gỡ package sạch thay vì xóa tay trong `package.json`."
+      ]
+    },
+    {
+      "title": "Nâng package frontend an toàn hơn bằng cách nào?",
+      "body": "Frontend dependency rất dễ tạo hiệu ứng dây chuyền. Nâng một package nhỏ có thể kéo theo Vite plugin, PostCSS, Tailwind hoặc framework component bị ảnh hưởng. Vì vậy nâng package nên đi theo nhịp có kiểm soát thay vì nâng hàng loạt vì thấy outdated.",
+      "bullets": [
+        "Ưu tiên nâng theo cụm liên quan thay vì bắn update ngẫu nhiên.",
+        "Đọc release note của package quan trọng như Vite, Tailwind, Vue, React plugin.",
+        "Sau khi nâng: chạy `npm install`/`npm ci`, `npm run dev`, `npm run build`, và kiểm tra màn hình quan trọng.",
+        "Nếu PR chỉ để nâng package, nên tách riêng với PR feature để review dễ hơn."
+      ]
+    },
+    {
+      "title": "Deploy frontend trong Laravel thực ra là một bài toán riêng",
+      "body": "Rất nhiều team backend quên rằng 'deploy app Laravel' không tự đồng nghĩa với 'asset frontend cũng đã sẵn sàng'. Nếu CI/CD không build asset, không upload artifact hoặc server không có bộ file build mới, thì backend mới cũng vô ích vì giao diện vẫn đang dùng tài nguyên cũ hoặc thiếu file.",
+      "code": "npm ci\nnpm run build",
+      "bullets": [
+        "Cần xác định build diễn ra ở CI, ở máy dev hay ngay trên server.",
+        "Cần đảm bảo `public/build/` hoặc artifact tương đương được deploy đồng bộ với code backend.",
+        "Nếu rollback backend mà quên asset version, đôi khi mismatch frontend-backend sẽ xuất hiện."
+      ]
+    },
+    {
+      "title": "Frontend cache, CDN và browser cache có thể làm bạn debug sai hướng",
+      "body": "Khi asset production đã hash đúng, cache thường là bạn tốt. Nhưng khi quy trình build/deploy không sạch, cache có thể trở thành nguồn gây ảo giác: dev nghĩ server chưa deploy, ops nghĩ browser bị cache, trong khi gốc rễ là artifact hoặc manifest không đồng bộ.",
+      "bullets": [
+        "Hash filename giúp cache an toàn hơn, nhưng chỉ khi build artifact đúng.",
+        "Nếu không hash hoặc không version tốt, CSS/JS cũ rất dễ bị giữ lại ngoài ý muốn.",
+        "Khi production 'nửa cũ nửa mới', nên nghĩ tới manifest, CDN cache, browser cache và rollback mismatch."
+      ]
+    },
+    {
+      "title": "Playbook khi frontend Laravel 'trông như hỏng' nhưng chưa rõ vì sao",
+      "body": "Đây là một chuỗi kiểm tra rất thực dụng trước khi đi sâu debug framework.",
+      "code": "1) node -v && npm -v\n2) npm install hoặc npm ci\n3) npm run dev\n4) nếu nghi production flow: npm run build\n5) kiểm tra Blade có @vite(...)\n6) kiểm tra console browser và network asset",
+      "bullets": [
+        "Nếu HTML lên mà không có style: nghĩ asset pipeline trước.",
+        "Nếu local ổn nhưng build fail: nghĩ tới path/import/plugin/config.",
+        "Nếu production lỗi nhưng local ổn: nghĩ tới artifact, manifest, cache hoặc deploy step."
+      ]
+    },
+    {
+      "title": "Checklist review khi PR đụng vào frontend layer của Laravel",
+      "body": "Nếu bạn review code có đổi `package.json`, `vite.config`, component frontend hoặc asset pipeline, nên có một checklist riêng thay vì chỉ nhìn code UI đẹp hay xấu.",
+      "bullets": [
+        "Có đổi `package.json` hoặc `package-lock.json` không, và có giải thích lý do không?",
+        "Có chạy `npm run build` thành công chưa?",
+        "Import path, alias, asset path có nhất quán không?",
+        "Có thêm package mới không, và package đó có thực sự đáng thêm không?",
+        "Thay đổi này ảnh hưởng Blade thuần, Livewire, Inertia hay Vue/React theo cách nào?"
+      ]
+    },
+    {
+      "title": "Checklist onboarding cho dev mới vào project Laravel có frontend",
+      "body": "Một project tốt nên giúp dev mới vào được nhanh. Nếu phần frontend có nhiều yêu cầu nhưng không ghi lại, team sẽ lặp lại cùng một kiểu lỗi setup mãi mãi.",
+      "bullets": [
+        "Node version nên dùng là bao nhiêu?",
+        "Chạy `npm install` hay `npm ci` trong local?",
+        "Có cần mở riêng `npm run dev` song song với PHP không?",
+        "Project dùng Blade + Alpine, Livewire hay Inertia/Vue/React?",
+        "Có lưu ý nào cho Docker, WSL, VM hoặc proxy nội bộ không?"
+      ]
+    },
+    {
+      "title": "Khi nào frontend trong Laravel đã đủ lớn để đáng tách tư duy riêng?",
+      "body": "Có một ngưỡng mà frontend layer không còn là 'vài file asset' nữa. Khi số trang, số component, số package và số bug phía browser tăng lên, bạn nên đối xử với nó như một sub-system thật, có ownership, guideline và review riêng.",
+      "bullets": [
+        "Có nhiều component chia sẻ giữa nhiều màn hình.",
+        "Có state phức tạp phía client hoặc chart/filter/table nặng.",
+        "Có nhiều package frontend quan trọng ảnh hưởng build và deploy.",
+        "Có bug chỉ xuất hiện ở browser hoặc production asset mà backend dev khó đoán ngay."
+      ]
+    },
+    {
+      "title": "Tip và kinh nghiệm từ thực tế làm Laravel có frontend",
+      "body": "Người mới thường nhìn frontend layer như một phần phụ. Nhưng khi làm vài project thật, bạn sẽ thấy đây là nơi gây rất nhiều bug môi trường, bug build và bug deploy nếu team coi nhẹ nó.",
+      "bullets": [
+        "Nếu project mới clone mà giao diện vỡ, đừng chỉ chăm chăm nhìn PHP. Hãy kiểm tra Node, npm, Vite trước.",
+        "Khi update package frontend, chạy lại `npm run build` để chắc production bundle vẫn ổn, không chỉ nhìn local dev server.",
+        "Nếu deploy có queue và frontend build, đừng quên đây là hai việc khác nhau: restart worker không thay thế cho build asset.",
+        "Đừng thêm thư viện frontend chỉ vì 'nhìn xịn'. Mỗi package mới kéo theo chi phí build, bảo trì và nâng cấp.",
+        "Khi team backend mạnh nhưng frontend không quá phức tạp, Blade + Alpine hoặc Livewire thường bền hơn là lao vào SPA nửa vời."
+      ]
+    },
+    {
+      "title": "Anti-pattern rất hay gặp ở phần frontend của project Laravel",
+      "body": "Ngoài việc biết làm gì, cũng nên biết điều gì rất dễ làm project xấu đi theo thời gian.",
+      "bullets": [
+        "Nhồi React hoặc Vue vào chỉ để làm vài tương tác nhỏ mà Alpine đã đủ.",
+        "Thêm nhiều package UI nhưng không có chiến lược đồng bộ style hoặc component.",
+        "Không commit lock file hoặc commit lock file hỗn loạn mà không review.",
+        "Chỉ test bằng `npm run dev` mà không bao giờ test build production.",
+        "Sửa file build output hoặc asset đã compile thay vì sửa source trong `resources/`."
+      ]
+    },
+    {
+      "title": "Cách học phần frontend trong Laravel cho đỡ rối",
+      "body": "Hãy học theo tầng. Đầu tiên hiểu `package.json`, `npm install`, `npm run dev`, `npm run build`, và `@vite` nối asset vào Blade ra sao. Sau đó mới đi vào Tailwind, Alpine, Livewire, Inertia, Vue hay React. Nếu nhảy thẳng vào framework frontend mà chưa hiểu pipeline asset, bạn sẽ rất dễ học trong mù mờ."
+    },
+    {
+      "title": "486. Node version lệch giữa máy dev và CI có thể phá frontend âm thầm như thế nào?",
+      "body": "Có những package build được ở Node này nhưng fail hoặc cảnh báo nặng ở Node khác. Vì vậy `.nvmrc`, `engines` trong `package.json` hoặc tài liệu version chuẩn rất đáng giá trong dự án thật."
+    },
+    {
+      "title": "487. Case thật: Vite dev server chạy nhưng browser vẫn không ăn HMR",
+      "body": "Thường do host, port, HTTPS local, Docker networking, WSL bridge hoặc cấu hình HMR sai. Nhiều người tưởng JS app hỏng trong khi vấn đề thực ra nằm ở lớp dev server và kết nối browser."
+    },
+    {
+      "title": "488. Biến môi trường frontend kiểu `VITE_*` cần hiểu vì sao?",
+      "body": "Frontend chỉ đọc được những biến được expose đúng cách. Nếu dev tưởng mọi biến `.env` đều vào được browser, rất dễ tạo bug hoặc lộ dữ liệu không nên đưa xuống client."
+    },
+    {
+      "title": "489. Case thật: build local đẹp nhưng artifact deploy lên production lại sai asset",
+      "body": "Có thể do build ở môi trường khác, base path sai, manifest lệch, cache CDN cũ hoặc deploy thiếu thư mục `public/build`. Đây là kiểu lỗi frontend-Laravel rất thường gặp ở release đầu tiên."
+    },
+    {
+      "title": "490. Tip bổ sung: frontend layer ổn định không chỉ là build được, mà là team biết đang dùng package manager, version và pipeline nào một cách nhất quán",
+      "body": "Một repo dùng npm nhưng người này lại cài bằng pnpm, người khác lại cài bằng yarn, người khác dùng Node version lệch thì bug môi trường sẽ xuất hiện liên tục. Kỷ luật tooling quan trọng không kém code UI."
+    },
+    {
+      "title": "491. Ví dụ flow frontend tối thiểu trong project Laravel dùng Vite",
+      "body": "Đây là bộ lệnh người học Laravel nên chạy ít nhất vài lần để hiểu frontend layer không tự nhiên mà có.",
+      "code": "npm install\nnpm run dev\nnpm run build",
+      "bullets": [
+        "`npm install` cài package từ `package.json` và lock file.",
+        "`npm run dev` bật dev server hoặc watch mode cho local development.",
+        "`npm run build` sinh asset production vào `public/build` để app có thể phục vụ file tối ưu."
+      ],
+      "note": "Nếu local chạy `dev` ổn mà `build` fail, đó là tín hiệu rất quan trọng vì production không dựa vào dev server."
+    },
+    {
+      "title": "492. Ví dụ `package.json` script và cách đọc nhanh frontend workflow của repo",
+      "body": "Nhìn script là bạn đoán được project đang build, watch và lint ra sao.",
+      "code": "{\n  \"scripts\": {\n    \"dev\": \"vite\",\n    \"build\": \"vite build\"\n  }\n}",
+      "bullets": [
+        "Nếu script rất ít, stack frontend có thể đang gọn hơn.",
+        "Nếu script nhiều cho lint, test, type-check, e2e thì frontend layer đã bắt đầu trưởng thành hơn.",
+        "Đọc script trước giúp bạn tránh chạy sai lệnh hoặc tưởng repo đang dùng tool khác."
+      ]
+    },
+    {
+      "title": "493. Ví dụ Blade nối asset Vite vào UI Laravel",
+      "body": "Frontend pipeline chỉ có ý nghĩa khi asset cuối cùng được gắn lại vào Blade hoặc entry point UI thực sự.",
+      "code": "@vite(['resources/css/app.css', 'resources/js/app.js'])",
+      "note": "Directive này giúp Laravel biết phải lấy asset từ dev server khi local và từ manifest build khi production. Đây là điểm nối rất quan trọng giữa backend Laravel và frontend toolchain."
+    }
+  ]
+}

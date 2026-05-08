@@ -1,0 +1,653 @@
+{
+  "anchor": "laravel-api-integration",
+  "type": "list",
+  "heading": "API và tích hợp dịch vụ ngoài: từ JSON cơ bản tới integration sống được trong production",
+  "intro": "Site này gom toàn bộ góc nhìn quan trọng quanh API và integration trong Laravel. Mục tiêu không chỉ là tạo route trong `api.php`, mà là hiểu contract, auth, validation, HTTP client, webhook, retry, idempotency, rate limit, timeout, queue, log, test, tài liệu hóa và cách giữ cho integration không trở thành nơi dễ vỡ nhất của hệ thống.",
+  "breaks": [
+    {
+      "start": 1,
+      "title": "I. Nền Tảng API",
+      "description": "Bắt đầu từ API là gì, integration là gì, client-server nói chuyện ra sao và vì sao tư duy API khác hẳn tư duy render Blade.",
+      "tone": "amber"
+    },
+    {
+      "start": 13,
+      "title": "II. Route, Resource Và Contract Response",
+      "description": "Tổ chức `api.php`, naming endpoint, status code, JSON shape, pagination, versioning và sự ổn định của contract.",
+      "tone": "copper"
+    },
+    {
+      "start": 29,
+      "title": "III. Validation, Error Và Chất Lượng Contract",
+      "description": "Request validation, chuẩn hóa lỗi, field-level feedback, idempotency và những thứ giúp client bớt phải đoán.",
+      "tone": "sand"
+    },
+    {
+      "start": 45,
+      "title": "IV. Auth, Security, Rate Limit Và Quản Trị Truy Cập",
+      "description": "Sanctum, token, API key, OAuth mindset, CORS, secret, quota và bảo vệ API khỏi bị dùng sai hoặc bị khai thác.",
+      "tone": "amber"
+    },
+    {
+      "start": 63,
+      "title": "V. Gọi Service Ngoài Bằng HTTP Client",
+      "description": "Thiết kế integration outbound: `Http::`, timeout, retry, circuit-breaker mindset, mapping response và bảo vệ app khỏi sự bất ổn của bên ngoài.",
+      "tone": "copper"
+    },
+    {
+      "start": 81,
+      "title": "VI. Webhook, Đồng Bộ Bất Đồng Bộ Và Độ Tin Cậy",
+      "description": "Nhận webhook, verify chữ ký, chống duplicate, queue hóa xử lý, eventual consistency và vận hành integration có side effect.",
+      "tone": "sand"
+    },
+    {
+      "start": 97,
+      "title": "VII. Test, Tài Liệu, Quan Sát Và Vận Hành",
+      "description": "API test, fake service, contract docs, log, trace, metric, correlation id, support playbook và monitoring.",
+      "tone": "amber"
+    },
+    {
+      "start": 113,
+      "title": "VIII. Case Thực Chiến Và Tư Duy Dài Hạn",
+      "description": "Những lỗi production rất thật, dấu hiệu integration thiết kế tệ và cách giữ lớp API sống được khi hệ thống lớn dần.",
+      "tone": "copper"
+    }
+  ],
+  "items": [
+    {
+      "title": "1. API là gì trong ngữ cảnh Laravel?",
+      "body": "API là giao diện để client nói chuyện với hệ thống qua request và response có cấu trúc, thường là JSON. Trong Laravel, nó thường đi qua `routes/api.php`, middleware API, validation, auth và response resource.",
+      "code": "Route::get('/posts', function () {\n    return response()->json([\n        'data' => Post::query()->latest()->take(10)->get(),\n    ]);\n});",
+      "note": "Đây là ví dụ tối giản để thấy API không render HTML mà trả contract dữ liệu cho client."
+    },
+    {
+      "title": "2. Integration là gì?",
+      "body": "Integration là phần hệ thống của bạn giao tiếp với hệ thống khác. Nó có thể là gọi API thanh toán, CRM, email provider, ERP, webhook từ bên thứ ba, hoặc app mobile dùng API của bạn."
+    },
+    {
+      "title": "3. API nội bộ và API public khác nhau ở đâu?",
+      "body": "API nội bộ thường ít client hơn, thay đổi nhanh hơn nhưng vẫn nên có contract rõ. API public hoặc partner-facing cần ổn định hơn, versioning cẩn thận hơn và backward compatibility quan trọng hơn nhiều."
+    },
+    {
+      "title": "4. Tư duy API khác gì tư duy Blade app?",
+      "body": "Blade app chủ yếu phục vụ browser và render HTML. API phải nghĩ theo contract dữ liệu, status code, khả năng retry, error format, auth client, caching, rate limit và sự tương thích với nhiều loại consumer."
+    },
+    {
+      "title": "5. Client trong API có thể là những ai?",
+      "body": "Client có thể là SPA, mobile app, backend khác, cron job, partner service, webhook sender hoặc thậm chí command line script. Đừng mặc định client luôn là frontend cùng team."
+    },
+    {
+      "title": "6. Request-response cycle trong API nên nhìn như thế nào?",
+      "body": "Client gửi dữ liệu đầu vào, backend validate, auth, xử lý business, gọi data layer hoặc service ngoài rồi trả về JSON nhất quán. Một API tốt giúp client hiểu rõ request nào thành công, request nào thất bại và vì sao."
+    },
+    {
+      "title": "7. REST là gì và có phải lúc nào cũng phải tuyệt đối REST không?",
+      "body": "REST là một tập nguyên tắc phổ biến cho thiết kế API dựa trên resource và HTTP verbs. Nó hữu ích để giữ API dễ đoán, nhưng không cần giáo điều nếu business thật cần endpoint nghiệp vụ đặc thù như `/orders/{id}/cancel`."
+    },
+    {
+      "title": "8. Tại sao consistency lại quan trọng hơn sự 'đẹp mắt'?",
+      "body": "Client chịu đau nhiều nhất khi mỗi endpoint trả dữ liệu theo một kiểu khác nhau. Contract nhất quán giúp dev frontend, mobile, QA và support tiết kiệm rất nhiều thời gian."
+    },
+    {
+      "title": "9. JSON contract là gì?",
+      "body": "Đó là hình dạng dữ liệu mà client kỳ vọng: field nào có mặt, kiểu dữ liệu gì, null được không, lỗi trả ra sao. Một thay đổi nhỏ ở contract có thể làm hỏng client dù backend vẫn 'chạy được'."
+    },
+    {
+      "title": "10. API tốt có phải là API trả ít field nhất có thể không?",
+      "body": "Không hẳn. API tốt là API trả đúng field client cần, đặt tên rõ nghĩa và tránh để client phải ghép logic khó đoán từ nhiều endpoint không cần thiết."
+    },
+    {
+      "title": "11. Tại sao integration thường là vùng bug khó đoán?",
+      "body": "Vì nó phụ thuộc vào network, timeout, secret, contract bên ngoài, rate limit, duplicate event và trạng thái nằm ngoài tầm kiểm soát của app bạn."
+    },
+    {
+      "title": "12. Tư duy nền tảng quan trọng nhất khi làm API và integration là gì?",
+      "body": "Hãy nghĩ rằng mọi request có thể fail, chậm, lặp lại, lệch contract hoặc đến sai thời điểm. Thiết kế tốt là thiết kế chấp nhận thực tế đó ngay từ đầu."
+    },
+    {
+      "title": "13. `routes/api.php` dùng để làm gì?",
+      "body": "Đây là nơi khai báo các endpoint API của Laravel. Các route ở đây thường đi qua middleware API và mặc định được gắn prefix `/api` nếu app dùng cấu hình mặc định.",
+      "code": "Route::prefix('v1')->group(function () {\n    Route::get('/orders', [OrderController::class, 'index']);\n    Route::post('/orders', [OrderController::class, 'store']);\n    Route::post('/orders/{order}/cancel', [CancelOrderController::class, '__invoke']);\n});"
+    },
+    {
+      "title": "14. Có nên nhét toàn bộ API vào một file route không?",
+      "body": "Không nên khi API lớn dần. Tách route theo domain như billing, orders, users hoặc theo version giúp route dễ đọc và dễ review hơn."
+    },
+    {
+      "title": "15. Naming endpoint nên theo nguyên tắc nào?",
+      "body": "Nên dùng danh từ cho resource như `/orders`, `/users`, `/invoices`. Tránh đặt endpoint kiểu hành động mơ hồ nếu có thể, trừ những nghiệp vụ thật sự là action như `/orders/{order}/refund`."
+    },
+    {
+      "title": "16. HTTP verbs nên dùng thế nào?",
+      "body": "`GET` để đọc, `POST` để tạo hoặc khởi động action, `PUT` hoặc `PATCH` để cập nhật, `DELETE` để xóa. Chọn verb đúng giúp API dễ hiểu và giảm hiểu lầm khi tích hợp."
+    },
+    {
+      "title": "17. Status code quan trọng ra sao?",
+      "body": "Rất quan trọng vì nó là tín hiệu đầu tiên cho client biết request đang thành công, sai input, thiếu quyền hay lỗi server. Nhiều hệ thống hỏng vì mọi thứ đều trả `200` rồi nhét trạng thái vào body."
+    },
+    {
+      "title": "18. Khi nào trả `200`, `201`, `202`?",
+      "body": "`200` cho request thành công bình thường, `201` khi tạo resource mới, `202` khi chấp nhận xử lý nhưng phần việc thật sẽ hoàn thành sau qua queue hoặc process khác."
+    },
+    {
+      "title": "19. Khi nào dùng `204 No Content`?",
+      "body": "Dùng khi thao tác thành công nhưng không cần trả body, ví dụ xóa resource hoặc cập nhật cài đặt rất đơn giản."
+    },
+    {
+      "title": "20. JSON response nên có hình dạng ổn định không?",
+      "body": "Có. Nếu response success lúc có `data`, lúc không có; lúc trả object, lúc trả array; lúc lồng nhiều tầng vô lý thì frontend sẽ khổ."
+    },
+    {
+      "title": "21. Laravel API Resource dùng để làm gì?",
+      "body": "API Resource giúp bạn chuẩn hóa cách biến model hoặc collection thành JSON. Nó tốt hơn việc trả thẳng model vì bạn kiểm soát field, format và dữ liệu quan hệ.",
+      "code": "class OrderResource extends JsonResource\n{\n    public function toArray($request): array\n    {\n        return [\n            'id' => $this->id,\n            'number' => $this->number,\n            'status' => $this->status,\n            'total' => $this->total,\n        ];\n    }\n}",
+      "note": "Resource là lớp đệm giữa Eloquent model và public contract. Đó là lý do nó đáng giá."
+    },
+    {
+      "title": "22. Tại sao không nên trả thẳng model Eloquent ra API?",
+      "body": "Vì bạn dễ lộ field không nên lộ, dễ thay đổi contract ngoài ý muốn và khó quản lý format dữ liệu. Resource tạo lớp bảo vệ giữa domain model và public contract."
+    },
+    {
+      "title": "23. Pagination nên làm thế nào?",
+      "body": "Danh sách lớn nên có pagination rõ ràng, trả metadata như trang hiện tại, tổng số bản ghi nếu phù hợp, hoặc cursor pagination nếu volume lớn và cần ổn định hơn khi dữ liệu thay đổi liên tục."
+    },
+    {
+      "title": "24. Cursor pagination khác gì pagination thường?",
+      "body": "Cursor pagination phù hợp hơn khi dữ liệu lớn hoặc có insert liên tục, vì nó giảm rủi ro lệch trang và thường hiệu quả hơn offset pagination."
+    },
+    {
+      "title": "25. Filter và sort nên thiết kế ra sao?",
+      "body": "Nên minh bạch bằng query params như `?status=paid&sort=-created_at`. Càng dễ đoán, client càng ít phải đọc code backend để hiểu endpoint."
+    },
+    {
+      "title": "26. Versioning API khi nào cần?",
+      "body": "Khi API đã có nhiều client hoặc thay đổi contract khó tránh. Versioning giúp bạn cải tiến API mà không phá ngay những consumer cũ."
+    },
+    {
+      "title": "27. Versioning nên đặt ở URL, header hay cách khác?",
+      "body": "URL versioning như `/api/v1/...` dễ thấy và dễ vận hành nhất cho nhiều team. Header-based versioning linh hoạt hơn nhưng dễ bị bỏ sót khi debug thủ công."
+    },
+    {
+      "title": "28. Contract stable có nghĩa là gì?",
+      "body": "Là client cũ vẫn hoạt động được sau deploy bình thường. Nếu bạn đổi tên field, đổi kiểu dữ liệu hoặc bỏ field đột ngột thì contract đã không còn stable."
+    },
+    {
+      "title": "29. Validation trong API khác gì validation của form web?",
+      "body": "Về cơ chế Laravel thì khá giống, nhưng API cần nghĩ thêm về cấu trúc lỗi, machine-readable feedback, field path và tác động tới nhiều loại client khác nhau."
+    },
+    {
+      "title": "30. Form Request có đáng dùng cho API không?",
+      "body": "Rất đáng. Nó giúp tách validation và authorization khỏi controller, giữ logic rõ ràng và giúp review request contract dễ hơn.",
+      "code": "class StoreOrderRequest extends FormRequest\n{\n    public function rules(): array\n    {\n        return [\n            'customer_id' => ['required', 'exists:customers,id'],\n            'items' => ['required', 'array', 'min:1'],\n            'items.*.sku' => ['required', 'string'],\n            'items.*.qty' => ['required', 'integer', 'min:1'],\n        ];\n    }\n}",
+      "note": "Khi contract input nằm riêng ở Form Request, controller API đỡ biến thành nơi vừa validate vừa orchestration."
+    },
+    {
+      "title": "31. Một error response tốt nên chứa gì?",
+      "body": "Ít nhất nên có mã lỗi hoặc loại lỗi, message tổng quát đủ dùng, chi tiết theo field khi validation fail, và nếu cần thì correlation id để tra log."
+    },
+    {
+      "title": "32. Validation lỗi nên trả `422` khi nào?",
+      "body": "`422 Unprocessable Entity` phù hợp khi request có cấu trúc hợp lệ nhưng dữ liệu không đạt rule business hoặc validation rule mà API chấp nhận."
+    },
+    {
+      "title": "33. `400` khác `422` thế nào?",
+      "body": "`400` thường ám chỉ request sai kiểu nền tảng hơn, còn `422` hữu ích khi request đã parse được nhưng dữ liệu bên trong không hợp lệ theo rule ứng dụng."
+    },
+    {
+      "title": "34. Có nên trả message tiếng người cho mọi lỗi API không?",
+      "body": "Có, nhưng nên đủ ngắn gọn và ổn định. Ngoài message cho người đọc, hệ thống lớn thường còn cần error code để client xử lý logic chắc chắn hơn."
+    },
+    {
+      "title": "35. Error code nội bộ có ích gì?",
+      "body": "Nó giúp client phân biệt các lỗi cùng status code nhưng khác bản chất, ví dụ `payment_provider_timeout`, `duplicate_webhook`, `invalid_signature`."
+    },
+    {
+      "title": "36. Có nên nhét stack trace vào response khi production lỗi không?",
+      "body": "Không. Client không cần stack trace, còn bạn không nên lộ chi tiết nội bộ, SQL, token hoặc đường dẫn hệ thống ra ngoài."
+    },
+    {
+      "title": "37. Idempotency là gì?",
+      "body": "Là khả năng client gửi lại cùng một request nhiều lần nhưng không tạo thêm tác dụng phụ ngoài ý muốn. Nó cực quan trọng với payment, webhook và create action có retry.",
+      "code": "$key = $request->header('Idempotency-Key');\n\n$existing = PaymentAttempt::where('idempotency_key', $key)->first();\n\nif ($existing) {\n    return response()->json(['data' => $existing], 200);\n}",
+      "note": "Sai lầm thường gặp: thấy retry là tốt rồi quên mất create action có thể bị gọi hai lần và sinh duplicate."
+    },
+    {
+      "title": "38. Khi nào API cần idempotency key?",
+      "body": "Khi client có thể retry request tạo giao dịch, đơn hàng, payout, subscription hoặc bất kỳ tác vụ nào mà duplicate sẽ gây hậu quả nặng."
+    },
+    {
+      "title": "39. API có nên validate business rule ngay ở lớp request không?",
+      "body": "Rule đơn giản thì được. Nhưng các kiểm tra phụ thuộc trạng thái dữ liệu hoặc transaction thường nên đi sâu hơn vào service hoặc use case để tránh rò business khắp nơi."
+    },
+    {
+      "title": "40. Tại sao error contract còn quan trọng hơn response success đẹp?",
+      "body": "Vì lúc hệ thống vỡ hoặc integration fail, team support, frontend và đối tác chỉ nhìn vào lỗi để hiểu chuyện gì đang xảy ra."
+    },
+    {
+      "title": "41. Auth cho API thường có những kiểu nào?",
+      "body": "Phổ biến là session-based cho SPA cùng domain, personal access token, API key, OAuth2 và signature-based auth. Mỗi kiểu phù hợp một trust model khác nhau."
+    },
+    {
+      "title": "42. Sanctum phù hợp khi nào?",
+      "body": "Sanctum rất hợp cho SPA dùng cookie/session cùng hệ Laravel hoặc cho personal access token đơn giản. Nó không phải giải pháp thay thế mọi loại machine-to-machine auth."
+    },
+    {
+      "title": "43. API key phù hợp khi nào?",
+      "body": "Khi đối tác hoặc internal service cần nhận diện đơn giản, ít scope phức tạp và bạn vẫn kiểm soát tốt quota, revoke và logging.",
+      "code": "Route::middleware('check.partner.key')->post('/partner/orders', PartnerOrderController::class);\n\n// middleware\nabort_unless(\n    hash_equals(config('services.partner.key'), $request->header('X-API-Key', '')),\n    401\n);",
+      "note": "API key chỉ ổn khi bạn còn quản được rotate, revoke, quota và log. Đừng biến nó thành secret sống mãi."
+    },
+    {
+      "title": "44. OAuth2 có đáng học không?",
+      "body": "Có nếu bạn làm platform, social login mở rộng, delegated access hoặc hệ nhiều client bên ngoài. Nó phức tạp hơn nhưng đúng bài hơn cho một số mô hình."
+    },
+    {
+      "title": "45. Bearer token có điểm yếu gì?",
+      "body": "Ai cầm token là dùng được. Nếu log lộ, lưu sai chỗ hoặc truyền qua môi trường không an toàn thì token có thể bị lạm dụng ngay."
+    },
+    {
+      "title": "46. Scope hoặc ability dùng để làm gì?",
+      "body": "Nó giới hạn token hoặc client chỉ được làm những việc cụ thể. Điều này tốt hơn nhiều so với phát token toàn quyền cho mọi integration."
+    },
+    {
+      "title": "47. Có nên để token sống mãi không hết hạn?",
+      "body": "Thường là không nên. Token dài hạn làm tăng rủi ro nếu bị lộ và khiến chuyện rotate hoặc revoke khó quản trị hơn."
+    },
+    {
+      "title": "48. Secret nên đặt ở đâu?",
+      "body": "Nên đặt trong `.env`, `config/services.php` hoặc secret manager của hạ tầng. Không hardcode vào code, không đẩy vào git và không gửi qua chat bừa bãi."
+    },
+    {
+      "title": "49. Vì sao `config/services.php` hữu ích cho integration?",
+      "body": "Nó gom endpoint, key, timeout mặc định và cấu hình liên quan service ngoài vào một chỗ. Điều này giúp code integration gọn và dễ đổi môi trường hơn.",
+      "code": "'partner' => [\n    'base_url' => env('PARTNER_BASE_URL'),\n    'key' => env('PARTNER_API_KEY'),\n    'timeout' => env('PARTNER_TIMEOUT', 5),\n    'webhook_secret' => env('PARTNER_WEBHOOK_SECRET'),\n]"
+    },
+    {
+      "title": "50. CORS liên quan gì tới API?",
+      "body": "Nếu client là browser app khác origin, CORS sẽ quyết định browser có cho phép request và đọc response hay không. Nhiều lỗi 'API chết' thực ra là lỗi CORS."
+    },
+    {
+      "title": "51. Rate limiting nên đặt ở đâu?",
+      "body": "Có thể đặt ở Laravel middleware, API gateway hoặc cả hai. Mục tiêu là bảo vệ tài nguyên, chống abuse và giữ service sống được khi client gửi request quá mạnh."
+    },
+    {
+      "title": "52. `429 Too Many Requests` có ý nghĩa gì?",
+      "body": "Nó báo client đang vượt quota hoặc quá nhanh. Một API tử tế nên cho client biết khi nào nên thử lại nếu có thể."
+    },
+    {
+      "title": "53. Có nên log toàn bộ header auth không?",
+      "body": "Không. Token, API key, signature secret hoặc cookie nhạy cảm phải được mask hoặc bỏ khỏi log."
+    },
+    {
+      "title": "54. IP allowlist có phải là bảo mật đủ tốt?",
+      "body": "Nó hữu ích như một lớp phụ, nhưng không nên là lớp duy nhất. IP có thể đổi, có proxy trung gian và không giải quyết hết vấn đề credential leak."
+    },
+    {
+      "title": "55. Secret rotation là gì và vì sao quan trọng?",
+      "body": "Đó là khả năng thay khóa mà không làm integration chết. Một hệ tốt nên nghĩ tới rotate key từ sớm thay vì đợi khi có sự cố mới vá."
+    },
+    {
+      "title": "56. Một lỗi bảo mật rất thường gặp ở integration là gì?",
+      "body": "Tin dữ liệu từ service ngoài như thể nó luôn đúng. Integration an toàn vẫn phải validate, verify signature, kiểm tra trạng thái và không assume event nào cũng đáng tin ngay."
+    },
+    {
+      "title": "57. Laravel HTTP Client dùng để làm gì?",
+      "body": "Nó là lớp tiện lợi của Laravel để gọi HTTP service ngoài qua `Http::get`, `post`, `withHeaders`, `timeout`, `retry`, `fake` và nhiều tiện ích khác.",
+      "code": "$response = Http::baseUrl(config('services.partner.base_url'))\n    ->acceptJson()\n    ->withToken(config('services.partner.key'))\n    ->timeout(5)\n    ->get('/orders');"
+    },
+    {
+      "title": "58. Tại sao không nên rải `Http::post()` khắp controller?",
+      "body": "Vì logic integration sẽ bị phân tán, khó test, khó thay provider và khó gom timeout, retry, auth header, log hoặc mapping lỗi."
+    },
+    {
+      "title": "59. Nên bọc integration outbound theo kiểu nào?",
+      "body": "Thường nên có client class, gateway, adapter hoặc service rõ trách nhiệm. Nó giúp app nói bằng ngôn ngữ domain của mình thay vì dính chặt với payload thô của bên ngoài."
+    },
+    {
+      "title": "60. Timeout nên được xem là cấu hình bắt buộc không?",
+      "body": "Có. Không đặt timeout rõ ràng là cách tốt để request treo lâu, chiếm worker và làm app có vẻ 'đơ không rõ lý do'."
+    },
+    {
+      "title": "61. Retry có phải lúc nào cũng nên bật không?",
+      "body": "Không. Retry chỉ hợp với lỗi tạm thời và action đủ an toàn. Retry mù với payment hoặc create action không idempotent có thể tự tạo duplicate."
+    },
+    {
+      "title": "62. `retry()` nên đi cùng điều gì?",
+      "body": "Nó nên đi cùng timeout, điều kiện retry rõ ràng, logging và hiểu biết về idempotency. Không nên coi retry là thuốc chữa mọi lỗi network."
+    },
+    {
+      "title": "63. Mapping response từ service ngoài có ích gì?",
+      "body": "Nó giúp lớp còn lại của app không phải biết chi tiết field và trạng thái của provider. Nếu provider đổi contract, bạn chỉ vá ở một nơi."
+    },
+    {
+      "title": "64. Có nên lưu raw response của service ngoài không?",
+      "body": "Thường nên lưu có chọn lọc, nhất là khi cần audit hoặc debug. Nhưng phải cẩn thận với PII, token và chi phí lưu trữ."
+    },
+    {
+      "title": "65. `throw()` của HTTP client dùng khi nào?",
+      "body": "Dùng khi bạn muốn response lỗi HTTP chuyển thành exception để flow xử lý lỗi tập trung hơn. Nhưng vẫn phải phân loại exception để log và phản ứng đúng.",
+      "code": "$payload = Http::timeout(5)\n    ->withToken(config('services.partner.key'))\n    ->get('/orders/'.$order->external_id)\n    ->throw()\n    ->json();",
+      "note": "`throw()` làm happy path gọn hơn, nhưng đừng quên bắt và phân loại exception ở lớp orchestration hoặc adapter."
+    },
+    {
+      "title": "66. Network error và business error khác nhau ra sao?",
+      "body": "Network error là không tới được service hoặc timeout. Business error là service trả về phản hồi hợp lệ nhưng nghiệp vụ không chấp nhận, ví dụ thẻ hết hạn hoặc số dư không đủ."
+    },
+    {
+      "title": "67. Có nên đồng bộ mọi cuộc gọi service ngoài ngay trong request người dùng không?",
+      "body": "Không phải lúc nào cũng nên. Nếu service chậm, không ổn định hoặc side effect nặng, queue hóa giúp trải nghiệm người dùng và độ ổn định tốt hơn."
+    },
+    {
+      "title": "68. `202 Accepted` có liên quan gì tới queue integration?",
+      "body": "Nếu request của client chỉ khởi động một process nền, `202` là tín hiệu phù hợp rằng server đã nhận việc nhưng chưa hoàn tất kết quả cuối."
+    },
+    {
+      "title": "69. Fallback là gì trong integration?",
+      "body": "Là cách hệ thống phản ứng khi service ngoài fail, ví dụ degrade chức năng, trả trạng thái pending, dùng cache cũ hoặc xếp hàng thử lại sau."
+    },
+    {
+      "title": "70. Circuit breaker mindset là gì?",
+      "body": "Nếu provider đang lỗi hàng loạt, đừng tiếp tục ném request vô hạn vào nó. Circuit breaker giúp app ngừng gọi một thời gian để bảo vệ tài nguyên và tránh bão lỗi."
+    },
+    {
+      "title": "71. Bulk API call có cần nghĩ khác single call không?",
+      "body": "Có. Bulk call thường cần batching, rate limit, concurrency control, retry strategy và quan sát lỗi theo từng item thay vì coi cả mẻ là một request đơn."
+    },
+    {
+      "title": "72. Có nên để class integration trả thẳng response thô của Laravel HTTP Client không?",
+      "body": "Thường là không nên ở lớp cao hơn. Nên chuyển nó thành object hoặc dữ liệu domain rõ nghĩa để phần còn lại của app ít phụ thuộc framework và provider hơn."
+    },
+    {
+      "title": "73. Sandbox và production endpoint khác nhau thế nào?",
+      "body": "Không chỉ URL khác. Nhiều provider có dữ liệu giả, tốc độ khác, signature khác hoặc quota khác. Đừng assume sandbox phản ánh hoàn toàn production."
+    },
+    {
+      "title": "74. Vì sao integration config nên có environment-specific value rõ ràng?",
+      "body": "Vì base URL, secret, webhook endpoint, timeout và log level thường khác nhau giữa local, staging và production."
+    },
+    {
+      "title": "75. Có nên gọi nhiều provider nối tiếp trong một request người dùng không?",
+      "body": "Cần rất cẩn thận. Mỗi cuộc gọi thêm vào làm tăng latency, tăng điểm fail và tăng độ khó rollback nếu một bước thành công còn bước sau thất bại."
+    },
+    {
+      "title": "76. Tại sao queue không tự động giải quyết mọi vấn đề integration?",
+      "body": "Queue chỉ dời thời điểm xử lý. Nó không tự giải quyết duplicate, stale payload, idempotency, retry vô tận hoặc thiếu audit."
+    },
+    {
+      "title": "77. Partner API drift là gì?",
+      "body": "Là khi service ngoài thay đổi contract hoặc hành vi từ từ mà không báo đủ rõ, khiến integration của bạn bắt đầu lỗi lạ dù code không đổi."
+    },
+    {
+      "title": "78. Một tip thực chiến khi gọi provider ngoài là gì?",
+      "body": "Luôn log request id, endpoint, loại action, thời gian phản hồi và kết quả tổng quát. Không cần log mọi byte, nhưng phải log đủ để lần lại vấn đề."
+    },
+    {
+      "title": "79. Vì sao adapter/gateway giúp integration bền hơn?",
+      "body": "Vì app của bạn gọi một interface ổn định theo ngôn ngữ business nội bộ, còn phần adapter chịu trách nhiệm chuyển đổi sang contract cụ thể của nhà cung cấp."
+    },
+    {
+      "title": "80. Khi nào nên nghĩ tới internal package hoặc module cho integration?",
+      "body": "Khi nhiều app hoặc nhiều feature dùng cùng một provider, cùng policy retry, logging, mapping và auth. Nhưng đừng tách package quá sớm nếu chưa ổn định."
+    },
+    {
+      "title": "81. Webhook là gì?",
+      "body": "Webhook là cách hệ thống ngoài chủ động gọi vào app của bạn khi có sự kiện xảy ra, ví dụ payment succeeded, invoice paid, shipment updated.",
+      "code": "Route::post('/webhooks/partner', PartnerWebhookController::class);"
+    },
+    {
+      "title": "82. Vì sao webhook thường cần queue hóa?",
+      "body": "Vì sender thường muốn nhận `2xx` nhanh. Nếu bạn xử lý nặng ngay trong request webhook, timeout hoặc retry duplicate rất dễ xảy ra."
+    },
+    {
+      "title": "83. Verify signature của webhook để làm gì?",
+      "body": "Để xác nhận payload thật sự đến từ provider đáng tin chứ không phải ai đó giả mạo gửi POST vào endpoint công khai của bạn.",
+      "code": "$signature = $request->header('X-Partner-Signature');\n$payload = $request->getContent();\n$expected = hash_hmac('sha256', $payload, config('services.partner.webhook_secret'));\n\nabort_unless(hash_equals($expected, $signature), 401);"
+    },
+    {
+      "title": "84. Nếu webhook sender retry thì sao?",
+      "body": "Bạn phải coi duplicate delivery là chuyện bình thường. Handler cần idempotent hoặc ít nhất phải phát hiện event đã xử lý rồi."
+    },
+    {
+      "title": "85. Event ID của provider có ích gì?",
+      "body": "Nó là khóa rất tốt để deduplicate và audit, vì cùng một webhook có thể được gửi lại nhiều lần."
+    },
+    {
+      "title": "86. Có nên tin thứ tự webhook luôn đúng không?",
+      "body": "Không. Event có thể đến trễ, đảo thứ tự hoặc bị retry sau khi event mới hơn đã tới. Logic phải chịu được out-of-order delivery."
+    },
+    {
+      "title": "87. Nếu webhook báo thanh toán thành công nhưng DB app chưa có order tương ứng thì sao?",
+      "body": "Đó là case production rất thật. Bạn cần chiến lược reconciliation, retry tra cứu, pending queue hoặc dead-letter thay vì làm rơi event vô im lặng."
+    },
+    {
+      "title": "88. Sync API và webhook thường phối hợp với nhau thế nào?",
+      "body": "Nhiều provider cho create action qua API còn trạng thái cuối cùng xác nhận qua webhook. Đừng assume response create ban đầu là trạng thái kết thúc."
+    },
+    {
+      "title": "89. Eventual consistency nghĩa là gì trong integration?",
+      "body": "Là dữ liệu giữa hai hệ có thể không khớp ngay tại mọi thời điểm, nhưng sẽ hội tụ đúng sau một khoảng thời gian và các bước xử lý cần thiết."
+    },
+    {
+      "title": "90. Dead-letter queue hữu ích khi nào?",
+      "body": "Khi một số webhook hoặc job lỗi lặp lại nhiều lần mà không thể xử lý bình thường. Nó giữ event lại để con người kiểm tra thay vì mất dấu."
+    },
+    {
+      "title": "91. Reconciliation job là gì?",
+      "body": "Là job hoặc command định kỳ đối chiếu trạng thái giữa app của bạn và provider ngoài để phát hiện missing event, pending quá lâu hoặc dữ liệu lệch."
+    },
+    {
+      "title": "92. Khi nào cần lưu payload gốc của webhook?",
+      "body": "Thường nên lưu khi event có giá trị nghiệp vụ hoặc cần audit. Payload gốc là bằng chứng hữu ích khi phải điều tra tranh chấp hoặc bug đồng bộ."
+    },
+    {
+      "title": "93. Có nên xử lý side effect trực tiếp trong controller webhook không?",
+      "body": "Không nên nhiều. Controller nên verify, persist tối thiểu, ack nhanh và đẩy phần nặng sang queue hoặc service rõ ràng."
+    },
+    {
+      "title": "94. Tại sao nên phân biệt inbound integration với outbound integration?",
+      "body": "Inbound là bạn nhận dữ liệu từ ngoài vào, outbound là bạn gọi ra ngoài. Rủi ro, cách auth, khả năng retry và kiểu debug của hai hướng này khác nhau khá nhiều."
+    },
+    {
+      "title": "95. Webhook replay attack là gì?",
+      "body": "Là việc kẻ xấu hoặc hệ thống gửi lại payload cũ hợp lệ để tạo hiệu ứng lặp. Timestamp, signature window và deduplication giúp giảm rủi ro này."
+    },
+    {
+      "title": "96. Một sai lầm phổ biến với webhook là gì?",
+      "body": "Lấy payload tới đâu cập nhật trạng thái tới đó mà không kiểm tra trạng thái hiện tại, tính hợp lệ của chuyển trạng thái hoặc nguồn gốc sự kiện."
+    },
+    {
+      "title": "97. API test trong Laravel nên bao phủ gì?",
+      "body": "Nên bao phủ success, validation fail, unauthorized, forbidden, not found, rate limit, response shape và các rule business quan trọng."
+    },
+    {
+      "title": "98. HTTP fake có ích gì khi test integration?",
+      "body": "Nó giúp bạn giả lập provider ngoài để test luồng xử lý, mapping và error handling mà không phụ thuộc network thật hoặc sandbox bất ổn.",
+      "code": "Http::fake([\n    'partner.test/orders*' => Http::response([\n        'id' => 'ord_123',\n        'status' => 'created',\n    ], 201),\n]);",
+      "note": "Khi đã fake được provider, bạn mới test đường lỗi và mapping một cách ổn định thay vì phụ thuộc sandbox thất thường."
+    },
+    {
+      "title": "99. Có nên có test cho retry và timeout không?",
+      "body": "Nếu integration quan trọng thì nên. Những lỗi khó chịu nhất thường nằm ở đường lỗi chứ không nằm ở happy path."
+    },
+    {
+      "title": "100. Contract test là gì?",
+      "body": "Đó là test bảo đảm API của bạn vẫn trả đúng shape mà client kỳ vọng, hoặc integration client của bạn vẫn hiểu đúng contract từ provider ngoài."
+    },
+    {
+      "title": "101. OpenAPI hoặc Swagger có đáng làm không?",
+      "body": "Có, nhất là khi API có nhiều consumer hoặc team tách rời. Tài liệu máy đọc được giúp frontend, mobile, QA và partner tích hợp dễ hơn."
+    },
+    {
+      "title": "102. Postman collection có còn hữu ích không?",
+      "body": "Có. Nó tiện cho demo, manual QA, partner onboarding và kiểm tra nhanh những endpoint quan trọng ngoài luồng test tự động."
+    },
+    {
+      "title": "103. Correlation ID dùng để làm gì?",
+      "body": "Nó giúp nối request vào log, job, webhook callback và external call cùng một chuỗi điều tra. Khi integration hỏng, correlation id cứu rất nhiều thời gian.",
+      "code": "$correlationId = (string) Str::uuid();\n\nlogger()->withContext([\n    'correlation_id' => $correlationId,\n    'provider' => 'partner-api',\n]);",
+      "note": "Nếu request, job và outbound call không chia sẻ cùng correlation id, support sẽ rất mất thời gian ghép manh mối bằng tay."
+    },
+    {
+      "title": "104. Nên log gì cho API request đến?",
+      "body": "Ít nhất nên có route, actor, correlation id, thời gian xử lý, status code và loại lỗi tổng quát. Đừng log bừa thông tin nhạy cảm."
+    },
+    {
+      "title": "105. Nên log gì cho outbound call?",
+      "body": "Service name, action, endpoint tổng quát, latency, status, request id của provider nếu có và kết quả thành công hay thất bại."
+    },
+    {
+      "title": "106. Metric nào hữu ích cho API và integration?",
+      "body": "Request count, error rate, timeout rate, retry rate, queue lag, webhook duplicate rate, latency theo endpoint và success rate theo provider."
+    },
+    {
+      "title": "107. Alert nên đặt vào đâu?",
+      "body": "Nên alert khi error rate tăng, queue lag cao, webhook fail nhiều, provider timeout tăng đột biến hoặc reconciliation phát hiện dữ liệu lệch."
+    },
+    {
+      "title": "108. Support playbook cho integration nên có gì?",
+      "body": "Nên có bước kiểm tra correlation id, payload gốc, event id, trạng thái DB, log outbound call, queue retry và trạng thái provider.",
+      "code": "1. lấy correlation id hoặc event id\n2. tìm log inbound/outbound liên quan\n3. kiểm tra DB state hiện tại\n4. kiểm tra failed jobs / retry\n5. đối chiếu dashboard hoặc trạng thái provider\n6. quyết định retry, reconcile hay escalate",
+      "note": "Playbook tốt giúp support bớt phản xạ đoán mò kiểu 'thử gửi lại xem sao' khi chưa hiểu trạng thái hệ thống đang lệch ở đâu."
+    },
+    {
+      "title": "109. Tài liệu cho partner nên viết kiểu nào?",
+      "body": "Rõ endpoint, auth, sample request-response, error code, retry expectation, webhook signature verification và môi trường sandbox/production."
+    },
+    {
+      "title": "110. Vì sao onboarding partner bằng tài liệu tốt lại quan trọng?",
+      "body": "Vì mỗi câu hỏi tích hợp lặp lại đều là chi phí support. Tài liệu tốt giảm support hơn nhiều so với việc chỉ có code 'chạy được'."
+    },
+    {
+      "title": "111. Có nên expose mọi field nội bộ ra API để tiện frontend?",
+      "body": "Không nên theo thói quen. API là hợp đồng bên ngoài, không phải cửa sổ mở toàn bộ database hoặc business internals."
+    },
+    {
+      "title": "112. Local chạy được nhưng production fail integration thường vì đâu?",
+      "body": "Thường vì secret sai, CORS, SSL, proxy header, timeout, queue worker khác code mới, rate limit hoặc provider sandbox và production khác hành vi."
+    },
+    {
+      "title": "113. Vì sao login API bằng Sanctum có thể trả `200` nhưng request sau vẫn `401`?",
+      "body": "Vì vấn đề thường nằm ở cookie, stateful domain, CORS, `withCredentials`, session domain hoặc CSRF flow chứ không nằm ở hành động login đơn lẻ."
+    },
+    {
+      "title": "114. Vì sao webhook valid ở local nhưng production bị `401` hoặc `403`?",
+      "body": "Có thể do secret sai môi trường, reverse proxy làm đổi raw body, header signature không được forward đúng hoặc clock skew làm lệch timestamp window."
+    },
+    {
+      "title": "115. Vì sao payment provider báo thành công nhưng order app vẫn pending?",
+      "body": "Có thể create call thành công nhưng webhook chưa tới, queue lỗi, event bị duplicate rồi chặn sai, transition state bị khóa hoặc reconciliation chưa chạy."
+    },
+    {
+      "title": "116. Tại sao integration thường cần bảng log hoặc bảng event riêng?",
+      "body": "Vì khi tranh chấp xảy ra, bạn cần nhìn được từng lần gửi, từng lần nhận, payload nào, trạng thái nào và bước nào fail."
+    },
+    {
+      "title": "117. Một mùi code xấu của integration layer là gì?",
+      "body": "Controller gọi `Http::post()` trực tiếp, parse response ngay tại chỗ, tự viết retry, tự catch exception rồi update DB ở nhiều nơi. Điều đó làm flow rất khó bảo trì."
+    },
+    {
+      "title": "118. Có nên gom mọi provider vào một class khổng lồ không?",
+      "body": "Không nên. Mỗi provider nên có lớp hoặc module rõ trách nhiệm. Class integration khổng lồ sẽ rất nhanh trở thành bãi logic và bug."
+    },
+    {
+      "title": "119. Khi nào cần phân biệt transport error với domain error trong DB của mình?",
+      "body": "Gần như luôn cần nếu integration quan trọng. Biết request fail vì network hay vì provider từ chối nghiệp vụ sẽ quyết định cách retry và cách support."
+    },
+    {
+      "title": "120. Tại sao idempotency nên được nghĩ ở cả inbound và outbound?",
+      "body": "Outbound create call có thể bị retry từ phía bạn, còn inbound webhook có thể bị retry từ phía provider. Cả hai chiều đều có nguy cơ duplicate side effect."
+    },
+    {
+      "title": "121. Một câu hỏi senior hay đặt ra với API mới là gì?",
+      "body": "Nếu request này bị gửi lại ba lần, tới trễ hai phút, timeout ở giữa và client chỉ biết status code đầu tiên, hệ thống của mình sẽ hành xử ra sao?"
+    },
+    {
+      "title": "122. Khi nào nên tách API orchestration khỏi business core?",
+      "body": "Khi API chỉ là lớp giao tiếp còn business core cần dùng lại cho job, command, webhook hoặc admin flow khác. Tách vậy giúp logic không bị phụ thuộc vào HTTP context."
+    },
+    {
+      "title": "123. Có nên thiết kế integration theo kiểu 'happy path trước, lỗi tính sau' không?",
+      "body": "Không nên với phần quan trọng. Integration thật thường thất bại ở path lỗi, retry, duplicate, stale secret và event đến sai thứ tự chứ không thất bại ở demo path."
+    },
+    {
+      "title": "124. Rà soát cuối: site API & integration đã nên có những mảng nào?",
+      "body": "Ít nhất phải có nền tảng API, route-resource-contract, validation-error-idempotency, auth-security-rate-limit, HTTP client outbound, webhook-queue-reliability, testing-docs-observability và case production thật."
+    },
+    {
+      "title": "125. Ví dụ config route API cơ bản trong Laravel thường bắt đầu từ đâu?",
+      "body": "Thường bắt đầu từ `routes/api.php`, middleware auth phù hợp và naming endpoint rõ ràng. Điều quan trọng không phải chỉ là route chạy, mà là route đó có contract, auth và quota rõ ràng từ sớm."
+    },
+    {
+      "title": "126. Ví dụ API Resource thực tế giúp gì hơn một mảng JSON tự viết tay?",
+      "body": "Nó gom logic format vào một chỗ, ví dụ đổi `created_at` thành ISO string, ẩn field nhạy cảm hoặc chỉ include relation khi cần. Khi contract đổi, bạn vá một resource thay vì lục nhiều controller."
+    },
+    {
+      "title": "127. Rate limiter trong Laravel nên được nghĩ như một policy hay một con số cứng?",
+      "body": "Nên nghĩ như policy. Mỗi loại client hoặc action có thể có quota khác nhau: login, search, webhook endpoint, partner API hoặc import job không nhất thiết dùng cùng một ngưỡng."
+    },
+    {
+      "title": "128. Khi gọi `Http::withToken()` hoặc `withHeaders()`, tại sao vẫn nên có lớp wrapper riêng?",
+      "body": "Vì auth header mới chỉ là đầu câu chuyện. Wrapper còn gom timeout, retry, base URL, correlation id, mapping lỗi, logging và cách parse response nhất quán."
+    },
+    {
+      "title": "129. Tại sao verify webhook thường phải dùng raw body chứ không chỉ nhìn mảng JSON đã parse?",
+      "body": "Nhiều provider ký trên raw payload gốc. Nếu body đã bị parse rồi encode lại khác thứ tự hoặc khác spacing, chữ ký sẽ không còn khớp dù nội dung nhìn có vẻ giống nhau."
+    },
+    {
+      "title": "130. `Http::fake()` và `Http::fakeSequence()` khác nhau ở đâu trong tư duy test?",
+      "body": "`fake()` hợp cho một phản hồi cố định, còn `fakeSequence()` rất hữu ích khi muốn test retry, lần đầu fail lần sau success, hoặc nhiều bước gọi provider liên tiếp."
+    },
+    {
+      "title": "131. Khi nào API nên công bố deprecation trước khi bỏ field hoặc endpoint?",
+      "body": "Gần như luôn nên làm nếu có client ngoài team hoặc mobile app release chậm. Deprecation notice, changelog và thời hạn rõ ràng giúp giảm cảnh 'backend deploy xong client chết'."
+    },
+    {
+      "title": "132. Outbox pattern liên quan gì tới integration?",
+      "body": "Khi app của bạn vừa commit DB vừa cần publish event hoặc gọi service ngoài, outbox giúp tránh trạng thái DB đã lưu nhưng message chưa phát, hoặc ngược lại phát rồi nhưng DB rollback."
+    },
+    {
+      "title": "133. Khi nào nên publish event nội bộ thay vì gọi provider trực tiếp trong transaction?",
+      "body": "Khi side effect ra ngoài không nên khóa chặt vào transaction chính. Transaction nên bảo vệ state nội bộ, còn publish hoặc gọi provider có thể đi sau qua queue đáng tin hơn."
+    },
+    {
+      "title": "134. Có nên cho client tự chọn field response kiểu sparse fieldset không?",
+      "body": "Chỉ nên khi API đủ lớn và có nhu cầu thật. Nó giúp tối ưu payload nhưng cũng làm contract, cache và testing phức tạp hơn nếu đưa vào quá sớm."
+    },
+    {
+      "title": "135. Một playbook hay khi partner báo 'API của bạn lúc được lúc không' là gì?",
+      "body": "Kiểm tra correlation id, rate limit, timeout distribution, deploy gần nhất, thay đổi secret, log proxy, queue lag và xem lỗi tập trung ở action nào thay vì chỉ nhìn vài request lẻ."
+    },
+    {
+      "title": "136. Ví dụ route API và JSON response cơ bản trong Laravel",
+      "body": "Đây là ví dụ tối thiểu nhưng đủ để nhìn thấy contract API bắt đầu từ đâu.",
+      "code": "Route::middleware('auth:sanctum')->get('/user', function (Request $request) {\n    return response()->json([\n        'data' => $request->user(),\n    ]);\n});",
+      "note": "Ngay cả ví dụ nhỏ này cũng đã chạm vào auth boundary, response contract và kỳ vọng của client."
+    },
+    {
+      "title": "137. Ví dụ gọi API ngoài bằng `Http::` với timeout và retry",
+      "body": "Đây là kiểu snippet rất đáng copy khi tích hợp service ngoài lần đầu.",
+      "code": "$response = Http::timeout(5)\n    ->retry(2, 200)\n    ->acceptJson()\n    ->post('https://partner.test/api/orders', [\n        'order_id' => $order->id,\n        'amount' => $order->total,\n    ]);\n\nif ($response->failed()) {\n    report(new RuntimeException('Partner API failed'));\n}",
+      "bullets": [
+        "`timeout()` ngăn request treo quá lâu.",
+        "`retry()` hữu ích cho lỗi mạng tạm thời nhưng không nên lạm dụng với mọi loại lỗi.",
+        "`failed()` giúp bạn tách đường xử lý khi integration trả kết quả xấu."
+      ]
+    },
+    {
+      "title": "138. Ví dụ webhook endpoint cơ bản có verify chữ ký",
+      "body": "Webhook là nơi nhiều tích hợp vỡ nhất nếu chỉ nhận payload rồi tin ngay.",
+      "code": "$signature = $request->header('X-Signature');\n$payload = $request->getContent();\n$expected = hash_hmac('sha256', $payload, config('services.partner.webhook_secret'));\n\nabort_unless(hash_equals($expected, $signature), 401);\n\nProcessWebhookJob::dispatch($request->all());",
+      "note": "Hãy verify trên raw body trước, rồi mới queue xử lý. Nếu nhầm thứ tự, bạn rất dễ nhận và xử lý nhầm webhook giả."
+    },
+    {
+      "title": "139. Ví dụ API Resource để giữ response contract gọn hơn",
+      "body": "Khi API bắt đầu lớn lên, trả mảng tay ở nhiều controller rất nhanh thành khó kiểm soát.",
+      "code": "class PostResource extends JsonResource\n{\n    public function toArray($request): array\n    {\n        return [\n            'id' => $this->id,\n            'title' => $this->title,\n            'author' => $this->user?->name,\n        ];\n    }\n}\n\nreturn new PostResource($post);",
+      "note": "API Resource giúp gom contract vào một chỗ dễ review hơn và giảm nguy cơ mỗi endpoint trả shape khác nhau vô thức."
+    },
+    {
+      "title": "140. Đánh giá sau rà soát: phần API & integration đã đủ chi tiết chưa?",
+      "body": "Ở mức portal học tập thì đã khá đầy: có nền tảng, config mindset, auth, contract, resource, HTTP client, webhook, retry, idempotency, docs, test, observability và case production. Nếu muốn đi sâu hơn nữa sau này, hướng hợp lý nhất là tách riêng các site con về OAuth, webhook security, event-driven integration và API versioning strategy."
+    }
+  ]
+}

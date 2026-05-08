@@ -1,0 +1,816 @@
+{
+  "anchor": "laravel-devops",
+  "type": "list",
+  "heading": "Sail, environments, and deployment: from consistent local setup to healthy production",
+  "intro": "This topic gathers the practical side of Laravel Sail, runtime environments, and deployment. The goal is not only to know how to run `./vendor/bin/sail up`, but to understand how environments shape application behavior, what Docker helps with and what it does not, how `.env` and config cache interact, where queue workers and schedulers actually live, how deployment and rollback should be planned, and why secrets, backups, monitoring, zero-downtime thinking, and runtime consistency matter so much.",
+  "breaks": [
+    {
+      "start": 1,
+      "title": "I. Environment Mindset And Why Sail Matters",
+      "description": "The environment is part of the application, not just a place where code runs. Start with how local, staging, and production drift creates pain.",
+      "tone": "amber"
+    },
+    {
+      "start": 19,
+      "title": "II. Sail, Docker, And Consistent Local Workflow",
+      "description": "What Sail is, what Docker helps with, supporting services, volumes, images, networking, and how teams use a more consistent local runtime.",
+      "tone": "copper"
+    },
+    {
+      "start": 45,
+      "title": "III. `.env`, Config, Secrets, And Environment Drift",
+      "description": "Environment variables, config cache, secrets, app keys, service endpoints, feature flags, and how to keep local, staging, and production from silently drifting apart.",
+      "tone": "sand"
+    },
+    {
+      "start": 69,
+      "title": "IV. Processes, Queues, Scheduler, And Real Runtime Behavior",
+      "description": "PHP-FPM, web servers, queue workers, the scheduler, Supervisor, cron, restart policies, and the processes that truly make a Laravel app run.",
+      "tone": "amber"
+    },
+    {
+      "start": 93,
+      "title": "V. Build, Deploy, Release, And Rollback",
+      "description": "Artifacts, CI/CD, migration ordering, cache warmup, smoke tests, rollbacks, zero-downtime thinking, and safer release flow.",
+      "tone": "copper"
+    },
+    {
+      "start": 117,
+      "title": "VI. Database, Storage, Backups, Networking, And Supporting Infrastructure",
+      "description": "Database connections, storage, CDN, DNS, SSL, backups, restore strategy, queue backends, Redis, object storage, and how these pieces attach to Laravel operations.",
+      "tone": "sand"
+    },
+    {
+      "start": 139,
+      "title": "VII. Monitoring, Alerts, Observability, And Supportability",
+      "description": "Logs, metrics, health checks, dashboards, alerts, incident response, runbooks, and treating the environment as a system with visible signals rather than a black box.",
+      "tone": "amber"
+    },
+    {
+      "start": 145,
+      "title": "VIII. Real Config, Permissions, Proxy, And Operational Playbooks",
+      "description": "The things that often break real systems: Nginx, trusted proxies, HTTPS, file permissions, deploy users, health endpoints, restore drills, secret rotation, and pre/post-release checklists.",
+      "tone": "sand"
+    },
+    {
+      "start": 159,
+      "title": "IX. Real Cases, Anti-Patterns, And Final Assessment",
+      "description": "Classic production failures, signs of half-done devops practice, and the criteria for knowing whether your Laravel app is being operated deliberately or just luckily.",
+      "tone": "copper"
+    }
+  ],
+  "items": [
+    {
+      "title": "1. Why is the runtime environment part of the application?",
+      "body": "Because the app is not only PHP code. It also depends on PHP runtime, extensions, databases, Redis, filesystems, queues, web servers, and environment configuration.",
+      "code": "APP_ENV=production\nAPP_DEBUG=false\nDB_CONNECTION=mysql\nQUEUE_CONNECTION=redis\nCACHE_STORE=redis\nFILESYSTEM_DISK=s3",
+      "note": "Common mistake: thinking the environment is just where the code runs. Fix it by seeing runtime, queues, cache, storage, and secrets as part of application behavior."
+    },
+    {
+      "title": "2. Why does 'it works locally' not prove much?",
+      "body": "Because local development usually lacks real data volume, real queue pressure, real cron behavior, and many production constraints."
+    },
+    {
+      "title": "3. What is environment drift?",
+      "body": "It is when local, staging, and production differ in versions, configuration, services, or runtime behavior without the team realizing it."
+    },
+    {
+      "title": "4. Why is environment drift dangerous?",
+      "body": "It creates 'works on my machine' bugs, makes deployments unpredictable, and wastes enormous debugging time."
+    },
+    {
+      "title": "5. Why is Sail important in a Laravel learning path?",
+      "body": "Because it helps learners see early that Laravel never really runs alone. It always depends on environment and supporting services."
+    },
+    {
+      "title": "6. Does devops matter even for a small Laravel app?",
+      "body": "Yes. Even small apps still depend on how they run, how they are configured, how they back up data, and how they are deployed."
+    },
+    {
+      "title": "7. Why do many Laravel learners skip environment topics?",
+      "body": "Because local CRUD often works quickly, which creates the illusion that infrastructure is just a side concern."
+    },
+    {
+      "title": "8. What does a healthy long-term Laravel environment look like?",
+      "body": "Consistent environments, clear processes, visible queues and schedulers, predictable deployment, and a real rollback path."
+    },
+    {
+      "title": "9. What does a tired Laravel environment look like?",
+      "body": "It runs on personal memory, secrets are unclear, workers are unmanaged, the scheduler is invisible, and incidents only surface when users complain."
+    },
+    {
+      "title": "10. What is the right mindset about environments?",
+      "body": "Treat the environment as part of the system architecture, not as a temporary setup detail."
+    },
+    {
+      "title": "11. Why is Docker not the goal but only a tool?",
+      "body": "Because the real goal is reproducibility and consistency. Docker is one common way to reach that."
+    },
+    {
+      "title": "12. Why is deployment a product concern and not only a technical concern?",
+      "body": "Because poor deployment can create downtime, lost data, failed queues, broken auth, or search drift directly in front of users."
+    },
+    {
+      "title": "13. What is a senior tip about this area?",
+      "body": "If the app only runs correctly when one specific person remembers twenty hidden steps, the environment is not designed well enough."
+    },
+    {
+      "title": "14. How does devops relate to code quality?",
+      "body": "Healthy code makes deployment safer, while healthy runtime environments reduce the number of strange bugs code has to survive."
+    },
+    {
+      "title": "15. How does devops relate to maintenance and upgrades?",
+      "body": "Runtime versions, images, extensions, and supporting services are half the long-term upgrade story."
+    },
+    {
+      "title": "16. What is a bad way to study this topic?",
+      "body": "Treating Sail as only a command for booting containers and learning nothing about runtime, config, queues, or deployments."
+    },
+    {
+      "title": "17. What is the short conclusion of the mindset section?",
+      "body": "The environment is not a side stage. It is where the code truly lives or dies."
+    },
+    {
+      "title": "18. What is Sail in Laravel?",
+      "body": "Sail is Laravel's prepared Docker-based local development environment, designed to make application setup more consistent.",
+      "code": "./vendor/bin/sail up -d\n./vendor/bin/sail artisan migrate\n./vendor/bin/sail npm install\n./vendor/bin/sail npm run dev",
+      "note": "A healthy local workflow is not only about starting containers, but also about running commands inside the correct project runtime."
+    },
+    {
+      "title": "19. Why is Sail useful for Laravel learners?",
+      "body": "It lowers setup friction and lets learners run the app with databases, Redis, mail testing tools, and other services in a more reproducible way."
+    },
+    {
+      "title": "20. What is a Docker image in the context of Sail?",
+      "body": "It is the packaged runtime environment that gives containers the PHP version, extensions, and tools the app needs."
+    },
+    {
+      "title": "21. How is a container different from a normal machine environment?",
+      "body": "A container is more isolated, more reproducible, and easier to standardize, though it still runs on a host underneath."
+    },
+    {
+      "title": "22. What do Docker volumes help with?",
+      "body": "They persist or share data between the host and containers, such as source code or database files."
+    },
+    {
+      "title": "23. What problems come from misunderstanding volumes?",
+      "body": "Lost data, permission issues, local changes not appearing where expected, or containers masking host data unexpectedly."
+    },
+    {
+      "title": "24. Why does container networking matter?",
+      "body": "It lets the application container talk to the database, Redis, mail tools, and other services by service name rather than by host-machine assumptions."
+    },
+    {
+      "title": "25. Why is `localhost` inside a container confusing?",
+      "body": "Because inside the container it points to the container itself, not to your host machine or another service container.",
+      "code": "DB_HOST=mysql\nREDIS_HOST=redis\nMAIL_HOST=mailpit",
+      "note": "In Docker and Sail, the app usually talks to other services by service name rather than `127.0.0.1` assumptions from a plain local stack."
+    },
+    {
+      "title": "26. What kinds of services does Sail usually bundle?",
+      "body": "The PHP app container, the database, Redis, a local mail testing service, and sometimes additional tools depending on the stack."
+    },
+    {
+      "title": "27. Should too many local services be added at the beginning?",
+      "body": "Usually not. Every extra service increases boot time, resource usage, and conceptual complexity."
+    },
+    {
+      "title": "28. How does Sail reduce 'works on my machine' problems?",
+      "body": "It aligns the team on a more consistent runtime stack including PHP version, extensions, and supporting services."
+    },
+    {
+      "title": "29. Does Sail replace understanding Docker?",
+      "body": "No. It is an excellent starting point, but teams still benefit from understanding volumes, networks, images, and container lifecycle."
+    },
+    {
+      "title": "30. What is `./vendor/bin/sail up` really doing?",
+      "body": "It starts the project's configured containers and supporting services so the local runtime becomes available."
+    },
+    {
+      "title": "31. Why is `sail shell` or running commands inside containers useful?",
+      "body": "It makes sure commands run in the same runtime environment the app actually uses, reducing host-versus-container mismatch."
+    },
+    {
+      "title": "32. Should Composer or Artisan commands often run inside the container?",
+      "body": "Usually yes when the containerized runtime is the real project standard, because it keeps behavior consistent across machines."
+    },
+    {
+      "title": "33. What should teams watch for with npm or Vite in Sail?",
+      "body": "Node version alignment, file watching, port mapping, volume performance, and how HMR behaves inside Docker."
+    },
+    {
+      "title": "34. What is a practical Sail tip?",
+      "body": "Learn the service names, port mappings, volume behavior, and where the real data lives instead of only memorizing the start or stop commands."
+    },
+    {
+      "title": "35. Should Sail be treated as perfectly production-like?",
+      "body": "No. It is a much better path than an ad hoc local stack, but it does not automatically mirror production completely."
+    },
+    {
+      "title": "36. What is a bad smell in local Docker workflow?",
+      "body": "Nobody knows which containers are critical, where the database actually persists, or why the app cannot reach a supporting service."
+    },
+    {
+      "title": "37. If container builds are slow, what should be examined?",
+      "body": "Dockerfile layers, cache usage, service count, volume strategy, and whether expensive build steps are being repeated unnecessarily."
+    },
+    {
+      "title": "38. If Sail is heavy on developer machines, what might that mean?",
+      "body": "The local stack may be too large, resources may be poorly allocated, or the team may be paying hidden cost for convenience."
+    },
+    {
+      "title": "39. Is Sail useful for teaching process discipline to teams?",
+      "body": "Very much. It is a natural place to build consistency habits around runtime setup and local workflow."
+    },
+    {
+      "title": "40. What is the short conclusion about Sail?",
+      "body": "Sail is not only a way to boot an app. It is a doorway into understanding Laravel as a multi-service runtime."
+    },
+    {
+      "title": "41. What is `.env` used for in Laravel?",
+      "body": "It stores environment-specific settings such as database credentials, cache backend, queue connection, mail config, app key, and outside service endpoints.",
+      "code": "APP_NAME=\"Laravel Labs\"\nAPP_URL=https://labs.example.com\nAPP_KEY=base64:...\nDB_HOST=mysql\nREDIS_HOST=redis\nSTRIPE_SECRET=sk_live_...",
+      "bullets": [
+        "`.env` stores environment values, not business logic.",
+        "Those values should flow through `config/*.php` rather than random `env()` calls in app code."
+      ]
+    },
+    {
+      "title": "42. Why should `.env` not become a random dumping ground?",
+      "body": "Because chaotic environment variables become difficult to audit, difficult to onboard, and easy to drift across environments."
+    },
+    {
+      "title": "43. How do `config/*.php` and `.env` relate?",
+      "body": "`.env` supplies environment values, while the config files organize those values into the actual configuration structure the app reads."
+    },
+    {
+      "title": "44. Why should `env()` not be called everywhere in application code?",
+      "body": "Because it breaks configuration consistency and becomes especially dangerous once config caching is involved."
+    },
+    {
+      "title": "45. What does `config:cache` do?",
+      "body": "It compiles configuration into a more optimized form for production, which means changing `.env` later will not take effect until config is properly refreshed.",
+      "code": "php artisan config:cache\nphp artisan config:clear",
+      "note": "A common mistake is editing `.env`, reloading the app, and assuming the change is live. With cached config, that is often false."
+    },
+    {
+      "title": "46. What is a very common `.env`-related bug?",
+      "body": "Someone edits `.env` and forgets to clear or rebuild config cache, so the app still behaves with old values."
+    },
+    {
+      "title": "47. What is a secret in a Laravel application?",
+      "body": "A secret is sensitive configuration such as the app key, database password, API token, webhook signing key, or cloud credential."
+    },
+    {
+      "title": "48. Why is secret management also a devops concern and not only a security concern?",
+      "body": "Because secrets must be injected, rotated, audited, and deployed safely across environments."
+    },
+    {
+      "title": "49. Should `.env` be committed to git?",
+      "body": "No. Normally only `.env.example` or other non-secret example files belong in version control."
+    },
+    {
+      "title": "50. Why is `.env.example` valuable?",
+      "body": "It shows new contributors which environment values the app needs in order to run."
+    },
+    {
+      "title": "51. How does drift between `.env.example` and reality hurt the team?",
+      "body": "New developers or CI pipelines may miss critical variables, while production silently depends on values nobody documented."
+    },
+    {
+      "title": "52. Are feature flags in environment config useful?",
+      "body": "Yes. They are very useful for controlled rollout and fast deactivation of sensitive behavior."
+    },
+    {
+      "title": "53. How important is the app key?",
+      "body": "It is deeply tied to encryption, sessions, and other security-sensitive behavior. Changing it casually can cause serious breakage."
+    },
+    {
+      "title": "54. Should environment-specific service endpoints be hardcoded?",
+      "body": "No. Service URLs belong behind environment config so they can differ cleanly across local, staging, and production."
+    },
+    {
+      "title": "55. Why should local, staging, and production follow clear variable conventions?",
+      "body": "It makes the system easier to read, easier to audit, and less prone to copy-paste mistakes or missing critical values."
+    },
+    {
+      "title": "56. How does secret rotation affect application design?",
+      "body": "A healthy app should tolerate controlled secret rotation without long downtime or many scattered manual edits."
+    },
+    {
+      "title": "57. What is a practical env-related tip?",
+      "body": "Every important variable should have a clear reason to exist and someone in the team who understands its purpose.",
+      "code": "php artisan config:clear\nphp artisan cache:clear\nphp artisan config:cache",
+      "note": "Many 'I changed `.env` but the app still behaves the same' bugs come from misunderstanding config cache and forgetting long-lived workers."
+    },
+    {
+      "title": "58. What is a bad smell in configuration design?",
+      "body": "Nobody knows which variables are critical, which are stale, and which still exist only because people are afraid to remove them."
+    },
+    {
+      "title": "59. Is a staging environment close to production worth having?",
+      "body": "Yes when the app depends on queues, cron, providers, or other sensitive runtime concerns that local does not model well."
+    },
+    {
+      "title": "60. Where does config drift most often reveal itself?",
+      "body": "Queues, mail, storage, signed URLs, auth redirects, cache behavior, and provider integration are common places where environment mistakes show up."
+    },
+    {
+      "title": "61. What is a queue worker in the environment picture?",
+      "body": "It is a background process that consumes jobs from a queue backend such as Redis, the database, or an external queue service."
+    },
+    {
+      "title": "62. What is the scheduler in real runtime terms?",
+      "body": "It is the set of periodic tasks invoked by cron through Laravel's `schedule:run` mechanism."
+    },
+    {
+      "title": "63. Why is the web process alone not enough for a real Laravel app?",
+      "body": "Because real apps often need queue workers, schedulers, mail delivery, cache backends, and supporting runtime processes beyond HTTP."
+    },
+    {
+      "title": "64. What are common web servers for Laravel?",
+      "body": "Typically Nginx or Apache paired with PHP-FPM or an equivalent runtime arrangement."
+    },
+    {
+      "title": "65. What role does PHP-FPM play?",
+      "body": "It manages PHP worker processes that serve web requests, separate from the web server itself.",
+      "code": "server {\n    listen 80;\n    root /var/www/html/public;\n\n    location / {\n        try_files $uri $uri/ /index.php?$query_string;\n    }\n\n    location ~ \\.php$ {\n        fastcgi_pass php-fpm:9000;\n        include fastcgi_params;\n        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;\n    }\n}",
+      "note": "Many Laravel learners go a long time without seeing even a minimal Nginx plus PHP-FPM block, which leaves the real web runtime too abstract."
+    },
+    {
+      "title": "66. What should run queue workers in production?",
+      "body": "Usually Supervisor, systemd, Horizon, or another orchestrated process manager that keeps workers alive and restarts them if they crash."
+    },
+    {
+      "title": "67. Why should workers not be run from a manual terminal and forgotten?",
+      "body": "Because they can die silently, keep old code loaded, or disappear without anyone noticing."
+    },
+    {
+      "title": "68. Why is `queue:restart` important?",
+      "body": "Workers are long-lived. Restarting them ensures new code and new configuration are actually loaded after deployment."
+    },
+    {
+      "title": "69. What happens if workers are not restarted after deployment?",
+      "body": "The web app may run new code while background jobs still execute older logic, leading to very confusing bugs.",
+      "code": "php artisan queue:restart\n\n# or recycle workers through supervisor/systemd after deploy",
+      "note": "Workers are long-lived processes. Without a proper recycle step, production can run two different code worlds at the same time."
+    },
+    {
+      "title": "70. What does cron really do for the scheduler?",
+      "body": "The operating system runs cron periodically, and cron invokes Laravel's scheduler entrypoint so due tasks can be dispatched or executed."
+    },
+    {
+      "title": "71. What happens if cron is not running?",
+      "body": "Cleanup, reports, reminders, reconciliations, or token-expiry tasks may silently stop happening."
+    },
+    {
+      "title": "72. How do Supervisor and systemd differ conceptually?",
+      "body": "Both manage processes, but they differ in how they integrate with the operating system and how they are configured."
+    },
+    {
+      "title": "73. What is a bad runtime smell?",
+      "body": "Nobody knows which production processes are critical and which ones are already dead."
+    },
+    {
+      "title": "74. What questions should a good process manager answer?",
+      "body": "Which processes are running, how they restart, whether they recover from crashes automatically, and where their state or logs can be inspected."
+    },
+    {
+      "title": "75. Should mail, broadcast, and heavy queue workloads be separated?",
+      "body": "It is often worth doing so that large jobs do not block the faster or more user-visible ones."
+    },
+    {
+      "title": "76. What is a practical process-runtime tip?",
+      "body": "Treat workers and the scheduler as first-class citizens of the system, not as side notes after the web app works."
+    },
+    {
+      "title": "77. Why does local development hide process problems?",
+      "body": "Because local developers usually run fewer workers, less scheduled work, and much less traffic, which masks real runtime issues."
+    },
+    {
+      "title": "78. Why is the queue backend itself part of the environment?",
+      "body": "Because Redis, a database queue, or SQS each carry different configuration, durability, latency, and failure behavior."
+    },
+    {
+      "title": "79. How can an app boot but still not really be alive operationally?",
+      "body": "The homepage can load while queues are dead, the scheduler is off, storage is broken, mail fails, or auth config is wrong."
+    },
+    {
+      "title": "80. What is the short conclusion about process runtime?",
+      "body": "A real Laravel application is a group of cooperating processes, not only a web request loop."
+    },
+    {
+      "title": "81. What is a build in Laravel deployment terms?",
+      "body": "It is the step where dependencies, assets, or runtime artifacts are prepared into something safe and consistent to ship.",
+      "code": "composer install --no-dev --optimize-autoloader\nnpm ci\nnpm run build\nphp artisan event:cache",
+      "note": "A good build lets production receive a prepared artifact instead of improvising a build from whatever state the server happens to be in."
+    },
+    {
+      "title": "82. How is deploy different from release?",
+      "body": "Deploy moves code into an environment. Release exposes new behavior to real users or traffic."
+    },
+    {
+      "title": "83. Why is it useful to separate deploy and release with feature flags?",
+      "body": "Because code can go live first while risky behavior remains disabled until the team is ready to observe or enable it gradually."
+    },
+    {
+      "title": "84. How does CI/CD help Laravel applications?",
+      "body": "It automates testing, building, packaging, and deploying so releases depend less on memory and more on repeatable process."
+    },
+    {
+      "title": "85. What can a deploy artifact be?",
+      "body": "A Docker image, a packaged application with installed dependencies, or another built artifact that already contains what production needs."
+    },
+    {
+      "title": "86. Should frontend assets be built directly on production servers?",
+      "body": "Not always. Many teams prefer prebuilt artifacts so deployments are more repeatable and less environment-sensitive."
+    },
+    {
+      "title": "87. When should migrations run during deploy?",
+      "body": "That depends on your compatibility strategy, but the order between code, schema, and worker behavior always matters."
+    },
+    {
+      "title": "88. Why are database-changing deploys especially sensitive?",
+      "body": "Because web requests, queue workers, and schema state can diverge during rollout unless the process is designed carefully."
+    },
+    {
+      "title": "89. How do smoke tests help after deploy?",
+      "body": "They quickly check the most critical user and runtime flows before customers discover a regression.",
+      "code": "curl -I https://app.example.com\ncurl -s https://app.example.com/health\nphp artisan queue:monitor redis:default --max=100",
+      "bullets": [
+        "Smoke tests do not need to be huge, but they should touch critical paths.",
+        "At minimum, homepage, health endpoint, login path, and basic queue signal are often worth checking."
+      ]
+    },
+    {
+      "title": "90. When should rollback plans exist?",
+      "body": "Before deployment. Rollback is not something to invent once an incident is already underway."
+    },
+    {
+      "title": "91. How are code rollback and data rollback different?",
+      "body": "Code can often be reverted quickly. Data rollback is much harder and may not even be realistic after real traffic has touched the system."
+    },
+    {
+      "title": "92. What is zero-downtime deployment?",
+      "body": "It is the effort to minimize or avoid visible downtime through good rollout order, compatibility, and release engineering."
+    },
+    {
+      "title": "93. Is zero-downtime always achievable perfectly?",
+      "body": "Not always perfectly, but many systems can move close to it with careful discipline.",
+      "code": "composer install --no-dev --optimize-autoloader\nphp artisan migrate --force\nphp artisan config:cache\nphp artisan route:cache\nphp artisan queue:restart",
+      "note": "What matters is not the slogan of zero downtime, but rollout ordering, compatibility, and rollback readiness."
+    },
+    {
+      "title": "94. How do blue-green or canary ideas relate here?",
+      "body": "They reduce release risk by shifting traffic gradually or separating runtime environments during rollout."
+    },
+    {
+      "title": "95. Is cache warmup after deploy worthwhile?",
+      "body": "It often is, because it prevents painful first-request slowness after fresh deployment."
+    },
+    {
+      "title": "96. Why should queue and scheduler health be checked after deploy?",
+      "body": "Because many production issues only show up in background processes and not in the first HTTP request."
+    },
+    {
+      "title": "97. What is a practical deploy tip?",
+      "body": "If a change touches the framework, the database, queues, and environment at the same time, split the rollout as much as possible."
+    },
+    {
+      "title": "98. What is a bad deployment smell?",
+      "body": "Deploying from memory, without smoke tests, without worker restarts, and without dashboard checks."
+    },
+    {
+      "title": "99. Are internal release notes useful after deploy?",
+      "body": "Yes when the system has sensitive flows, because support, QA, and developers need to know what changed."
+    },
+    {
+      "title": "100. What can happen if production environment values change after deploy?",
+      "body": "The app may still behave with older config if caches are stale or workers were not restarted properly."
+    },
+    {
+      "title": "101. What is the short conclusion about build and deployment?",
+      "body": "A good deploy is not the fastest possible deploy. It is the one that behaves predictably and has a clear path back."
+    },
+    {
+      "title": "102. What matters operationally about the database beyond the schema?",
+      "body": "Connection health, credentials, backups, restores, replication, latency, growth, and migration safety."
+    },
+    {
+      "title": "103. What can Redis do in a production Laravel environment?",
+      "body": "It may power queues, cache, sessions, rate limits, locks, and sometimes other coordination or realtime behavior."
+    },
+    {
+      "title": "104. Why does a Redis outage have broad impact?",
+      "body": "Because it can simultaneously break queues, cache, sessions, and rate limiting."
+    },
+    {
+      "title": "105. Why is storage an infrastructure concern and not only a feature concern?",
+      "body": "Because access policies, bucket configuration, signed URLs, backup, and object lifecycle directly affect application behavior.",
+      "code": "FILESYSTEM_DISK=s3\nAWS_ACCESS_KEY_ID=...\nAWS_SECRET_ACCESS_KEY=...\nAWS_DEFAULT_REGION=ap-southeast-1\nAWS_BUCKET=laravel-labs-prod",
+      "note": "Storage can be misconfigured while the homepage still looks fine, so upload, download, and media paths often fail more quietly than teams expect."
+    },
+    {
+      "title": "106. What should backups cover beyond the database?",
+      "body": "Storage objects, critical configuration, deploy artifacts, or at least enough state to rebuild the system safely."
+    },
+    {
+      "title": "107. What is a restore drill?",
+      "body": "It is the practice of actually testing restoration so backups are proven useful instead of being assumed useful."
+    },
+    {
+      "title": "108. How do DNS, SSL, and domain configuration affect Laravel deployment?",
+      "body": "They can make the app unreachable, break signed URLs, or cause callbacks and webhooks to fail even when the application code is fine."
+    },
+    {
+      "title": "109. What role does object storage such as S3 play?",
+      "body": "It provides more durable, shareable storage than local disk and often integrates better with CDN-based delivery."
+    },
+    {
+      "title": "110. Why is CDN behavior also part of operations?",
+      "body": "It affects speed, cost, cache invalidation, and even rollback behavior for media and public assets."
+    },
+    {
+      "title": "111. What should be watched in mail-service operations?",
+      "body": "Credentials, provider limits, bounce and suppression behavior, queue behavior, and domain verification."
+    },
+    {
+      "title": "112. Why are search services or external APIs also part of the environment?",
+      "body": "Because endpoints, auth, timeouts, networking, and environment drift all influence real runtime behavior."
+    },
+    {
+      "title": "113. What is a practical infrastructure-support tip?",
+      "body": "Every supporting service should have a minimum owner mindset and a small runbook instead of living as a black box."
+    },
+    {
+      "title": "114. What is a bad smell in supporting infrastructure?",
+      "body": "The app depends on many services, but nobody knows which ones are critical, backed up, or monitored."
+    },
+    {
+      "title": "115. Are backups useless if restore is never tested?",
+      "body": "They can be. Untested backups are often just packaged optimism."
+    },
+    {
+      "title": "116. What is the short conclusion about supporting infrastructure?",
+      "body": "A real Laravel app is a network of dependencies, not only a PHP repository plus one database."
+    },
+    {
+      "title": "117. What is monitoring in Laravel operations?",
+      "body": "It is the practice of tracking system health through logs, metrics, dashboards, alerts, and health signals.",
+      "code": "GET /up\nGET /health\nGET /ready",
+      "note": "Health endpoints do not replace full observability, but they are a practical baseline signal for load balancers and incident response."
+    },
+    {
+      "title": "118. What are health checks for?",
+      "body": "They verify that the application and its critical dependencies are alive and responding acceptably."
+    },
+    {
+      "title": "119. Which metrics should a Laravel app usually expose?",
+      "body": "Latency, error rate, queue lag, failed jobs, database health, Redis health, scheduler run status, and deploy version are common critical signals."
+    },
+    {
+      "title": "120. How is production logging different from casual local logging?",
+      "body": "Production logging needs structure and context so it can support filtering, dashboards, and incident investigation."
+    },
+    {
+      "title": "121. What makes an alert useful?",
+      "body": "It is sensitive enough to catch real issues, but clean enough that the team does not ignore it.",
+      "code": "- queue lag > 60s for 5 minutes\n- failed jobs spike suddenly\n- health endpoint fails repeatedly\n- error rate rises above the normal band",
+      "note": "Good alerts should imply a next action. If an alert fires and nobody knows what to inspect next, the alert is not mature enough."
+    },
+    {
+      "title": "122. How does alert fatigue hurt the system?",
+      "body": "If alerts are constant and low-value, the team will tune out exactly when real danger appears."
+    },
+    {
+      "title": "123. What is the value of a runbook?",
+      "body": "It gives responders a disciplined starting point for investigation instead of random reactive guessing."
+    },
+    {
+      "title": "124. How is observability different from monitoring?",
+      "body": "Monitoring tells you something is wrong. Observability helps you understand why the system reached that state."
+    },
+    {
+      "title": "125. What should a strong operations dashboard show?",
+      "body": "Request health, error trends, queue health, scheduler status, database and Redis signals, storage signals, and deployment timeline."
+    },
+    {
+      "title": "126. Are correlation IDs worth using operationally?",
+      "body": "Yes, especially when a request crosses queues, external providers, or multiple runtime processes."
+    },
+    {
+      "title": "127. What is a practical observability tip?",
+      "body": "If production fails and the team does not know which dashboard or log to open first, observability is not yet mature enough."
+    },
+    {
+      "title": "128. What is a bad observability smell?",
+      "body": "There are many graphs, but none of them answer where the application is actually failing."
+    },
+    {
+      "title": "129. How does supportability relate to devops?",
+      "body": "A supportable system leaves enough trace, tooling, and permissions that people can investigate safely instead of editing production by hand."
+    },
+    {
+      "title": "130. What does an easy-to-support application look like?",
+      "body": "It has health signals, runbooks, owners, clear process structure, traceable queues, and logs with enough context."
+    },
+    {
+      "title": "131. What is the short conclusion about monitoring and observability?",
+      "body": "You cannot operate a Laravel app well based only on faith that things are fine."
+    },
+    {
+      "title": "132. What is a classic production bug around Sail or environment design?",
+      "body": "Local works for everyone, but staging fails because an environment variable is missing, config cache is stale, or service naming differs from the containerized local setup."
+    },
+    {
+      "title": "133. What is a classic production deployment bug?",
+      "body": "The web app deploys successfully, but queue workers still run old code or the scheduler stops running after release."
+    },
+    {
+      "title": "134. What is a classic storage or environment bug?",
+      "body": "Uploads appear to succeed but files do not show up because bucket policy, URL config, or signed URL domains differ across environments."
+    },
+    {
+      "title": "135. What is a classic migration-related production bug?",
+      "body": "New code is deployed but the migration fails midway, leaving the web and workers viewing different schema realities."
+    },
+    {
+      "title": "136. What is the biggest anti-pattern in local environment practice?",
+      "body": "Everyone installs a custom stack however they feel like, and nobody knows which runtime is supposed to be the real standard."
+    },
+    {
+      "title": "137. What is the biggest anti-pattern around `.env`?",
+      "body": "Environment variables keep growing with no ownership, no documentation, and no cleanup."
+    },
+    {
+      "title": "138. What is the biggest anti-pattern in deployment?",
+      "body": "Deploying manually from memory and rolling back through hope."
+    },
+    {
+      "title": "139. What is the biggest anti-pattern around queues and the scheduler?",
+      "body": "Focusing only on web requests while ignoring the background processes that keep the application alive."
+    },
+    {
+      "title": "140. What is the biggest anti-pattern in monitoring?",
+      "body": "You have logs but no context, metrics but no good alerts, dashboards but nobody actually uses them."
+    },
+    {
+      "title": "141. What is a senior question before claiming production is healthy?",
+      "body": "If workers die, cron stops, Redis chokes, or environment config drifts, how quickly would the team know and what path would it follow to recover?"
+    },
+    {
+      "title": "142. What is a senior question about local workflow?",
+      "body": "Can a new teammate bring up the correct stack in a reasonable amount of time without needing hidden tribal knowledge?"
+    },
+    {
+      "title": "143. When can you say the environment side of the app is healthy?",
+      "body": "When local, staging, and production are consistent enough, processes are visible, deployments are disciplined, rollback has a real path, and observability prevents blindness during incidents."
+    },
+    {
+      "title": "144. Final review: what major areas should a devops topic include?",
+      "body": "At minimum it should cover environment mindset, Sail and Docker workflow, `.env` and config or secret handling, runtime processes, deploy and rollback, supporting infrastructure, monitoring and observability, and real production cases."
+    },
+    {
+      "title": "145. What is a reverse proxy in a Laravel deployment?",
+      "body": "It is a layer such as Nginx or a load balancer that receives requests first, terminates TLS, adds forwarding headers, and passes traffic to the application runtime.",
+      "code": "X-Forwarded-For\nX-Forwarded-Proto\nX-Forwarded-Host",
+      "note": "If trusted proxy handling or forwarding headers are wrong, scheme, host, IP, login, cookie, and redirect behavior can all become surprisingly broken."
+    },
+    {
+      "title": "146. Why does trusted proxy configuration matter?",
+      "body": "If it is wrong, the app may misunderstand the real scheme, host, or client IP, which leads to bad URLs, redirect loops, or misleading logs."
+    },
+    {
+      "title": "147. What is a common bug when the app runs behind a proxy?",
+      "body": "The app thinks requests are HTTP even though users came in through HTTPS, which can produce broken links, bad cookies, or CSRF or login loops."
+    },
+    {
+      "title": "148. Why is `APP_URL` important in real environments?",
+      "body": "Many parts of the ecosystem such as signed URLs, email links, assets, and packages rely on it to generate correct absolute URLs."
+    },
+    {
+      "title": "149. How can a wrong `APP_URL` quietly damage an app?",
+      "body": "Normal requests may still work, but email verification, password reset, callbacks, or asset URLs can point to the wrong host or scheme."
+    },
+    {
+      "title": "150. Where do file permission issues usually appear in Laravel?",
+      "body": "Most often in `storage/`, `bootstrap/cache/`, and any path where web processes or workers need write access."
+    },
+    {
+      "title": "151. Why is `chmod 777` not the right fix?",
+      "body": "It hides the real ownership problem and creates a messy runtime with poor auditability and possible security risk."
+    },
+    {
+      "title": "152. What is a deploy user and why should teams care?",
+      "body": "It is the operating-system user that releases code or runs processes. Choosing poorly creates ownership drift, permission confusion, and painful rollbacks."
+    },
+    {
+      "title": "153. What is a senior tip about permissions?",
+      "body": "Do not solve the problem with excessively broad permissions. Make it clear which process reads, which process writes, and which paths are truly mutable.",
+      "code": "chown -R www-data:www-data storage bootstrap/cache\nchmod -R ug+rwx storage bootstrap/cache",
+      "note": "This is much more deliberate than `chmod -R 777`, which only hides ownership problems in a risky way."
+    },
+    {
+      "title": "154. How deep should a health endpoint check?",
+      "body": "That depends on its purpose. Some endpoints only prove the app can boot, while deeper ones also verify the database, Redis, queue backend, or important storage."
+    },
+    {
+      "title": "155. Why should health checks not pretend everything is fine when dependencies are down?",
+      "body": "Because dashboards and load balancers will keep trusting the app while the real user-facing functionality is already broken."
+    },
+    {
+      "title": "156. Is it useful to separate liveness and readiness?",
+      "body": "Yes, especially in more advanced infrastructure. Liveness answers whether the app is alive, while readiness answers whether it is ready to receive traffic.",
+      "code": "Route::get('/health/live', fn () => response()->json(['status' => 'ok']));\n\nRoute::get('/health/ready', function () {\n    DB::select('select 1');\n\n    return response()->json(['status' => 'ready']);\n});",
+      "note": "If readiness checks critical dependencies while liveness only proves the process is alive, your operational signals become much more truthful."
+    },
+    {
+      "title": "157. Why does graceful shutdown matter in containerized environments?",
+      "body": "Because workers and web processes need time to finish in-flight requests or jobs instead of being cut off in an unsafe half-complete state."
+    },
+    {
+      "title": "158. What happens if container restarts are too abrupt?",
+      "body": "In-flight requests may fail, jobs may retry in a dirty way, and users can see intermittent errors that are hard to reproduce."
+    },
+    {
+      "title": "159. Why is artifact-based deployment worth learning?",
+      "body": "Because it lets you release the same built package that CI tested, instead of rebuilding separately in each place and creating drift.",
+      "code": "artifact/\n  app/\n  vendor/\n  public/build/\n  bootstrap/cache/\n  release.json",
+      "note": "The point is not this exact tree. The point is that a release should have a repeatable shape instead of being rebuilt from scratch on every server by habit."
+    },
+    {
+      "title": "160. What does a release artifact usually contain for a Laravel app?",
+      "body": "Application code, PHP dependencies, prebuilt assets, needed config templates, and version metadata for traceability."
+    },
+    {
+      "title": "161. Why should teams avoid pulling code and building by hand on production if possible?",
+      "body": "Because that makes releases hard to reproduce, dependent on the momentary server state, and vulnerable to accidental drift.",
+      "code": "git pull\ncomposer install\nnpm install\nnpm run build",
+      "note": "This sequence looks familiar, but it is a drift factory: registry timing differs, asset output differs, and dependencies depend on the server's local state."
+    },
+    {
+      "title": "162. How should secret rotation be considered early?",
+      "body": "Design the system so secrets can change in a controlled way, with overlap windows when needed, rather than forcing emergency night deploys."
+    },
+    {
+      "title": "163. What is a real failure during secret rotation?",
+      "body": "The web app uses the new secret while workers or schedulers still run old config, so webhook verification or external API calls start failing."
+    },
+    {
+      "title": "164. Why is a backup schedule not enough on its own?",
+      "body": "Because you also need proof that backups succeeded, proof that restore works, and clarity on who owns the response if backups are broken."
+    },
+    {
+      "title": "165. How should a restore drill be performed to be meaningful?",
+      "body": "Restore into an isolated environment, measure recovery time, verify integrity, and document the actual steps instead of trusting memory."
+    },
+    {
+      "title": "166. Why do many teams still fail during incidents even though they have backups?",
+      "body": "Because only at restore time do they discover missing files, wrong keys, damaged dumps, unacceptable restore duration, or missing real procedure knowledge."
+    },
+    {
+      "title": "167. What should a short pre-release checklist include?",
+      "body": "Environment changes, migration impact, queue and scheduler impact, asset build status, relevant secrets, rollback path, smoke test plan, and who will watch the release.",
+      "code": "- which env values changed?\n- does migration break compatibility?\n- do workers need restart?\n- are assets built correctly?\n- what is the rollback path?\n- who watches the release after deploy?",
+      "note": "A short but explicit checklist is still far better than relying on fuzzy memory, especially when the release touches DB changes or secrets."
+    },
+    {
+      "title": "168. What should a short post-release checklist include?",
+      "body": "Error rate, latency, worker health, failed jobs, scheduler heartbeat, database signals, external API signals, and confirmation of critical user flows.",
+      "code": "- is the health endpoint still green?\n- did queue lag or failed jobs spike?\n- were auth, upload, checkout, or other critical flows manually verified?\n- are there new suspicious errors in logs?",
+      "note": "A few disciplined minutes of observation right after release are usually much cheaper than waiting for users to report the first obvious breakage."
+    },
+    {
+      "title": "169. What is a practical playbook when production feels 'not quite right' after a deploy?",
+      "body": "Do not change many things blindly. Confirm the released version first, inspect the earliest logs and metrics, compare migration and env and cache and worker state, then decide whether to roll back or continue fixing.",
+      "code": "1. Confirm the released version\n2. Check error rate / health endpoint / queue lag\n3. Compare env, config cache, migrations, worker restarts\n4. Decide between rollback and fix-forward\n5. Capture incident notes after stabilization",
+      "note": "A good playbook prevents dangerous reactions like clearing everything, restarting everything, and accidentally erasing the very signals you needed."
+    },
+    {
+      "title": "170. Example of a few minimal Sail and Docker local commands worth memorizing",
+      "body": "These are commands learners should actually run, not only read about.",
+      "code": "./vendor/bin/sail up -d\n./vendor/bin/sail artisan migrate\n./vendor/bin/sail composer install\n./vendor/bin/sail npm run dev\n./vendor/bin/sail down",
+      "bullets": [
+        "`up -d` starts the local stack without blocking the terminal.",
+        "Running Artisan, Composer, or npm through Sail keeps you inside the project's containerized runtime.",
+        "`down` tears the local stack back down when you are done."
+      ]
+    },
+    {
+      "title": "171. Example of a minimal disciplined Laravel deploy sequence",
+      "body": "Real teams differ, but a sequence like this helps learners see that deploy is not just 'pull code and hope'.",
+      "code": "php artisan down\ncomposer install --no-dev --optimize-autoloader\nphp artisan migrate --force\nnpm run build\nphp artisan config:cache\nphp artisan route:cache\nphp artisan queue:restart\nphp artisan up",
+      "note": "Not every system uses this exact sequence, but it shows that deployment touches dependencies, migrations, assets, caches, and worker lifecycle."
+    },
+    {
+      "title": "172. Example of a minimal health endpoint so the environment has a visible life signal",
+      "body": "Even a simple endpoint is better than guessing whether production is still breathing.",
+      "code": "Route::get('/health', function () {\n    return response()->json([\n        'app' => 'ok',\n        'db' => DB::select('select 1') ? 'ok' : 'fail',\n    ]);\n});",
+      "note": "In real systems you often separate liveness and readiness more carefully, but this example is enough to show that a health signal is not an abstract concept."
+    },
+    {
+      "title": "173. Final assessment after another review: is this devops topic detailed enough?",
+      "body": "For a learning portal, this section is now fairly complete: Sail, Docker, env, secrets, processes, queues, schedulers, deploy, rollback, proxies, permissions, backups, observability, and production playbooks are all covered. If you want to go even deeper later, the best next split is separate sites for CI/CD pipelines, Nginx and PHP-FPM operations, and backup-restore incident drills."
+    }
+  ]
+}

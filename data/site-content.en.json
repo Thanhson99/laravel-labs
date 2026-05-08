@@ -1,0 +1,2218 @@
+{
+  "defaultLanguage": "en",
+  "languages": [
+    "en",
+    "vi"
+  ],
+  "common": {
+    "backToHome": "Back to Portal",
+    "navigation": {
+      "home": "Home",
+      "roadmap": "Roadmap",
+      "glossary": "Glossary",
+      "php": "PHP",
+      "laravel": "Laravel",
+      "practice": "Practice",
+      "interview": "Interview",
+      "vibeCoding": "Vibe Coding"
+    },
+    "theme": {
+      "light": "Light",
+      "dark": "Dark"
+    }
+  },
+  "pages": {
+    "landing": {
+      "metaTitle": "Laravel Labs Learning Portal",
+      "eyebrow": "Laravel Labs",
+      "title": "Laravel Learning Portal",
+      "subtitle": "A static GitHub Pages portal for everything I am learning about PHP, Laravel, practice work, interview prep, glossary terms, and Vibe Coding workflows.",
+      "sectionTitle": "Choose a Learning Site",
+      "cards": [
+        {
+          "href": "sites/roadmap/index.html",
+          "title": "Learning Tree",
+          "summary": "Open this first for a friendly technology map before moving into PHP, Laravel, and the rest of the study sites.",
+          "button": "Open Roadmap"
+        },
+        {
+          "href": "sites/php/index.html",
+          "title": "PHP Fundamentals",
+          "summary": "Concept notes for syntax, OOP, requests, sessions, and how PHP powers Laravel.",
+          "button": "Open PHP Site"
+        },
+        {
+          "href": "sites/glossary/index.html",
+          "title": "Glossary",
+          "summary": "A quick reference for web, Laravel, database, runtime, and Vibe Coding terms when concepts start blending together.",
+          "button": "Open Glossary"
+        },
+        {
+          "href": "sites/laravel/index.html",
+          "title": "Laravel Roadmap",
+          "summary": "From routing and Blade to queues, APIs, testing, teams, and production thinking.",
+          "button": "Open Laravel Site"
+        },
+        {
+          "href": "sites/practice/index.html",
+          "title": "Practice Projects",
+          "summary": "Structured drills and mini-project ideas based on your current Laravel lab folders.",
+          "button": "Open Practice Site"
+        },
+        {
+          "href": "sites/interview/index.html",
+          "title": "Interview Prep",
+          "summary": "Common Laravel and PHP interview themes, answer outlines, and review checkpoints.",
+          "button": "Open Interview Site"
+        },
+        {
+          "href": "sites/vibe-coding/index.html",
+          "title": "Vibe Coding",
+          "summary": "A dedicated area for AI-assisted coding workflows: prompting features, reviewing generated code, refactoring outputs, and applying runtime guardrails.",
+          "button": "Open Vibe Coding Site"
+        }
+      ],
+      "repoSectionTitle": "Current Laravel Labs in This Repository",
+      "repoSectionSubtitle": "These cards reflect the four standalone Laravel projects already stored in the repo.",
+      "repoCards": [
+        {
+          "name": "breeze",
+          "summary": "Basic authentication starter for understanding the default Laravel auth flow.",
+          "focusLabel": "Focus:",
+          "focus": "routes, controllers, views, auth scaffolding",
+          "nextLabel": "Next expansions:",
+          "next": "forgot password, email verification, profile edit, role-based middleware",
+          "openLabel": "Related labs:",
+          "open": "auth mini app, login throttling, session flow notes"
+        },
+        {
+          "name": "chirper",
+          "summary": "Tutorial-style app for CRUD, posting flow, and practical app structure.",
+          "focusLabel": "Focus:",
+          "focus": "models, migrations, Blade/UI flow, feature habits",
+          "nextLabel": "Next expansions:",
+          "next": "comment system, likes/favorites, notifications, filters and pagination",
+          "openLabel": "Related labs:",
+          "open": "blog mini app, activity feed, post moderation flow"
+        },
+        {
+          "name": "jetstream",
+          "summary": "Advanced authentication and team-oriented features for larger app thinking.",
+          "focusLabel": "Focus:",
+          "focus": "teams, profile security, sessions, advanced auth flow",
+          "nextLabel": "Next expansions:",
+          "next": "role matrix, invitation flow, audit log, advanced account settings",
+          "openLabel": "Related labs:",
+          "open": "multi-tenant notes, team permission sandbox, secure profile flows"
+        },
+        {
+          "name": "sail",
+          "summary": "Docker-oriented Laravel setup for environment parity and workflow practice.",
+          "focusLabel": "Focus:",
+          "focus": "containers, services, local stack, reproducible setup",
+          "nextLabel": "Next expansions:",
+          "next": "queue workers, mailhog, redis, horizon, staging-like environments",
+          "openLabel": "Related labs:",
+          "open": "dockerized queue app, service integration stack, local infra practice"
+        }
+      ]
+    },
+    "roadmap": {
+      "metaTitle": "Learning Tree | Laravel Labs",
+      "eyebrow": "Learning Tree",
+      "title": "A Friendly Learning Tree",
+      "subtitle": "A visual map of what to learn first, what to grow next, and what becomes important once you are building real PHP and Laravel projects.",
+      "sections": [
+        {
+          "type": "mindmap",
+          "heading": "Learning Tree Map",
+          "intro": "This page is meant to feel easier than a dense roadmap. Follow the trunk from top to bottom, then use the branch chips as concrete topics to study.",
+          "legend": [
+            {
+              "tone": "core",
+              "label": "Learn first"
+            },
+            {
+              "tone": "grow",
+              "label": "Grow after the basics feel stable"
+            },
+            {
+              "tone": "flex",
+              "label": "Use when your project starts needing it"
+            }
+          ],
+          "root": {
+            "eyebrow": "Big picture first",
+            "title": "See the full path before choosing a lesson",
+            "summary": "The goal is not to memorize every box. The goal is to know where each topic belongs so PHP and Laravel stop feeling random."
+          },
+          "branches": [
+            {
+              "step": "01",
+              "side": "left",
+              "tone": "core",
+              "badge": "Frontend",
+              "title": "Frontend fundamentals",
+              "summary": "This branch explains how a web page is built and how users actually interact with it.",
+              "topics": ["HTML", "CSS", "JavaScript", "Responsive", "Vue", "React"],
+              "subbranches": [
+                {
+                  "title": "Main branch",
+                  "items": ["Semantic HTML", "Forms and input", "CSS layout", "Flexbox and Grid", "Basic responsive design"]
+                },
+                {
+                  "title": "Side branch",
+                  "items": ["DOM and events", "fetch and data handling", "Local storage", "Component thinking", "Try VueJs or ReactJs"]
+                }
+              ],
+              "references": [
+                { "href": "https://developer.mozilla.org/en-US/docs/Learn_web_development", "label": "MDN Learn Web Development" },
+                { "href": "https://www.w3schools.com/html/", "label": "W3Schools HTML" },
+                { "href": "https://developer.mozilla.org/en-US/docs/Web/CSS/Reference", "label": "MDN CSS Reference" },
+                { "href": "https://www.w3schools.com/js/default.asp", "label": "W3Schools JavaScript" },
+                { "href": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide", "label": "MDN JavaScript Guide" },
+                { "href": "https://vuejs.org/", "label": "VueJs" },
+                { "href": "https://react.dev/", "label": "ReactJs" }
+              ],
+              "note": "If this layer is weak, Blade templates and UI debugging stay harder than necessary."
+            },
+            {
+              "step": "02",
+              "side": "right",
+              "tone": "core",
+              "badge": "Git",
+              "title": "Git and version control",
+              "summary": "Git is required if you want to study seriously, keep project history, and work like a real developer.",
+              "topics": ["init", "add", "commit", "branch", "merge", "pull", "push"],
+              "subbranches": [
+                {
+                  "title": "Main branch",
+                  "items": ["Initialize a repo", "Meaningful commits", "Basic branching", "Merge and conflict resolution", "Work with GitHub"]
+                },
+                {
+                  "title": "Side branch",
+                  "items": ["Rebase", "Cherry-pick", "Tags", "Read history with log", "Review diffs before push", "Git ignore and branch strategy"]
+                }
+              ],
+              "references": [
+                { "href": "https://git-scm.com", "label": "git-scm.com" },
+                { "href": "https://git-scm.com/learn", "label": "Pro Git Book + Git Learn" },
+                { "href": "https://viblo.asia/p/git-hoc-nghiem-tuc-mot-lan-phan-1-OeVKBo6JZkW", "label": "Viblo Git article" }
+              ],
+              "note": "Many learners avoid Git too long, then struggle badly on real projects."
+            },
+            {
+              "step": "03",
+              "side": "left",
+              "tone": "core",
+              "badge": "Linux",
+              "title": "Linux and command-line environment",
+              "summary": "This branch keeps you from feeling blind when dealing with servers, Docker, deployment, or backend debugging.",
+              "topics": ["cd", "ls", "cp", "mv", "chmod", "chown"],
+              "subbranches": [
+                {
+                  "title": "Main branch",
+                  "items": ["Basic linux commands", "Directory navigation", "Create and edit files", "Search files and logs"]
+                },
+                {
+                  "title": "Side branch",
+                  "items": ["User and file permissions", "Process management", "Environment variables", "Simple shell scripts", "Check active ports and services"]
+                }
+              ],
+              "references": [
+                { "href": "https://linuxjourney.com/", "label": "Linux Journey" },
+                { "href": "https://tuhocnetworksecurity.business.blog/category/series-tu-hoc-cybersecurity/series-linux-can-ban/", "label": "Basic Linux series" }
+              ],
+              "note": "Knowing basic Linux makes you far less dependent on graphical tooling."
+            },
+            {
+              "step": "04",
+              "side": "right",
+              "tone": "grow",
+              "badge": "HTTP",
+              "title": "HTTP and request-response",
+              "summary": "If you want to understand PHP, APIs, or Laravel, you need HTTP because it is the communication spine of the web.",
+              "topics": ["Method", "Header", "Status code", "Cookie", "Session", "JSON"],
+              "subbranches": [
+                {
+                  "title": "Main branch",
+                  "items": ["GET, POST, PUT, PATCH, DELETE", "Headers and body", "Common status codes", "Request and response"]
+                },
+                {
+                  "title": "Side branch",
+                  "items": ["Cookies", "Sessions", "Cache-control", "CORS", "Content negotiation", "Multipart forms and file upload"]
+                }
+              ],
+              "references": [
+                { "href": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Overview", "label": "MDN HTTP Overview" },
+                { "href": "https://developer.mozilla.org/en-US/docs/Learn_web_development/Extensions/Server-side/First_steps/Client-Server_overview", "label": "MDN Client-Server Overview" },
+                { "href": "https://viblo.asia/p/tim-hieu-ve-http-hypertext-transfer-protocol-bJzKmgewl9N", "label": "Viblo HTTP article" }
+              ],
+              "note": "Once HTTP is clear, Laravel request lifecycle makes much more sense."
+            },
+            {
+              "step": "05",
+              "side": "left",
+              "tone": "core",
+              "badge": "Database",
+              "title": "Databases",
+              "summary": "Backend stays weak if you do not understand how data is stored, queried, and related together.",
+              "topics": ["MySQL", "PostgreSQL", "MongoDB", "CRUD", "Join", "Index"],
+              "subbranches": [
+                {
+                  "title": "Main branch",
+                  "items": ["Table design", "Primary key and foreign key", "CRUD", "Joins", "Basic indexing"]
+                },
+                {
+                  "title": "Side branch",
+                  "items": ["MySQL", "PostgreSQL", "MongoDB", "Data normalization", "SQL vs NoSQL tradeoffs", "Basic transactions"]
+                }
+              ],
+              "references": [
+                { "href": "https://www.mysql.com/", "label": "MySQL" },
+                { "href": "https://www.postgresql.org/docs/current/tutorial.html", "label": "PostgreSQL Tutorial" },
+                { "href": "https://www.mongodb.com/docs/manual/", "label": "MongoDB Manual" }
+              ],
+              "note": "If SQL is weak, Eloquent and Query Builder stay superficial tools."
+            },
+            {
+              "step": "06",
+              "side": "right",
+              "tone": "grow",
+              "badge": "PHP",
+              "title": "PHP core",
+              "summary": "This is the core language branch: understand syntax and write basic backend logic in plain PHP before depending on Laravel.",
+              "topics": ["Syntax", "Variables", "Session", "Cookie", "Trait", "Exception", "Interface"],
+              "subbranches": [
+                {
+                  "title": "Main branch",
+                  "items": ["Simple PHP syntax", "Variables and constants", "Arrays and functions", "PHP session and cookies", "Include and require"]
+                },
+                {
+                  "title": "Side branch",
+                  "items": ["Traits", "Exception", "Interfaces", "Namespace", "Autoload", "File handling", "Date time", "JSON encode/decode"]
+                }
+              ],
+              "references": [
+                { "href": "https://www.w3schools.com/php/default.asp", "label": "W3Schools PHP" },
+                { "href": "https://www.php.net/manual/en/", "label": "PHP Manual" }
+              ],
+              "note": "This is the right moment to go deeper into your PHP site."
+            },
+            {
+              "step": "07",
+              "side": "left",
+              "tone": "grow",
+              "badge": "OOP",
+              "title": "Object-oriented programming",
+              "summary": "You need this branch to understand services, models, containers, and most modern backend architecture.",
+              "topics": ["Class", "Object", "Constructor", "Inheritance", "Polymorphism", "Abstraction"],
+              "subbranches": [
+                {
+                  "title": "Main branch",
+                  "items": ["Classes and objects", "Constructor and destructor", "Access modifiers", "Static", "Encapsulation"]
+                },
+                {
+                  "title": "Side branch",
+                  "items": ["Inheritance", "Polymorphism", "Abstraction", "Interfaces", "Traits and composition", "Inheritance vs composition"]
+                }
+              ],
+              "references": [
+                { "href": "https://www.w3schools.com/php/php_oop_what_is.asp", "label": "W3Schools PHP OOP" },
+                { "href": "https://www.php.net/manual/en/language.oop5.php", "label": "PHP OOP Manual" },
+                { "href": "https://viblo.asia/p/lap-trinh-huong-doi-tuong-oop-trong-php-phan-1-gGJ59gyaZX2", "label": "Viblo OOP in PHP" }
+              ],
+              "note": "If OOP is still fuzzy, Laravel features stay as names instead of concepts."
+            },
+            {
+              "step": "08",
+              "side": "right",
+              "tone": "flex",
+              "badge": "Composer",
+              "title": "Composer and autoload",
+              "summary": "Composer is the dependency branch that makes modern PHP projects organized and reusable.",
+              "topics": ["install", "update", "autoload", "composer.json", "composer.lock"],
+              "subbranches": [
+                {
+                  "title": "Main branch",
+                  "items": ["Composer commands", "composer install vs composer update", "composer.json", "composer.lock"]
+                },
+                {
+                  "title": "Side branch",
+                  "items": ["PSR-4 autoload", "Require vs require-dev", "Script hooks", "Package versioning", "Optimize autoload for deployment"]
+                }
+              ],
+              "references": [
+                { "href": "https://getcomposer.org/doc/", "label": "Composer Docs" },
+                { "href": "https://getcomposer.org/doc/01-basic-usage.md", "label": "Composer Basic Usage" },
+                { "href": "https://getcomposer.org/doc/04-schema.md", "label": "composer.json Schema" }
+              ],
+              "note": "Composer understanding makes Laravel feel much less magical."
+            },
+            {
+              "step": "09",
+              "side": "left",
+              "tone": "grow",
+              "badge": "Code design",
+              "title": "Dependency Injection, SOLID, and Design Patterns",
+              "summary": "This branch makes backend code cleaner, less tightly coupled, and easier to test.",
+              "topics": ["Dependency Injection", "SOLID", "Factory", "Builder", "Repository"],
+              "subbranches": [
+                {
+                  "title": "Main branch",
+                  "items": ["Dependency Injection", "Inversion of Control", "The five SOLID principles", "Builder pattern", "Factory pattern"]
+                },
+                {
+                  "title": "Side branch",
+                  "items": ["Repository pattern", "Strategy pattern", "Service layer", "Basic DTO usage", "When not to over-engineer patterns"]
+                }
+              ],
+              "references": [
+                { "href": "https://codelearn.io/sharing/hieu-ro-ve-dependency-injection", "label": "Codelearn DI" },
+                { "href": "https://phptherightway.com/", "label": "PHP The Right Way" },
+                { "href": "https://topdev.vn/blog/solid-la-gi/", "label": "TopDev SOLID" }
+              ],
+              "note": "You do not need patterns everywhere, but you should know when they solve a real problem."
+            },
+            {
+              "step": "10",
+              "side": "right",
+              "tone": "grow",
+              "badge": "PHP frameworks",
+              "title": "PHP frameworks",
+              "summary": "Once PHP and OOP are stable, frameworks stop looking like magic and start looking like structured tools.",
+              "topics": ["Laravel", "Symfony", "CakePHP"],
+              "subbranches": [
+                {
+                  "title": "Main branch",
+                  "items": ["Laravel", "Symfony", "CakePHP", "Compare routing, container, and ORM styles"]
+                },
+                {
+                  "title": "Side branch",
+                  "items": ["Pick one main framework", "Go deep", "Avoid jumping across frameworks too early", "Read framework conventions instead of guessing"]
+                }
+              ],
+              "references": [
+                { "href": "https://laravel.com/docs", "label": "Laravel Docs" },
+                { "href": "https://symfony.com/doc/current/getting_started/index.html", "label": "Symfony Getting Started" },
+                { "href": "https://book.cakephp.org/5.x/quickstart.html", "label": "CakePHP Quick Start" }
+              ],
+              "note": "One deep framework beats shallow knowledge of many frameworks."
+            },
+            {
+              "step": "11",
+              "side": "left",
+              "tone": "grow",
+              "badge": "Laravel",
+              "title": "Laravel in detail",
+              "summary": "This is the branch worth the deepest investment if your path is modern PHP web application work.",
+              "topics": ["Migration", "Seeder", "Model", "Route", "Controller", "Blade", "Service Container"],
+              "subbranches": [
+                {
+                  "title": "Main branch",
+                  "items": ["Migration", "Seeder, factory, faker", "Model: mass assignment, relationship, eager loading, scope", "Route + Resource controller + Middleware + REST", "Controller + Validation + Form request"]
+                },
+                {
+                  "title": "Side branch",
+                  "items": ["Authentication", "Eloquent ORM + Query Builder", "CSRF Protection", "Transaction", "Helpers", "Localization (i18n)", "Repository", "Cache", "Gate and Policy", "Blade Template", "Laravel Mix", "Service provider", "Service container", "Queue, Job, Event, Listener", "Mail, Notification, File storage"]
+                }
+              ],
+              "references": [
+                { "href": "https://laravel.com/", "label": "Laravel" },
+                { "href": "https://laravel.com/docs", "label": "Laravel Documentation" },
+                { "href": "https://laracasts.com/", "label": "Laracasts" },
+                { "href": "https://viblo.asia/s/laravel-the-beauty-Wj53Om3p56m", "label": "Viblo Laravel The Beauty" }
+              ],
+              "note": "This branch naturally connects with your PHP, practice, and interview pages."
+            },
+            {
+              "step": "12",
+              "side": "right",
+              "tone": "flex",
+              "badge": "API",
+              "title": "API, OAuth2, and authentication",
+              "summary": "Once your app serves mobile, SPA, or external services, the API branch becomes essential.",
+              "topics": ["REST", "RESTful", "Sanctum", "JWT", "Swagger", "OAuth2"],
+              "subbranches": [
+                {
+                  "title": "Main branch",
+                  "items": ["REST vs RESTful API", "Endpoint design", "Consistent responses", "Validation for APIs", "Swagger/OpenAPI"]
+                },
+                {
+                  "title": "Side branch",
+                  "items": ["Sanctum", "JWT", "OAuth2", "Token lifecycle", "Refresh token", "Authorization for APIs", "Rate limiting", "API versioning"]
+                }
+              ],
+              "references": [
+                { "href": "https://swagger.io/docs/", "label": "Swagger / OpenAPI Docs" },
+                { "href": "https://owasp.org/API-Security/", "label": "OWASP API Security" },
+                { "href": "https://www.oauth.com/", "label": "OAuth 2.0 Simplified" },
+                { "href": "https://viblo.asia/p/jwt-tu-co-ban-den-chi-tiet-LzD5dXwe5jY", "label": "Viblo JWT" },
+                { "href": "https://jwt.io/introduction/", "label": "JWT Introduction" },
+                { "href": "https://viblo.asia/p/introduction-to-oauth2-3OEqGjDpR9bL", "label": "Viblo OAuth2" }
+              ],
+              "note": "Do not learn APIs only as endpoint wiring. Learn auth, documentation, and versioning too."
+            },
+            {
+              "step": "13",
+              "side": "left",
+              "tone": "flex",
+              "badge": "Quality",
+              "title": "Testing, Security, and Performance",
+              "summary": "These three branches decide whether the app survives outside tutorial conditions.",
+              "topics": ["Unit test", "Xdebug", "CSRF", "XSS", "SQL Injection", "Cache", "Redis", "Index"],
+              "subbranches": [
+                {
+                  "title": "Main branch",
+                  "items": ["Unit test", "Feature test", "Xdebug", "CSRF Protection", "XSS", "SQL injection"]
+                },
+                {
+                  "title": "Side branch",
+                  "items": ["Cache", "Indexing techniques", "Memcached", "Redis", "HTTP caching", "Elasticsearch", "Watch bottlenecks", "N+1 query", "Slow query analysis"]
+                }
+              ],
+              "references": [
+                { "href": "https://pestphp.com/docs", "label": "Pest Docs" },
+                { "href": "https://docs.phpunit.de/", "label": "PHPUnit Manual" },
+                { "href": "https://xdebug.org/docs-debugger.php", "label": "Xdebug Step Debugging" },
+                { "href": "https://owasp.org/www-project-top-ten/", "label": "OWASP Top 10" },
+                { "href": "https://cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html", "label": "OWASP XSS Prevention" },
+                { "href": "https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html", "label": "OWASP CSRF Prevention" },
+                { "href": "https://cheatsheetseries.owasp.org/cheatsheets/SQL_Injection_Prevention_Cheat_Sheet.html", "label": "OWASP SQL Injection Prevention" },
+                { "href": "https://redis.io/docs/latest/get-started/", "label": "Redis Getting Started" }
+              ],
+              "note": "These are not decoration topics for the end. They affect system durability."
+            },
+            {
+              "step": "14",
+              "side": "right",
+              "tone": "flex",
+              "badge": "DevOps",
+              "title": "DevOps and operations",
+              "summary": "The final branch takes your project into the real world: packaging, deployment, CI/CD, and cloud infrastructure.",
+              "topics": ["Docker", "Deploy", "CI/CD", "AWS", "Kubernetes", "Firebase"],
+              "subbranches": [
+                {
+                  "title": "Main branch",
+                  "items": ["Docker", "Deploy a project to a server", "CI/CD", "Manage env files", "Observe logs"]
+                },
+                {
+                  "title": "Side branch",
+                  "items": ["AWS EC2", "SQS", "SES", "SNS", "S3", "Kubernetes", "Firebase", "Scale and backup", "Basic Nginx/Caddy"]
+                }
+              ],
+              "references": [
+                { "href": "https://docs.docker.com/", "label": "Docker Docs" },
+                { "href": "https://kubernetes.io/docs/", "label": "Kubernetes Docs" },
+                { "href": "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/concepts.html", "label": "AWS EC2 Overview" },
+                { "href": "https://firebase.google.com/docs/", "label": "Firebase Docs" },
+                { "href": "https://viblo.asia/p/docker-chua-biet-gi-den-biet-dung-phan-1-lich-su-ByEZkWrEZQ0", "label": "Viblo Docker" }
+              ],
+              "note": "You do not need to swallow all of DevOps at once, but you should know where it sits in the tree."
+            },
+            {
+              "step": "15",
+              "side": "left",
+              "tone": "flex",
+              "badge": "Debug",
+              "title": "Debugging and monitoring",
+              "summary": "This branch helps you do more than write code. It teaches you how to find bugs, read logs, and observe running systems.",
+              "topics": ["Logs", "Dump", "Xdebug", "Profiler", "Monitoring", "Alerts"],
+              "subbranches": [
+                {
+                  "title": "Main branch",
+                  "items": ["Read stack traces", "Log in the right place", "Controlled dd / dump usage", "Xdebug step by step", "Debug broken requests"]
+                },
+                {
+                  "title": "Side branch",
+                  "items": ["Basic profiling", "Sentry/Bugsnag", "Health checks", "Watch memory usage", "Track failed queues"]
+                }
+              ],
+              "references": [
+                { "href": "https://xdebug.org/docs/", "label": "Xdebug Docs" },
+                { "href": "https://docs.sentry.io/", "label": "Sentry Docs" },
+                { "href": "https://pestphp.com/docs/optimizing-tests", "label": "Pest Optimizing Tests" }
+              ],
+              "note": "Fast coders are not always strong. Good debuggers usually go much further."
+            },
+            {
+              "step": "16",
+              "side": "right",
+              "tone": "flex",
+              "badge": "Workflow",
+              "title": "Project workflow and reading documentation",
+              "summary": "This final branch makes learning sustainable: read docs, read source, and turn knowledge into a repeatable workflow.",
+              "topics": ["Read docs", "Read source", "Notes", "Checklist", "Refactor", "Code review"],
+              "subbranches": [
+                {
+                  "title": "Main branch",
+                  "items": ["Read official documentation", "Write structured notes", "Create study checklists", "Split features into small tasks", "Refactor after it works"]
+                },
+                {
+                  "title": "Side branch",
+                  "items": ["Read framework source", "Compare docs with real code", "Build mini demos", "Review your own code", "Create a weekly learning rhythm"]
+                }
+              ],
+              "references": [
+                { "href": "https://laravel.com/docs", "label": "Laravel Docs" },
+                { "href": "https://github.com/laravel/framework", "label": "Laravel Framework Source" },
+                { "href": "https://developer.mozilla.org/en-US/docs/Learn_web_development", "label": "MDN Learn Web Development" }
+              ],
+              "note": "This is the branch that turns scattered learning into a long-term self-study system."
+            }
+          ],
+          "cta": {
+            "eyebrow": "Next practical step",
+            "title": "After this tree, continue into PHP",
+            "body": "The PHP site is now the natural next branch, because the map above gives context for why PHP comes before deeper Laravel work.",
+            "href": "../php/index.html",
+            "action": "Open PHP Site"
+          }
+        },
+        {
+          "type": "cards",
+          "heading": "How to use this tree",
+          "intro": "This page should guide decisions, not overwhelm you.",
+          "items": [
+            {
+              "title": "Follow the trunk first",
+              "body": "Move in order from tools to web basics to PHP. That sequence keeps later topics understandable."
+            },
+            {
+              "title": "Use the chips as a checklist",
+              "body": "Each chip is a concrete topic you can study or turn into a small project task."
+            },
+            {
+              "title": "Do not force advanced topics early",
+              "body": "Queue, deploy, and monitoring become valuable when the app starts growing, not before."
+            }
+          ]
+        },
+        {
+          "type": "list",
+          "heading": "Suggested project rhythm",
+          "intro": "A friendly roadmap becomes useful only when it connects to work you can actually build.",
+          "items": [
+            {
+              "title": "First small win",
+              "body": "Build a static page, then add a working form and one small JavaScript interaction."
+            },
+            {
+              "title": "Backend checkpoint",
+              "body": "After that, rebuild a simple feature in PHP: form submit, validation, file write, and a tiny CRUD flow."
+            },
+            {
+              "title": "Laravel checkpoint",
+              "body": "Then repeat the same feature in Laravel so you can see clearly what the framework is improving for you."
+            }
+          ]
+        }
+      ]
+    },
+    "php": {
+      "metaTitle": "PHP Learning Hub | Laravel Labs",
+      "eyebrow": "PHP Basics",
+      "title": "PHP Learning Roadmap",
+      "subtitle": "One place to move from the smallest PHP fundamentals into backend thinking, performance awareness, and practical work with services, data, and production flow.",
+      "journeyTitle": "Choose your track",
+      "journeySubtitle": "Start with the foundation level if you want a slower, safer path. Move into the practical or advanced levels once you want more real backend patterns and systems thinking."
+    },
+    "php-starter": {
+      "metaTitle": "PHP Starter | Laravel Labs",
+      "eyebrow": "PHP Starter",
+      "title": "PHP Level 1: Language foundations, syntax, and first data flow",
+      "subtitle": "Move from what PHP is into syntax, variables, conditions, functions, files, JSON, input, hashing, escaped output, and the foundation habits that make later backend work easier.",
+      "journeyTitle": "Other PHP levels",
+      "journeySubtitle": "You are on the starter level. Use the main menu or the navigation links to move to the PHP hub or the later levels."
+    },
+    "php-intermediate": {
+      "metaTitle": "PHP Intermediate | Laravel Labs",
+      "eyebrow": "PHP Intermediate",
+      "title": "PHP Level 2: Practical code, request-response, and backend foundations",
+      "subtitle": "Move from real code structure into request-response flow, cookies, uploads, JSON, import-export, logging, databases, response codes, external services, and cleaner backend organization.",
+      "journeyTitle": "Other PHP levels",
+      "journeySubtitle": "You are on the intermediate level. You can go back to level 1 for foundations or move into level 3 for testing, architecture, and production thinking."
+    },
+    "php-advanced": {
+      "metaTitle": "PHP Advanced | Laravel Labs",
+      "eyebrow": "PHP Advanced",
+      "title": "PHP Level 3: Architecture, testing, integration, and production thinking",
+      "subtitle": "Focus on modern OOP, PHPUnit, N+1 queries, service boundaries, queues, webhooks, transactions, deployment, observability, and real production-minded backend work.",
+      "journeyTitle": "Other PHP levels",
+      "journeySubtitle": "You are on the advanced level. Use the main menu and navigation links to move quickly across the PHP hub and the other levels."
+    },
+    "laravel": {
+      "metaTitle": "Laravel Roadmap | Laravel Labs",
+      "eyebrow": "Laravel Map",
+      "title": "A Laravel learning space with a clear path",
+      "subtitle": "This page is not trying to squeeze everything into one screen. It is the entry point for seeing Laravel as a layered ecosystem: framework fundamentals, application structure, and the parts that start to matter once a project grows beyond the basics.",
+      "journeyTitle": "Pick the right branch for the right problem",
+      "journeySubtitle": "Each item below is its own Laravel topic site with separate `vi/en` data and a clear role. You can move step by step from overview to production, or jump straight into the topic your current project needs.",
+      "hubMenu": {
+        "label": "Laravel Hub",
+        "desc": "Overview page with intro context and links to each Laravel topic site."
+      },
+      "sectionFiles": [
+        "overview",
+        "structure",
+        "composer",
+        "php-commands",
+        "frontend",
+        "blade-ui",
+        "data",
+        "request-flow",
+        "container-architecture",
+        "auth-security",
+        "api-integration",
+        "files-media",
+        "async",
+        "performance-search",
+        "realtime",
+        "quality",
+        "devops",
+        "maintenance-upgrade",
+        "repo-map"
+      ],
+      "menu": [
+        {
+          "anchor": "laravel-overview",
+          "label": "Overview",
+          "desc": "The big picture before going deep into the framework."
+        },
+        {
+          "anchor": "laravel-structure",
+          "label": "App structure",
+          "desc": "Understand the main folders and bootstrap files in a Laravel project."
+        },
+        {
+          "anchor": "laravel-composer",
+          "label": "Composer & vendor",
+          "desc": "PHP package management, autoloading, and the wider library ecosystem."
+        },
+        {
+          "anchor": "laravel-php-commands",
+          "label": "PHP & Artisan commands",
+          "desc": "The `php` and `php artisan` commands you keep using for setup, migrations, cache, queues, and debugging."
+        },
+        {
+          "anchor": "laravel-frontend",
+          "label": "NPM & frontend",
+          "desc": "Vite, npm, Tailwind, Blade, Livewire, Vue, or React."
+        },
+        {
+          "anchor": "laravel-blade-ui",
+          "label": "Blade & UI",
+          "desc": "Layouts, components, forms, Alpine, and server-rendered interface work."
+        },
+        {
+          "anchor": "laravel-data",
+          "label": "Database & Eloquent",
+          "desc": "Migrations, seeders, factories, models, and relationships."
+        },
+        {
+          "anchor": "laravel-request-flow",
+          "label": "Request flow",
+          "desc": "Routes, middleware, controllers, requests, responses, and validation."
+        },
+        {
+          "anchor": "laravel-container-architecture",
+          "label": "Container & architecture",
+          "desc": "Service container, providers, bindings, service classes, actions, repositories."
+        },
+        {
+          "anchor": "laravel-auth-security",
+          "label": "Auth & security",
+          "desc": "Breeze, Jetstream, Sanctum, policies, gates, CSRF, and sessions."
+        },
+        {
+          "anchor": "laravel-api-integration",
+          "label": "API & integration",
+          "desc": "REST APIs, resources, tokens, webhooks, and third-party services."
+        },
+        {
+          "anchor": "laravel-files-media",
+          "label": "Files & uploads",
+          "desc": "Storage, uploads, images, and local or S3-backed disks."
+        },
+        {
+          "anchor": "laravel-async",
+          "label": "Queues & integrations",
+          "desc": "Events, listeners, notifications, mail, scheduler, cache, and Redis."
+        },
+        {
+          "anchor": "laravel-performance-search",
+          "label": "Performance & search",
+          "desc": "Cache, query tuning, pagination, filters, and search."
+        },
+        {
+          "anchor": "laravel-realtime",
+          "label": "Realtime",
+          "desc": "Broadcasting, Echo, websockets, and live notifications."
+        },
+        {
+          "anchor": "laravel-quality",
+          "label": "Testing & debugging",
+          "desc": "Pest or PHPUnit, logging, Telescope, Horizon, and Pint."
+        },
+        {
+          "anchor": "laravel-devops",
+          "label": "Sail & deployment",
+          "desc": "Docker, env management, queue workers, cron, and production habits."
+        },
+        {
+          "anchor": "laravel-maintenance-upgrade",
+          "label": "Upgrade & maintenance",
+          "desc": "Version upgrades, package compatibility, refactors, and long-term lifecycle care."
+        },
+        {
+          "anchor": "laravel-repo-map",
+          "label": "Repo mapping",
+          "desc": "Map each topic back to Breeze, Chirper, Jetstream, and Sail."
+        }
+      ],
+      "sections": [
+        {
+          "anchor": "laravel-overview",
+          "type": "cards",
+          "heading": "Laravel Overview Map",
+          "intro": "This is a better way to split the Laravel menu so the header stays readable while still leaving room for future sub-sites.",
+          "items": [
+            {
+              "title": "Layer 1: Core framework",
+              "body": "Routing, controllers, request lifecycle, Blade, validation, migrations, models, and basic CRUD."
+            },
+            {
+              "title": "Layer 2: App architecture",
+              "body": "Service classes, policies, form requests, events, notifications, queues, cache, and cleaner separation of code."
+            },
+            {
+              "title": "Layer 3: Ecosystem and production",
+              "body": "Composer, vendor, npm, Vite, Sail, Redis, Horizon, testing, logging, deployment, and related services."
+            },
+            {
+              "title": "Layer 4: Expanded product features",
+              "body": "APIs, uploads, search, realtime, team workflows, roles or permissions, and third-party integrations."
+            }
+          ]
+        },
+        {
+          "anchor": "laravel-structure",
+          "type": "cards",
+          "heading": "Laravel Project Structure to Learn",
+          "intro": "If you can read the folder structure well, new Laravel repos become much less intimidating.",
+          "items": [
+            {
+              "title": "`app`, `routes`, `config`",
+              "body": "This is the main logic layer: controllers, middleware, models, providers, web or api routes, and application configuration."
+            },
+            {
+              "title": "`resources`, `public`, `storage`",
+              "body": "These hold Blade views, source assets, public files, logs, cache, and uploaded files linked through the storage symlink."
+            },
+            {
+              "title": "`database`, `bootstrap`, `tests`, `vendor`",
+              "body": "Database handles migrations and seeders, bootstrap starts the app, tests verify behavior, and vendor stores installed packages."
+            }
+          ]
+        },
+        {
+          "anchor": "laravel-composer",
+          "type": "list",
+          "heading": "Composer, packages, and the vendor folder",
+          "intro": "Laravel does not stand alone. It runs on the PHP package ecosystem, so this deserves its own submenu.",
+          "items": [
+            {
+              "title": "Composer fundamentals",
+              "body": "Understand `composer.json`, `composer.lock`, `require`, `require-dev`, `scripts`, version constraints, and when to use `composer install` versus `composer update`."
+            },
+            {
+              "title": "Autoloading and PSR-4",
+              "body": "Know why classes in `app/` load automatically, when `composer dump-autoload` matters, and how namespaces map to directories."
+            },
+            {
+              "title": "Vendor and common packages",
+              "body": "Common package groups include `laravel/sanctum`, `laravel/tinker`, `spatie/*`, `barryvdh/*`, `maatwebsite/excel`, `livewire/livewire`, and `inertiajs/*`."
+            },
+            {
+              "title": "Package selection mindset",
+              "body": "Only add packages when the need is clear, and check maintenance quality, docs, issue activity, and upgrade or security impact."
+            }
+          ]
+        },
+        {
+          "anchor": "laravel-frontend",
+          "type": "cards",
+          "heading": "Node, npm, and the frontend layer around Laravel",
+          "intro": "Modern Laravel usually ships with an asset build layer. A dedicated npm or frontend submenu is reasonable instead of hiding it inside other topics.",
+          "items": [
+            {
+              "title": "Vite and npm scripts",
+              "body": "Understand `package.json`, `npm install`, `npm run dev`, `npm run build`, hot reload, and the Vite asset pipeline."
+            },
+            {
+              "title": "Blade, Tailwind, and Alpine",
+              "body": "This is a lightweight stack for fast server-rendered UI in many traditional Laravel apps."
+            },
+            {
+              "title": "Livewire, Inertia, Vue, and React",
+              "body": "When the app needs richer interaction, Laravel can pair with Livewire or SPA-oriented stacks like Inertia with Vue or React."
+            }
+          ]
+        },
+        {
+          "anchor": "laravel-blade-ui",
+          "type": "list",
+          "heading": "Blade, components, and the server-rendered UI layer",
+          "intro": "Because you work a lot with Laravel, this deserves its own topic instead of being buried inside general frontend notes.",
+          "items": [
+            {
+              "title": "Layouts, sections, Blade components",
+              "body": "Learn `@extends`, `@section`, `@yield`, anonymous components, class components, slots, and reusable layout patterns."
+            },
+            {
+              "title": "Forms, old input, error bags",
+              "body": "Understand how forms submit data, show validation errors, preserve old input, and keep data-entry flows clean."
+            },
+            {
+              "title": "Blade with Alpine or Livewire",
+              "body": "This is a fast path to richer interaction without committing to a full SPA."
+            },
+            {
+              "title": "Feature-based UI thinking",
+              "body": "Split components by feature such as auth, profile, dashboard, tables, and modals instead of letting view files grow uncontrolled."
+            }
+          ]
+        },
+        {
+          "anchor": "laravel-data",
+          "type": "cards",
+          "heading": "Database, migrations, and Eloquent",
+          "intro": "This knowledge group should stay separate because nearly every Laravel app depends heavily on data design and querying.",
+          "items": [
+            {
+              "title": "Migrations, seeders, and factories",
+              "body": "Use them to define schema, create sample data, support local development, testing, and project onboarding."
+            },
+            {
+              "title": "Models and relationships",
+              "body": "Learn `hasOne`, `hasMany`, `belongsTo`, `belongsToMany`, eager loading, accessors, mutators, and casts."
+            },
+            {
+              "title": "Query performance",
+              "body": "Track N+1 issues, indexes, pagination, transactions, locking, and when query builder or raw SQL is the better fit."
+            }
+          ]
+        },
+        {
+          "anchor": "laravel-request-flow",
+          "type": "list",
+          "heading": "Laravel request flow",
+          "intro": "This submenu keeps the core topics together because every Laravel learner keeps returning to them.",
+          "items": [
+            {
+              "title": "Routes and middleware",
+              "body": "A request enters from `public/index.php`, moves through the framework bootstrap and middleware stack, then reaches a controller or route closure."
+            },
+            {
+              "title": "Controllers, Form Requests, validation",
+              "body": "Move validation into custom request classes once logic grows so controllers stay smaller and more reusable."
+            },
+            {
+              "title": "Responses, redirects, sessions, flash data",
+              "body": "Understand redirects, old input, error bags, JSON responses, file responses, and how sessions preserve user state."
+            },
+            {
+              "title": "Service container and dependency injection",
+              "body": "Laravel resolves many dependencies through container bindings, interfaces, singletons, and auto-resolution."
+            }
+          ]
+        },
+        {
+          "anchor": "laravel-container-architecture",
+          "type": "cards",
+          "heading": "Service container and application architecture",
+          "intro": "This is one of the main differences between simply using Laravel and being able to structure a larger Laravel app well.",
+          "items": [
+            {
+              "title": "Service container, bindings, providers",
+              "body": "Understand bind, singleton, interface-to-implementation mapping, service providers, and dependency resolution lifecycles."
+            },
+            {
+              "title": "Service classes, actions, repositories",
+              "body": "Laravel does not force one architecture pattern, so you need judgment for when business logic should leave controllers and models."
+            },
+            {
+              "title": "Feature-oriented domain thinking",
+              "body": "As the app grows, organize code by features such as billing, auth, posts, or teams instead of only by technical layers."
+            }
+          ]
+        },
+        {
+          "anchor": "laravel-auth-security",
+          "type": "cards",
+          "heading": "Authentication, authorization, and security",
+          "intro": "This area is broad enough that it should be one of the biggest Laravel submenus.",
+          "items": [
+            {
+              "title": "Breeze, Jetstream, Fortify, Sanctum",
+              "body": "These are common auth building blocks: Breeze for a lean start, Jetstream for team features, Fortify for backend auth flows, and Sanctum for SPA or API token auth."
+            },
+            {
+              "title": "Policies, Gates, roles, and permissions",
+              "body": "Use these to control who can do what at the action, resource, or feature level."
+            },
+            {
+              "title": "CSRF, sessions, hashing, rate limiting",
+              "body": "These are the foundational protections to understand before handling real users."
+            }
+          ]
+        },
+        {
+          "anchor": "laravel-api-integration",
+          "type": "cards",
+          "heading": "APIs and third-party service integration",
+          "intro": "Many Laravel apps do more than render Blade. They often need to talk to mobile apps, SPAs, or external systems.",
+          "items": [
+            {
+              "title": "REST APIs, resources, pagination",
+              "body": "Learn api routes, resource responses, status codes, error formats, pagination shapes, and basic versioning."
+            },
+            {
+              "title": "Sanctum, tokens, webhooks",
+              "body": "This area covers API authentication, machine-to-machine flows, and inbound callbacks from external systems."
+            },
+            {
+              "title": "HTTP client and integration flow",
+              "body": "You need to understand retries, timeouts, error handling, idempotency, request-response logging, and secret management."
+            }
+          ]
+        },
+        {
+          "anchor": "laravel-files-media",
+          "type": "list",
+          "heading": "Files, uploads, and media handling",
+          "intro": "This appears constantly in real projects but is often underrepresented in Laravel learning maps.",
+          "items": [
+            {
+              "title": "Local and cloud storage disks",
+              "body": "Understand `storage/app`, `public`, symbolic links, disk configuration, S3-compatible storage, and file access control."
+            },
+            {
+              "title": "Uploads, validation, file naming",
+              "body": "Handle mime types, size limits, file naming, slugging, duplicates, storage paths, and file deletion lifecycle correctly."
+            },
+            {
+              "title": "Images, documents, export and import",
+              "body": "This is where supporting packages often appear for image manipulation, Excel import-export, or PDF generation."
+            }
+          ]
+        },
+        {
+          "anchor": "laravel-async",
+          "type": "cards",
+          "heading": "Queues, events, and service integrations",
+          "intro": "At this stage Laravel starts to feel more like a full backend system than only a CRUD framework.",
+          "items": [
+            {
+              "title": "Events, listeners, jobs, queues",
+              "body": "Use them to move heavy work out of the main request, such as sending mail, processing images, syncing data, or handling webhooks."
+            },
+            {
+              "title": "Mail, notifications, scheduler",
+              "body": "Real applications often need email, user notifications, and scheduled background tasks through cron."
+            },
+            {
+              "title": "Cache, Redis, Horizon, external APIs",
+              "body": "This is the performance and operations layer once the app has meaningful traffic or background processing."
+            }
+          ]
+        },
+        {
+          "anchor": "laravel-performance-search",
+          "type": "cards",
+          "heading": "Performance, caching, and search",
+          "intro": "Once features work, this is the next group to deepen so the application stays fast and understandable.",
+          "items": [
+            {
+              "title": "Cache layers",
+              "body": "Understand config, route, view, and query-result caching, invalidation strategies, Redis, and the risks of stale data."
+            },
+            {
+              "title": "Search, filters, sorting, pagination",
+              "body": "Nearly every admin panel or content application needs this feature group in some form."
+            },
+            {
+              "title": "Reading bottlenecks",
+              "body": "Look at query logs, eager loading, indexes, N+1 issues, queue offloading, and caching at the correct layer instead of optimizing blindly."
+            }
+          ]
+        },
+        {
+          "anchor": "laravel-realtime",
+          "type": "list",
+          "heading": "Realtime behavior and live-updating UX",
+          "intro": "If you later build dashboards, chat, live notifications, or activity feeds, this submenu becomes very useful.",
+          "items": [
+            {
+              "title": "Broadcasting and channels",
+              "body": "Understand public, private, and presence channels and how Laravel publishes backend events to clients."
+            },
+            {
+              "title": "Echo, websocket servers, live notifications",
+              "body": "This is the bridge between backend events and nearly real-time user interface updates."
+            },
+            {
+              "title": "When realtime is worth it",
+              "body": "Only add it when the product value is real because it increases operational and debugging complexity."
+            }
+          ]
+        },
+        {
+          "anchor": "laravel-quality",
+          "type": "list",
+          "heading": "Testing, debugging, and code quality",
+          "intro": "Without this group, Laravel knowledge often stops at making things work instead of making them durable.",
+          "items": [
+            {
+              "title": "Pest or PHPUnit",
+              "body": "Split your thinking across unit tests, feature tests, database tests, fake queues, and fake mail so you can verify real application behavior."
+            },
+            {
+              "title": "Logging and debugging",
+              "body": "Know how to use `storage/logs`, dump carefully, handle exceptions, inspect with Laravel Telescope or Ray, and debug SQL queries."
+            },
+            {
+              "title": "Code style and static quality",
+              "body": "Common tools include Laravel Pint, PHPStan, Rector, and team review conventions."
+            }
+          ]
+        },
+        {
+          "anchor": "laravel-devops",
+          "type": "cards",
+          "heading": "Sail, environments, and deployment",
+          "intro": "These topics live outside the framework core but are critical once you want to move beyond local CRUD practice.",
+          "items": [
+            {
+              "title": "Sail, Docker, supporting services",
+              "body": "Laravel Sail helps bundle PHP, databases, Redis, Mailpit or Mailhog, and other local services into a more consistent workflow."
+            },
+            {
+              "title": "`.env`, config cache, queue workers, scheduler",
+              "body": "These concepts directly affect how the app behaves across local, staging, and production environments."
+            },
+            {
+              "title": "Deployment and observability",
+              "body": "Grow into Nginx or Apache, Supervisor, cron, CI/CD, backups, monitoring, and rollback habits."
+            }
+          ]
+        },
+        {
+          "anchor": "laravel-maintenance-upgrade",
+          "type": "list",
+          "heading": "Framework upgrades and long-term maintenance",
+          "intro": "Because you use Laravel a lot, this matters. Long-lived apps always run into upgrades, dependency drift, and architectural cleanup.",
+          "items": [
+            {
+              "title": "Framework and package upgrades",
+              "body": "Read changelogs, upgrade guides, package compatibility notes, deprecated APIs, and rollback plans before major changes."
+            },
+            {
+              "title": "Safe refactoring",
+              "body": "Refactor under tests, logging, or feature flags instead of making broad edits and trusting intuition."
+            },
+            {
+              "title": "Maintaining project knowledge",
+              "body": "Keep records of core routes, key dependencies, critical env values, important queues, and main business flows so the team is never blind."
+            }
+          ]
+        },
+        {
+          "anchor": "laravel-repo-map",
+          "type": "list",
+          "heading": "How the current repo maps into the roadmap",
+          "intro": "Each Laravel folder should connect to the right knowledge branch so later sub-sites can split out naturally.",
+          "items": [
+            {
+              "title": "breeze",
+              "body": "Strong match for `request flow`, `basic auth`, `Blade`, `middleware`, `validation`, and the lighter frontend layer."
+            },
+            {
+              "title": "chirper",
+              "body": "Good for `CRUD`, `Eloquent relationships`, `policies`, `feature flow`, and finishing a user-facing feature end to end."
+            },
+            {
+              "title": "jetstream",
+              "body": "A strong lab for `advanced auth`, `teams`, `sessions`, `profile security`, `Fortify`, `Sanctum`, and multi-role app thinking."
+            },
+            {
+              "title": "sail",
+              "body": "Best mapped to `Sail`, `Docker`, `supporting services`, `environment workflow`, and the first step toward deployment habits."
+            }
+          ]
+        }
+      ]
+    },
+    "glossary": {
+      "metaTitle": "Glossary | Laravel Labs",
+      "eyebrow": "Glossary",
+      "title": "Glossary for web, Laravel, runtime, and AI terms",
+      "subtitle": "A glossary that moves from beginner to advanced terms across web, HTTP, PHP, Laravel, databases, security, runtime, and AI-assisted coding. The goal is not just short definitions, but enough depth to understand where a term actually lives in code, requests, data, and production.",
+      "sections": [
+        {
+          "type": "list",
+          "heading": "Web, browser, and HTTP foundations",
+          "intro": "These are the first words beginners hear, and also the ones they most often blur together. If this layer is weak, request flow, APIs, auth, and caching will stay fuzzy later.",
+          "breaks": [
+            {
+              "start": 1,
+              "title": "HTTP & browser flow",
+              "description": "Core terms around requests, responses, URLs, state, and browser behavior."
+            }
+          ],
+          "items": [
+            {
+              "title": "HTTP",
+              "body": "HTTP is the protocol that lets clients and servers exchange requests and responses. Opening a page, submitting a form, calling an API, redirecting, or downloading a file usually happens over HTTP or HTTPS. This is the base layer for understanding that the browser is not calling your PHP function directly; it is sending a request and receiving a response back.",
+              "bullets": [
+                "The client sends method, URL, headers, cookies, query strings, and sometimes a body.",
+                "The server returns a status code, headers, a body, cookies, and caching instructions.",
+                "Backend developers need HTTP literacy to read request flow and debug APIs correctly."
+              ],
+              "code": "GET /posts?page=2 HTTP/1.1\nHost: example.com\nAccept: text/html\n\nHTTP/1.1 200 OK\nContent-Type: text/html; charset=UTF-8\n"
+            },
+            {
+              "title": "HTTPS",
+              "body": "HTTPS is HTTP running over TLS so traffic is encrypted in transit. It does not automatically make the app secure, but it is a required baseline for login, cookies, APIs, uploads, and private file access."
+            },
+            {
+              "title": "URL",
+              "body": "A URL is the full address of a resource, often including scheme, domain, port, path, query string, and fragment. A common beginner mistake is assuming all of it reaches the server, but the `fragment` after `#` is usually handled only by the browser.",
+              "code": "https://example.com:443/posts/10?tab=comments#latest"
+            },
+            {
+              "title": "Request",
+              "body": "A request is the packet of information the client sends to the server to ask for an action or resource. In Laravel, middleware, Form Requests, controllers, and policies all end up reading or shaping request-related behavior."
+            },
+            {
+              "title": "Response",
+              "body": "A response is what the server sends back after processing the request. It may be HTML, JSON, a redirect, a file download, or an error payload. Understanding response types is how you begin to separate web flow from API flow."
+            },
+            {
+              "title": "Header",
+              "body": "Headers are metadata attached to requests or responses, such as content type, authorization, cache rules, cookies, host, or forwarded proxy values. Many production bugs live in header handling rather than in the response body."
+            },
+            {
+              "title": "Cookie",
+              "body": "A cookie is a small piece of data the browser sends back with requests. Laravel often uses cookies to preserve session or web-auth state. Beginners often confuse cookies with sessions, but a cookie is usually just the client-side carrier of an identifier or small state fragment."
+            },
+            {
+              "title": "Session",
+              "body": "A session is state preserved across multiple requests. Sessions help the app remember a logged-in user, flash messages, old input, or CSRF tokens. When people say 'the app keeps losing login', they are often dealing with a session or cookie problem.",
+              "links": [
+                {
+                  "label": "Laravel Auth & Security",
+                  "href": "../laravel/auth-security.html",
+                  "description": "See login flow, cookies, sessions, and common 419 or logout issues."
+                },
+                {
+                  "label": "Interview Fresher",
+                  "href": "../interview/fresher.html",
+                  "description": "Review baseline questions about sessions, cookies, HTTPS, and web auth."
+                }
+              ],
+              "bullets": [
+                "Often confused with cookies: cookies are what the browser carries, while a session is the logical state the app is maintaining.",
+                "Often confused with token auth: token-based flows are usually a different style from classic web-session auth."
+              ],
+              "note": "Real bug example: login works on the web, but after a deploy or a `SESSION_DOMAIN` change users keep getting logged out even though their credentials are correct."
+            },
+            {
+              "title": "Stateless",
+              "body": "Stateless means each request should carry enough information to be processed without relying heavily on previous requests. HTTP naturally leans toward statelessness, so sessions, tokens, cookies, and caches are all mechanisms that reintroduce controlled state."
+            },
+            {
+              "title": "CORS",
+              "body": "CORS is the browser-side rule set that decides whether JavaScript from one origin may call another origin. It is a browser security policy, not a business permission model. People often think 'enable CORS' means authorizing users, but it only solves a browser-origin access rule.",
+              "code": "Access-Control-Allow-Origin: https://app.example.com",
+              "links": [
+                {
+                  "label": "Laravel API Integration",
+                  "href": "../laravel/api-integration.html",
+                  "description": "See how APIs, webhooks, auth headers, and browser origin rules interact."
+                },
+                {
+                  "label": "Interview Junior",
+                  "href": "../interview/junior.html",
+                  "description": "Practice explaining CORS, cookies, and exposed endpoints in interviews."
+                }
+              ],
+              "bullets": [
+                "Often confused with auth: CORS does not decide whether a user may modify data.",
+                "Often confused with firewall or API permissions: it is mainly a browser policy layer."
+              ],
+              "note": "Real bug example: the API works in Postman, but the browser frontend still fails because the preflight or response headers are wrong."
+            },
+            {
+              "title": "Cache-Control",
+              "body": "This response header tells browsers and proxies whether they may cache a response, for how long, and when they must revalidate it. If you do not understand this layer, you will eventually hit the classic problem of changing code while the browser still shows old behavior."
+            }
+          ]
+        },
+        {
+          "type": "list",
+          "heading": "PHP, OOP, and backend building blocks",
+          "intro": "These are the terms junior developers keep hearing in interviews and code reviews. If they stay fuzzy, Laravel itself will also stay fuzzy because the framework builds on top of them.",
+          "breaks": [
+            {
+              "start": 1,
+              "title": "Programming & backend basics",
+              "description": "Core words for reading code, reading classes, and understanding how app logic is organized."
+            }
+          ],
+          "items": [
+            {
+              "title": "PHP",
+              "body": "PHP is a server-side language often used to process requests, manipulate data, talk to databases, render HTML, or return JSON. In Laravel, PHP is the base layer underneath the framework. Strong PHP basics reduce your dependence on framework magic."
+            },
+            {
+              "title": "Variable",
+              "body": "A variable is a place where a value is stored for reuse. It sounds simple, but nearly every backend flow is just: read input, hold temporary state, transform data, and return output."
+            },
+            {
+              "title": "Function",
+              "body": "A function is a reusable unit of logic. As code grows, knowing what should stay a function, what should become a class method, and what deserves its own service affects maintainability directly."
+            },
+            {
+              "title": "Class",
+              "body": "A class is a template used to organize data and behavior together. In Laravel you see classes everywhere: controllers, requests, jobs, policies, commands, events, listeners, services, and models."
+            },
+            {
+              "title": "Object",
+              "body": "An object is a concrete instance created from a class. Once you understand objects, code starts looking less like random functions and more like state and behavior moving together."
+            },
+            {
+              "title": "OOP",
+              "body": "OOP is a way of organizing code around objects instead of only around disconnected functions. In PHP and Laravel, OOP is not about sounding academic; it is about clearer boundaries, clearer state, and better extension and replacement."
+            },
+            {
+              "title": "Encapsulation",
+              "body": "Encapsulation is the idea of keeping related data and behavior together while limiting uncontrolled access to internal state. It helps reduce chaos and hidden coupling."
+            },
+            {
+              "title": "Dependency Injection",
+              "body": "Dependency Injection means a class receives what it needs from the outside instead of instantiating everything itself. This makes code easier to test, less tightly coupled, and a better fit for Laravel's service container.",
+              "code": "class PostController\n{\n    public function __construct(private PostService $service) {}\n}\n"
+            },
+            {
+              "title": "Coupling",
+              "body": "Coupling is the degree to which one part of the codebase is tightly tied to another. High coupling makes code harder to change, harder to test, and more likely to break unexpectedly when one small piece moves."
+            },
+            {
+              "title": "Separation of Concerns",
+              "body": "This principle says each layer should handle the concern that belongs to it: validation in validation, authorization in policies or requests, orchestration in controllers or actions, business flow in suitable services, and so on. It is one of the most practical principles in backend engineering."
+            }
+          ]
+        },
+        {
+          "type": "list",
+          "heading": "Laravel core and request flow",
+          "intro": "These are the concepts that appear almost immediately once you read Laravel docs, join a code review, build a feature, debug a bug, or sit in a Laravel interview.",
+          "breaks": [
+            {
+              "start": 1,
+              "title": "Laravel internals & app flow",
+              "description": "The main layers that move a request from the browser through the app and back as a response."
+            }
+          ],
+          "items": [
+            {
+              "title": "Route",
+              "body": "A route maps a URL and HTTP method to a handler. It is one of the clearest entry points for reading the flow of a Laravel application."
+            },
+            {
+              "title": "Middleware",
+              "body": "Middleware is a layer that intercepts requests before they reach controllers or before responses leave the app. It is often used for auth, throttling, tenant context, logging, locale, and cross-cutting guardrails.",
+              "code": "Route::middleware(['auth', 'verified'])->group(function () {\n    Route::get('/dashboard', DashboardController::class);\n});\n",
+              "links": [
+                {
+                  "label": "Laravel Request Flow",
+                  "href": "../laravel/request-flow.html",
+                  "description": "Follow how a request moves through routes, middleware, request classes, and controllers."
+                },
+                {
+                  "label": "Laravel Auth & Security",
+                  "href": "../laravel/auth-security.html",
+                  "description": "See auth, verified, throttle, and protection layers in real flows."
+                }
+              ]
+            },
+            {
+              "title": "Controller",
+              "body": "A controller receives the request and coordinates the web or API flow. Good controllers stay thin: accept input, call the right layer, and return the response. Fat controllers are one of the most common Laravel code smells."
+            },
+            {
+              "title": "Form Request",
+              "body": "A Form Request is a dedicated class for validation and authorization logic around a request. It keeps controllers smaller and makes input checking easier to reason about.",
+              "code": "class StorePostRequest extends FormRequest\n{\n    public function rules(): array\n    {\n        return ['title' => ['required', 'string', 'max:255']];\n    }\n}\n"
+            },
+            {
+              "title": "Validation",
+              "body": "Validation is the step that checks whether input data has the right shape and rules. It does not replace business rules, but it is the first layer that stops obviously broken or dirty input from entering the deeper flow."
+            },
+            {
+              "title": "Policy",
+              "body": "A policy is a class that contains authorization rules for a model or action. It is the right place to avoid scattering `if admin` or ownership checks across controllers and Blade.",
+              "links": [
+                {
+                  "label": "Laravel Auth & Security",
+                  "href": "../laravel/auth-security.html",
+                  "description": "See policies, gates, authorize calls, and ownership checks in practice."
+                }
+              ]
+            },
+            {
+              "title": "Blade",
+              "body": "Blade is Laravel's server-side templating engine for rendering UI. It lets you write HTML with directives such as `@if`, `@foreach`, `@csrf`, `@error`, layouts, and components."
+            },
+            {
+              "title": "Eloquent",
+              "body": "Eloquent is Laravel's ORM for working with the database through models, relationships, scopes, casts, and higher-level query behavior. It makes code more expressive, but careless use can easily create N+1 problems or muddy data logic.",
+              "links": [
+                {
+                  "label": "Laravel Database & Eloquent",
+                  "href": "../laravel/data.html",
+                  "description": "See models, relations, eager loading, transactions, and schema decisions in depth."
+                },
+                {
+                  "label": "Interview Junior",
+                  "href": "../interview/junior.html",
+                  "description": "Review junior-level questions around relations, queries, and N+1."
+                }
+              ]
+            },
+            {
+              "title": "Service Container",
+              "body": "The service container is Laravel's dependency resolution and binding engine. It allows the framework to inject the right class into controllers, commands, jobs, listeners, and other layers.",
+              "code": "app()->bind(PaymentGateway::class, StripeGateway::class);\n"
+            },
+            {
+              "title": "Service Provider",
+              "body": "A service provider is where bindings, boot logic, or package setup are registered. When you ask 'where is this thing wired up?', the answer is often in a provider."
+            },
+            {
+              "title": "Facade",
+              "body": "A facade is a static-looking access point into a service behind the container, such as `Cache`, `DB`, `Log`, or `Storage`. It is convenient, but if you overuse it without understanding the underlying dependency, the code can feel magical instead of explicit."
+            }
+          ]
+        },
+        {
+          "type": "list",
+          "heading": "Database, API, and security terms",
+          "intro": "This is the group of words that usually becomes important right after small CRUD work starts to touch real data, real API behavior, and real protection layers.",
+          "breaks": [
+            {
+              "start": 1,
+              "title": "Data, API & protection",
+              "description": "Concepts around schema, queries, auth, API behavior, and foundational defense layers."
+            }
+          ],
+          "items": [
+            {
+              "title": "Migration",
+              "body": "A migration is a file that describes how the database schema changes over time. It helps teams and multiple environments move through the same schema history instead of relying on manual database edits.",
+              "links": [
+                {
+                  "label": "Laravel Database & Eloquent",
+                  "href": "../laravel/data.html",
+                  "description": "See migrations, foreign keys, seeders, dirty data, and real schema rollout issues."
+                },
+                {
+                  "label": "Laravel Maintenance & Upgrade",
+                  "href": "../laravel/maintenance-upgrade.html",
+                  "description": "See multi-step migrations and low-downtime schema changes."
+                }
+              ]
+            },
+            {
+              "title": "Seeder",
+              "body": "A seeder is used to insert sample data or baseline system data. It is useful for local development, tests, onboarding, and learning resets."
+            },
+            {
+              "title": "Foreign Key",
+              "body": "A foreign key is a constraint that links one table to another. It protects referential consistency, such as making sure a `post` belongs to a real `user`, or an `order_item` belongs to an existing `order`."
+            },
+            {
+              "title": "Index",
+              "body": "An index is a supporting structure that helps the database find data faster. But indexes are not free: they consume storage and can make writes a bit heavier. That is why performance always comes with tradeoffs.",
+              "links": [
+                {
+                  "label": "Laravel Database & Eloquent",
+                  "href": "../laravel/data.html",
+                  "description": "See schema design, query plans, indexes, and real data-layer issues."
+                },
+                {
+                  "label": "Laravel Performance, Cache & Search",
+                  "href": "../laravel/performance-search.html",
+                  "description": "See how indexes affect query latency, pagination, and search."
+                }
+              ]
+            },
+            {
+              "title": "Transaction",
+              "body": "A transaction lets several data changes behave like one unit: either all succeed, or all roll back. It matters whenever one business action touches multiple tables or multiple writes.",
+              "code": "DB::transaction(function () use ($orderData) {\n    $order = Order::create($orderData);\n    OrderLog::create(['order_id' => $order->id, 'status' => 'created']);\n});\n",
+              "links": [
+                {
+                  "label": "Laravel Database & Eloquent",
+                  "href": "../laravel/data.html",
+                  "description": "See transactions, locks, backfills, and DB consistency in real systems."
+                },
+                {
+                  "label": "Interview Intermediate",
+                  "href": "../interview/intermediate.html",
+                  "description": "Practice intermediate-level questions about transaction boundaries and consistency."
+                }
+              ]
+            },
+            {
+              "title": "REST API",
+              "body": "REST API is a style of organizing APIs around resources and HTTP semantics instead of overly arbitrary action endpoints. Real applications are not always fully 'pure REST', but understanding the model still makes APIs easier to read and consume."
+            },
+            {
+              "title": "JSON",
+              "body": "JSON is a data format commonly used for client-server exchange. Many Laravel APIs return JSON instead of HTML, so this is a foundational backend concept rather than just 'some text format'."
+            },
+            {
+              "title": "Authentication",
+              "body": "Authentication is the step where the system determines who you are, such as through email/password, cookie session, token, or OAuth. Beginners often confuse auth with permissions, but auth only answers the identity question.",
+              "bullets": [
+                "Quick memory hook: identity first, permission second.",
+                "Being authenticated does not mean being allowed to do everything."
+              ]
+            },
+            {
+              "title": "Authorization",
+              "body": "Authorization is the step that decides what you are allowed to do after the system already knows who you are. A user may be logged in and still not be allowed to edit another user's post.",
+              "links": [
+                {
+                  "label": "Laravel Auth & Security",
+                  "href": "../laravel/auth-security.html",
+                  "description": "See auth, policies, permissions, and where to place access rules cleanly."
+                }
+              ],
+              "bullets": [
+                "Often confused with authentication.",
+                "In Laravel, policies and gates are usually strong places to hold this layer."
+              ]
+            },
+            {
+              "title": "CSRF",
+              "body": "CSRF is an attack pattern where a browser is tricked into sending an unintended request to an app where the user is already logged in. Because browsers automatically send cookies, session-based web flows must understand and protect this layer.",
+              "code": "<form method=\"POST\" action=\"/posts\">\n  @csrf\n  <button type=\"submit\">Save</button>\n</form>\n"
+            },
+            {
+              "title": "XSS",
+              "body": "XSS is the situation where untrusted input or rendered output can inject unwanted script into the browser. This is one reason Blade escapes `{{ }}` by default and why raw HTML rendering needs tight control."
+            },
+            {
+              "title": "Rate Limiting",
+              "body": "Rate limiting is the practice of restricting how many requests may happen in a time window to protect APIs, login endpoints, search, or webhooks from abuse. It is a technical defense layer, not a replacement for business permission logic."
+            }
+          ]
+        },
+        {
+          "type": "list",
+          "heading": "Runtime, DevOps, and production thinking",
+          "intro": "These are the words that become increasingly important once your app is no longer just a local learning CRUD project. Most hard bugs and many senior conversations eventually touch this vocabulary.",
+          "breaks": [
+            {
+              "start": 1,
+              "title": "Runtime & operations",
+              "description": "Concepts around environment, workers, proxies, deploys, caching, and incidents."
+            }
+          ],
+          "items": [
+            {
+              "title": "Queue",
+              "body": "A queue is how you move heavy work or side effects into background execution, such as sending mail, resizing images, importing files, or calling external services. It speeds up web requests but introduces workers, retries, duplicate-job risk, and observability needs.",
+              "links": [
+                {
+                  "label": "Laravel Async",
+                  "href": "../laravel/async.html",
+                  "description": "See jobs, listeners, retries, workers, schedulers, and queue reliability."
+                },
+                {
+                  "label": "Interview DevOps",
+                  "href": "../interview/devops.html",
+                  "description": "Practice queue lag, old worker code, retry storms, and async operations questions."
+                }
+              ]
+            },
+            {
+              "title": "Job Worker",
+              "body": "A worker is the background process that consumes jobs from a queue and runs them. If workers are not restarted after deploy, they can continue running old code even while the web app has moved forward."
+            },
+            {
+              "title": "Cache",
+              "body": "Cache is a temporary storage layer used to avoid repeated work or speed up reads. It is fast, but it always creates questions about invalidation, stale data, cache-key ownership, and when to clear the right layer.",
+              "bullets": [
+                "A famous engineering saying is that cache invalidation is one of the hardest problems in programming.",
+                "Cache does not only make things faster; it can also make bugs harder to reproduce when stale state survives somewhere unexpected."
+              ]
+            },
+            {
+              "title": "Idempotency",
+              "body": "Idempotency is the property that allows the same request or job to run again without duplicating the wrong result. It is critical in payment, webhooks, retries, and any flow that can be replayed.",
+              "code": "if ($order->payment_reference === $incomingReference) {\n    return;\n}\n",
+              "links": [
+                {
+                  "label": "Laravel API Integration",
+                  "href": "../laravel/api-integration.html",
+                  "description": "See webhooks, retries, duplicate events, and third-party contracts."
+                },
+                {
+                  "label": "Laravel Async",
+                  "href": "../laravel/async.html",
+                  "description": "See idempotent jobs, replay safety, and compensation workflows."
+                }
+              ],
+              "note": "Real bug example: a payment gateway sends the same webhook twice, and without idempotency the app creates two orders or writes the same transaction twice."
+            },
+            {
+              "title": "Env Drift",
+              "body": "Env drift is the condition where local, staging, workers, or production no longer share the same config, versions, or environment variables. It is one of the most frustrating sources of 'works on my machine' failure."
+            },
+            {
+              "title": "Reverse Proxy",
+              "body": "A reverse proxy is the layer in front of the app, such as Nginx, a load balancer, or a CDN, that receives requests first and forwards them to the web server or internal container. HTTPS loops, scheme mistakes, host confusion, or wrong client IP handling often live here.",
+              "links": [
+                {
+                  "label": "Laravel DevOps",
+                  "href": "../laravel/devops.html",
+                  "description": "See trusted proxies, forwarded headers, HTTPS loops, and runtime config."
+                },
+                {
+                  "label": "Interview DevOps",
+                  "href": "../interview/devops.html",
+                  "description": "Practice reverse proxy, TLS, load balancer, health check, and traffic-routing questions."
+                }
+              ],
+              "note": "Real bug example: users visit with HTTPS, but the app keeps redirecting in a loop or keeps generating `http://...` links because trusted-proxy or forwarded-header handling is wrong."
+            },
+            {
+              "title": "Nginx",
+              "body": "Nginx often acts as the web server or reverse proxy in front of PHP-FPM and Laravel. New backend developers often assume every web bug lives in app code, but path-to-`public/`, forwarded headers, and upload limits can all live in Nginx.",
+              "links": [
+                {
+                  "label": "Laravel DevOps",
+                  "href": "../laravel/devops.html",
+                  "description": "See Nginx, PHP-FPM, upload limits, proxy_pass, and real deployment setup."
+                }
+              ]
+            },
+            {
+              "title": "Health Check",
+              "body": "A health check is an endpoint or probe that tells you whether the app is alive, ready, or broken because of an important dependency. Good health checks make deploys, orchestrators, load balancers, and humans all faster at making decisions.",
+              "links": [
+                {
+                  "label": "Laravel DevOps",
+                  "href": "../laravel/devops.html",
+                  "description": "See liveness, readiness, smoke tests, and post-deploy monitoring design."
+                }
+              ]
+            },
+            {
+              "title": "Observability",
+              "body": "Observability is the ability to understand system state through logs, metrics, traces, dashboards, and alerts. Without observability, you may know the app is broken but still not know which layer actually failed.",
+              "links": [
+                {
+                  "label": "Laravel Quality",
+                  "href": "../laravel/quality.html",
+                  "description": "See logs, debugging flow, trace thinking, and support-minded quality practices."
+                },
+                {
+                  "label": "Laravel DevOps",
+                  "href": "../laravel/devops.html",
+                  "description": "See dashboards, alerts, runbooks, and metrics for operating real apps."
+                }
+              ]
+            },
+            {
+              "title": "Blast Radius",
+              "body": "Blast radius is the scope of damage if a wrong change gets merged or deployed. At higher levels, decisions about DB work, queues, proxies, runtime, or AI patches should begin with the blast-radius question."
+            }
+          ]
+        },
+        {
+          "type": "list",
+          "heading": "Vibe Coding, AI, and modern AI-assisted development terms",
+          "intro": "This vocabulary matters more every month for modern developers. Using AI without understanding its own working language is a fast path to speed without real control.",
+          "breaks": [
+            {
+              "start": 1,
+              "title": "AI-assisted development",
+              "description": "Terms around prompting, review, hallucination, runtime guardrails, and AI workflows."
+            }
+          ],
+          "items": [
+            {
+              "title": "Prompt",
+              "body": "A prompt is the instruction you give the model. For engineering work it is not just 'a question'; it is how you define outcome, context, constraints, involved files, and what must not be touched."
+            },
+            {
+              "title": "Prompt Scope",
+              "body": "Prompt scope is the real boundary of work you hand to the model. The clearer the scope, the less drift you get, the fewer out-of-zone edits appear, and the easier the result is to review."
+            },
+            {
+              "title": "Hallucination",
+              "body": "A hallucination happens when the model invents an API, class, package, flow, or assumption that is not real in the codebase or docs. This is one of the core risks of using AI for code instead of only for chat."
+            },
+            {
+              "title": "Guardrail",
+              "body": "A guardrail is a constraint or checklist you set ahead of time to stop AI from breaking structure, data, runtime safety, or scope."
+            },
+            {
+              "title": "Diff Review",
+              "body": "Diff review is the habit of reading the change as a patch instead of stopping at 'the app runs'. It is one of the most important skills when working with AI coding tools."
+            },
+            {
+              "title": "Context Drift",
+              "body": "Context drift is the situation where an AI session becomes so long that the model starts repeating stale assumptions, misunderstanding new constraints, or dragging old decisions into the wrong place."
+            },
+            {
+              "title": "Verify-first",
+              "body": "This is the habit of forcing the model or yourself to verify the failing layer before proposing a fix. In runtime work, verify-first is usually far safer than patch-first."
+            },
+            {
+              "title": "Secret Scrub",
+              "body": "Secret scrub means masking or removing tokens, keys, real emails, internal domains, or sensitive operational data before putting logs, configs, or payloads into AI prompts. It is a required safety skill, not an optional polish step."
+            }
+          ]
+        },
+        {
+          "type": "list",
+          "heading": "Testing, debugging, and code-quality terms",
+          "intro": "Once a beginner starts working in a team, this vocabulary becomes one of the clearest differentiators between someone who only makes things run and someone who helps a system survive change over time.",
+          "breaks": [
+            {
+              "start": 1,
+              "title": "Quality & verification",
+              "description": "Terms around tests, debugging, code review, logs, and the discipline of keeping software healthy."
+            }
+          ],
+          "items": [
+            {
+              "title": "Unit Test",
+              "body": "A unit test targets one small unit of logic, such as a class, method, or isolated rule. The goal is not to prove the whole app works, but to lock one small behavior so that a later change cannot quietly break it."
+            },
+            {
+              "title": "Feature Test",
+              "body": "A feature test follows a flow much closer to a real request, such as posting to a route, asserting the response, and checking the database, mail, queue, or events. In many Laravel teams, feature tests deliver more practical confidence than very tiny unit tests.",
+              "code": "$response = $this->post('/posts', ['title' => 'Hello']);\n$response->assertRedirect();\n$this->assertDatabaseHas('posts', ['title' => 'Hello']);\n"
+            },
+            {
+              "title": "Integration Test",
+              "body": "An integration test checks several layers working together, such as a controller, service, database, queue, or third-party adapter. It is useful when the bug does not live inside a single method, but in the way multiple parts interact."
+            },
+            {
+              "title": "Regression",
+              "body": "A regression is a new failure that reappears in a place that used to work correctly. Mature teams do not only fix the visible bug; they also try to add a test or a guard so the same class of bug does not quietly return."
+            },
+            {
+              "title": "Flaky Test",
+              "body": "A flaky test passes sometimes and fails sometimes even when the code has not changed. This is dangerous because it destroys trust in CI. Common causes include race conditions, time dependence, shared data, unstable external dependencies, or fragile assertions."
+            },
+            {
+              "title": "Mock",
+              "body": "A mock is a fake object used in testing to control or verify how a dependency is called. It is useful, but if overused it can make tests lock implementation details instead of the real behavior users care about."
+            },
+            {
+              "title": "Root Cause",
+              "body": "Root cause is the actual underlying reason a failure happened, not just the visible symptom. A bug can show up in the UI while the real cause sits in a query, cache, queue, timezone, or old data path. Strong debugging tries to reach the root cause instead of merely hiding pain.",
+              "tip": "A famous engineering habit is to avoid patching the pain before you understand why it hurts."
+            },
+            {
+              "title": "Code Smell",
+              "body": "A code smell is not necessarily an immediate bug, but it is a signal that the code may be hard to live with: a fat controller, ownerless helpers, repeated logic, queries inside views, a god-service, or tests that are painful to write. A smell is a signal to think harder, not an excuse for blind refactoring."
+            },
+            {
+              "title": "Static Analysis",
+              "body": "Static analysis is the use of tools such as PHPStan, Psalm, or linters to inspect code without running the full application. It catches an important class of mistakes early, such as wrong types, missing methods, dead code, or inconsistent assumptions."
+            },
+            {
+              "title": "CI",
+              "body": "CI means continuous integration: an automated pipeline that runs tests, linting, static analysis, or builds when code is pushed or a pull request is opened. Good CI is not decoration; it is a way to find failures earlier, more consistently, and with less reliance on individual memory."
+            }
+          ]
+        },
+        {
+          "type": "list",
+          "heading": "Architecture, networking, and system thinking",
+          "intro": "This vocabulary helps beginners move beyond reading code file by file. As systems grow, you need to see data flow, boundaries, dependencies, and infrastructure behavior across multiple layers at once.",
+          "breaks": [
+            {
+              "start": 1,
+              "title": "Architecture & system thinking",
+              "description": "Terms that connect code, infrastructure, network behavior, and technical decision-making."
+            }
+          ],
+          "items": [
+            {
+              "title": "Latency",
+              "body": "Latency is the delay between sending a request and receiving the response or finishing a processing step. Beginners often only ask whether the app works. More mature engineering asks where the time is being lost: database, network, queue, filesystem, or third-party service."
+            },
+            {
+              "title": "Throughput",
+              "body": "Throughput is the amount of work a system can process in a period of time, such as requests per second, jobs per minute, or messages per second. A system may have acceptable latency at low traffic while still having poor throughput under load."
+            },
+            {
+              "title": "DNS",
+              "body": "DNS is the system that turns human-friendly domains into IP addresses machines can route to. During cutovers, server moves, or domain changes, failures are often blamed on the app even though stale DNS resolution is the real reason traffic still goes to the old place."
+            },
+            {
+              "title": "Load Balancer",
+              "body": "A load balancer distributes incoming traffic across several instances in order to increase capacity or availability. But it also introduces new questions such as health checks, sticky sessions, forwarded headers, proxy trust, and debugging requests that do not always travel the same path."
+            },
+            {
+              "title": "Concurrency",
+              "body": "Concurrency is the fact that multiple requests, jobs, or operations may happen at nearly the same time. It is easy to ignore in tiny CRUD apps, but it becomes a major source of bugs in payments, booking, inventory, retries, and multi-worker systems."
+            },
+            {
+              "title": "Race Condition",
+              "body": "A race condition is a failure where the outcome depends on the timing order of competing operations. These bugs are often hard to reproduce, often cause flaky tests, and are a classic reason why local behavior can look fine while production behaves strangely.",
+              "links": [
+                {
+                  "label": "Laravel Async",
+                  "href": "../laravel/async.html",
+                  "description": "See retries, overlaps, locks, and duplicate jobs in async systems."
+                },
+                {
+                  "label": "Interview Senior",
+                  "href": "../interview/senior.html",
+                  "description": "Practice explaining timing bugs, concurrency, and consistency at senior level."
+                }
+              ],
+              "note": "Real bug example: two requests hit the last inventory slot at the same time, and the system accepts both even though only one should succeed."
+            },
+            {
+              "title": "Single Point of Failure",
+              "body": "A single point of failure is one place whose failure can stop the whole system or an important flow. It might be a single database, a single queue, one Redis instance, one critical cron job, or even one human who alone understands the system."
+            },
+            {
+              "title": "Technical Debt",
+              "body": "Technical debt is the cost created when a team chooses a faster, temporary, or weaker solution in exchange for current speed. Debt is not always bad, but if it is never tracked or repaid, it eventually returns as slower development, fragile reviews, risky deploys, and harder bugs.",
+              "links": [
+                {
+                  "label": "Laravel Maintenance & Upgrade",
+                  "href": "../laravel/maintenance-upgrade.html",
+                  "description": "See how debt affects upgrades, refactors, and long-term support."
+                },
+                {
+                  "label": "Interview Master",
+                  "href": "../interview/master.html",
+                  "description": "Review system-level and organizational thinking about technical debt."
+                }
+              ],
+              "tip": "Ward Cunningham popularized the debt metaphor to emphasize that speed now creates a future repayment cost."
+            },
+            {
+              "title": "Tradeoff",
+              "body": "A tradeoff means getting more of one thing while accepting less of another: faster but harder to maintain, cleaner layering but more complexity, more caching but harder invalidation. Strong engineering is not about finding perfect answers; it is about seeing tradeoffs clearly and choosing the one that fits the moment.",
+              "links": [
+                {
+                  "label": "Laravel Container & Architecture",
+                  "href": "../laravel/container-architecture.html",
+                  "description": "See tradeoffs when splitting services, repositories, actions, or keeping flows simpler."
+                },
+                {
+                  "label": "Interview Senior",
+                  "href": "../interview/senior.html",
+                  "description": "Practice tradeoff, boundary, and decision-making questions at senior level."
+                }
+              ],
+              "bullets": [
+                "Beginners often look for the one absolutely correct answer.",
+                "More experienced engineers ask: correct for which context, deadline, team size, and blast radius?"
+              ]
+            },
+            {
+              "title": "Canonical Source of Truth",
+              "body": "This is the place or system treated as the most trusted authority for a piece of data or a business meaning. When multiple services, tables, or dashboards all talk about `revenue`, `active user`, or `membership status`, the absence of a canonical source can make each place technically valid while still being business-wrong."
+            }
+          ]
+        }
+      ]
+    },
+    "practice": {
+      "metaTitle": "Practice Projects | Laravel Labs",
+      "eyebrow": "Hands-on Work",
+      "title": "Practice Plans and Mini Projects",
+      "subtitle": "Turn static notes into mini tasks, bug labs, and repeatable case studies so the knowledge does not stop at passive reading.",
+      "sections": [
+        {
+          "type": "cards",
+          "heading": "Mini Project Ideas",
+          "intro": "Keep these projects intentionally small so each one reinforces a specific Laravel skill.",
+          "items": [
+            {
+              "title": "Task Tracker",
+              "body": "Practice CRUD, policies, filters, seeders, and pagination."
+            },
+            {
+              "title": "Simple Blog",
+              "body": "Practice slugs, categories, comments, image uploads, and route model binding."
+            },
+            {
+              "title": "Team Dashboard",
+              "body": "Practice roles, invitations, metrics cards, and user profile flows."
+            }
+          ]
+        },
+        {
+          "type": "list",
+          "heading": "Mini tasks that fit into 30 to 90 minutes",
+          "intro": "These drills keep your momentum alive even when you do not have time for a long project session.",
+          "breaks": [
+            {
+              "start": 1,
+              "title": "Short drills",
+              "description": "Small exercises that still match real project habits."
+            }
+          ],
+          "items": [
+            {
+              "title": "Add filters and pagination to a post list",
+              "body": "Build a list page with keyword search, status filtering, and pagination while keeping query string state across page changes.",
+              "code": "Route::get('/posts', [PostController::class, 'index']);\n\npublic function index(Request $request)\n{\n    $posts = Post::query()\n        ->when($request->filled('keyword'), fn ($query) => $query->where('title', 'like', '%' . $request->keyword . '%'))\n        ->latest()\n        ->paginate(10)\n        ->withQueryString();\n\n    return view('posts.index', compact('posts'));\n}",
+              "tip": "This is a strong drill for query builder, request input, Blade form state, and result-page UX.",
+              "note": "Do not stop at “it works.” Ask whether the list has N+1, whether it preserves filter state, and whether it stays easy to extend."
+            },
+            {
+              "title": "Move controller validation into a Form Request",
+              "body": "Pick one controller that validates inline and migrate the validation into a `FormRequest` so the flow becomes cleaner.",
+              "code": "php artisan make:request StorePostRequest",
+              "tip": "This drill helps you feel the boundary between request validation, business flow, and response logic."
+            },
+            {
+              "title": "Add avatar upload with validation",
+              "body": "Practice the full file flow from file input and validation to storing the path, rendering the URL, and replacing the old file.",
+              "code": "$path = $request->file('avatar')->store('avatars', 'public');",
+              "note": "If you want a harder version, add a private disk or signed download."
+            },
+            {
+              "title": "Write one feature test for a create flow",
+              "body": "Take a CRUD flow you already click through manually and lock it down with one meaningful test.",
+              "code": "$response = $this->post(route('posts.store'), [\n    'title' => 'Hello Laravel',\n    'body' => 'A real feature test.'\n]);\n\n$response->assertRedirect();\n$this->assertDatabaseHas('posts', ['title' => 'Hello Laravel']);",
+              "tip": "Early on, one solid feature test is often more valuable than several tiny unit tests with no real flow context."
+            }
+          ]
+        },
+        {
+          "type": "list",
+          "heading": "Bug labs and case studies to recreate",
+          "intro": "These exercises move you from memorizing concepts into investigating symptoms, root causes, and repair tradeoffs.",
+          "breaks": [
+            {
+              "start": 1,
+              "title": "Bug labs",
+              "description": "Intentionally create the problem, then walk the flow to fix it."
+            }
+          ],
+          "items": [
+            {
+              "title": "Lab 1: 419 after form submit",
+              "body": "Create a form without `@csrf`, submit it, then trace the failure from the browser back into Blade and middleware.",
+              "code": "<form method=\"POST\" action=\"/posts\">\n    <input name=\"title\" />\n    <button type=\"submit\">Save</button>\n</form>",
+              "note": "This is a strong lab for HTTP basics, middleware, sessions, and foundational security."
+            },
+            {
+              "title": "Lab 2: N+1 on a list page",
+              "body": "Render a relationship inside a loop without eager loading, then use query logging or a debug tool to watch the query count rise.",
+              "code": "@foreach ($posts as $post)\n    <p>{{ $post->author->name }}</p>\n@endforeach",
+              "tip": "This lab makes it much easier to understand the gap between tiny local data and real datasets."
+            },
+            {
+              "title": "Lab 3: Queue worker runs old code",
+              "body": "Dispatch a job, change the logic, then forget to restart the worker so you can feel why deploys sometimes appear unchanged.",
+              "code": "php artisan queue:work\nphp artisan queue:restart",
+              "note": "This lab connects Laravel async thinking with DevOps and interview prep very naturally."
+            },
+            {
+              "title": "Lab 4: Config changed but the app still reads the old value",
+              "body": "Change `.env`, enable `config:cache`, then debug why the app refuses to pick up the new setting.",
+              "code": "php artisan config:cache\nphp artisan config:clear",
+              "tip": "If you learn this lab well, you remove a huge class of local-versus-production confusion."
+            }
+          ]
+        },
+        {
+          "type": "list",
+          "heading": "Weekly practice rhythm",
+          "intro": "A repeatable rhythm keeps you moving even when you cannot dedicate a full block to a large project.",
+          "items": [
+            {
+              "title": "Day 1",
+              "body": "Read one concept, then rewrite it in your own English and Vietnamese notes."
+            },
+            {
+              "title": "Day 2",
+              "body": "Build the smallest working feature that still uses that concept."
+            },
+            {
+              "title": "Day 3",
+              "body": "Intentionally cause one error related to that concept and record how you found the root cause."
+            },
+            {
+              "title": "Day 4",
+              "body": "Lock it down with a test or a review checklist so the same mistake is less likely next time."
+            }
+          ]
+        },
+        {
+          "type": "list",
+          "heading": "Review checklist after every drill",
+          "intro": "If you only finish the code and never review it, you will still learn slowly even when you practice often.",
+          "items": [
+            {
+              "title": "Retell the flow in your own words",
+              "body": "If you cannot describe route -> request -> controller -> data -> response, you probably only touched the surface."
+            },
+            {
+              "title": "Name at least one tradeoff",
+              "body": "For example: faster to write but harder to test, or shorter query but easier to trigger N+1 later."
+            },
+            {
+              "title": "Write a short checklist for next time",
+              "body": "A checklist like `@csrf`, validation, eager loading, queue restart, and config clear is often more practical than a long passive note."
+            }
+          ]
+        }
+      ]
+    },
+    "interview": {
+      "metaTitle": "Interview Prep | Laravel Labs",
+      "eyebrow": "Interview Bank",
+      "title": "Laravel and PHP Interview Practice",
+      "subtitle": "This overview page groups interview branches by level so you can revise with focus, then move into dedicated topic sites with separate `vi/en` data.",
+      "journeyTitle": "Pick a level that matches the questions you need",
+      "journeySubtitle": "Each item below is its own interview topic site. This keeps the interview area from collapsing into one overloaded page and makes later expansion into deeper question banks easier.",
+      "menu": [
+        {
+          "anchor": "interview-fresher",
+          "label": "Fresher",
+          "desc": "PHP, Laravel, HTTP, MVC, and basic project flow for early rounds."
+        },
+        {
+          "anchor": "interview-junior",
+          "label": "Junior",
+          "desc": "CRUD, validation, auth, Eloquent, practical bugs, and basic debugging habits."
+        },
+        {
+          "anchor": "interview-intermediate",
+          "label": "Intermediate",
+          "desc": "Architecture tradeoffs, queues, cache, testing, and responsibility split."
+        },
+        {
+          "anchor": "interview-senior",
+          "label": "Senior",
+          "desc": "System thinking, production risk, maintainability, and review depth."
+        },
+        {
+          "anchor": "interview-master",
+          "label": "Master",
+          "desc": "Upgrade paths, migration strategy, dirty data, ownership, and technical judgment."
+        },
+        {
+          "anchor": "interview-devops",
+          "label": "DevOps",
+          "desc": "Deploys, queue workers, env drift, health checks, rollback, and runtime operations."
+        }
+      ],
+      "sections": [
+        {
+          "type": "cards",
+          "heading": "Question Categories",
+          "intro": "Cover fundamentals first, then move toward debugging, architecture, operations, and level-based answering.",
+          "items": [
+            {
+              "title": "PHP Language Questions",
+              "body": "Variables, OOP, traits, interfaces, references, Composer, and autoloading."
+            },
+            {
+              "title": "Laravel Core Questions",
+              "body": "Service container, lifecycle, middleware, Eloquent, queues, events, and caching."
+            },
+            {
+              "title": "Project Experience Questions",
+              "body": "What you built, what broke, how you debugged it, and what you would improve next."
+            }
+          ]
+        },
+        {
+          "type": "list",
+          "heading": "How to use this interview area",
+          "intro": "Do not try to memorize every answer in one pass. Pick the right level, practice in smaller groups, and keep tying answers back to real project experience.",
+          "items": [
+            {
+              "title": "Start with the level that is closest to you",
+              "body": "If you are still building your first CRUD-heavy projects, begin with `Fresher` or `Junior`. Jumping straight to `Senior` usually produces shallow answers."
+            },
+            {
+              "title": "Attach each answer to a real project example",
+              "body": "Even for theory questions, connect the answer to something real such as Breeze, Chirper, queues, uploads, deploy flow, or a bug you actually handled."
+            },
+            {
+              "title": "Practice in short loops",
+              "body": "A good loop is: read the question, answer it out loud, open the topic site to compare structure, then write your own shorter version."
+            }
+          ]
+        },
+        {
+          "type": "list",
+          "heading": "Answer Checklist",
+          "intro": "Use a simple structure so your answers sound grounded instead of memorized.",
+          "items": [
+            {
+              "title": "Define the concept",
+              "body": "Start with a short explanation in one or two sentences."
+            },
+            {
+              "title": "Give a practical example",
+              "body": "Tie the answer back to one of your labs such as Breeze or Jetstream."
+            },
+            {
+              "title": "Mention tradeoffs",
+              "body": "Show where the approach is useful and where it becomes limiting."
+            }
+          ]
+        }
+      ]
+    },
+    "vibeCoding": {
+      "metaTitle": "Vibe Coding | Laravel Labs",
+      "eyebrow": "Vibe Coding",
+      "title": "Vibe Coding and AI-assisted build hub",
+      "subtitle": "A separate area for the new way of working with AI: describe intent in natural language, let the model generate code, then review, test, and tighten the output.",
+      "journeyTitle": "Pick a Vibe Coding branch to study or practice",
+      "journeySubtitle": "Each item below is its own topic site where you can collect workflow notes, prompts, examples, checklists, and guardrails. This keeps AI-assisted coding from getting mixed into the normal Laravel study flow.",
+      "menu": [
+        {
+          "anchor": "vibe-prompting",
+          "label": "Prompting",
+          "desc": "Writing better prompts, setting constraints, scoping work, and understanding where AI assistance stops being enough."
+        },
+        {
+          "anchor": "vibe-ai-crud",
+          "label": "AI CRUD",
+          "desc": "Using AI to generate CRUD, forms, validation, uploads, APIs, and real Laravel feature flow."
+        },
+        {
+          "anchor": "vibe-ai-review",
+          "label": "AI Review",
+          "desc": "Reviewing AI output, tracing defects, catching smells, refactoring, and controlling diffs."
+        },
+        {
+          "anchor": "vibe-ai-runtime",
+          "label": "AI Runtime",
+          "desc": "Using AI near Docker, queues, deploy flow, env, secrets, and production risk without losing control."
+        }
+      ],
+      "sections": [
+        {
+          "type": "cards",
+          "heading": "Four Vibe Coding branches worth keeping separate",
+          "intro": "Move from the concept itself, into AI-generated feature work, then code review/refactor, and finally runtime guardrails. This matches the real failure points people hit when using AI to code.",
+          "items": [
+            {
+              "title": "Prompting",
+              "body": "Explain what vibe coding is, what prompting changes, and where AI is useful versus misleading."
+            },
+            {
+              "title": "AI CRUD",
+              "body": "Use AI to draft CRUD, auth, upload, filters, and API flows, while keeping the requested outcome stable."
+            },
+            {
+              "title": "AI Review",
+              "body": "This is the most important branch: do not trust output blindly, but learn to inspect, test, and correct it."
+            },
+            {
+              "title": "AI Runtime",
+              "body": "Cover Docker, queues, deploy flow, env, secrets, migrations, and where AI can push people into production mistakes."
+            }
+          ]
+        },
+        {
+          "type": "list",
+          "heading": "Why this branch was missing",
+          "intro": "Beyond PHP, Laravel, and interview prep, the biggest missing layer was how to work with AI coding tools responsibly. Many people already use them, but without a clear operating model.",
+          "items": [
+            {
+              "title": "AI outputs fast but drifts easily",
+              "body": "Without prompt discipline, review habits, and runtime checks, generated code can look productive while still violating architecture or business rules."
+            },
+            {
+              "title": "People need guardrails, not only speed",
+              "body": "The real skill is not just using AI faster. It is knowing when to trust it, when to challenge it, and when to peel layers manually."
+            },
+            {
+              "title": "This is a new work habit",
+              "body": "Vibe coding changes how tasks are decomposed, how reviews happen, how bugs are traced, and how requirements get translated into output."
+            }
+          ]
+        },
+        {
+          "type": "list",
+          "heading": "How to use this Vibe Coding area",
+          "intro": "Each topic site should behave like a workflow note: what to prompt, what to hand to AI, what to review manually, and what should never be trusted blindly.",
+          "items": [
+            {
+              "title": "Keep each workflow scoped tightly",
+              "body": "For example, ask AI only for a form + validation flow, or only for a controller refactor, instead of throwing an entire project into one vague prompt."
+            },
+            {
+              "title": "Review output layer by layer",
+              "body": "Inspect route, request, controller, model, query, auth, file handling, config, and runtime separately instead of stopping at “the app runs”."
+            },
+            {
+              "title": "Attach a verification checklist",
+              "body": "Keep prompts, expected output, test commands, failure cases, security notes, and signs of hallucinated or structure-breaking code ready."
+            }
+          ]
+        },
+        {
+          "type": "list",
+          "heading": "Prompt bank worth copying and adapting",
+          "intro": "These are not magic prompts. Treat them as starting frames that force the model to reveal assumptions, scope, touched files, and verification steps.",
+          "breaks": [
+            {
+              "start": 1,
+              "title": "Prompt templates",
+              "description": "Short prompts with explicit guardrails."
+            }
+          ],
+          "items": [
+            {
+              "title": "Prompt for a small Laravel feature build",
+              "body": "Use this when you want AI to draft a CRUD or form flow quickly but still make the changed files and key risks explicit.",
+              "code": "You are working inside an existing Laravel app.\nBuild only the smallest working version of this feature: [describe feature].\nConstraints:\n- keep routes, FormRequest, controller, model, and Blade responsibilities separate\n- list every file you changed\n- call out validation, auth, and database risks\n- do not touch unrelated files\n- give me the exact artisan and test commands to verify it",
+              "tip": "A strong prompt usually defines scope, guardrails, and verification instead of only describing the UI."
+            },
+            {
+              "title": "Prompt for reviewing an AI-generated diff",
+              "body": "Use this after the model has already produced code. The goal is to surface risk, not to ask for a flattering summary.",
+              "code": "Review this Laravel diff as a strict senior reviewer.\nFocus on:\n- broken request flow\n- validation gaps\n- policy / auth drift\n- N+1 or query waste\n- risky runtime or env assumptions\n- files that should not have changed\nReturn:\n1. highest-risk findings first\n2. missing tests\n3. whether you would approve this diff",
+              "note": "This prompt belongs to `AI Review` more than `AI CRUD`."
+            },
+            {
+              "title": "Prompt for local-works but production-fails debugging",
+              "body": "Use this when you suspect env drift, cache, worker state, or config mismatch.",
+              "code": "Act like a Laravel production debugger.\nSymptom: [describe symptom].\nLocal works, production fails.\nGive me:\n- the most likely layers to inspect first\n- the exact Laravel / PHP / runtime commands to run\n- what evidence would confirm or reject each hypothesis\n- the order that minimizes blast radius",
+              "tip": "A good debug prompt forces the model to return an investigation order, not an endless list of guesses."
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,203 @@
+{
+  "heading": "Vibe Coding AI Runtime",
+  "intro": "Nhánh này dành cho chỗ nguy hiểm nhất của Vibe Coding: lúc AI bắt đầu đụng Docker, queue, deploy, env, secret, migration và runtime thật. Ở đây guardrail quan trọng hơn tốc độ.",
+  "type": "list",
+  "breaks": [
+    {
+      "start": 1,
+      "title": "Các Mục Runtime Nên Có",
+      "description": "Đây là nhóm ít người dạy rõ nhưng lại cực hữu ích khi người học bắt đầu chạm môi trường chạy thật.",
+      "tone": "amber"
+    },
+    {
+      "start": 5,
+      "title": "Flow Runtime Nên Đi Thế Nào",
+      "description": "Phần runtime dễ khô nếu chỉ nói cấu hình. Cần luôn có hành vi thật để đối chiếu trước và sau.",
+      "tone": "coral"
+    },
+    {
+      "start": 9,
+      "title": "Các Case Runtime Hấp Dẫn",
+      "description": "Những case dưới đây vừa thật vừa giúp nối Laravel sang production mindset.",
+      "tone": "amber"
+    }
+  ],
+  "items": [
+    {
+      "title": "Topic runtime đầu tiên nên học khi dùng AI là gì?",
+      "body": "Một chủ đề rất hợp để mở đầu là `Sail hoặc Docker Compose dùng để làm gì, app gồm những service nào, và tại sao local cần gần production hơn trước khi giao runtime cho AI sửa`."
+    },
+    {
+      "title": "Một module queue worker nên nói gì?",
+      "body": "Nên giải thích queue là gì, vì sao cần worker chạy nền, và vì sao deploy xong mà không restart worker thì code cũ vẫn có thể tiếp tục chạy.",
+      "code": "php artisan queue:work\nphp artisan queue:restart\n",
+      "tip": "Đây là chỗ rất tốt để giải thích `web request` khác `background job` ở đâu."
+    },
+    {
+      "title": "Một case env drift nên demo thế nào?",
+      "body": "Bạn có thể đổi `.env`, rồi cho thấy app chưa đổi hành vi vì `config:cache`, sau đó clear cache và test lại để người xem thấy khác biệt bằng mắt."
+      },
+    {
+      "title": "Một checklist deploy nên có gì?",
+      "body": "Ít nhất nên có build, migrate, cache, restart worker, smoke test và rollback thinking.",
+      "code": "php artisan migrate --force\nphp artisan config:cache\nphp artisan route:cache\nphp artisan queue:restart\n",
+      "note": "Nếu phần deploy mà không nhắc rollback hoặc smoke test thì hơi thiếu chất production."
+    },
+    {
+      "title": "Ở runtime nên đi từ symptom trước hay config trước?",
+      "body": "Nên đi từ hành vi trước: ví dụ worker không chạy, upload fail, app đọc config cũ. Sau đó mới mở config hoặc container để giải thích."
+    },
+    {
+      "title": "Có nên mở cả terminal và dashboard cùng lúc không?",
+      "body": "Có, nếu chủ đề liên quan queue lag, failed job, process restart hoặc health check. Runtime sẽ dễ hiểu hơn nhiều khi người học thấy nhiều góc cùng lúc."
+    },
+    {
+      "title": "Một case health check có thể demo ra sao?",
+      "body": "Bạn có thể tạo endpoint nhỏ, rồi cho thấy khi DB hoặc Redis có vấn đề thì health response đổi ra sao.",
+      "code": "Route::get('/health', function () {\n    return response()->json(['ok' => true]);\n});\n"
+    },
+    {
+      "title": "Một module Docker cho Laravel nên tránh điều gì?",
+      "body": "Tránh biến nó thành một bài dạy Docker chung chung. Hãy gắn Docker vào câu hỏi cụ thể như `vì sao app cần mysql, redis, mailpit`, hoặc `vì sao localhost trong container không phải máy host`."
+    },
+    {
+      "title": "Các case runtime nào đáng để phân tích?",
+      "body": "Rất hợp với các case như `queue chạy code cũ`, `config đổi không ăn`, `upload chết trước controller`, `HTTPS loop sau proxy`, `cron không chạy`, `worker lag`."
+    },
+    {
+      "title": "Sai lầm thường gặp khi để AI chạm runtime là gì?",
+      "body": "Sai lầm lớn là để AI sửa config, deploy flow hoặc secret handling mà không có symptom rõ và không có checklist verify. Runtime là nơi output sai có thể phá nhiều hơn build flow bình thường."
+    },
+    {
+      "title": "Có nên để AI sửa Dockerfile hoặc compose không?",
+      "body": "Có thể, nhưng phải soi kỹ layer cache, user permission, exposed port, volume, entrypoint và service dependency. Docker sai một chút là local và production có thể lệch hoàn toàn."
+    },
+    {
+      "title": "Nếu AI đụng Nginx hoặc proxy config thì phải check gì?",
+      "body": "Phải kiểm tra `root`, `try_files`, upstream/proxy target, trusted proxy, HTTPS redirect, header forward và path đến `public/` của Laravel."
+    },
+    {
+      "title": "AI có nên được giao sửa secret hoặc env file không?",
+      "body": "Không nên như một thao tác mù. Có thể nhờ nó giải thích hoặc đề xuất, nhưng việc chạm secret thật, rotate key, đổi domain hay cấu hình production phải có người kiểm soát trực tiếp."
+    },
+    {
+      "title": "Khi AI gợi ý lệnh deploy, nên verify bằng gì?",
+      "body": "Nên đối chiếu với runbook hiện có, thứ tự release thật, rollback plan, health check, migration impact và worker restart strategy.",
+      "code": "deploy -> migrate --force -> config cache -> route cache -> restart workers -> smoke test -> watch logs\n"
+    },
+    {
+      "title": "Guardrail quan trọng nhất khi dùng AI gần production là gì?",
+      "body": "Mọi thay đổi phải có scope rõ, người duyệt rõ, môi trường test trước, và cách rollback rõ. Đừng để AI đẩy bạn vào trạng thái `không chắc nó vừa sửa gì nhưng app đang chạy`."
+    },
+    {
+      "title": "Một case AI rất dễ làm bạn chủ quan ở runtime là gì?",
+      "body": "AI gợi ý thêm vài dòng `docker-compose`, `nginx`, hoặc `env` nghe rất hợp lý, app local vẫn lên được, nhưng production lại lệch header, lệch proxy hoặc fail health check. Đây là kiểu bug cực dễ bị đánh giá thấp lúc review."
+    },
+    {
+      "title": "Khi nào nên cấm AI chạm một vùng runtime?",
+      "body": "Nên cấm hoặc siết rất mạnh ở các vùng như billing production, secret thật, DNS, TLS certificate, data migration live, file private, backup/restore flow và access control."
+    },
+    {
+      "title": "Một workflow an toàn khi để AI hỗ trợ deploy là gì?",
+      "body": "Cho AI draft checklist hoặc runbook nháp, nhưng con người phải chốt command cuối, môi trường cuối, rollback plan và watch point sau deploy.",
+      "code": "AI drafts -> human reviews -> run on staging -> verify health -> run on production with observer -> watch logs -> confirm rollback still works\n"
+    },
+    {
+      "title": "Nếu AI gợi ý xóa cache hoặc restart mọi thứ thì có nên nghe ngay không?",
+      "body": "Không nên thành phản xạ mù. Cần hiểu symptom trước, vì các lệnh kiểu clear toàn bộ đôi khi che mất nguyên nhân gốc hoặc gây side effect lớn hơn cần thiết."
+    },
+    {
+      "title": "Một dấu hiệu bạn đang lạm dụng AI ở runtime là gì?",
+      "body": "Bạn không còn tự mô tả được app đang chạy qua những lớp nào, service nào lệ thuộc nhau, hoặc lệnh deploy nào có thể làm queue, cache, cron, proxy bị lệch. Khi đó AI đang dẫn bạn thay vì hỗ trợ bạn."
+    },
+    {
+      "title": "Một checklist runtime trước khi tin patch AI nên có gì?",
+      "body": "Nên kiểm tra `service graph`, `secret`, `health check`, `rollback`, `queue worker`, `cron`, `proxy`, `cache`, và `migration impact`.",
+      "code": "Runtime verify:\n- affected services?\n- health endpoints?\n- queue restart needed?\n- rollback path clear?\n- proxy/header impact?\n- secret/env touched?\n"
+    },
+    {
+      "title": "Khi nào AI rất dễ làm sai ở Nginx hoặc proxy?",
+      "body": "Khi app đứng sau nhiều lớp như CDN, load balancer, reverse proxy, rồi mới tới web server. Chỉ cần hiểu sai một lớp là redirect, scheme, host hoặc IP trust có thể lệch toàn bộ."
+    },
+    {
+      "title": "Một strong workflow để dùng AI gần deploy/runtime là gì?",
+      "body": "Cho AI giải thích config hiện tại, draft thay đổi nhỏ, list risk, rồi con người chạy staging verify trước khi đụng production. Tuyệt đối không để mô hình quyết định một mình lệnh cuối cùng.",
+      "tip": "Runtime càng gần production thì AI càng nên đóng vai trò `advisor`, không phải `operator`."
+    },
+    {
+      "title": "Khi nào nên bỏ hẳn output AI ở runtime và quay về runbook cũ?",
+      "body": "Khi AI bắt đầu gợi ý thay đổi mà bạn không tự giải thích được system impact, hoặc khi patch động vào quá nhiều lớp cùng lúc như proxy, env, worker và deploy flow."
+    },
+    {
+      "title": "Một case Docker AI rất hay làm sai là gì?",
+      "body": "Sai service name, mount volume lệch, cache layer vô dụng, hoặc dùng localhost sai chỗ trong container network. Mấy lỗi này local có thể lên chập chờn nhưng team khác kéo về sẽ vỡ."
+    },
+    {
+      "title": "AI thường làm người dùng chủ quan ở deploy step nào?",
+      "body": "Ở chỗ migrate, config cache, queue restart, file permission và health check. Đây là những bước nhìn đơn giản nhưng chỉ cần sai thứ tự là hậu quả lan rất rộng."
+    },
+    {
+      "title": "Một prompt an toàn cho AI Runtime nên có gì?",
+      "body": "Luôn nêu môi trường, service liên quan, phần không được đụng, và yêu cầu nêu risk trước patch.",
+      "code": "Environment: staging\nServices: nginx, php-fpm, redis, mysql\nDo not touch secrets.\nList risks before proposing any config patch.\n"
+    },
+    {
+      "title": "Khi nào nên để AI chỉ explain runtime hiện tại?",
+      "body": "Khi bạn vừa vào một stack lạ, chưa hiểu container nào phục vụ gì, hoặc chưa chắc một lệnh restart sẽ tác động tới lớp nào. Explain trước thường an toàn hơn patch trước."
+    },
+    {
+      "title": "Red flag lớn nhất ở AI Runtime là gì?",
+      "body": "App tạm thời chạy lại được nên mọi người tưởng fix xong, trong khi không ai thực sự hiểu vì sao nó hỏng và vì sao nó chạy lại. Đây là mầm cho incident lặp lại."
+    }
+  ,
+    {
+      "title": "Một tip mạnh ở AI Runtime là gì?",
+      "body": "Luôn bắt AI nêu `blast radius` trước. Chỉ cần biết thay đổi này chạm service nào, queue nào, header nào, secret nào là chất lượng review tăng lên rất nhiều."
+    },
+    {
+      "title": "Khi nào nên yêu cầu AI chỉ làm runbook nháp thay vì patch config?",
+      "body": "Khi bạn chưa chắc symptom đến từ đâu, hoặc khi patch sẽ chạm vùng đang phục vụ traffic thật. Runbook nháp giúp giữ được não người ở vị trí điều khiển."
+    },
+    {
+      "title": "Một anti-pattern của AI Runtime là gì?",
+      "body": "Để AI gợi ý một chuỗi lệnh dài, chạy theo, app lên lại, rồi coi như xong. Không có phân tích impact, không có rollback thật, không có hiểu biết về tại sao command đó cần."
+    },
+    {
+      "title": "Observability quan trọng thế nào khi dùng AI gần runtime?",
+      "body": "Nếu không có log, metric, health signal hoặc ít nhất là điểm quan sát rõ, bạn sẽ không biết patch AI đang giúp hay đang chỉ che symptom. Runtime cần evidence trước và sau thay đổi."
+    },
+    {
+      "title": "Khi nào nên ép AI liệt kê rollback plan trước khi patch?",
+      "body": "Ngay khi patch đụng deploy flow, cache, worker, proxy, migration hoặc service dependency. Rollback plan yếu là dấu hiệu patch đó chưa nên được chạy."
+    },
+    {
+      "title": "Một case runtime AI dễ làm hỏng âm thầm là gì?",
+      "body": "Patch làm app lên lại nhưng queue chậm dần, cron không chạy, health check sai, hoặc log không còn đủ signal. Đây là loại hỏng khó thấy ngay nếu chỉ nhìn web response."
+    },
+    {
+      "title": "Một workflow mạnh để dùng AI ở vùng runtime nguy hiểm là gì?",
+      "body": "Explain config hiện tại trước, liệt kê blast radius, liệt kê rollback, rồi chỉ cho phép patch nhỏ nhất đủ giải quyết symptom. Vùng runtime không hợp với refactor đẹp nhưng mơ hồ."
+    },
+    {
+      "title": "Vì sao staging parity quan trọng khi dùng AI ở runtime?",
+      "body": "Nếu staging quá khác production, bạn có thể tưởng patch AI an toàn vì staging xanh, nhưng production lại fail do proxy, queue volume, secret, storage, hoặc network path khác hẳn."
+    },
+    {
+      "title": "Khi nào nên yêu cầu AI chỉ viết lệnh verify chứ chưa viết lệnh sửa?",
+      "body": "Khi bạn còn chưa chắc symptom nằm ở queue, proxy, Redis, storage hay config cache. Verify command trước giúp chặn kiểu patch nhầm lớp rồi tạo ra nhiễu mới."
+    },
+    {
+      "title": "Vì sao `secret scrub` là kỹ năng bắt buộc khi dùng AI ở runtime?",
+      "body": "Vì log runtime, `.env`, deploy output và config dump rất dễ chứa token, key, domain nội bộ hoặc dữ liệu nhạy cảm. Nếu không scrub, bạn có thể vô tình đẩy đúng thứ nguy hiểm nhất vào prompt."
+    },
+    {
+      "title": "Khi nào change freeze quan trọng hơn tốc độ sửa bằng AI?",
+      "body": "Khi hệ thống đang có incident lớn, traffic bất ổn, hoặc đang trong cửa sổ release nhạy cảm. Lúc đó thêm patch AI vào hệ thống đang rung có thể làm mất dấu nguyên nhân gốc hoặc tăng blast radius."
+    },
+    {
+      "title": "Một prompt runtime tốt nên ép AI liệt kê command verify nào trước?",
+      "body": "Ít nhất nên ép nó đưa ra command quan sát health, queue, process, network, log và config trước khi chạm patch.",
+      "code": "Verify first:\n- php artisan about\n- php artisan queue:failed\n- php artisan config:show app\n- tail -n 100 storage/logs/laravel.log\n- curl -I https://app.example.com/health\n"
+    }
+  ]
+}

@@ -1,0 +1,642 @@
+{
+  "anchor": "laravel-files-media",
+  "type": "list",
+  "heading": "Files, uploads, and media handling: from basic `storage` usage to production-ready media pipelines",
+  "intro": "This topic brings together the practical knowledge around files, uploads, and media handling in Laravel. The goal is not only to know `Storage::put()`, but to understand disks, public links, access control, naming, metadata, validation, large uploads, S3, signed URLs, queued image processing, import-export, cleanup, observability, and real production failures.",
+  "breaks": [
+    {
+      "start": 1,
+      "title": "I. File And Storage Foundations",
+      "description": "Start with what files mean in a web app, what a disk is, how `storage/` differs from `public/`, and how Laravel sees file storage.",
+      "tone": "amber"
+    },
+    {
+      "start": 15,
+      "title": "II. Disks, Configuration, And Storage Connections",
+      "description": "Configuring `filesystems.php`, local, public, S3, multiple disks, environment-specific setup, and file access rules.",
+      "tone": "copper"
+    },
+    {
+      "start": 31,
+      "title": "III. Basic Uploads, Validation, And Naming",
+      "description": "Standard upload flow, `multipart/form-data`, file validation, naming, directories, metadata, and how to store files without creating future chaos.",
+      "tone": "sand"
+    },
+    {
+      "start": 49,
+      "title": "IV. Public Access, Downloads, Signed URLs, And Security",
+      "description": "Public versus private files, streaming and downloads, signed URLs, hotlinking, malware, mime spoofing, and common vulnerabilities.",
+      "tone": "amber"
+    },
+    {
+      "start": 65,
+      "title": "V. Images, Media Processing, And Post-Upload Work",
+      "description": "Resize, thumbnails, cropping, format conversion, EXIF, optimization, queued media processing, and media library thinking.",
+      "tone": "copper"
+    },
+    {
+      "start": 81,
+      "title": "VI. Large Uploads, Cloud Storage, S3, And File Delivery",
+      "description": "Large-file uploads, chunking, direct-to-S3, CDN, temporary URLs, lifecycle policies, and infrastructure concerns around media delivery.",
+      "tone": "sand"
+    },
+    {
+      "start": 97,
+      "title": "VII. Import, Export, Cleanup, And Data Integrity",
+      "description": "CSV, Excel, PDF, orphan files, delete strategies, file versioning, backups, and keeping the database and storage from drifting apart.",
+      "tone": "amber"
+    },
+    {
+      "start": 113,
+      "title": "VIII. Testing, Observability, Real Cases, And Long-Term Thinking",
+      "description": "Fake storage, upload debugging, logs, monitoring, real production failures, and how to stop the media layer from becoming a dumping ground.",
+      "tone": "copper"
+    }
+  ],
+  "items": [
+    {
+      "title": "1. What kinds of files usually exist in a Laravel app?",
+      "body": "Profile images, document attachments, invoice PDFs, videos, CSV imports, Excel exports, avatars, audio, scans, temporary backups, or background-processing outputs."
+    },
+    {
+      "title": "2. Why is file handling often underestimated?",
+      "body": "Because a demo only needs uploads to 'work'. Production reveals access control, naming, cleanup, duplicates, full storage, media clutter, CDN behavior, private access, and performance issues."
+    },
+    {
+      "title": "3. What is `storage/` used for in Laravel?",
+      "body": "It holds many runtime artifacts such as logs, cache, file sessions, and application-managed files when you use local storage disks.",
+      "code": "storage/\n  app/\n  app/public/\n  framework/\n  logs/",
+      "note": "This quick tree already shows the difference between application file storage and framework runtime state."
+    },
+    {
+      "title": "4. How is `public/` different from `storage/`?",
+      "body": "`public/` is the web root for public assets. `storage/` is a more internal application-managed area. Some files in `storage/app/public` are exposed through a symbolic link."
+    },
+    {
+      "title": "5. What is a disk in Laravel?",
+      "body": "A disk is an abstract storage configuration. It lets the app use the same API to store files on local disk, S3, or compatible object storage."
+    },
+    {
+      "title": "6. Why is the `Storage` abstraction useful?",
+      "body": "Because your file logic depends less on where bytes are physically stored. You can move from local to S3 without rewriting all business code."
+    },
+    {
+      "title": "7. Is a file path the same thing as a file URL?",
+      "body": "No. A path is where the file lives in storage, while a URL is how a client accesses it. Many bugs come from mixing up those concepts."
+    },
+    {
+      "title": "8. What metadata is usually worth storing for a file?",
+      "body": "Original name, stored name, mime type, extension, size, disk, path, public URL when relevant, checksum, image dimensions, uploader, and upload timestamp."
+    },
+    {
+      "title": "9. Should file contents be stored directly in the database?",
+      "body": "Usually not for large or common media. Databases are better used for metadata, paths, processing state, and relationships to business entities."
+    },
+    {
+      "title": "10. When can blobs in the database still make sense?",
+      "body": "For very small files, highly transactional systems, or special cases that need stronger atomic behavior. But most web apps fit object storage better."
+    },
+    {
+      "title": "11. Why should file lifecycle be designed early?",
+      "body": "Because files do not disappear when database records are deleted. Without a lifecycle strategy, storage fills up with orphaned files and stale media."
+    },
+    {
+      "title": "12. What questions should a healthy file system answer?",
+      "body": "Where the file lives, who uploaded it, which record owns it, whether it is public, when it can be deleted, whether variants exist, whether it is backed up, and how to trace it if metadata is damaged."
+    },
+    {
+      "title": "13. How is file handling different from normal text data storage?",
+      "body": "Files involve heavier I/O, browser behavior, content types, malware risk, quotas, CDN, network latency, and cleanup. It is rarely 'just another form field'."
+    },
+    {
+      "title": "14. What is the most important foundational mindset for files?",
+      "body": "Think through the full lifecycle: upload, validate, store, expose or protect, post-process, replace, delete, back up, and observe failures."
+    },
+    {
+      "title": "15. What is `config/filesystems.php` for?",
+      "body": "It defines Laravel storage disks and drivers such as local, public, and s3, along with root paths, visibility, URLs, and bucket-related configuration."
+    },
+    {
+      "title": "16. Where does the `local` disk usually store files?",
+      "body": "By default it uses `storage/app`. It is good for internal files, temporary artifacts, imports, exports, and small local environments."
+    },
+    {
+      "title": "17. Where does the `public` disk usually store files?",
+      "body": "By default it uses `storage/app/public`, then exposes those files through the `public/storage` symbolic link."
+    },
+    {
+      "title": "18. What does `php artisan storage:link` do?",
+      "body": "It creates a symbolic link from `public/storage` to `storage/app/public`, allowing public-disk files to be reached through browser URLs.",
+      "code": "php artisan storage:link\n\n# then a file in storage/app/public/avatars/a.jpg\n# becomes reachable through /storage/avatars/a.jpg"
+    },
+    {
+      "title": "19. Why can images disappear after cloning a project even though paths still exist in the database?",
+      "body": "Usually because `storage:link` was not run, the actual files do not exist locally, the disk config is wrong, or the local storage volume was never synchronized with the database."
+    },
+    {
+      "title": "20. When is an S3 driver a strong fit?",
+      "body": "When the app needs durable shared storage, horizontal scaling across many app servers, direct uploads, or easier CDN integration."
+    },
+    {
+      "title": "21. What is S3-compatible storage?",
+      "body": "It refers to object storage systems that expose an S3-like API, such as MinIO, DigitalOcean Spaces, or Cloudflare R2."
+    },
+    {
+      "title": "22. Is it reasonable to use multiple disks in one app?",
+      "body": "Yes. A temp local disk, a public asset disk, an S3 primary document disk, and a private confidential-files disk can all coexist."
+    },
+    {
+      "title": "23. What does `FILESYSTEM_DISK` affect?",
+      "body": "It sets the default disk when code does not specify one. Relying on it too blindly can make local and production store files in different places without the team noticing."
+    },
+    {
+      "title": "24. Should the disk be specified explicitly in code?",
+      "body": "If the file belongs to an important domain, that is often a good idea. Blindly using the default disk can make behavior hard to reason about."
+    },
+    {
+      "title": "25. What does visibility mean in storage systems?",
+      "body": "It describes whether a file is treated as public or private. In cloud storage this may map to ACLs or bucket policies."
+    },
+    {
+      "title": "26. Why is visibility alone not enough for security?",
+      "body": "Because access also depends on bucket policies, signed URLs, CDN behavior, caching, and how the app exposes file links."
+    },
+    {
+      "title": "27. What is the filesystem URL config for?",
+      "body": "It helps Laravel generate the correct public path for files, especially when using a dedicated asset domain or CDN."
+    },
+    {
+      "title": "28. What problems come from a wrong root path?",
+      "body": "The app may write files into the wrong directory, read from the wrong place, or appear to upload successfully while later failing to find the file."
+    },
+    {
+      "title": "29. Why is local disk risky in a multi-server production setup?",
+      "body": "Because one request may upload to server A while another request later tries to read from server B, where the file does not exist."
+    },
+    {
+      "title": "30. What is a senior-level configuration tip for storage?",
+      "body": "Decide early whether the app will scale across many servers, need a CDN, handle sensitive files, or benefit from direct-to-cloud uploads."
+    },
+    {
+      "title": "31. How do browsers usually send files to the server?",
+      "body": "Most commonly through `multipart/form-data` forms or JavaScript uploads built with `FormData`."
+    },
+    {
+      "title": "32. What is `UploadedFile` in Laravel?",
+      "body": "It is Laravel's object representation of an uploaded file, giving you access to the original name, extension, mime type, size, and storage helpers."
+    },
+    {
+      "title": "33. What should a clean upload flow include?",
+      "body": "Receive the request, validate it, choose a disk, generate a safe name and path, store the file, save metadata, and optionally queue post-processing such as resizing or scanning.",
+      "code": "$request->validate([\n    'document' => ['required', 'file', 'max:5120'],\n]);\n\n$path = $request->file('document')->store('documents', 'private');\n\nDocument::create([\n    'user_id' => $request->user()->id,\n    'disk' => 'private',\n    'path' => $path,\n    'original_name' => $request->file('document')->getClientOriginalName(),\n]);"
+    },
+    {
+      "title": "34. What should file validation usually check?",
+      "body": "At minimum check presence, acceptable mime or file type, maximum size, and in some cases image dimensions, page counts, or domain-specific constraints."
+    },
+    {
+      "title": "35. How do `mimes` and `mimetypes` differ conceptually?",
+      "body": "One leans more on accepted extensions, the other on MIME categories. For security, trusting only the extension is never enough."
+    },
+    {
+      "title": "36. Why is mime spoofing dangerous?",
+      "body": "An attacker can rename a malicious file to look like an image or PDF. If your app trusts extensions or frontend validation alone, it becomes vulnerable."
+    },
+    {
+      "title": "37. Should the original user filename be kept as the stored filename?",
+      "body": "Usually not as the sole storage name. Original names can collide, contain unsafe characters, be too long, or leak sensitive meaning."
+    },
+    {
+      "title": "38. What is a safer file naming strategy?",
+      "body": "Use UUIDs, hashes, timestamps with randomness, or clear domain-based patterns. Keep the original name separately in metadata if users need to see it.",
+      "code": "$filename = (string) Str::uuid().'.'.$request->file('avatar')->extension();\n$path = $request->file('avatar')->storeAs(\n    'users/'.$user->id.'/avatars',\n    $filename,\n    'public'\n);",
+      "note": "The stored filename should be stable and low-collision. The original filename should usually remain only as display metadata."
+    },
+    {
+      "title": "39. How should storage directories be organized?",
+      "body": "Prefer domain- or entity-based structures such as `users/{id}/avatars`, `orders/{id}/attachments`, or `exports/{date}` instead of dumping everything into one place."
+    },
+    {
+      "title": "40. Should storage paths contain business meaning?",
+      "body": "Yes, to a reasonable degree. Useful path semantics make debugging easier, but the database should still remain the source of truth for ownership and state."
+    },
+    {
+      "title": "41. Why save file metadata in the database after storing the file?",
+      "body": "So the app can query it, display it, audit it, link it, and clean it up later. Raw files without metadata become painful to manage."
+    },
+    {
+      "title": "42. Should size and mime type be saved in the database?",
+      "body": "Very often yes. It helps display data, manage quotas, debug issues, and avoid expensive reads just to answer simple questions."
+    },
+    {
+      "title": "43. What should be considered when replacing an old file with a new one?",
+      "body": "Think carefully about transactions and rollback. Deleting the old file too early or failing to save the new file after metadata changes can leave the system inconsistent."
+    },
+    {
+      "title": "44. Should the old file be deleted immediately when a user uploads a replacement?",
+      "body": "Not always. Many systems first confirm the new file and metadata, then remove the old file later or through a cleanup job."
+    },
+    {
+      "title": "45. What extra concerns come with multi-file uploads?",
+      "body": "Per-file validation, per-item error reporting, total-size limits, and avoiding a confusing state where one bad file ruins the whole batch without clear feedback."
+    },
+    {
+      "title": "46. Should the client be allowed to submit arbitrary file paths or URLs?",
+      "body": "Very carefully if at all. Your app should clearly distinguish a new upload from selecting an existing asset or referencing external content, otherwise you risk SSRF or other issues."
+    },
+    {
+      "title": "47. Why is upload progress important for UX?",
+      "body": "For medium and large files, users need feedback that something is actually happening. Without progress, they may retry and create duplicates."
+    },
+    {
+      "title": "48. What is a practical upload tip?",
+      "body": "Do not treat `200 OK` as the whole story. Verify that the file exists, the metadata was saved, and any required post-processing is represented in state."
+    },
+    {
+      "title": "49. How do public and private files differ at the product level?",
+      "body": "Public files can be accessed directly via URL, while private files require permission checks or temporary links. That decision affects both infrastructure and UX.",
+      "code": "$avatarUrl = Storage::disk('public')->url($user->avatar_path);\n\nreturn Storage::disk('private')->download(\n    $document->path,\n    $document->original_name\n);",
+      "note": "Both are files, but public files usually return direct URLs while private files often go through a controller or signed URL."
+    },
+    {
+      "title": "50. When should public files be used?",
+      "body": "For product images, thumbnails, static assets, and content that anyone with the URL may safely access."
+    },
+    {
+      "title": "51. When should files remain private?",
+      "body": "For personal records, contracts, internal exports, payment documents, scans, or any content that should be restricted by user or role."
+    },
+    {
+      "title": "52. What is a signed URL?",
+      "body": "It is a temporary signed link that grants time-limited access to a private file without exposing the entire storage location publicly.",
+      "code": "$url = Storage::disk('s3')->temporaryUrl(\n    $document->path,\n    now()->addMinutes(10)\n);",
+      "note": "A signed URL is useful when a private file should be downloaded directly from object storage but still needs a clear expiration window."
+    },
+    {
+      "title": "53. Where are signed URLs especially useful?",
+      "body": "They are excellent for private S3 files that browsers should download directly, or for temporary file sharing with controlled expiry."
+    },
+    {
+      "title": "54. Why are signed URLs often better than proxying files through the app?",
+      "body": "They reduce app-server load and make better use of object storage and CDN. The app only grants access instead of streaming all file bytes."
+    },
+    {
+      "title": "55. When should a controller still stream the file itself?",
+      "body": "When you need complex permission logic, dynamic watermarking, detailed download logging, or content transformation before sending it out."
+    },
+    {
+      "title": "56. How do `Storage::download()` and `Storage::response()` differ conceptually?",
+      "body": "One is oriented toward browser downloads as attachments, while the other is closer to serving the file content inline. The choice changes browser behavior."
+    },
+    {
+      "title": "57. Why does Content-Disposition matter?",
+      "body": "It determines whether the browser opens the file inline or downloads it. For images and documents that can change the entire user experience."
+    },
+    {
+      "title": "58. What is hotlinking?",
+      "body": "It is when another site embeds your public file URLs directly and consumes your bandwidth."
+    },
+    {
+      "title": "59. How can uploaded files become attack vectors?",
+      "body": "Through malware uploads, fake mime types, zip bombs, malicious SVGs, oversized files that exhaust resources, or dangerous embedded document content."
+    },
+    {
+      "title": "60. Should SVG uploads be allowed freely?",
+      "body": "Be very careful. SVG is XML and can contain script-like or dangerous content. If allowed, it should be sanitized or restricted to trusted sources."
+    },
+    {
+      "title": "61. Is virus scanning ever necessary?",
+      "body": "Yes in higher-risk systems such as document sharing, hiring portals, enterprise uploads, or any app handling sensitive user-supplied files."
+    },
+    {
+      "title": "62. Why is frontend-only file validation meaningless for security?",
+      "body": "Because client-side checks are easy to bypass. File rules still need server-side or pipeline enforcement."
+    },
+    {
+      "title": "63. What is a senior-level file security tip?",
+      "body": "Do not just ask whether uploads work. Ask how the app, storage layer, CDN, and browser behave when a hostile user uploads something dangerous."
+    },
+    {
+      "title": "64. Should potentially executable files live in browser-accessible paths?",
+      "body": "No. Sensitive or risky files should not be placed where the web server serves them publicly without strong control."
+    },
+    {
+      "title": "65. Why are images a special kind of file?",
+      "body": "They often need resizing, cropping, thumbnail generation, optimization, EXIF handling, multiple variants, and responsive display.",
+      "code": "ProcessAvatarJob::dispatch($avatar->id);\n\nclass ProcessAvatarJob implements ShouldQueue\n{\n    public function handle(): void\n    {\n        // read original file, resize, generate thumbnails, store variants\n    }\n}",
+      "note": "Do not force the user's upload request to wait for heavy resize or optimization work if it can be moved to a queue."
+    },
+    {
+      "title": "66. Why should the original image not be used everywhere?",
+      "body": "Large originals waste bandwidth and hurt performance, especially on mobile. Most apps need smaller variants for common views."
+    },
+    {
+      "title": "67. What is a thumbnail pipeline?",
+      "body": "It is the process that creates smaller image variants for lists, cards, previews, or avatars."
+    },
+    {
+      "title": "68. Should image resizing happen synchronously or in a queue?",
+      "body": "Small images can be processed inline, but large images or many conversions are usually better pushed to a queue so the request stays fast."
+    },
+    {
+      "title": "69. What is EXIF data, and why does it matter?",
+      "body": "It is image metadata such as orientation, location, and device information. Some of it is useful for rendering, while some of it creates privacy concerns."
+    },
+    {
+      "title": "70. How should WebP, AVIF, JPEG, and PNG be thought about?",
+      "body": "Each format has trade-offs around quality, compression, transparency support, and browser compatibility. There is no universal winner."
+    },
+    {
+      "title": "71. What is image optimization?",
+      "body": "It means reducing image file size while keeping acceptable visual quality. That improves page load time, bandwidth use, and CDN cost."
+    },
+    {
+      "title": "72. Should optimized files overwrite originals?",
+      "body": "That depends on strategy. Some systems keep originals to regenerate new variants later, while others keep only processed versions to save storage."
+    },
+    {
+      "title": "73. What is media-library thinking?",
+      "body": "Instead of treating every file as a loose path, you treat it as a managed asset with metadata, collections, conversions, visibility, ownership, tags, and lifecycle."
+    },
+    {
+      "title": "74. When is a media-library package worth using?",
+      "body": "When the app has many media types, many conversions, or many models attaching media, and you want consistency instead of hand-rolled fragmentation."
+    },
+    {
+      "title": "75. Does PDF generation belong in media handling?",
+      "body": "Yes. Generating invoice PDFs, agreements, or reports is very real-world and brings concerns around queues, fonts, layout, file size, and output storage."
+    },
+    {
+      "title": "76. What makes watermarking or document stamping tricky?",
+      "body": "It requires processing pipelines, performance awareness, output quality control, and sometimes different variants for different access contexts."
+    },
+    {
+      "title": "77. How are video uploads different from images?",
+      "body": "They are far larger, upload more slowly, often require transcoding, need preview thumbnails, and usually benefit from more specialized infrastructure."
+    },
+    {
+      "title": "78. Should audio, subtitles, and document previews all share the same logic?",
+      "body": "Not too aggressively. They are all media, but each type has its own metadata, processing, and UX needs."
+    },
+    {
+      "title": "79. Why should media processing state exist in the database?",
+      "body": "So you know whether a file is newly uploaded, being scanned, being resized, ready, failed, or waiting for retry. Without state, support and UI become blind."
+    },
+    {
+      "title": "80. What is a practical image and media tip?",
+      "body": "Upload completion does not mean the media is ready. Make post-processing state explicit so the UI does not point at assets that are not finished yet."
+    },
+    {
+      "title": "81. Why do large uploads often fail before Laravel controllers even run?",
+      "body": "Because the web server, PHP config, proxy, load balancer, or request body limits may reject them before Laravel sees the request.",
+      "code": "upload_max_filesize=50M\npost_max_size=50M\n\n# nginx\nclient_max_body_size 50M;",
+      "note": "Many 'Laravel did not receive the file' bugs actually live in PHP or the web server layer, not the controller."
+    },
+    {
+      "title": "82. What do `upload_max_filesize` and `post_max_size` affect?",
+      "body": "They are PHP-level limits. If the file is too large, the request may fail or the uploaded file may never appear correctly in the request payload."
+    },
+    {
+      "title": "83. Can Nginx or Apache block large uploads too?",
+      "body": "Yes. For example Nginx uses `client_max_body_size`. Many reports of 'Laravel not receiving the file' are actually web-server configuration issues."
+    },
+    {
+      "title": "84. What is chunked uploading?",
+      "body": "It means splitting a large file into smaller pieces for transfer, which helps unstable networks and can support resumable uploads."
+    },
+    {
+      "title": "85. What is direct-to-S3 uploading?",
+      "body": "It means the browser uploads straight to S3 or compatible storage using a presigned URL instead of sending all bytes through the app server.",
+      "code": "// backend returns a presigned upload URL\nreturn response()->json([\n    'upload_url' => $temporaryUploadUrl,\n    'path' => $path,\n]);",
+      "note": "A common mistake is treating direct cloud upload as the whole story. The fix is to add a finalize step so the app records metadata and verifies that the file truly exists."
+    },
+    {
+      "title": "86. Why is direct-to-S3 often worth serious consideration?",
+      "body": "It reduces app-server CPU, memory, and bandwidth load, which is especially valuable for videos, large documents, or many simultaneous uploads."
+    },
+    {
+      "title": "87. Does direct upload remove application control?",
+      "body": "No if designed properly. The app still issues the upload authorization, stores metadata, confirms completion, and starts post-processing."
+    },
+    {
+      "title": "88. What are temporary URLs in cloud storage used for?",
+      "body": "They allow time-limited access to private files without exposing the whole bucket publicly."
+    },
+    {
+      "title": "89. How does a CDN relate to file and media handling?",
+      "body": "A CDN improves delivery speed, reduces origin load, and makes public media access more efficient across regions."
+    },
+    {
+      "title": "90. What kinds of bugs can CDN caching introduce?",
+      "body": "Users may keep seeing old files, signed content may appear stale, or invalidation may fail to happen when assets change."
+    },
+    {
+      "title": "91. What is an S3 lifecycle policy?",
+      "body": "It is a rule that automatically archives, transitions, or deletes files after a certain period, which is useful for temp uploads, old exports, or aging media."
+    },
+    {
+      "title": "92. Should region choice and latency be considered?",
+      "body": "Yes when files are large or users are geographically distributed. A distant storage region can noticeably slow uploads and downloads."
+    },
+    {
+      "title": "93. Should the app server proxy every cloud file back to the browser?",
+      "body": "Usually not for large files unless extra processing or access logic is required. Otherwise the app server becomes an unnecessary bottleneck."
+    },
+    {
+      "title": "94. What is a common cloud-storage failure?",
+      "body": "Wrong bucket names, wrong regions, wrong ACL or bucket policy, or the wrong endpoint for an S3-compatible provider."
+    },
+    {
+      "title": "95. What is media cost mindset?",
+      "body": "Files do not only consume disk. They also cost request operations, bandwidth, CDN usage, egress, processing time, and backups. Bad media design becomes expensive fast."
+    },
+    {
+      "title": "96. What is a production tip for large uploads?",
+      "body": "If uploads are large or frequent, think about direct-to-cloud early instead of forcing every upload through PHP forever."
+    },
+    {
+      "title": "97. What is special about import files such as CSV or Excel?",
+      "body": "They are not just stored files. They must be parsed, validated row by row, error-reported, often queued, and audited carefully.",
+      "code": "$path = $request->file('spreadsheet')->store('imports', 'local');\n\nImportUsersJob::dispatch($path, $request->user()->id);",
+      "note": "Import flows almost always become background pipelines, not just plain uploads."
+    },
+    {
+      "title": "98. Do exports need their own pipeline too?",
+      "body": "Yes. Large exports should often run in a queue, store an output file, notify the user when ready, use TTL cleanup, and enforce access control."
+    },
+    {
+      "title": "99. What is an orphan file?",
+      "body": "It is a file that still exists in storage even though the related database record is gone or no longer references it."
+    },
+    {
+      "title": "100. What is orphaned metadata?",
+      "body": "It is the opposite problem: the database still points to a file that no longer exists or is stored in the wrong place."
+    },
+    {
+      "title": "101. Should cleanup strategy exist from the beginning?",
+      "body": "Absolutely. Temp files, old exports, failed conversions, obsolete avatars, stale versions, and orphaned files will definitely appear."
+    },
+    {
+      "title": "102. Should file deletion be synchronous or queued?",
+      "body": "It depends. A single small delete can happen inline, but deleting many variants or cleaning after retention windows is often safer in a queue."
+    },
+    {
+      "title": "103. Should file deletion be delayed when the database record is soft-deleted?",
+      "body": "Often yes. If the record can be restored, deleting its file immediately may make restore meaningless."
+    },
+    {
+      "title": "104. Why is file versioning useful?",
+      "body": "It helps with document history, asset rollback, and avoiding stale CDN or browser cache."
+    },
+    {
+      "title": "105. Should the same file path be overwritten forever?",
+      "body": "Only if you understand the cache consequences. Many systems prefer new paths per version to avoid users seeing old content."
+    },
+    {
+      "title": "106. Should media backup be treated separately from database backup?",
+      "body": "Often yes. Database backups do not protect object storage by themselves, and bucket snapshots do not replace metadata or audit data in the database."
+    },
+    {
+      "title": "107. What is reconciliation between the database and storage?",
+      "body": "It is periodic checking to find missing files, orphaned objects, unusual storage growth, or unfinished conversions.",
+      "code": "$dbPaths = MediaFile::query()->pluck('path');\n\nforeach ($dbPaths as $path) {\n    if (! Storage::disk('s3')->exists($path)) {\n        logger()->warning('missing-media-file', ['path' => $path]);\n    }\n}",
+      "note": "Reconciliation is especially useful after large imports, media-pipeline deploys, or support reports like 'the database has a record but downloading the file returns 404'."
+    },
+    {
+      "title": "108. What is a common import-export failure?",
+      "body": "The upload succeeds but the parsing job fails silently, or the export finishes but the download path, TTL, or permissions are wrong."
+    },
+    {
+      "title": "109. Why do temporary files need explicit cleanup?",
+      "body": "Because temp files are the easiest files to forget and the fastest ones to pile up, especially in import, export, preview, and processing flows."
+    },
+    {
+      "title": "110. What is an experienced cleanup insight?",
+      "body": "Without cleanup strategy, storage always turns into a dumping ground. The only question is how long it takes before the team notices."
+    },
+    {
+      "title": "111. What should Laravel use for upload testing?",
+      "body": "Laravel provides `Storage::fake()` and fake uploaded files so you can test upload flow, storage paths, validation, deletion, and related behavior without touching real storage."
+    },
+    {
+      "title": "112. Why is `Storage::fake()` so useful?",
+      "body": "It keeps tests fast, isolated, and clean without polluting real local or cloud storage."
+    },
+    {
+      "title": "113. Is testing for `200 OK` enough in upload tests?",
+      "body": "No. You should also test that the file was stored, metadata was saved, permissions are correct, cleanup works, and important side effects occurred.",
+      "code": "Storage::fake('avatars');\n\n$file = UploadedFile::fake()->image('avatar.jpg');\n\n$response = $this->post('/profile/avatar', [\n    'avatar' => $file,\n]);\n\nStorage::disk('avatars')->assertExists('avatars/'.$file->hashName());"
+    },
+    {
+      "title": "114. What should be logged when debugging file issues?",
+      "body": "Log the disk, path, mime type, size, user, request ID, job ID, current pipeline step, and the exact exception, while avoiding unnecessary sensitive content."
+    },
+    {
+      "title": "115. Which metrics help a media subsystem?",
+      "body": "Upload success rate, average upload size, processing time, queue lag, failed conversion count, orphan file count, and storage growth rate.",
+      "code": "logger()->info('media-upload-finished', [\n    'disk' => 's3',\n    'mime' => $media->mime_type,\n    'size_bytes' => $media->size_bytes,\n    'processing_status' => $media->processing_status,\n]);"
+    },
+    {
+      "title": "116. Where should alerts be placed in media handling?",
+      "body": "Alert when conversion failures spike, media queue lag grows, bucket access fails, storage grows abnormally, or upload success rate drops sharply."
+    },
+    {
+      "title": "117. Why can file handling work locally but fail in production?",
+      "body": "Common reasons include missing `storage:link`, permission issues, volume mount mistakes, multi-server local-disk assumptions, bucket policy problems, stale queue workers, upload limits, or missing image-processing extensions."
+    },
+    {
+      "title": "118. Why can an uploaded image exist but still not appear immediately?",
+      "body": "Possible causes include wrong URLs, CDN cache, expired signed URLs, unfinished conversions, queue lag, or private files being rendered as if they were public."
+    },
+    {
+      "title": "119. What is a good playbook when users report download failures?",
+      "body": "Check business permissions, disk config, database paths, whether the file actually exists, whether signed URLs are still valid, CDN/cache behavior, response headers, and request logs."
+    },
+    {
+      "title": "120. What is a good playbook when large uploads fail only in production?",
+      "body": "Check `upload_max_filesize`, `post_max_size`, web-server request limits, proxy body limits, timeouts, media queues, storage volumes, bucket network connectivity, and whether the failure happens before or after Laravel receives the request."
+    },
+    {
+      "title": "121. What is a code smell in a file or media layer?",
+      "body": "A controller that validates, names files, stores them, resizes images, deletes old files, generates URLs, handles errors, and updates multiple models all in one place."
+    },
+    {
+      "title": "122. When should a dedicated media service or module be introduced?",
+      "body": "When many screens share upload, conversion, signed URL, cleanup, or audit logic, or when media clearly becomes its own subsystem."
+    },
+    {
+      "title": "123. Should domain models know too much about physical file paths?",
+      "body": "Not too tightly. Models should know which media belong to them, while storage backend details and processing pipelines often belong in clearer service layers."
+    },
+    {
+      "title": "124. Final review: what major areas should a files-media topic include?",
+      "body": "At minimum it should cover storage foundations, disk config, upload-validation-naming, public/private access, security, image and media processing, large uploads-cloud-CDN, cleanup-import-export, testing-observability, and real production cases."
+    },
+    {
+      "title": "125. Why are file checksums useful?",
+      "body": "Checksums help detect duplicates, corruption, or unexpected changes. They are especially useful for direct uploads, deduplication, and audits."
+    },
+    {
+      "title": "126. Why is a backend finalize step still needed after direct upload?",
+      "body": "Because a browser uploading straight to cloud storage does not mean your application has accepted the file yet. The backend still usually needs to confirm the object exists, save metadata, and trigger processing."
+    },
+    {
+      "title": "127. Should per-user or per-tenant file quotas exist?",
+      "body": "If the app allows heavy uploads or bills based on storage, quotas matter a lot. They prevent abuse and help the business control cost."
+    },
+    {
+      "title": "128. What is a retention policy in file and media handling?",
+      "body": "It is the rule for how long files are kept, when they are archived, and when they are deleted permanently. It matters especially for temporary exports, legal records, and sensitive data."
+    },
+    {
+      "title": "129. What extra concerns come with files containing PII or sensitive documents?",
+      "body": "Think about encryption at rest, audited access, short-lived signed URLs, download policies, clear retention rules, and legal deletion requirements where applicable."
+    },
+    {
+      "title": "130. What should be considered when retrying media jobs in queues?",
+      "body": "If resize, scan, or conversion jobs retry without being idempotent, they can create duplicate variants, overwrite incorrectly, or waste significant resources."
+    },
+    {
+      "title": "131. Is a dedicated `failed_processing` or `needs_retry` state worth having?",
+      "body": "Very much so in serious media pipelines. It helps support and UI understand that the upload succeeded but downstream processing failed."
+    },
+    {
+      "title": "132. Should image or media packages be wrapped through an application service?",
+      "body": "Usually yes when the package matters. A wrapper reduces direct coupling, makes provider changes easier, and centralizes policies around sizing, quality, and naming."
+    },
+    {
+      "title": "133. What is a common real-world bug with signed URLs?",
+      "body": "The link is generated correctly, but the browser or CDN caches an old response, or the user leaves a tab open long enough that the URL expires and assumes the file is broken."
+    },
+    {
+      "title": "134. How do file uploads relate to compliance and audit?",
+      "body": "Heavily in enterprise systems. Who uploaded a file, who viewed it, who downloaded it, who deleted it, which version is official, and whether it changed after release can all become audit questions."
+    },
+    {
+      "title": "135. Example of a basic file upload with validation and disk storage",
+      "body": "This is the kind of snippet you will meet quickly when building a real upload feature.",
+      "code": "$request->validate([\n    'avatar' => ['required', 'image', 'max:2048'],\n]);\n\n$path = $request->file('avatar')->store('avatars', 'public');\n\n$user->update([\n    'avatar_path' => $path,\n]);",
+      "bullets": [
+        "Validation should usually check mime type, size, and sometimes dimensions too.",
+        "`store(..., 'public')` helps you write to the intended disk instead of scattering paths manually.",
+        "The database should usually store the path or metadata, not the binary file itself."
+      ]
+    },
+    {
+      "title": "136. Example of generating file URLs and downloading private files more safely",
+      "body": "Saving a file is only half the story. You still need to serve it correctly.",
+      "code": "$url = Storage::disk('public')->url($user->avatar_path);\n\nreturn Storage::disk('private')->download($document->path, $document->original_name);",
+      "note": "Public URLs are fine for public assets. For private documents, prefer going through a controller or signed access flow rather than exposing raw storage paths."
+    },
+    {
+      "title": "137. Example of S3 disk configuration in `filesystems.php`",
+      "body": "Many people use S3 without really reading this config layer, which makes env drift and URL bugs easier to create.",
+      "code": "'s3' => [\n    'driver' => 's3',\n    'key' => env('AWS_ACCESS_KEY_ID'),\n    'secret' => env('AWS_SECRET_ACCESS_KEY'),\n    'region' => env('AWS_DEFAULT_REGION'),\n    'bucket' => env('AWS_BUCKET'),\n    'url' => env('AWS_URL'),\n],",
+      "note": "Understanding disk configuration helps you debug much faster when local, staging, and production use different storage setups."
+    },
+    {
+      "title": "138. Final assessment after review: is the files-media topic detailed enough?",
+      "body": "For a learning portal, this is now fairly complete: storage foundations, disk config, upload flow, security, media processing, cloud delivery, cleanup, testing, observability, and production cases are all covered. If you want to go deeper later, the strongest next split would be dedicated sites for image pipelines, video and media streaming, import-export documents, and storage security or compliance."
+    }
+  ]
+}

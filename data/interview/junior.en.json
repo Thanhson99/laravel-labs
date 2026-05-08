@@ -1,0 +1,705 @@
+{
+  "heading": "Junior",
+  "intro": "The `junior` bank is for people who have already built a few real Laravel features: CRUD screens, auth flow, validation, uploads, database work, APIs, or admin dashboards. At this level interviewers usually want more than definitions. They want to see whether you can organize a feature, debug a real bug, and explain why code should live where it does.",
+  "questionNumbered": true,
+  "questionStyle": "interview",
+  "breaks": [
+    {
+      "start": 1,
+      "title": "CRUD Flow And Request Handling",
+      "description": "Questions about how you structure a real feature from route to response.",
+      "tone": "amber"
+    },
+    {
+      "start": 11,
+      "title": "Validation, Auth, And Form Flow",
+      "description": "This area is asked often because nearly every junior Laravel project touches it.",
+      "tone": "coral"
+    },
+    {
+      "start": 19,
+      "title": "Database, Queries, And Eloquent",
+      "description": "You do not need advanced performance depth yet, but you should understand models, relationships, eager loading, transactions, and readable query flow.",
+      "tone": "amber"
+    },
+    {
+      "start": 29,
+      "title": "Uploads, APIs, And Frontend Coordination",
+      "description": "This group is tied to real features such as file upload, JSON responses, list filters, and working with Blade or Vite-driven pages.",
+      "tone": "coral"
+    },
+    {
+      "start": 37,
+      "title": "Code Structure And Responsibility Split",
+      "description": "A good junior has usually started to understand that controllers should not own everything forever.",
+      "tone": "amber"
+    },
+    {
+      "start": 45,
+      "title": "Debugging, Light Operations, And Project Discussion",
+      "description": "The final section focuses on real bugs, real commands, error reading, and how to talk about actual project experience.",
+      "tone": "coral"
+    },
+    {
+      "start": 49,
+      "title": "Teamwork, Ownership, And Working Style",
+      "description": "This section helps evaluate not only code skill, but also how you take tasks, collaborate, communicate, and carry responsibility.",
+      "tone": "amber"
+    },
+    {
+      "start": 62,
+      "title": "URL Tracing, Request Flow, And Thinking Questions",
+      "description": "An added group for evaluating how you trace a request across layers, understand the basic web stack, and explain your thinking when facing an unfamiliar problem.",
+      "tone": "coral"
+    }
+  ],
+  "items": [
+    {
+      "title": "How do you usually structure a real CRUD feature in Laravel?",
+      "body": "A strong answer usually follows `route -> Form Request -> controller or action -> model or service -> response` instead of only saying 'I use a controller and model'.",
+      "code": "Route::post('/posts', [PostController::class, 'store']);\n\npublic function store(StorePostRequest $request)\n{\n    $post = Post::create($request->validated());\n\n    return redirect()->route('posts.show', $post);\n}",
+      "bullets": [
+        "You should mention validation before saving data.",
+        "You should mention whether the final response is a redirect or JSON depending on the flow.",
+        "If the use case is a little richer, you can mention a service or action."
+      ],
+      "tip": "A safe structure is: `route receives request -> request validates -> controller coordinates -> model saves -> response is returned`."
+    },
+    {
+      "title": "When do you keep logic in the controller, and when should you move it out?",
+      "body": "A controller should mainly coordinate flow. If logic becomes long, has many branches, or includes side effects such as mail, files, or events, it is a signal to separate responsibility.",
+      "bullets": [
+        "Validation can move into a Form Request.",
+        "Authorization can move into a Policy.",
+        "Longer business flow can move into a service or action."
+      ],
+      "note": "Interviewers want to see that you have started to care about keeping controllers readable."
+    },
+    {
+      "title": "Besides create versus update, what else differs between `store` and `update` flow?",
+      "body": "They often differ in unique validation rules, old-file replacement behavior, redirect flow, and sometimes authorization rules.",
+      "bullets": [
+        "An `update` rule often needs to ignore the current record in unique validation.",
+        "If files are involved, `update` may need to remove or replace an old file.",
+        "Authorization is often stricter in `update` than `create`."
+      ]
+    },
+    {
+      "title": "What is route model binding, and why is it useful?",
+      "body": "Route model binding lets Laravel resolve a model directly from a route parameter so your controller stays cleaner and you avoid repeating fetch logic.",
+      "code": "Route::get('/posts/{post}', [PostController::class, 'show']);\n\npublic function show(Post $post)\n{\n    return view('posts.show', compact('post'));\n}",
+      "bullets": [
+        "It avoids repeating `Post::findOrFail($id)` in many places.",
+        "If the record does not exist, Laravel can automatically end in `404`."
+      ],
+      "tip": "This is a very junior-level question because it shows real route and controller usage."
+    },
+    {
+      "title": "What is the difference between `redirect`, `view`, and `response()->json()`?",
+      "body": "`view()` renders interface output, `redirect()` forwards the browser to another route, and `response()->json()` returns structured data for API or AJAX flow.",
+      "bullets": [
+        "Web CRUD usually redirects after successful create or update.",
+        "API CRUD usually returns JSON instead of redirecting."
+      ]
+    },
+    {
+      "title": "Why should long queries or validation logic not live inside Blade views?",
+      "body": "Because that makes the view harder to read, harder to test, and mixes data preparation responsibility with rendering responsibility.",
+      "bullets": [
+        "Views should focus on presentation.",
+        "Data preparation should happen in the controller, action, view model, or a suitable support layer."
+      ],
+      "tip": "A more mature answer is: `the view should receive data that is already ready to render`."
+    },
+    {
+      "title": "If a create form succeeds but refreshing the page creates a duplicate record, what do you think about?",
+      "body": "At junior level you should think about redirect-after-POST, unique validation, database constraints, transactions in sensitive cases, or idempotency in more serious workflows.",
+      "bullets": [
+        "POST then redirect reduces accidental resubmission on refresh.",
+        "Validation is only the first layer; important data should often also be protected at the database level."
+      ],
+      "note": "This is a good situation question for showing you have seen or at least considered duplicate-create problems."
+    },
+    {
+      "title": "If a web route keeps returning `404` even though you think it was defined, what do you check first?",
+      "body": "Check whether the route lives in the right file, the HTTP method is correct, a prefix changed the path, route cache is stale, or the generated link points to the wrong URL.",
+      "bullets": [
+        "Mentioning `php artisan route:list` is a strong practical detail.",
+        "Do not only inspect one file; inspect method, path, and route group context."
+      ],
+      "tip": "This is a very good place to mention `route:list` if asked about debugging habits."
+    },
+    {
+      "title": "How are `find()`, `findOrFail()`, and `firstOrFail()` different?",
+      "body": "`find()` returns a model or `null`, `findOrFail()` throws when a record by id is missing, and `firstOrFail()` is useful for general queries that are not only id-based.",
+      "bullets": [
+        "The `OrFail` variants make the flow clearer when the resource must exist.",
+        "This shows you have read more than the most basic Eloquent usage."
+      ]
+    },
+    {
+      "title": "How do you usually build a list page with basic search or filters?",
+      "body": "Take filter input from query string, build a conditional query, then paginate the results instead of loading everything into memory.",
+      "code": "$posts = Post::query()\n    ->when($request->filled('keyword'), function ($query) use ($request) {\n        $query->where('title', 'like', '%'.$request->keyword.'%');\n    })\n    ->latest()\n    ->paginate(10);",
+      "bullets": [
+        "Search and filtering appear often in junior take-home tasks.",
+        "Using `when()` or another clean filter pattern is a good detail."
+      ]
+    },
+    {
+      "title": "Should validation live in the controller or a Form Request?",
+      "body": "Small cases can stay in the controller, but for serious forms or larger codebases, a `Form Request` is usually cleaner, easier to reuse, and easier to read.",
+      "code": "class StorePostRequest extends FormRequest\n{\n    public function rules(): array\n    {\n        return [\n            'title' => ['required', 'string', 'max:255'],\n            'body' => ['required', 'string'],\n        ];\n    }\n}",
+      "bullets": [
+        "A good junior knows when separation keeps the controller from growing too much.",
+        "A Form Request can also carry `authorize()` logic."
+      ],
+      "tip": "If asked very briefly, answer: `small apps can validate in controllers, serious apps usually move that into a Form Request`."
+    },
+    {
+      "title": "How are `required`, `nullable`, and `sometimes` different in validation?",
+      "body": "`required` means the value must be present, `nullable` allows `null`, and `sometimes` usually means apply the rule only if the field actually appears in the request.",
+      "bullets": [
+        "This is a very common junior validation question because it shows whether you have handled create and update forms carefully.",
+        "A correct answer shows practical form experience."
+      ]
+    },
+    {
+      "title": "What changes in unique validation when you move from `create` to `update`?",
+      "body": "In `update` flow you usually need to ignore the current record so the rule does not conflict with the record's own existing value.",
+      "code": "'slug' => ['required', Rule::unique('posts', 'slug')->ignore($post->id)]",
+      "bullets": [
+        "This is a very common bug in first CRUD-heavy projects.",
+        "Candidates who have fixed it before usually answer very naturally."
+      ]
+    },
+    {
+      "title": "How should authentication and authorization fit into a real feature flow?",
+      "body": "Authentication checks whether the user is logged in; authorization checks whether that logged-in user is allowed to perform this action on this resource.",
+      "bullets": [
+        "Middleware can block unauthenticated users.",
+        "Policies or Gates can control whether a user may update, delete, or view a specific resource."
+      ],
+      "tip": "A strong answer connects `auth middleware` with `policy` instead of collapsing them into one idea."
+    },
+    {
+      "title": "What is a Policy used for in Laravel?",
+      "body": "A Policy centralizes resource-specific authorization rules so controllers and views do not need to repeat permission checks everywhere.",
+      "code": "public function update(User $user, Post $post): bool\n{\n    return $user->id === $post->user_id;\n}",
+      "bullets": [
+        "It fits rules such as which user may edit which post.",
+        "A junior who knows Policies is often evaluated better than one who only knows middleware."
+      ]
+    },
+    {
+      "title": "If a user can edit another user's post by mistake, where do you look first?",
+      "body": "Think about missing or wrong authorization, route model binding returning the right record but no policy check happening, or an update query that is not scoped by ownership.",
+      "bullets": [
+        "This is a very realistic dashboard or multi-user CRUD bug.",
+        "It is not only a UI issue; it is an access-control bug."
+      ],
+      "note": "A good answer should mention `policy` or at least an `ownership check`."
+    },
+    {
+      "title": "How are `@error`, `$errors`, and `old()` different in a Blade form?",
+      "body": "`old()` repopulates previous input, `$errors` is the validation error bag, and `@error` is a compact Blade helper for displaying a field-specific error.",
+      "bullets": [
+        "This is very realistic junior form UX knowledge.",
+        "If you have built admin CRUD before, you have probably touched all three."
+      ]
+    },
+    {
+      "title": "What basic password reset flow should you know at junior level?",
+      "body": "You do not need every internal detail, but you should know there is usually an email step, a reset token, a reset form, and a final password update that must be stored as a hash.",
+      "bullets": [
+        "This is a strong detail if you have used Breeze or Jetstream.",
+        "At minimum you should remember that passwords must never be stored as plain text."
+      ]
+    },
+    {
+      "title": "What is mass assignment, and why does `$fillable` matter?",
+      "body": "Mass assignment means setting multiple attributes at once from incoming data. Without control, a request may accidentally set sensitive fields.",
+      "bullets": [
+        "A good junior connects `$fillable` with `validated()` input.",
+        "Good validation is not enough if the model still accepts unsafe fields."
+      ]
+    },
+    {
+      "title": "When do you use `with()` in Eloquent?",
+      "body": "You use `with()` when you know you will need related data and want to eager load it instead of triggering repeated relation queries later.",
+      "code": "$posts = Post::with('user')->latest()->paginate(10);",
+      "bullets": [
+        "If a post list shows the author's name, eager loading is a common need.",
+        "This is one of the most common junior Eloquent questions."
+      ],
+      "tip": "A good compact answer is: `I use with when I already know I will need related data and want to avoid repeated queries`."
+    },
+    {
+      "title": "What is an N+1 query problem at junior level?",
+      "body": "It is a situation where the app loads the main list once, then loads each related record separately for every row, causing the total number of queries to grow quickly.",
+      "bullets": [
+        "A list of 100 posts that each load their author separately is the classic example.",
+        "At this level, being able to name the problem and solve it with eager loading is enough."
+      ]
+    },
+    {
+      "title": "How are `hasMany`, `belongsTo`, and `belongsToMany` different?",
+      "body": "`hasMany` means one parent has many children, `belongsTo` means a child belongs to one parent, and `belongsToMany` means a many-to-many relationship through a pivot table.",
+      "bullets": [
+        "User - Posts is a simple `hasMany`/`belongsTo` example depending on which side you describe.",
+        "Users - Roles is an easy `belongsToMany` example."
+      ]
+    },
+    {
+      "title": "What is a pivot table, and when does it appear?",
+      "body": "A pivot table is the intermediate table used for a many-to-many relationship, such as `role_user`, `post_tag`, or `course_student`.",
+      "bullets": [
+        "It may only store two foreign keys, but it can also store extra metadata like timestamps or assignment info.",
+        "This is a very on-level question if you have worked with tags, roles, or similar features."
+      ]
+    },
+    {
+      "title": "When should you use a transaction in Laravel?",
+      "body": "Use a transaction when a workflow performs multiple writes and you want them to all succeed together or all fail together.",
+      "code": "DB::transaction(function () use ($request) {\n    $order = Order::create($request->validated());\n    OrderItem::create([\n        'order_id' => $order->id,\n        'product_id' => 1,\n    ]);\n});",
+      "bullets": [
+        "Creating an `order` and its `order_items` is an easy real example.",
+        "At junior level you do not need deep isolation-level theory; `all or nothing` is enough."
+      ]
+    },
+    {
+      "title": "If data gets half-created and then fails in the middle, what do you think about?",
+      "body": "Think about whether a transaction is missing or is placed in the wrong spot, and whether the flow mixes database writes with external side effects that are harder to roll back.",
+      "bullets": [
+        "This turns the transaction concept into a real project situation.",
+        "A good answer usually mentions `DB::transaction()`."
+      ]
+    },
+    {
+      "title": "What is the difference between `paginate()` and `get()`?",
+      "body": "`get()` loads all matching results from the current query, while `paginate()` fetches them page by page and includes pagination metadata.",
+      "bullets": [
+        "Admin lists and user-facing tables usually should think about pagination.",
+        "Using `get()` carelessly on large tables can create unnecessary load."
+      ]
+    },
+    {
+      "title": "If an admin list page feels very slow, what do you check first?",
+      "body": "A good junior first thinks about query count, N+1, whether pagination exists, whether too many columns are being selected, and whether filters were written inefficiently.",
+      "bullets": [
+        "Do not jump straight to caching before you know the bottleneck.",
+        "This is a strong place to show step-by-step thinking."
+      ],
+      "tip": "Do not open with `I would cache it`. Open with `I would inspect the query flow and relations first`."
+    },
+    {
+      "title": "How do foreign keys and Eloquent relationships relate to each other?",
+      "body": "A foreign key is a data-layer constraint in the database, while an Eloquent relationship is the application-layer way to model and traverse that relationship in code.",
+      "bullets": [
+        "One side is data integrity; the other side is framework convenience.",
+        "Being able to say this shows you do not confuse the database layer with the framework layer."
+      ]
+    },
+    {
+      "title": "What is the basic upload flow in Laravel?",
+      "body": "Usually you validate the file, store it using `Storage` or the proper disk, and then save the resulting path or metadata in the database if needed.",
+      "code": "$path = $request->file('avatar')->store('avatars', 'public');\n$user->update(['avatar_path' => $path]);",
+      "bullets": [
+        "Do not forget file-size and mime validation.",
+        "If this is an update flow, you should also think about the previous file."
+      ]
+    },
+    {
+      "title": "Why should you not simply reuse the original uploaded filename directly?",
+      "body": "Because that can create name collisions, make paths harder to control, and complicate file handling. A generated safe filename is usually more reliable.",
+      "bullets": [
+        "This is a small but very real upload detail.",
+        "Mentioning generated paths or safe naming sounds practical."
+      ]
+    },
+    {
+      "title": "If the text fields submit correctly but the uploaded file fails, what do you think about?",
+      "body": "Think about `enctype`, file validation rules, upload size limits, and whether you are reading the file correctly from the request.",
+      "bullets": [
+        "This is a very real junior-level project bug.",
+        "If you have seen it before, saying so makes the answer sound much more grounded."
+      ]
+    },
+    {
+      "title": "If you create a resource through an API, what should you usually return?",
+      "body": "Depending on the project, you usually return a consistent JSON response, often including the created resource or enough useful information, together with an appropriate status like `201` for creation.",
+      "bullets": [
+        "Do not return a vague text string if the API has a clear contract.",
+        "A good junior understands that API response shape should stay consistent."
+      ]
+    },
+    {
+      "title": "How is a web form submit different from an AJAX or API submit in user experience terms?",
+      "body": "A web form submit usually redirects or reloads the page flow, while an AJAX or API submit usually updates part of the interface without a full page reload.",
+      "bullets": [
+        "You do not need deep frontend mastery, but you should understand the flow difference.",
+        "This also helps you answer route and response questions more clearly."
+      ]
+    },
+    {
+      "title": "When building search or filter pages, why is it useful to keep filters in the query string?",
+      "body": "Because the state becomes shareable, refresh-friendly, and easier for the backend to interpret consistently.",
+      "bullets": [
+        "This is a small but product-minded implementation detail.",
+        "Juniors who have built admin tables often know this from experience."
+      ]
+    },
+    {
+      "title": "If the frontend says the API shape is wrong, where do you inspect first?",
+      "body": "Inspect the real query results, the real response payload, whether fields were renamed or transformed, and whether the contract between frontend and backend is still aligned.",
+      "bullets": [
+        "Do not just insist that the backend is right; inspect the actual response body.",
+        "This is where `JSON contract` starts to matter at junior level."
+      ]
+    },
+    {
+      "title": "When should you introduce a service class or action class at junior level?",
+      "body": "When a controller starts coordinating several steps, when logic gets reused, or when one use case becomes large enough to deserve its own readable unit.",
+      "bullets": [
+        "Do not split code only to look architecturally fancy.",
+        "If the feature is still tiny, the controller may still be enough."
+      ],
+      "note": "A more mature answer says `split by complexity and reuse`, not `split because blogs say so`."
+    },
+    {
+      "title": "Do you always need the repository pattern?",
+      "body": "No. A good junior answer is often `not always`; only use it when it really helps separate data sources, reduce coupling, or make testing clearer.",
+      "bullets": [
+        "In a small app, overusing repositories may only add ceremony.",
+        "This is a good tradeoff question because it shows you are not just repeating patterns."
+      ]
+    },
+    {
+      "title": "Where do you usually place simpler business rules?",
+      "body": "It depends on the rule, but a good junior avoids putting everything in the view or route closure. The rule may belong in a request, policy, model method, service, or action depending on its nature.",
+      "bullets": [
+        "Permission rules go to policies.",
+        "Validation rules go to requests.",
+        "Multi-step flow often goes to services or actions."
+      ]
+    },
+    {
+      "title": "If a controller has grown to 300 lines, how do you think about splitting it?",
+      "body": "Look at which parts are validation, authorization, querying, business flow, and response formatting, then split responsibility based on those real boundaries.",
+      "bullets": [
+        "Do not split blindly by impulse.",
+        "Good splitting makes the next developer guess the right file to open."
+      ],
+      "tip": "This is a strong place to show that you can recognize code smell."
+    },
+    {
+      "title": "What should logging mean at junior level?",
+      "body": "At minimum, you should understand that logs help you debug and that meaningful logs are often more useful than dropping `dd()` everywhere.",
+      "bullets": [
+        "Logs can show where the request reached, which id failed, or which step of the flow broke.",
+        "`dd()` is convenient locally but not a replacement for contextual logging."
+      ]
+    },
+    {
+      "title": "If the use case has mail sending or background work but you have not used queues yet, should you still mention queues?",
+      "body": "You can mention queues lightly if the problem clearly relates to heavy or delayed work, but do not force queue language into every answer. The main point is knowing when synchronous flow starts to become too heavy.",
+      "bullets": [
+        "This is a good boundary between a practical junior and a buzzword-driven junior.",
+        "If you have not used queues in real work, say that honestly."
+      ]
+    },
+    {
+      "title": "If a bug only appears on production or staging, how should you talk about it?",
+      "body": "Explain that you would reproduce with similar data, inspect logs, compare environment config, inspect database state, and avoid trusting local behavior alone.",
+      "bullets": [
+        "A strong point is knowing that `works on local` does not prove `works in production`.",
+        "You do not need deep infrastructure mastery yet, but you should show environment awareness."
+      ]
+    },
+    {
+      "title": "If you clone a repo and it will not start, what checklist do you think through?",
+      "body": "Think in groups: PHP dependencies, `.env`, database, cache, frontend dependencies, storage links if needed, and any external services the project depends on.",
+      "bullets": [
+        "Random command spam often makes the situation more confusing.",
+        "A structured checklist is a very good junior signal."
+      ]
+    },
+    {
+      "title": "If you change `.env` but the app behavior does not change, what do you think about?",
+      "body": "Think about cached config or old runtime state, especially if the project previously used `config:cache`.",
+      "code": "php artisan config:clear\nphp artisan cache:clear",
+      "bullets": [
+        "This is a very common issue after cloning or changing environments.",
+        "If you can describe this situation naturally, interviewers usually assume you have touched real projects."
+      ]
+    },
+    {
+      "title": "If a queue worker keeps running old code after deploy, what do you think about?",
+      "body": "A fairly solid junior answer is that queue workers are long-lived processes and may need to be restarted to load the new code.",
+      "code": "php artisan queue:restart",
+      "bullets": [
+        "You do not need to turn this into a deep DevOps lecture; just understand the worker process lifetime.",
+        "This is a classic junior-plus question to test whether you have touched deploy or operations at all."
+      ]
+    },
+    {
+      "title": "How should you describe a bug you fixed so it sounds valuable?",
+      "body": "Do not only say what the bug was. Explain the context, the symptom, how you narrowed it down, how you fixed it, and what changed afterward.",
+      "bullets": [
+        "Context -> problem -> debugging path -> fix -> lesson learned.",
+        "That is a strong structure for junior interview bug stories."
+      ],
+      "tip": "If you do not have a huge bug story, a smaller real bug is still better than inventing a dramatic one."
+    },
+    {
+      "title": "If the interviewer asks whether you built a feature from scratch or extended existing code, how should you answer?",
+      "body": "Answer honestly. If you started from a scaffold or an existing project, say which foundation was already there and which parts you truly understood, changed, or extended yourself.",
+      "bullets": [
+        "Interviewers do not mind scaffolding; they mind using things you do not understand.",
+        "A strong answer points to what you customized or improved."
+      ]
+    },
+    {
+      "title": "What usually separates a good junior Laravel developer from a fresher?",
+      "body": "A junior has usually gone through several real features, debugs with more structure, and can talk about small tradeoffs instead of only repeating definitions.",
+      "bullets": [
+        "Knowing routes, controllers, and models is not enough by itself.",
+        "A major difference is starting to understand why code belongs in certain places."
+      ],
+      "note": "This is also a good self-check for whether you are truly operating at junior level yet."
+    },
+    {
+      "title": "When you receive a new task, how do you usually begin?",
+      "body": "A good answer does not jump straight into coding. You should explain that you read the requirement, confirm scope, locate the related flow in the codebase, and then break the work into smaller steps.",
+      "bullets": [
+        "Read the task description and clarify what is still ambiguous.",
+        "Find the related route, controller, model, view, or API flow.",
+        "Break the task into smaller steps so the change does not spread blindly."
+      ],
+      "tip": "A clean structure is: `understand requirement -> locate code -> split work -> implement -> self-test`."
+    },
+    {
+      "title": "If you receive a task but do not fully understand the requirement, what do you do?",
+      "body": "Ask early instead of guessing wrong. The key is asking with preparation: explain what you currently understand and where you are still uncertain.",
+      "bullets": [
+        "Do not stay silent and build from a wrong assumption.",
+        "A good clarification question usually includes the current flow you think is intended."
+      ],
+      "note": "This question evaluates communication, not only coding."
+    },
+    {
+      "title": "If you implement a feature alone, how do you keep the code readable for the next person?",
+      "body": "Use clear names, keep the controller flow understandable, avoid dumping too much logic in one place, and leave meaningful commits or explanation where needed.",
+      "bullets": [
+        "Readable code is already part of teamwork, even when you work alone.",
+        "A good junior starts writing code for the next reader, not only for current speed."
+      ]
+    },
+    {
+      "title": "What usually makes code handoff painful in team work?",
+      "body": "Common pain comes from missing context, vague naming, one feature changing many places without explanation, or known bugs being passed along without clear warning.",
+      "bullets": [
+        "A strong answer shows you understand the pain of the next reader.",
+        "This is also a sign that you are thinking beyond just getting code to run."
+      ]
+    },
+    {
+      "title": "At junior level, what do you look for first when reviewing someone else's code?",
+      "body": "You can start with whether the main flow is correct, whether validation is sufficient, whether queries are understandable, whether access control is safe, and whether code responsibility is obviously misplaced.",
+      "bullets": [
+        "You do not need to pretend to review like a senior, but you should have a basic checklist.",
+        "A useful review is not only about style; it is also about behavior."
+      ],
+      "tip": "A simple review checklist is: `correct flow -> correct data -> correct permission -> readable code`."
+    },
+    {
+      "title": "If a teammate gives feedback on your code, how should you respond?",
+      "body": "Try to understand the reason first, separate style feedback from bug or maintainability feedback, and respond cooperatively instead of defensively.",
+      "bullets": [
+        "Not every code comment is a personal attack.",
+        "How you receive feedback matters a lot at junior level."
+      ]
+    },
+    {
+      "title": "If you disagree with a teammate's implementation approach, how should you discuss it?",
+      "body": "Argue from technical reason or maintainability impact, not from personal preference alone. Compare the approaches through flow clarity, risk, readability, and future change cost.",
+      "bullets": [
+        "Use concrete examples instead of saying `I just do not like it`.",
+        "If both options are valid, team consistency may matter more than personal taste."
+      ]
+    },
+    {
+      "title": "How should you describe your junior-level ability honestly without sounding weak?",
+      "body": "Be clear about what feature types you can build confidently, what you have already touched, what is still weaker, and how you compensate through docs, code reading, and asking at the right time.",
+      "bullets": [
+        "Do not claim deep experience in work you have never done.",
+        "But do not undersell yourself if you have actually built real project flow."
+      ],
+      "tip": "A strong structure is: `I am solid in A, B, and C; I have only touched D at a basic level, but I know how to keep learning it`."
+    },
+    {
+      "title": "If asked, 'What part of Laravel are you strongest in?', how should you answer?",
+      "body": "Pick an area you have genuinely built with, such as CRUD and validation, auth flow, admin dashboards, uploads, or basic API work, then tie it to a real project.",
+      "bullets": [
+        "This answer does not need to be broad.",
+        "Choosing a true strength sounds far more natural than trying to sound strong in everything."
+      ]
+    },
+    {
+      "title": "If asked, 'What part are you still weak in?', how should you answer without hurting yourself too much?",
+      "body": "Choose an area you have not gone deep in yet but where you can still describe your current exposure and how you are learning it, such as queues, deployment, realtime, or performance tuning.",
+      "bullets": [
+        "Do not answer `I am weak in everything`.",
+        "Also avoid picking a core job requirement you know nothing about if the role depends on it heavily."
+      ],
+      "note": "The strongest part of this answer is self-awareness and a credible learning path."
+    },
+    {
+      "title": "If you are moving slower than expected, how should you handle it and communicate it?",
+      "body": "Raise it early, explain what is blocking you, what you have already tried, what help you need, or where the scope may need adjustment. Do not stay silent until the deadline is already broken.",
+      "bullets": [
+        "This is a very practical responsibility question.",
+        "A good junior is not someone who never slips, but someone who communicates and recovers well."
+      ]
+    },
+    {
+      "title": "If you are assigned a bug in code you have never touched before, where do you begin?",
+      "body": "Follow the bug flow itself: find the entry point, inspect the route or request, then trace into the relevant query, service, view, or response path instead of opening folders randomly.",
+      "bullets": [
+        "This is where code-reading skill matters more than memory.",
+        "You do not need to know the entire repo in advance if you know how to trace flow."
+      ],
+      "tip": "A strong answer is: `I follow the bug flow instead of reading the repo top-down`."
+    },
+    {
+      "title": "What shows that a junior has started to develop real ownership?",
+      "body": "They do not stop at 'the code compiles'. They self-test, think about side cases, consider nearby impact, and report results or risk clearly to the people involved.",
+      "bullets": [
+        "Ownership does not mean carrying everything alone.",
+        "It means being responsible for the quality and consequences of the part you touched."
+      ]
+    },
+    {
+      "title": "If you type the URL `/posts/12?tab=comments` into a Laravel app, which layers does the request usually pass through?",
+      "body": "At junior level you should be able to describe the basic chain: the browser sends the request, the web server receives it, the request enters `public/index.php`, the app is bootstrapped, middleware runs, a route is matched, the controller is called, the flow may go through a service or model, and then a response goes back to the browser.",
+      "bullets": [
+        "You do not need every framework internal, but you should be able to trace the main path.",
+        "This is a very good question for checking whether request lifecycle understanding is real."
+      ],
+      "code": "Browser\n-> Nginx/Apache\n-> public/index.php\n-> bootstrap/app.php\n-> middleware\n-> route\n-> controller\n-> service / model\n-> response"
+    },
+    {
+      "title": "If the same URL returns the wrong data, what checklist would you trace through?",
+      "body": "Check whether the route is correct, whether parameters are being received correctly, whether request data is being transformed or validated incorrectly, whether the query or service is filtering wrongly, whether policy or middleware is blocking or altering something, and only then inspect the view or JSON transformation.",
+      "bullets": [
+        "A good junior does not jump into random files.",
+        "This question tests how you isolate a bug through the actual flow."
+      ],
+      "tip": "A safe flow is: `route -> request -> authorize -> query/service -> response shape`."
+    },
+    {
+      "title": "How do `DNS`, web server, `PHP-FPM`, `public/index.php`, middleware, route, controller, service, model, and response differ in role?",
+      "body": "`DNS` helps find the server address. The web server such as Nginx receives the HTTP request. `PHP-FPM` runs PHP processes. `public/index.php` is the application entry point. Middleware filters or prepares the request. The route selects the entry point. The controller coordinates. A service may hold heavier flow logic. The model or query layer handles data. The response sends the result back to the client.",
+      "bullets": [
+        "This is a strong question for testing whether you can separate the web stack from the application code.",
+        "You do not need to answer like a DevOps senior, but the role split should be reasonably clear."
+      ]
+    },
+    {
+      "title": "If a user manually edits the query string or path parameter in the URL, what should the application do?",
+      "body": "The application should never trust URL input just because it came through a route. It still needs validation, type-casting, permission checks, and sometimes whitelisting of acceptable values. URL data is still user input and can still be wrong or maliciously changed.",
+      "bullets": [
+        "Think about inputs like `?page=-1`, `?role=admin`, or changing `/posts/12` to `/posts/999999`.",
+        "This sits at the intersection of validation, authorization, and defensive coding."
+      ],
+      "note": "A strong answer usually includes the idea that `every user input must be checked, including the input that comes from the URL`."
+    },
+    {
+      "title": "If a user types a direct URL to a private file or upload that should not be public, how would you protect it?",
+      "body": "Do not keep private files in a location that is directly public. Store them in a private disk, serve them through a controller or signed route, and check permission before returning the file.",
+      "bullets": [
+        "A good junior should understand that public files and private files are different problems.",
+        "This is very common in admin apps, internal documents, invoices, and user-owned files."
+      ],
+      "code": "Route::get('/documents/{document}/download', function (Document $document) {\n    abort_unless(auth()->user()->can('view', $document), 403);\n\n    return Storage::disk('private')->download($document->path);\n});"
+    },
+    {
+      "title": "If the interviewer gives you the puzzle 'You have the numbers 1 to 1000 and one is missing', how should you answer in a way that shows good thinking instead of only memorizing a trick?",
+      "body": "First confirm the assumptions: the numbers are from `1..1000`, exactly one number is missing, and there are no duplicates. Then explain a simple path such as taking the expected sum and subtracting the actual sum. A stronger answer explains why that approach is valid under those assumptions.",
+      "bullets": [
+        "A major plus is explicitly stating assumptions before jumping to code.",
+        "A good junior does not only throw out a formula; they explain why it applies."
+      ]
+    },
+    {
+      "title": "If the data is too large to load fully into memory, how would you change your thinking for the missing-number problem?",
+      "body": "Then you should think about reading progressively, processing in chunks, or keeping only a running total instead of storing every value in memory. The important signal is that you recognize memory as a real constraint and change the approach.",
+      "bullets": [
+        "This is the step from a merely correct answer to an answer that fits real conditions.",
+        "You do not need extreme optimization depth; you only need to show awareness of memory limits."
+      ],
+      "tip": "A strong line is: `if the dataset is large, I try not to rely on loading everything into RAM first`."
+    },
+    {
+      "title": "If you face an unfamiliar interview problem, how should you present your thinking so you are still evaluated well?",
+      "body": "Break the problem down, ask clarifying questions about input or constraints, explain the brute-force route first, and only optimize after a baseline solution exists. Interviewers often care as much about structured thinking, communication, and calmness as the final answer.",
+      "bullets": [
+        "Do not stay silent too long or jump into optimization before a valid base solution exists.",
+        "A junior who speaks their reasoning clearly is easier to evaluate fairly."
+      ],
+      "note": "This is a very useful situational question for evaluating how you work under light pressure."
+    },
+    {
+      "title": "If the requirement is still vague but a PM or lead asks when it will be done, how should a junior respond?",
+      "body": "Do not give a false-precise answer while the problem is still unclear. Explain what is already clear, what still needs clarification, give an estimate based on current assumptions, and state clearly that the estimate may change if the scope changes.",
+      "bullets": [
+        "This is a real work skill, not only a technical one.",
+        "Good estimation begins with scope clarity."
+      ],
+      "tip": "A good line is: `with the current assumptions I think it is around X, but I still need to clarify A and B before I can estimate with more confidence`."
+    },
+    {
+      "title": "If you finished a feature but are not sure you covered enough test cases, what should you ask yourself?",
+      "body": "Ask whether the happy path works, what happens with invalid input, what happens when a user lacks permission, what happens with empty data, what happens with repeat submission, and what nearby flow may break after future changes. This is risk-based thinking, not only happy-path thinking.",
+      "bullets": [
+        "Many junior bugs come from testing only the prettiest path.",
+        "This question tests whether you naturally widen your own review before handoff."
+      ]
+    },
+    {
+      "title": "If the API returns the correct data but the frontend still displays the wrong thing, how do you collaborate with frontend engineers?",
+      "body": "Speak in terms of which request, which response, which field, what the real payload looks like, and where you think the contract expectation differs. The goal is to align on shared evidence instead of arguing from feeling.",
+      "bullets": [
+        "A good junior does not stop at `my backend is correct`.",
+        "Clear payload communication is important in team collaboration."
+      ],
+      "code": "{\n  \"id\": 12,\n  \"status\": \"draft\",\n  \"published_at\": null\n}"
+    },
+    {
+      "title": "If you start fixing a small bug and realize the impact spreads wider than expected, how should you handle it?",
+      "body": "Pause and identify the affected boundary, retest nearby flows, raise the risk if needed, and if necessary reduce the scope of the current fix to stay safe. A good junior does not silently turn a small bug fix into an unannounced broad change.",
+      "bullets": [
+        "This is a sign of ownership and side-effect awareness.",
+        "Not every small bug is actually small once you follow the flow."
+      ],
+      "note": "This is a strong question for evaluating carefulness and responsible working style."
+    },
+    {
+      "title": "CORS is enforced by the browser, so what should backend engineers understand about it at junior level?",
+      "body": "You should understand which origins are allowed, which methods are allowed, which headers are allowed, and why opening `*` carelessly becomes dangerous when sensitive credentials are involved. At junior level, the important thing is understanding that CORS is a browser policy, not an authentication mechanism.",
+      "bullets": [
+        "Many newer engineers confuse CORS with API authorization.",
+        "Bad CORS configuration can cause both 'the API cannot be called' and overly permissive exposure."
+      ]
+    },
+    {
+      "title": "If an upload endpoint or internal API is exposed too broadly, what protection layers should a junior engineer think about?",
+      "body": "At minimum you should think about authentication, authorization, validation, rate limiting, file type checks, size limits, and enough logging to know who called what. An API should not be viewed only as a place that receives a request and returns data.",
+      "bullets": [
+        "This is the transition from feature coding into attack-surface awareness.",
+        "An endpoint that works functionally but exposes the wrong access is still a serious bug."
+      ],
+      "tip": "A short strong line is: `correct flow is not enough; the endpoint also needs correct access control and correct guardrails`."
+    }
+  ]
+}

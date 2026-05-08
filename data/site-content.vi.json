@@ -1,0 +1,2218 @@
+{
+  "defaultLanguage": "en",
+  "languages": [
+    "en",
+    "vi"
+  ],
+  "common": {
+    "backToHome": "Quay lại cổng học tập",
+    "navigation": {
+      "home": "Trang chủ",
+      "roadmap": "Cây trí tuệ",
+      "glossary": "Thuật ngữ",
+      "php": "PHP",
+      "laravel": "Laravel",
+      "practice": "Thực hành",
+      "interview": "Phỏng vấn",
+      "vibeCoding": "Vibe Coding"
+    },
+    "theme": {
+      "light": "Sáng",
+      "dark": "Tối"
+    }
+  },
+  "pages": {
+    "landing": {
+      "metaTitle": "Cổng học Laravel Labs",
+      "eyebrow": "Laravel Labs",
+      "title": "Cổng học Laravel",
+      "subtitle": "Một cổng học tập tĩnh cho GitHub Pages, tổng hợp mọi thứ tôi đang học về PHP, Laravel, bài thực hành, phỏng vấn, thuật ngữ và Vibe Coding.",
+      "sectionTitle": "Chọn một site học tập",
+      "cards": [
+        {
+          "href": "sites/roadmap/index.html",
+          "title": "Cây trí tuệ lập trình",
+          "summary": "Xem mục này trước để có bản đồ công nghệ thân thiện hơn trước khi đi vào PHP, Laravel và các site học khác.",
+          "button": "Mở cây trí tuệ"
+        },
+        {
+          "href": "sites/php/index.html",
+          "title": "Nền tảng PHP",
+          "summary": "Ghi chú về cú pháp, OOP, request, session và cách PHP vận hành Laravel.",
+          "button": "Mở site PHP"
+        },
+        {
+          "href": "sites/glossary/index.html",
+          "title": "Glossary thuật ngữ",
+          "summary": "Một nơi gom các thuật ngữ web, Laravel, database, runtime và Vibe Coding để tra nhanh khi bị lẫn khái niệm.",
+          "button": "Mở glossary"
+        },
+        {
+          "href": "sites/laravel/index.html",
+          "title": "Lộ trình Laravel",
+          "summary": "Từ routing, Blade đến queue, API, testing, team feature và tư duy production.",
+          "button": "Mở site Laravel"
+        },
+        {
+          "href": "sites/practice/index.html",
+          "title": "Bài thực hành",
+          "summary": "Bài tập có cấu trúc và ý tưởng mini-project dựa trên các lab Laravel hiện có.",
+          "button": "Mở site thực hành"
+        },
+        {
+          "href": "sites/interview/index.html",
+          "title": "Luyện phỏng vấn",
+          "summary": "Các chủ đề phỏng vấn Laravel và PHP phổ biến, khung trả lời và điểm cần ôn.",
+          "button": "Mở site phỏng vấn"
+        },
+        {
+          "href": "sites/vibe-coding/index.html",
+          "title": "Vibe Coding",
+          "summary": "Một khu riêng cho cách lập trình cùng AI: prompt ra feature, để AI viết code, rồi review, sửa và giữ chất lượng output.",
+          "button": "Mở site Vibe Coding"
+        }
+      ],
+      "repoSectionTitle": "Các lab Laravel hiện có trong repository",
+      "repoSectionSubtitle": "Các thẻ này phản ánh 4 project Laravel độc lập đang có sẵn trong repo.",
+      "repoCards": [
+        {
+          "name": "breeze",
+          "summary": "Starter auth cơ bản để hiểu luồng xác thực mặc định của Laravel.",
+          "focusLabel": "Trọng tâm:",
+          "focus": "routes, controllers, views, auth scaffolding",
+          "nextLabel": "Mở rộng tiếp:",
+          "next": "forgot password, email verification, profile edit, middleware theo vai trò",
+          "openLabel": "Các lab tương tự:",
+          "open": "auth mini app, login throttling, session flow notes"
+        },
+        {
+          "name": "chirper",
+          "summary": "Ứng dụng kiểu tutorial để luyện CRUD, luồng đăng bài và cấu trúc app thực tế.",
+          "focusLabel": "Trọng tâm:",
+          "focus": "models, migrations, Blade/UI flow, thói quen xây dựng feature",
+          "nextLabel": "Mở rộng tiếp:",
+          "next": "comment system, like/favorite, notification, filter và pagination",
+          "openLabel": "Các lab tương tự:",
+          "open": "blog mini app, activity feed, post moderation flow"
+        },
+        {
+          "name": "jetstream",
+          "summary": "Tính năng xác thực nâng cao và quản lý team để tiếp cận app quy mô lớn hơn.",
+          "focusLabel": "Trọng tâm:",
+          "focus": "teams, profile security, sessions, auth flow nâng cao",
+          "nextLabel": "Mở rộng tiếp:",
+          "next": "role matrix, invitation flow, audit log, account settings nâng cao",
+          "openLabel": "Các lab tương tự:",
+          "open": "multi-tenant notes, team permission sandbox, secure profile flows"
+        },
+        {
+          "name": "sail",
+          "summary": "Thiết lập Laravel theo hướng Docker để luyện workflow và môi trường đồng nhất.",
+          "focusLabel": "Trọng tâm:",
+          "focus": "containers, services, local stack, tái tạo môi trường",
+          "nextLabel": "Mở rộng tiếp:",
+          "next": "queue worker, mailhog, redis, horizon, môi trường staging gần production",
+          "openLabel": "Các lab tương tự:",
+          "open": "dockerized queue app, service integration stack, local infra practice"
+        }
+      ]
+    },
+    "roadmap": {
+      "metaTitle": "Cây trí tuệ lập trình | Laravel Labs",
+      "eyebrow": "Cây trí tuệ",
+      "title": "Một cây trí tuệ dễ nhìn và dễ theo",
+      "subtitle": "Một bản đồ trực quan để biết nên học gì trước, học gì tiếp theo và khi nào mới cần chạm sâu vào các phần nâng cao của PHP và Laravel.",
+      "sections": [
+        {
+          "type": "mindmap",
+          "heading": "Bản đồ cây trí tuệ",
+          "intro": "Trang này được làm để dễ tiếp cận hơn kiểu roadmap dày đặc. Hãy đi theo trục chính từ trên xuống, rồi dùng các chip nhánh để biết từng chủ đề cụ thể cần học.",
+          "legend": [
+            {
+              "tone": "core",
+              "label": "Nên học trước"
+            },
+            {
+              "tone": "grow",
+              "label": "Học tiếp khi nền đã ổn"
+            },
+            {
+              "tone": "flex",
+              "label": "Dùng khi project bắt đầu cần"
+            }
+          ],
+          "root": {
+            "eyebrow": "Nhìn tổng thể trước",
+            "title": "Biết toàn đường đi trước khi chọn bài học",
+            "summary": "Mục tiêu không phải là học thuộc từng ô. Mục tiêu là biết mỗi chủ đề nằm ở đâu để PHP và Laravel không còn cảm giác rời rạc."
+          },
+          "branches": [
+            {
+              "step": "01",
+              "side": "left",
+              "tone": "core",
+              "badge": "Frontend",
+              "title": "Frontend căn bản",
+              "summary": "Đây là nhánh đầu tiên để hiểu một trang web được tạo ra thế nào và người dùng tương tác với nó ra sao.",
+              "topics": ["HTML", "CSS", "JavaScript", "Responsive", "Vue", "React"],
+              "subbranches": [
+                {
+                  "title": "Nhánh chính",
+                  "items": ["HTML semantic", "Form và input", "CSS layout", "Flexbox và Grid", "Responsive cơ bản"]
+                },
+                {
+                  "title": "Nhánh phụ",
+                  "items": ["DOM và event", "fetch và xử lý dữ liệu", "Local storage", "Component thinking", "Làm quen VueJs hoặc ReactJs"]
+                }
+              ],
+              "references": [
+                { "href": "https://developer.mozilla.org/en-US/docs/Learn_web_development", "label": "MDN Learn Web Development" },
+                { "href": "https://www.w3schools.com/html/", "label": "W3Schools HTML" },
+                { "href": "https://developer.mozilla.org/en-US/docs/Web/CSS/Reference", "label": "MDN CSS Reference" },
+                { "href": "https://www.w3schools.com/js/default.asp", "label": "W3Schools JavaScript" },
+                { "href": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide", "label": "MDN JavaScript Guide" },
+                { "href": "https://vuejs.org/", "label": "VueJs" },
+                { "href": "https://react.dev/", "label": "ReactJs" }
+              ],
+              "note": "Nếu frontend nền tảng yếu thì khi dùng Blade hoặc debug giao diện bạn sẽ chậm hơn nhiều."
+            },
+            {
+              "step": "02",
+              "side": "right",
+              "tone": "core",
+              "badge": "Git",
+              "title": "Git và quản lý phiên bản",
+              "summary": "Git là nhánh làm việc bắt buộc nếu muốn học nghiêm túc, làm project có lịch sử và cộng tác được.",
+              "topics": ["init", "add", "commit", "branch", "merge", "pull", "push"],
+              "subbranches": [
+                {
+                  "title": "Nhánh chính",
+                  "items": ["Khởi tạo repo", "Commit có ý nghĩa", "Branch cơ bản", "Merge và resolve conflict", "Làm việc với GitHub"]
+                },
+                {
+                  "title": "Nhánh phụ",
+                  "items": ["Rebase", "Cherry-pick", "Tag", "Review lịch sử bằng log", "Đọc diff trước khi push", "Git ignore và branch strategy"]
+                }
+              ],
+              "references": [
+                { "href": "https://git-scm.com", "label": "git-scm.com" },
+                { "href": "https://git-scm.com/learn", "label": "Pro Git Book + Git Learn" },
+                { "href": "https://viblo.asia/p/git-hoc-nghiem-tuc-mot-lan-phan-1-OeVKBo6JZkW", "label": "Viblo Git học nghiêm túc" }
+              ],
+              "note": "Nhiều người học code nhưng né Git quá lâu, đến khi làm project thật thì rất hụt."
+            },
+            {
+              "step": "03",
+              "side": "left",
+              "tone": "core",
+              "badge": "Linux",
+              "title": "Linux và môi trường dòng lệnh",
+              "summary": "Nhánh này giúp bạn không bị mù khi làm server, Docker, deploy hoặc debug project backend.",
+              "topics": ["cd", "ls", "cp", "mv", "chmod", "chown"],
+              "subbranches": [
+                {
+                  "title": "Nhánh chính",
+                  "items": ["Các lệnh linux cơ bản", "Điều hướng thư mục", "Tạo và sửa file", "Tìm file và log"]
+                },
+                {
+                  "title": "Nhánh phụ",
+                  "items": ["Phân quyền user và file", "Quản lý process", "Biến môi trường", "Làm quen shell script", "Xem port và service đang chạy"]
+                }
+              ],
+              "references": [
+                { "href": "https://linuxjourney.com/", "label": "Linux Journey" },
+                { "href": "https://tuhocnetworksecurity.business.blog/category/series-tu-hoc-cybersecurity/series-linux-can-ban/", "label": "Series Linux căn bản" }
+              ],
+              "note": "Biết Linux cơ bản sẽ giúp bạn bớt sợ terminal và bớt phụ thuộc vào giao diện đồ họa."
+            },
+            {
+              "step": "04",
+              "side": "right",
+              "tone": "grow",
+              "badge": "HTTP",
+              "title": "HTTP và request-response",
+              "summary": "Muốn hiểu PHP, API hay Laravel thì phải nắm được HTTP vì đó là trục giao tiếp của web app.",
+              "topics": ["Method", "Header", "Status code", "Cookie", "Session", "JSON"],
+              "subbranches": [
+                {
+                  "title": "Nhánh chính",
+                  "items": ["GET, POST, PUT, PATCH, DELETE", "Header và body", "Status code phổ biến", "Request và response"]
+                },
+                {
+                  "title": "Nhánh phụ",
+                  "items": ["Cookie", "Session", "Cache-control", "CORS", "Content negotiation", "Multipart form và file upload"]
+                }
+              ],
+              "references": [
+                { "href": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Overview", "label": "MDN HTTP Overview" },
+                { "href": "https://developer.mozilla.org/en-US/docs/Learn_web_development/Extensions/Server-side/First_steps/Client-Server_overview", "label": "MDN Client-Server Overview" },
+                { "href": "https://viblo.asia/p/tim-hieu-ve-http-hypertext-transfer-protocol-bJzKmgewl9N", "label": "Viblo HTTP" }
+              ],
+              "note": "Khi HTTP rõ thì request lifecycle trong Laravel sẽ dễ hiểu hơn rất nhiều."
+            },
+            {
+              "step": "05",
+              "side": "left",
+              "tone": "core",
+              "badge": "Database",
+              "title": "Databases",
+              "summary": "Backend không thể mạnh nếu không hiểu dữ liệu được lưu, truy vấn và quan hệ với nhau thế nào.",
+              "topics": ["MySQL", "PostgreSQL", "MongoDB", "CRUD", "Join", "Index"],
+              "subbranches": [
+                {
+                  "title": "Nhánh chính",
+                  "items": ["Thiết kế bảng", "Primary key và foreign key", "CRUD", "Join", "Index cơ bản"]
+                },
+                {
+                  "title": "Nhánh phụ",
+                  "items": ["MySQL", "PostgreSQL", "MongoDB", "Normalize dữ liệu", "Tradeoff SQL và NoSQL", "Transaction cơ bản"]
+                }
+              ],
+              "references": [
+                { "href": "https://www.mysql.com/", "label": "MySQL" },
+                { "href": "https://www.postgresql.org/docs/current/tutorial.html", "label": "PostgreSQL Tutorial" },
+                { "href": "https://www.mongodb.com/docs/manual/", "label": "MongoDB Manual" }
+              ],
+              "note": "Nếu SQL yếu thì Eloquent hay Query Builder cũng chỉ dùng ở mức bề mặt."
+            },
+            {
+              "step": "06",
+              "side": "right",
+              "tone": "grow",
+              "badge": "PHP",
+              "title": "PHP cốt lõi",
+              "summary": "Đây là nhánh trọng tâm trước framework: phải hiểu ngôn ngữ, cú pháp và cách viết backend cơ bản bằng PHP thuần.",
+              "topics": ["Syntax", "Biến", "Session", "Cookie", "Trait", "Exception", "Interface"],
+              "subbranches": [
+                {
+                  "title": "Nhánh chính",
+                  "items": ["Các cú pháp PHP đơn giản", "Biến và hằng", "Array và function", "PHP session và cookies", "Include/require"]
+                },
+                {
+                  "title": "Nhánh phụ",
+                  "items": ["Traits", "Exception", "Interfaces", "Namespace", "Autoload", "Xử lý file", "Date time", "JSON encode/decode"]
+                }
+              ],
+              "references": [
+                { "href": "https://www.w3schools.com/php/default.asp", "label": "W3Schools PHP" },
+                { "href": "https://www.php.net/manual/en/", "label": "PHP Manual" }
+              ],
+              "note": "Đây là lúc hợp lý để đi sâu vào site PHP của bạn."
+            },
+            {
+              "step": "07",
+              "side": "left",
+              "tone": "grow",
+              "badge": "OOP",
+              "title": "Lập trình hướng đối tượng",
+              "summary": "OOP là nhánh cần nắm chắc để hiểu service, model, container và đa số kiến trúc backend hiện đại.",
+              "topics": ["Class", "Object", "Constructor", "Inheritance", "Polymorphism", "Abstraction"],
+              "subbranches": [
+                {
+                  "title": "Nhánh chính",
+                  "items": ["Đối tượng và lớp", "Constructor và Destructor", "Access modifier", "Static", "Tính đóng gói"]
+                },
+                {
+                  "title": "Nhánh phụ",
+                  "items": ["Tính kế thừa", "Tính đa hình", "Tính trừu tượng", "Interface", "Trait và composition", "So sánh inheritance và composition"]
+                }
+              ],
+              "references": [
+                { "href": "https://www.w3schools.com/php/php_oop_what_is.asp", "label": "W3Schools PHP OOP" },
+                { "href": "https://www.php.net/manual/en/language.oop5.php", "label": "PHP OOP Manual" },
+                { "href": "https://viblo.asia/p/lap-trinh-huong-doi-tuong-oop-trong-php-phan-1-gGJ59gyaZX2", "label": "Viblo OOP PHP" }
+              ],
+              "note": "Nếu OOP còn mơ hồ thì khi vào Laravel bạn sẽ chỉ nhớ tên tính năng chứ khó hiểu bản chất."
+            },
+            {
+              "step": "08",
+              "side": "right",
+              "tone": "flex",
+              "badge": "Composer",
+              "title": "Composer và autoload",
+              "summary": "Composer là nhánh quản lý package và cách project PHP hiện đại tổ chức phụ thuộc.",
+              "topics": ["install", "update", "autoload", "composer.json", "composer.lock"],
+              "subbranches": [
+                {
+                  "title": "Nhánh chính",
+                  "items": ["Các câu lệnh composer", "composer install vs composer update", "composer.json", "composer.lock"]
+                },
+                {
+                  "title": "Nhánh phụ",
+                  "items": ["PSR-4 autoload", "Require vs require-dev", "Script hooks", "Phiên bản package", "Tối ưu autoload khi deploy"]
+                }
+              ],
+              "references": [
+                { "href": "https://getcomposer.org/doc/", "label": "Composer Docs" },
+                { "href": "https://getcomposer.org/doc/01-basic-usage.md", "label": "Composer Basic Usage" },
+                { "href": "https://getcomposer.org/doc/04-schema.md", "label": "composer.json Schema" }
+              ],
+              "note": "Hiểu Composer sẽ giúp bạn đỡ học Laravel theo kiểu máy móc."
+            },
+            {
+              "step": "09",
+              "side": "left",
+              "tone": "grow",
+              "badge": "Thiết kế code",
+              "title": "Dependency Injection, SOLID và Design Pattern",
+              "summary": "Đây là nhánh làm code backend bớt rối, bớt phụ thuộc cứng và dễ test hơn.",
+              "topics": ["Dependency Injection", "SOLID", "Factory", "Builder", "Repository"],
+              "subbranches": [
+                {
+                  "title": "Nhánh chính",
+                  "items": ["Dependency Injection", "Inversion of Control", "5 nguyên lý SOLID", "Builder pattern", "Factory pattern"]
+                },
+                {
+                  "title": "Nhánh phụ",
+                  "items": ["Repository pattern", "Strategy pattern", "Service layer", "DTO cơ bản", "Khi nào không nên over-engineer pattern"]
+                }
+              ],
+              "references": [
+                { "href": "https://codelearn.io/sharing/hieu-ro-ve-dependency-injection", "label": "Codelearn DI" },
+                { "href": "https://phptherightway.com/", "label": "PHP The Right Way" },
+                { "href": "https://topdev.vn/blog/solid-la-gi/", "label": "TopDev SOLID" }
+              ],
+              "note": "Không cần áp pattern mọi nơi, nhưng phải biết khi nào nó thật sự giải quyết vấn đề."
+            },
+            {
+              "step": "10",
+              "side": "right",
+              "tone": "grow",
+              "badge": "PHP framework",
+              "title": "Các PHP framework",
+              "summary": "Sau khi có nền PHP và OOP, bạn có thể nhìn framework như công cụ tổ chức app thay vì phép màu.",
+              "topics": ["Laravel", "Symfony", "CakePHP"],
+              "subbranches": [
+                {
+                  "title": "Nhánh chính",
+                  "items": ["Laravel", "Symfony", "CakePHP", "So sánh routing, container, ORM"]
+                },
+                {
+                  "title": "Nhánh phụ",
+                  "items": ["Chọn một framework chính", "Học thật thành thạo", "Tránh nhảy framework quá sớm", "Đọc convention của framework thay vì đoán"]
+                }
+              ],
+              "references": [
+                { "href": "https://laravel.com/docs", "label": "Laravel Docs" },
+                { "href": "https://symfony.com/doc/current/getting_started/index.html", "label": "Symfony Getting Started" },
+                { "href": "https://book.cakephp.org/5.x/quickstart.html", "label": "CakePHP Quick Start" }
+              ],
+              "note": "Một framework học sâu luôn tốt hơn biết lướt qua quá nhiều framework."
+            },
+            {
+              "step": "11",
+              "side": "left",
+              "tone": "grow",
+              "badge": "Laravel",
+              "title": "Laravel chi tiết",
+              "summary": "Đây là nhánh framework bạn cần đầu tư sâu nhất nếu đang theo hướng PHP web app hiện đại.",
+              "topics": ["Migration", "Seeder", "Model", "Route", "Controller", "Blade", "Service Container"],
+              "subbranches": [
+                {
+                  "title": "Nhánh chính",
+                  "items": ["Migration", "Seeder, factory, faker", "Model: mass assignment, relationship, eager loading, scope", "Route + Resource controller + Middleware + REST", "Controller + Validation + Form request"]
+                },
+                {
+                  "title": "Nhánh phụ",
+                  "items": ["Authentication", "Eloquent ORM + Query Builder", "CSRF Protection", "Transaction", "Helpers", "Localization (i18n)", "Repository", "Cache", "Gate và Policy", "Blade Template", "Laravel Mix", "Service provider", "Service container", "Queue, Job, Event, Listener", "Mail, Notification, File storage"]
+                }
+              ],
+              "references": [
+                { "href": "https://laravel.com/", "label": "Laravel" },
+                { "href": "https://laravel.com/docs", "label": "Laravel Documentation" },
+                { "href": "https://laracasts.com/", "label": "Laracasts" },
+                { "href": "https://viblo.asia/s/laravel-the-beauty-Wj53Om3p56m", "label": "Viblo Laravel The Beauty" }
+              ],
+              "note": "Đây là nhánh phù hợp để nối dần với các site con PHP, practice và interview."
+            },
+            {
+              "step": "12",
+              "side": "right",
+              "tone": "flex",
+              "badge": "API",
+              "title": "API, OAuth2 và xác thực",
+              "summary": "Khi app bắt đầu cần mobile app, SPA hoặc service khác kết nối vào thì nhánh API trở nên quan trọng.",
+              "topics": ["REST", "RESTful", "Sanctum", "JWT", "Swagger", "OAuth2"],
+              "subbranches": [
+                {
+                  "title": "Nhánh chính",
+                  "items": ["REST vs RESTful API", "Thiết kế endpoint", "Response chuẩn", "Validation cho API", "Swagger/OpenAPI"]
+                },
+                {
+                  "title": "Nhánh phụ",
+                  "items": ["Sanctum", "JWT", "OAuth2", "Token lifecycle", "Refresh token", "Phân quyền theo API", "Rate limit", "Versioning API"]
+                }
+              ],
+              "references": [
+                { "href": "https://swagger.io/docs/", "label": "Swagger / OpenAPI Docs" },
+                { "href": "https://owasp.org/API-Security/", "label": "OWASP API Security" },
+                { "href": "https://www.oauth.com/", "label": "OAuth 2.0 Simplified" },
+                { "href": "https://viblo.asia/p/jwt-tu-co-ban-den-chi-tiet-LzD5dXwe5jY", "label": "Viblo JWT" },
+                { "href": "https://jwt.io/introduction/", "label": "JWT Introduction" },
+                { "href": "https://viblo.asia/p/introduction-to-oauth2-3OEqGjDpR9bL", "label": "Viblo OAuth2" }
+              ],
+              "note": "Đừng học API chỉ ở mức gọi được endpoint. Hãy hiểu cả auth, versioning và tài liệu hóa."
+            },
+            {
+              "step": "13",
+              "side": "left",
+              "tone": "flex",
+              "badge": "Chất lượng",
+              "title": "Testing, Security và Performance",
+              "summary": "Ba nhánh này quyết định app có sống ổn ngoài đời thật hay không.",
+              "topics": ["Unit test", "Xdebug", "CSRF", "XSS", "SQL Injection", "Cache", "Redis", "Index"],
+              "subbranches": [
+                {
+                  "title": "Nhánh chính",
+                  "items": ["Unit test", "Feature test", "Xdebug", "CSRF Protection", "XSS", "SQL injection"]
+                },
+                {
+                  "title": "Nhánh phụ",
+                  "items": ["Cache", "Kỹ thuật đánh index", "Memcached", "Redis", "HTTP caching", "Elasticsearch", "Quan sát bottleneck", "N+1 query", "Phân tích slow query"]
+                }
+              ],
+              "references": [
+                { "href": "https://pestphp.com/docs", "label": "Pest Docs" },
+                { "href": "https://docs.phpunit.de/", "label": "PHPUnit Manual" },
+                { "href": "https://xdebug.org/docs-debugger.php", "label": "Xdebug Step Debugging" },
+                { "href": "https://owasp.org/www-project-top-ten/", "label": "OWASP Top 10" },
+                { "href": "https://cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html", "label": "OWASP XSS Prevention" },
+                { "href": "https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html", "label": "OWASP CSRF Prevention" },
+                { "href": "https://cheatsheetseries.owasp.org/cheatsheets/SQL_Injection_Prevention_Cheat_Sheet.html", "label": "OWASP SQL Injection Prevention" },
+                { "href": "https://redis.io/docs/latest/get-started/", "label": "Redis Getting Started" }
+              ],
+              "note": "Đây không phải phần trang trí thêm vào cuối dự án. Nó quyết định độ bền của hệ thống."
+            },
+            {
+              "step": "14",
+              "side": "right",
+              "tone": "flex",
+              "badge": "DevOps",
+              "title": "DevOps và vận hành",
+              "summary": "Nhánh cuối giúp project đi ra môi trường thật: đóng gói, triển khai, CI/CD và hạ tầng cloud.",
+              "topics": ["Docker", "Deploy", "CI/CD", "AWS", "Kubernetes", "Firebase"],
+              "subbranches": [
+                {
+                  "title": "Nhánh chính",
+                  "items": ["Docker", "Deploy project lên server", "CI/CD", "Quản lý env", "Giám sát log"]
+                },
+                {
+                  "title": "Nhánh phụ",
+                  "items": ["AWS EC2", "SQS", "SES", "SNS", "S3", "Kubernetes", "Firebase", "Scale và backup", "Nginx/Caddy cơ bản"]
+                }
+              ],
+              "references": [
+                { "href": "https://docs.docker.com/", "label": "Docker Docs" },
+                { "href": "https://kubernetes.io/docs/", "label": "Kubernetes Docs" },
+                { "href": "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/concepts.html", "label": "AWS EC2 Overview" },
+                { "href": "https://firebase.google.com/docs/", "label": "Firebase Docs" },
+                { "href": "https://viblo.asia/p/docker-chua-biet-gi-den-biet-dung-phan-1-lich-su-ByEZkWrEZQ0", "label": "Viblo Docker" }
+              ],
+              "note": "Không cần nuốt hết DevOps một lúc, nhưng nên biết nó nằm ở đâu trong cây nghề nghiệp của bạn."
+            },
+            {
+              "step": "15",
+              "side": "left",
+              "tone": "flex",
+              "badge": "Debug",
+              "title": "Debugging và monitoring",
+              "summary": "Nhánh này giúp bạn không chỉ viết code mà còn biết tìm lỗi, đọc log và quan sát hệ thống đang chạy.",
+              "topics": ["Log", "Dump", "Xdebug", "Profiler", "Monitoring", "Alert"],
+              "subbranches": [
+                {
+                  "title": "Nhánh chính",
+                  "items": ["Đọc stack trace", "Ghi log đúng chỗ", "dd / dump có kiểm soát", "Xdebug step-by-step", "Debug request lỗi"]
+                },
+                {
+                  "title": "Nhánh phụ",
+                  "items": ["Profiler cơ bản", "Sentry/Bugsnag", "Health check", "Theo dõi memory", "Theo dõi queue fail"]
+                }
+              ],
+              "references": [
+                { "href": "https://xdebug.org/docs/", "label": "Xdebug Docs" },
+                { "href": "https://docs.sentry.io/", "label": "Sentry Docs" },
+                { "href": "https://pestphp.com/docs/optimizing-tests", "label": "Pest Optimizing Tests" }
+              ],
+              "note": "Người code nhanh chưa chắc mạnh. Người debug tốt thường đi được xa hơn."
+            },
+            {
+              "step": "16",
+              "side": "right",
+              "tone": "flex",
+              "badge": "Workflow",
+              "title": "Project workflow và đọc tài liệu",
+              "summary": "Nhánh cuối này giúp bạn học bền hơn: biết đọc docs, đọc source và biến kiến thức thành workflow có thể lặp lại.",
+              "topics": ["Read docs", "Read source", "Notes", "Checklist", "Refactor", "Code review"],
+              "subbranches": [
+                {
+                  "title": "Nhánh chính",
+                  "items": ["Đọc tài liệu chính thức", "Ghi note có cấu trúc", "Tạo checklist học", "Chia feature thành task nhỏ", "Refactor sau khi code chạy"]
+                },
+                {
+                  "title": "Nhánh phụ",
+                  "items": ["Đọc source framework", "So sánh docs và code thật", "Viết mini demo", "Tự review code", "Tạo nhịp học hàng tuần"]
+                }
+              ],
+              "references": [
+                { "href": "https://laravel.com/docs", "label": "Laravel Docs" },
+                { "href": "https://github.com/laravel/framework", "label": "Laravel Framework Source" },
+                { "href": "https://developer.mozilla.org/en-US/docs/Learn_web_development", "label": "MDN Learn Web Development" }
+              ],
+              "note": "Đây là nhánh biến việc học rời rạc thành hệ thống tự học lâu dài."
+            }
+          ],
+          "cta": {
+            "eyebrow": "Bước thực hành tiếp theo",
+            "title": "Xem cây xong thì sang PHP",
+            "body": "Site PHP bây giờ sẽ là nhánh học tự nhiên tiếp theo, vì bản đồ trên đã giải thích rõ vì sao PHP cần đi trước Laravel sâu hơn.",
+            "href": "../php/index.html",
+            "action": "Mở site PHP"
+          }
+        },
+        {
+          "type": "cards",
+          "heading": "Cách dùng cây này",
+          "intro": "Trang này nên giúp bạn ra quyết định, không phải làm bạn ngợp.",
+          "items": [
+            {
+              "title": "Đi theo trục chính trước",
+              "body": "Đi lần lượt từ công cụ sang nền web rồi tới PHP. Thứ tự đó giúp các phần sau dễ hiểu hơn."
+            },
+            {
+              "title": "Dùng chip như checklist",
+              "body": "Mỗi chip là một chủ đề cụ thể để bạn học hoặc biến thành một task nhỏ trong project."
+            },
+            {
+              "title": "Đừng ép phần nâng cao quá sớm",
+              "body": "Queue, deploy và monitoring chỉ thật sự có giá trị khi app bắt đầu lớn lên."
+            }
+          ]
+        },
+        {
+          "type": "list",
+          "heading": "Nhịp project gợi ý",
+          "intro": "Một roadmap thân thiện chỉ hữu ích khi nó nối được với thứ bạn thật sự xây.",
+          "items": [
+            {
+              "title": "Điểm thắng đầu tiên",
+              "body": "Làm một trang tĩnh, sau đó thêm form hoạt động và một tương tác JavaScript nhỏ."
+            },
+            {
+              "title": "Checkpoint backend",
+              "body": "Tiếp theo hãy dựng lại một tính năng đơn giản bằng PHP: submit form, validation, ghi file và CRUD nhỏ."
+            },
+            {
+              "title": "Checkpoint Laravel",
+              "body": "Sau đó lặp lại chính tính năng đó trong Laravel để thấy rõ framework đang giúp bạn điều gì."
+            }
+          ]
+        }
+      ]
+    },
+    "php": {
+      "metaTitle": "PHP Learning Hub | Laravel Labs",
+      "eyebrow": "Nền tảng PHP",
+      "title": "Lộ trình học PHP",
+      "subtitle": "Một nơi để đi từ những khái niệm nhỏ nhất của PHP sang tư duy backend, hiệu năng và cách làm việc thực tế với service, dữ liệu và production flow.",
+      "journeyTitle": "Chọn chặng phù hợp",
+      "journeySubtitle": "Bắt đầu từ phần nền tảng nếu bạn muốn học chậm và chắc. Khi đã quen hơn, chuyển sang level code thực dụng hoặc level nâng cao để đi sâu vào backend thật."
+    },
+    "php-starter": {
+      "metaTitle": "PHP Starter | Laravel Labs",
+      "eyebrow": "PHP Starter",
+      "title": "PHP cấp 1: Nền tảng ngôn ngữ, cú pháp và dữ liệu đầu tiên",
+      "subtitle": "Đi từ PHP là gì sang cú pháp, biến, điều kiện, hàm, file, JSON, input, hash, escape output và các thói quen nền tảng giúp bạn học backend không bị hẫng.",
+      "journeyTitle": "Các level PHP khác",
+      "journeySubtitle": "Bạn đang ở cấp khởi đầu. Có thể chuyển nhanh sang hub PHP hoặc sang các cấp tiếp theo bằng menu và các liên kết điều hướng."
+    },
+    "php-intermediate": {
+      "metaTitle": "PHP Intermediate | Laravel Labs",
+      "eyebrow": "PHP Intermediate",
+      "title": "PHP cấp 2: Code thực dụng, request-response và backend nền",
+      "subtitle": "Đi từ cấu trúc code thật sang request-response, cookie, upload, JSON, import-export, logging, database, response code, service ngoài và cách tổ chức code dễ debug hơn.",
+      "journeyTitle": "Các level PHP khác",
+      "journeySubtitle": "Bạn đang ở cấp trung bình. Có thể quay về cấp 1 để ôn nền hoặc sang cấp 3 để học testing, kiến trúc và production flow."
+    },
+    "php-advanced": {
+      "metaTitle": "PHP Advanced | Laravel Labs",
+      "eyebrow": "PHP Advanced",
+      "title": "PHP cấp 3: Kiến trúc, testing, integration và production",
+      "subtitle": "Tập trung vào OOP hiện đại, PHPUnit, N+1 query, service boundary, queue, webhook, transaction, deploy, observability và tư duy production thực tế.",
+      "journeyTitle": "Các level PHP khác",
+      "journeySubtitle": "Bạn đang ở cấp nâng cao. Có thể quay lại các cấp trước để bồi nền hoặc dùng menu và các liên kết điều hướng để chuyển nhanh."
+    },
+    "laravel": {
+      "metaTitle": "Lộ trình Laravel | Laravel Labs",
+      "eyebrow": "Bản đồ Laravel",
+      "title": "Một khu học Laravel có đường đi rõ ràng",
+      "subtitle": "Trang này không cố nhét mọi thứ vào một chỗ. Nó là điểm vào để bạn nhìn Laravel như một hệ sinh thái có lớp lang: từ lõi framework, cách tổ chức app, tới những phần thật sự quan trọng khi project bắt đầu lớn lên.",
+      "journeyTitle": "Chọn đúng nhánh để học đúng thứ",
+      "journeySubtitle": "Mỗi mục bên dưới là một site Laravel riêng, có dữ liệu `vi/en` độc lập và vai trò rõ ràng. Bạn có thể đi tuần tự từ tổng quan đến production, hoặc nhảy thẳng vào đúng phần đang cần cho project của mình.",
+      "hubMenu": {
+        "label": "Hub Laravel",
+        "desc": "Trang tổng quan chứa giới thiệu và link đi tới từng site Laravel."
+      },
+      "sectionFiles": [
+        "overview",
+        "structure",
+        "composer",
+        "php-commands",
+        "frontend",
+        "blade-ui",
+        "data",
+        "request-flow",
+        "container-architecture",
+        "auth-security",
+        "api-integration",
+        "files-media",
+        "async",
+        "performance-search",
+        "realtime",
+        "quality",
+        "devops",
+        "maintenance-upgrade",
+        "repo-map"
+      ],
+      "menu": [
+        {
+          "anchor": "laravel-overview",
+          "label": "Tổng quan",
+          "desc": "Bức tranh tổng thể trước khi đi sâu framework."
+        },
+        {
+          "anchor": "laravel-structure",
+          "label": "Cấu trúc app",
+          "desc": "Hiểu từng thư mục và file gốc của một project Laravel."
+        },
+        {
+          "anchor": "laravel-composer",
+          "label": "Composer & vendor",
+          "desc": "Quản lý package PHP, autoload và hệ sinh thái thư viện."
+        },
+        {
+          "anchor": "laravel-php-commands",
+          "label": "Lệnh PHP & Artisan",
+          "desc": "Các lệnh `php`, `php artisan`, migrate, cache, queue và debug cần dùng thường xuyên."
+        },
+        {
+          "anchor": "laravel-frontend",
+          "label": "NPM & frontend",
+          "desc": "Vite, npm, Tailwind, Blade, Livewire, Vue hoặc React."
+        },
+        {
+          "anchor": "laravel-blade-ui",
+          "label": "Blade & UI",
+          "desc": "Layout, component, form, Alpine và giao diện server-rendered."
+        },
+        {
+          "anchor": "laravel-data",
+          "label": "Database & Eloquent",
+          "desc": "Migration, seeder, factory, model và quan hệ dữ liệu."
+        },
+        {
+          "anchor": "laravel-request-flow",
+          "label": "Request flow",
+          "desc": "Route, middleware, controller, request, response và validation."
+        },
+        {
+          "anchor": "laravel-container-architecture",
+          "label": "Container & architecture",
+          "desc": "Service container, provider, binding, service class, action, repository."
+        },
+        {
+          "anchor": "laravel-auth-security",
+          "label": "Auth & bảo mật",
+          "desc": "Breeze, Jetstream, Sanctum, policy, gate, CSRF, session."
+        },
+        {
+          "anchor": "laravel-api-integration",
+          "label": "API & integration",
+          "desc": "REST API, resource, token, webhook và tích hợp dịch vụ ngoài."
+        },
+        {
+          "anchor": "laravel-files-media",
+          "label": "Files & upload",
+          "desc": "Storage, upload, image, disk local hoặc S3."
+        },
+        {
+          "anchor": "laravel-async",
+          "label": "Queue & tích hợp",
+          "desc": "Event, listener, notification, mail, scheduler, cache, Redis."
+        },
+        {
+          "anchor": "laravel-performance-search",
+          "label": "Performance & search",
+          "desc": "Cache, tối ưu query, pagination, filter, search."
+        },
+        {
+          "anchor": "laravel-realtime",
+          "label": "Realtime",
+          "desc": "Broadcasting, Echo, websocket, live notification."
+        },
+        {
+          "anchor": "laravel-quality",
+          "label": "Testing & debug",
+          "desc": "Pest hoặc PHPUnit, logging, Telescope, Horizon, Pint."
+        },
+        {
+          "anchor": "laravel-devops",
+          "label": "Sail & deploy",
+          "desc": "Docker, env, queue worker, cron và tư duy production."
+        },
+        {
+          "anchor": "laravel-maintenance-upgrade",
+          "label": "Upgrade & bảo trì",
+          "desc": "Nâng version, package compatibility, refactor, lifecycle dài hạn."
+        },
+        {
+          "anchor": "laravel-repo-map",
+          "label": "Map theo repo",
+          "desc": "Gắn kiến thức vào các lab đang có như Breeze, Chirper, Jetstream, Sail."
+        }
+      ],
+      "sections": [
+        {
+          "anchor": "laravel-overview",
+          "type": "cards",
+          "heading": "Bản đồ tổng quan Laravel",
+          "intro": "Đây là cách nên chia nhỏ menu Laravel để không bị quá dày ở header nhưng vẫn đủ chỗ cho kiến thức và site con sau này.",
+          "items": [
+            {
+              "title": "Lớp 1: Core framework",
+              "body": "Routing, controller, request lifecycle, Blade, validation, migration, model và CRUD cơ bản."
+            },
+            {
+              "title": "Lớp 2: App architecture",
+              "body": "Service class, policy, form request, event, notification, queue, cache và cách tách code sạch hơn."
+            },
+            {
+              "title": "Lớp 3: Ecosystem và production",
+              "body": "Composer, vendor, npm, Vite, Sail, Redis, Horizon, testing, logging, deploy và các service liên quan."
+            },
+            {
+              "title": "Lớp 4: Product feature mở rộng",
+              "body": "API, upload, search, realtime, team workflow, role hoặc permission và tích hợp dịch vụ ngoài."
+            }
+          ]
+        },
+        {
+          "anchor": "laravel-structure",
+          "type": "cards",
+          "heading": "Cấu trúc project Laravel nên nắm",
+          "intro": "Nếu bạn đọc được cấu trúc thư mục thì gần như mọi repo Laravel mới đều bớt đáng sợ hơn.",
+          "items": [
+            {
+              "title": "`app`, `routes`, `config`",
+              "body": "Đây là lõi logic chính: controller, middleware, model, provider, route web hoặc api và các cấu hình ứng dụng."
+            },
+            {
+              "title": "`resources`, `public`, `storage`",
+              "body": "Chứa view Blade, asset nguồn, file public, log, cache và upload đã liên kết qua storage link."
+            },
+            {
+              "title": "`database`, `bootstrap`, `tests`, `vendor`",
+              "body": "Database lo migration hoặc seeder, bootstrap khởi tạo app, tests để kiểm chứng hành vi, vendor chứa package đã cài."
+            }
+          ]
+        },
+        {
+          "anchor": "laravel-composer",
+          "type": "list",
+          "heading": "Composer, package và thư mục vendor",
+          "intro": "Laravel không đứng một mình. Nó vận hành trên hệ sinh thái package PHP nên mục này rất đáng có submenu riêng.",
+          "items": [
+            {
+              "title": "Composer cơ bản",
+              "body": "Hiểu `composer.json`, `composer.lock`, `require`, `require-dev`, `scripts`, version constraint và khi nào nên chạy `composer install` hoặc `composer update`."
+            },
+            {
+              "title": "Autoload và PSR-4",
+              "body": "Biết vì sao class trong `app/` tự load được, khi nào cần `composer dump-autoload` và cách namespace gắn với thư mục."
+            },
+            {
+              "title": "Vendor và package phổ biến",
+              "body": "Nhóm package thường gặp gồm `laravel/sanctum`, `laravel/tinker`, `spatie/*`, `barryvdh/*`, `maatwebsite/excel`, `livewire/livewire`, `inertiajs/*`."
+            },
+            {
+              "title": "Tư duy chọn package",
+              "body": "Chỉ thêm package khi rõ nhu cầu, xem bảo trì, tài liệu, số sao, issue và tác động tới bảo mật hoặc nâng cấp framework."
+            }
+          ]
+        },
+        {
+          "anchor": "laravel-frontend",
+          "type": "cards",
+          "heading": "Node, npm và lớp frontend đi cùng Laravel",
+          "intro": "Laravel hiện đại thường đi kèm một lớp asset build. Vì vậy submenu về npm hoặc frontend là hợp lý, không nên gộp mơ hồ vào phần khác.",
+          "items": [
+            {
+              "title": "Vite và npm scripts",
+              "body": "Hiểu `package.json`, `npm install`, `npm run dev`, `npm run build`, hot reload và pipeline asset qua Vite."
+            },
+            {
+              "title": "Blade, Tailwind, Alpine",
+              "body": "Đây là stack nhẹ, nhanh để dựng UI server-rendered trong nhiều project Laravel truyền thống."
+            },
+            {
+              "title": "Livewire, Inertia, Vue, React",
+              "body": "Khi app cần tương tác nhiều hơn, Laravel có thể kết hợp với Livewire hoặc SPA stack như Inertia cùng Vue hay React."
+            }
+          ]
+        },
+        {
+          "anchor": "laravel-blade-ui",
+          "type": "list",
+          "heading": "Blade, component và lớp UI server-rendered",
+          "intro": "Vì bạn làm nhiều với Laravel, mục này nên đứng riêng thay vì để lẫn trong frontend chung.",
+          "items": [
+            {
+              "title": "Layout, section, component Blade",
+              "body": "Nắm `@extends`, `@section`, `@yield`, anonymous component, class component, slot và cách tái sử dụng layout."
+            },
+            {
+              "title": "Form, old input, error bag",
+              "body": "Hiểu cách form gửi dữ liệu, hiển thị lỗi, giữ dữ liệu cũ và tổ chức trải nghiệm nhập liệu gọn hơn."
+            },
+            {
+              "title": "Blade với Alpine hoặc Livewire",
+              "body": "Đây là hướng tăng tương tác nhanh mà chưa cần tách sang SPA hoàn chỉnh."
+            },
+            {
+              "title": "Tư duy UI theo feature",
+              "body": "Nên tách component theo màn hình hoặc feature như auth, profile, dashboard, table, modal thay vì để view phình to."
+            }
+          ]
+        },
+        {
+          "anchor": "laravel-data",
+          "type": "cards",
+          "heading": "Database, migration và Eloquent",
+          "intro": "Đây là nhóm kiến thức nên tách riêng vì gần như mọi app Laravel đều sống chết cùng dữ liệu.",
+          "items": [
+            {
+              "title": "Migrations, seeders, factories",
+              "body": "Dùng để định nghĩa schema, tạo dữ liệu mẫu, phục vụ local development, test và onboarding project."
+            },
+            {
+              "title": "Model và relationship",
+              "body": "Nắm `hasOne`, `hasMany`, `belongsTo`, `belongsToMany`, eager loading, accessor, mutator và cast."
+            },
+            {
+              "title": "Query performance",
+              "body": "Theo dõi N+1, index, pagination, transaction, locking và lúc nào nên dùng query builder hoặc raw SQL."
+            }
+          ]
+        },
+        {
+          "anchor": "laravel-request-flow",
+          "type": "list",
+          "heading": "Luồng request trong Laravel",
+          "intro": "Menu con này giúp gom các kiến thức core mà ai học Laravel cũng phải nhìn thấy liên tục.",
+          "items": [
+            {
+              "title": "Route và middleware",
+              "body": "Request đi vào từ `public/index.php`, qua kernel hoặc bootstrap, chạm middleware rồi mới tới controller hoặc closure route."
+            },
+            {
+              "title": "Controller, Form Request, validation",
+              "body": "Nên tách validate sang custom request khi logic lớn dần để controller gọn và tái sử dụng được."
+            },
+            {
+              "title": "Response, redirect, session, flash",
+              "body": "Cần hiểu redirect, old input, error bag, JSON response, file response và cách session giữ trạng thái người dùng."
+            },
+            {
+              "title": "Service container và dependency injection",
+              "body": "Laravel giải quyết nhiều dependency qua container, binding interface, singleton và auto-resolution."
+            }
+          ]
+        },
+        {
+          "anchor": "laravel-container-architecture",
+          "type": "cards",
+          "heading": "Service container và kiến trúc ứng dụng",
+          "intro": "Đây là phần phân biệt người chỉ dùng Laravel với người thật sự tổ chức được app lớn.",
+          "items": [
+            {
+              "title": "Service container, binding, provider",
+              "body": "Hiểu bind, singleton, interface-to-implementation, service provider và vòng đời resolve dependency."
+            },
+            {
+              "title": "Service class, action, repository",
+              "body": "Laravel không ép một pattern duy nhất, nên bạn cần biết khi nào nên tách business logic khỏi controller và model."
+            },
+            {
+              "title": "Domain thinking theo feature",
+              "body": "Khi app lớn lên, nên nhóm code theo feature như billing, auth, posts, teams thay vì chỉ nhóm theo technical layer."
+            }
+          ]
+        },
+        {
+          "anchor": "laravel-auth-security",
+          "type": "cards",
+          "heading": "Auth, authorization và bảo mật",
+          "intro": "Phần này rất rộng nên xứng đáng là một submenu lớn của Laravel.",
+          "items": [
+            {
+              "title": "Breeze, Jetstream, Fortify, Sanctum",
+              "body": "Đây là các mảnh ghép auth phổ biến: Breeze cho khởi đầu gọn, Jetstream cho team feature, Fortify cho backend auth flow, Sanctum cho API hoặc SPA token."
+            },
+            {
+              "title": "Policy, Gate, role và permission",
+              "body": "Dùng để kiểm soát ai được làm gì ở mức action, resource hoặc feature theo vai trò."
+            },
+            {
+              "title": "CSRF, session, hashing, rate limiting",
+              "body": "Những lớp bảo vệ cơ bản này phải hiểu trước khi chạm tới app có người dùng thật."
+            }
+          ]
+        },
+        {
+          "anchor": "laravel-api-integration",
+          "type": "cards",
+          "heading": "API và tích hợp dịch vụ ngoài",
+          "intro": "Rất nhiều app Laravel không chỉ render Blade mà còn phải nói chuyện với mobile app, SPA hoặc service bên ngoài.",
+          "items": [
+            {
+              "title": "REST API, resource, pagination",
+              "body": "Nắm route api, resource response, status code, error format, pagination response và versioning cơ bản."
+            },
+            {
+              "title": "Sanctum, token, webhook",
+              "body": "Phần này liên quan trực tiếp tới xác thực API, gọi máy-máy và nhận callback từ hệ thống ngoài."
+            },
+            {
+              "title": "HTTP client và integration flow",
+              "body": "Cần hiểu retry, timeout, error handling, idempotency, logging request hoặc response và bảo vệ secret key."
+            }
+          ]
+        },
+        {
+          "anchor": "laravel-files-media",
+          "type": "list",
+          "heading": "File, upload và media handling",
+          "intro": "Đây là khía cạnh xuất hiện rất thường xuyên trong project thật nhưng nhiều roadmap Laravel lại bỏ qua.",
+          "items": [
+            {
+              "title": "Storage disk local và cloud",
+              "body": "Hiểu `storage/app`, `public`, symbolic link, disk config, S3 compatible storage và quyền truy cập file."
+            },
+            {
+              "title": "Upload, validate, đặt tên file",
+              "body": "Cần xử lý mime type, size limit, tên file, slug, duplicate, đường dẫn lưu và lifecycle xóa file."
+            },
+            {
+              "title": "Ảnh, tài liệu, export hoặc import",
+              "body": "Đây là nơi thường phát sinh package hỗ trợ như image manipulation, excel import-export hoặc pdf generation."
+            }
+          ]
+        },
+        {
+          "anchor": "laravel-async",
+          "type": "cards",
+          "heading": "Queue, event và tích hợp service",
+          "intro": "Từ đây Laravel bắt đầu giống một hệ backend hoàn chỉnh hơn thay vì chỉ là CRUD framework.",
+          "items": [
+            {
+              "title": "Event, listener, job, queue",
+              "body": "Dùng để tách việc nặng ra khỏi request chính, ví dụ gửi mail, xử lý ảnh, đồng bộ dữ liệu hoặc webhook."
+            },
+            {
+              "title": "Mail, notification, scheduler",
+              "body": "App thực tế thường cần email, thông báo và tác vụ chạy theo lịch qua cron."
+            },
+            {
+              "title": "Cache, Redis, Horizon, external APIs",
+              "body": "Đây là lớp tích hợp hiệu năng và vận hành khi app bắt đầu có traffic hoặc xử lý nền đáng kể."
+            }
+          ]
+        },
+        {
+          "anchor": "laravel-performance-search",
+          "type": "cards",
+          "heading": "Hiệu năng, cache và search",
+          "intro": "Khi app chạy ổn về tính năng, đây là nhóm tiếp theo cần đào sâu để app không chậm và không rối.",
+          "items": [
+            {
+              "title": "Cache layer",
+              "body": "Hiểu cache config, route, view, query result, invalidation strategy, Redis và rủi ro stale data."
+            },
+            {
+              "title": "Search, filter, sort, pagination",
+              "body": "Đây là nhóm feature gần như app quản trị hoặc app nội dung nào cũng cần."
+            },
+            {
+              "title": "Đọc bottleneck",
+              "body": "Nên nhìn query log, eager load, index, N+1, queue offload và cache đúng tầng thay vì tối ưu mù."
+            }
+          ]
+        },
+        {
+          "anchor": "laravel-realtime",
+          "type": "list",
+          "heading": "Realtime và trải nghiệm cập nhật tức thời",
+          "intro": "Nếu sau này bạn làm dashboard, chat, notification live hoặc activity feed thì submenu này rất hữu ích.",
+          "items": [
+            {
+              "title": "Broadcasting và channel",
+              "body": "Hiểu public, private, presence channel và cách Laravel publish event ra phía client."
+            },
+            {
+              "title": "Echo, websocket server, notification live",
+              "body": "Đây là cầu nối giữa backend event và giao diện người dùng cập nhật gần như thời gian thực."
+            },
+            {
+              "title": "Khi nào nên dùng realtime",
+              "body": "Chỉ nên thêm khi thật sự có giá trị sản phẩm vì nó kéo theo complexity vận hành và debug cao hơn."
+            }
+          ]
+        },
+        {
+          "anchor": "laravel-quality",
+          "type": "list",
+          "heading": "Testing, debug và chất lượng code",
+          "intro": "Nếu không có phần này, kiến thức Laravel sẽ dừng ở mức làm được chứ chưa tới mức làm bền.",
+          "items": [
+            {
+              "title": "Pest hoặc PHPUnit",
+              "body": "Nên chia theo unit test, feature test, database test, fake queue hoặc fake mail để kiểm tra hành vi thật của app."
+            },
+            {
+              "title": "Logging và debug",
+              "body": "Biết dùng `storage/logs`, dump hợp lý, exception handling, Laravel Telescope, Ray hoặc debug query."
+            },
+            {
+              "title": "Code style và static quality",
+              "body": "Các công cụ hay gặp gồm Laravel Pint, PHPStan, Rector và quy ước code review theo team."
+            }
+          ]
+        },
+        {
+          "anchor": "laravel-devops",
+          "type": "cards",
+          "heading": "Sail, môi trường và triển khai",
+          "intro": "Đây là nhóm kiến thức liên quan tới service và công nghệ ngoài framework nhưng cực quan trọng nếu muốn đi xa hơn local CRUD.",
+          "items": [
+            {
+              "title": "Sail, Docker, services phụ trợ",
+              "body": "Laravel Sail giúp gom PHP, database, Redis, mailhog và các service local vào workflow nhất quán hơn."
+            },
+            {
+              "title": "`.env`, config cache, queue worker, scheduler",
+              "body": "Các khái niệm này ảnh hưởng trực tiếp tới cách app chạy giữa local, staging và production."
+            },
+            {
+              "title": "Deploy và quan sát hệ thống",
+              "body": "Nên dần mở rộng sang Nginx hoặc Apache, Supervisor, cron, CI/CD, backup, monitoring và rollback."
+            }
+          ]
+        },
+        {
+          "anchor": "laravel-maintenance-upgrade",
+          "type": "list",
+          "heading": "Nâng cấp version và bảo trì dài hạn",
+          "intro": "Nếu bạn dùng Laravel nhiều, phần này rất đáng có vì app sống lâu sẽ luôn gặp bài toán nâng cấp và dọn kiến trúc.",
+          "items": [
+            {
+              "title": "Upgrade framework và package",
+              "body": "Cần đọc changelog, upgrade guide, package compatibility, deprecated API và kế hoạch rollback."
+            },
+            {
+              "title": "Refactor an toàn",
+              "body": "Nên refactor dưới lớp test, logging hoặc feature flag thay vì sửa rộng rồi đoán bằng cảm giác."
+            },
+            {
+              "title": "Bảo trì tri thức dự án",
+              "body": "Giữ tài liệu route chính, dependency quan trọng, env quan trọng, queue quan trọng và flow nghiệp vụ chính để team không bị mù."
+            }
+          ]
+        },
+        {
+          "anchor": "laravel-repo-map",
+          "type": "list",
+          "heading": "Repo hiện tại khớp vào lộ trình ra sao",
+          "intro": "Mỗi thư mục Laravel nên được gắn với đúng nhánh kiến thức để sau này tách thành site con rất tự nhiên.",
+          "items": [
+            {
+              "title": "breeze",
+              "body": "Gắn mạnh với `request flow`, `auth cơ bản`, `Blade`, `middleware`, `validation` và `frontend nhẹ`."
+            },
+            {
+              "title": "chirper",
+              "body": "Phù hợp cho `CRUD`, `Eloquent relationship`, `policy`, `feature flow` và cách hoàn thiện một tính năng người dùng từ đầu tới cuối."
+            },
+            {
+              "title": "jetstream",
+              "body": "Đây là lab tốt cho `auth nâng cao`, `team`, `session`, `profile security`, `Fortify`, `Sanctum` và tư duy app nhiều vai trò."
+            },
+            {
+              "title": "sail",
+              "body": "Nên map vào nhóm `Sail`, `Docker`, `dịch vụ phụ trợ`, `workflow môi trường` và bước đệm cho deploy."
+            }
+          ]
+        }
+      ]
+    },
+    "glossary": {
+      "metaTitle": "Glossary | Laravel Labs",
+      "eyebrow": "Thuật ngữ",
+      "title": "Glossary thuật ngữ web, Laravel, runtime và AI",
+      "subtitle": "Một glossary đi từ cơ bản tới nâng cao cho người mới vào ngành: web, HTTP, PHP, Laravel, database, security, runtime và AI-assisted coding. Mục tiêu không phải nhớ định nghĩa ngắn, mà hiểu từ đó đang sống ở đâu trong code, request, dữ liệu và production.",
+      "sections": [
+        {
+          "type": "list",
+          "heading": "Nền web, browser và HTTP",
+          "intro": "Đây là lớp từ vựng đầu tiên người mới hay nghe nhưng lại dễ lẫn nhất. Nếu hiểu sai lớp này, bạn sẽ rất khó hiểu request flow, API, auth hay cache ở những phần sâu hơn.",
+          "breaks": [
+            {
+              "start": 1,
+              "title": "HTTP & browser flow",
+              "description": "Các từ khóa đi cùng request, response, URL, state và hành vi của browser."
+            }
+          ],
+          "items": [
+            {
+              "title": "HTTP",
+              "body": "HTTP là giao thức để client và server trao đổi request và response. Khi bạn mở một trang, submit form, gọi API, redirect hoặc tải file, phần lớn đều đang đi qua HTTP hoặc HTTPS. Đây là lớp nền để hiểu browser không gọi thẳng PHP function của bạn, mà gửi request rồi nhận response về.",
+              "bullets": [
+                "Client gửi method, URL, header, cookie, query string và đôi khi có body.",
+                "Server trả status code, header, body, cookie và cache instruction.",
+                "Hiểu HTTP tốt giúp đọc request flow và debug API dễ hơn rất nhiều."
+              ],
+              "code": "GET /posts?page=2 HTTP/1.1\nHost: example.com\nAccept: text/html\n\nHTTP/1.1 200 OK\nContent-Type: text/html; charset=UTF-8\n"
+            },
+            {
+              "title": "HTTPS",
+              "body": "HTTPS là HTTP chạy qua TLS để mã hóa dữ liệu trên đường truyền. Nó không tự biến app thành an toàn tuyệt đối, nhưng là lớp nền bắt buộc cho login, cookie, API, upload file và dữ liệu nhạy cảm."
+            },
+            {
+              "title": "URL",
+              "body": "URL là địa chỉ đầy đủ của tài nguyên, thường gồm `scheme`, `domain`, `port`, `path`, `query string` và `fragment`. Một hiểu lầm phổ biến là tưởng toàn bộ URL đều được gửi lên server, nhưng phần `fragment` sau dấu `#` thường chỉ dùng ở phía browser.",
+              "code": "https://example.com:443/posts/10?tab=comments#latest"
+            },
+            {
+              "title": "Request",
+              "body": "Request là gói thông tin client gửi lên server để yêu cầu một hành động hoặc một tài nguyên. Trong Laravel, middleware, Form Request, controller và policy đều ít nhiều đang đọc hoặc biến đổi hành vi dựa trên request."
+            },
+            {
+              "title": "Response",
+              "body": "Response là thứ server trả ngược lại sau khi xử lý request. Nó có thể là HTML, JSON, redirect, file download hoặc lỗi. Hiểu response giúp bạn phân biệt rõ flow web với flow API."
+            },
+            {
+              "title": "Header",
+              "body": "Header là metadata đi kèm request hoặc response, ví dụ content type, authorization, cache rule, cookie, host hoặc forwarded header. Nhiều bug production không nằm ở body mà nằm ở header sai."
+            },
+            {
+              "title": "Cookie",
+              "body": "Cookie là mẩu dữ liệu nhỏ browser gửi kèm request. Laravel thường dùng cookie để giữ session hoặc auth state ở flow web. Cookie không đồng nghĩa với session, mà thường chỉ là cách mang state hoặc khóa định danh."
+            },
+            {
+              "title": "Session",
+              "body": "Session là trạng thái được giữ giữa nhiều request. Session giúp app nhớ user đã đăng nhập, flash message, old input hoặc CSRF token. Khi nói `app bị mất login`, nhiều khi thực chất đang là lỗi session hoặc cookie.",
+              "links": [
+                {
+                  "label": "Laravel Auth & Security",
+                  "href": "../laravel/auth-security.html",
+                  "description": "Xem flow đăng nhập, cookie, session và lỗi 419 hoặc bị đá login."
+                },
+                {
+                  "label": "Interview Fresher",
+                  "href": "../interview/fresher.html",
+                  "description": "Ôn câu hỏi nền về session, cookie, HTTPS và auth web."
+                }
+              ],
+              "bullets": [
+                "Hay bị nhầm với cookie: cookie là thứ browser mang theo, session là trạng thái logic app đang giữ.",
+                "Hay bị nhầm với token-based auth: token thường phục vụ API hoặc SPA theo kiểu khác với web session truyền thống."
+              ],
+              "note": "Ví dụ bug thật: app login bình thường ở web, nhưng sau deploy hoặc sau khi đổi `SESSION_DOMAIN` thì user cứ bị đá ra ngoài dù password đúng."
+            },
+            {
+              "title": "Stateless",
+              "body": "Stateless nghĩa là mỗi request nên đủ thông tin để được xử lý mà không cần nhớ quá nhiều từ request trước. HTTP về bản chất thiên về stateless, nên token, session, cookie và cache là các cơ chế bổ sung trạng thái có kiểm soát."
+            },
+            {
+              "title": "CORS",
+              "body": "CORS là bộ quy tắc cho biết browser có cho JavaScript từ origin này gọi sang origin khác hay không. Đây là browser policy, không phải permission business. Nhiều người mới tưởng `bật CORS` là cấp quyền người dùng, nhưng thực ra không phải.",
+              "code": "Access-Control-Allow-Origin: https://app.example.com",
+              "links": [
+                {
+                  "label": "Laravel API Integration",
+                  "href": "../laravel/api-integration.html",
+                  "description": "Xem API, webhook, auth header và browser-origin hoạt động với nhau ra sao."
+                },
+                {
+                  "label": "Interview Junior",
+                  "href": "../interview/junior.html",
+                  "description": "Luyện cách giải thích CORS, cookie và endpoint exposure trong phỏng vấn."
+                }
+              ],
+              "bullets": [
+                "Hay bị nhầm với auth: CORS không quyết định user có được sửa data hay không.",
+                "Hay bị nhầm với firewall hoặc API permission: nó chủ yếu là luật của browser."
+              ],
+              "note": "Ví dụ bug thật: Postman gọi API vẫn được, nhưng frontend trình duyệt lại fail vì preflight hoặc header CORS không đúng."
+            },
+            {
+              "title": "Cache-Control",
+              "body": "Đây là header hướng dẫn browser hoặc proxy có được cache response hay không, cache bao lâu, và khi nào phải revalidate. Nếu không hiểu lớp này, bạn rất dễ gặp bug kiểu sửa code rồi browser vẫn hiện bản cũ."
+            }
+          ]
+        },
+        {
+          "type": "list",
+          "heading": "PHP, OOP và khối nền của backend",
+          "intro": "Phần này gom các thuật ngữ người mới đi làm rất hay nghe trong phỏng vấn và khi đọc codebase. Không hiểu chúng thì khó đọc được Laravel một cách tỉnh táo.",
+          "breaks": [
+            {
+              "start": 1,
+              "title": "Programming & backend basics",
+              "description": "Các từ khóa nền dùng để đọc code, đọc class và hiểu app đang tổ chức logic ra sao."
+            }
+          ],
+          "items": [
+            {
+              "title": "PHP",
+              "body": "PHP là ngôn ngữ phía server thường được dùng để xử lý request, thao tác dữ liệu, gọi database, render HTML hoặc trả JSON. Với Laravel, PHP là lớp nền bên dưới framework. Hiểu PHP cơ bản tốt giúp bạn bớt phụ thuộc vào framework magic."
+            },
+            {
+              "title": "Biến (variable)",
+              "body": "Biến là nơi giữ giá trị để dùng lại trong chương trình. Nghe đơn giản nhưng backend về bản chất là đọc input, giữ state tạm, biến đổi dữ liệu rồi trả output."
+            },
+            {
+              "title": "Function",
+              "body": "Function là đơn vị logic có thể gọi lại. Khi code lớn dần, việc biết chỗ nào nên thành function, chỗ nào nên thành class method, chỗ nào nên thành service sẽ ảnh hưởng trực tiếp tới maintainability."
+            },
+            {
+              "title": "Class",
+              "body": "Class là khuôn để tổ chức data và behavior vào cùng một nơi. Trong Laravel bạn thấy class ở controller, request, job, policy, command, event, listener, service và model."
+            },
+            {
+              "title": "Object",
+              "body": "Object là một instance cụ thể được tạo ra từ class. Hiểu object giúp bạn nhìn code như những thực thể có trạng thái và hành vi, thay vì chỉ là các hàm rời rạc."
+            },
+            {
+              "title": "OOP",
+              "body": "OOP là cách tổ chức code quanh object thay vì chỉ quanh function rời. Trong PHP và Laravel, OOP không phải để code trông hàn lâm hơn, mà để logic có ranh giới, state rõ và dễ thay thế, mở rộng hơn."
+            },
+            {
+              "title": "Encapsulation",
+              "body": "Đây là ý tưởng gom data và behavior liên quan vào cùng một nơi, đồng thời hạn chế việc lớp khác chọc thẳng vào state bên trong. Nó giúp giảm hỗn loạn và phụ thuộc ngầm."
+            },
+            {
+              "title": "Dependency Injection",
+              "body": "Dependency Injection là cách đưa thứ một class cần vào từ bên ngoài thay vì tự `new` trong class đó. Điều này làm code dễ test hơn, ít coupling hơn và tận dụng tốt service container của Laravel.",
+              "code": "class PostController\n{\n    public function __construct(private PostService $service) {}\n}\n"
+            },
+            {
+              "title": "Coupling",
+              "body": "Coupling là mức độ một phần code bị dính chặt vào phần khác. Coupling quá cao làm code khó thay đổi, khó test, và chỉ cần sửa một chỗ nhỏ cũng dễ kéo theo bug ở nhiều chỗ."
+            },
+            {
+              "title": "Separation of Concerns",
+              "body": "Đây là nguyên tắc tách từng mối quan tâm về đúng lớp của nó: validation ở validation layer, authorize ở policy hoặc request, orchestration ở controller hoặc action, business flow ở service phù hợp. Đây là nguyên tắc rất thực dụng khi code backend lớn dần."
+            }
+          ]
+        },
+        {
+          "type": "list",
+          "heading": "Laravel core và request flow",
+          "intro": "Đây là nhóm từ khóa gần như chắc chắn sẽ xuất hiện khi bạn đọc docs Laravel, tham gia code review, làm feature, debug bug hoặc đi phỏng vấn backend PHP/Laravel.",
+          "breaks": [
+            {
+              "start": 1,
+              "title": "Laravel internals & app flow",
+              "description": "Các lớp chính giúp một request đi từ browser vào tới code và ra response."
+            }
+          ],
+          "items": [
+            {
+              "title": "Route",
+              "body": "Route là nơi map một URL và HTTP method sang handler tương ứng. Đây là một trong những điểm vào rõ ràng nhất để đọc flow của ứng dụng Laravel."
+            },
+            {
+              "title": "Middleware",
+              "body": "Middleware là lớp chặn request trước khi vào controller hoặc trước khi response đi ra. Nó thường dùng cho auth, throttle, tenant context, logging, locale hoặc các guardrail xuyên nhiều route.",
+              "code": "Route::middleware(['auth', 'verified'])->group(function () {\n    Route::get('/dashboard', DashboardController::class);\n});\n",
+              "links": [
+                {
+                  "label": "Laravel Request Flow",
+                  "href": "../laravel/request-flow.html",
+                  "description": "Đi sâu request đi qua route, middleware, request class và controller ra sao."
+                },
+                {
+                  "label": "Laravel Auth & Security",
+                  "href": "../laravel/auth-security.html",
+                  "description": "Xem middleware auth, verified, throttle và lớp bảo vệ web/API."
+                }
+              ]
+            },
+            {
+              "title": "Controller",
+              "body": "Controller là lớp nhận request và điều phối flow ở mức web hoặc API. Controller tốt thường mỏng: nhận input, gọi lớp phù hợp, rồi trả response. Controller béo là mùi code rất phổ biến ở dự án Laravel."
+            },
+            {
+              "title": "Form Request",
+              "body": "Form Request là class riêng để gom validation và authorize cho request. Nó giúp controller bớt phình và làm luồng kiểm tra dữ liệu rõ nghĩa hơn so với việc nhét tất cả vào controller.",
+              "code": "class StorePostRequest extends FormRequest\n{\n    public function rules(): array\n    {\n        return ['title' => ['required', 'string', 'max:255']];\n    }\n}\n"
+            },
+            {
+              "title": "Validation",
+              "body": "Validation là bước kiểm tra dữ liệu đầu vào có đúng shape và rule mong muốn hay không. Validation không thay thế business rule, nhưng là lớp chặn đầu tiên giúp app không nhận dữ liệu bẩn quá sớm."
+            },
+            {
+              "title": "Policy",
+              "body": "Policy là lớp chứa rule kiểm tra quyền cho một model hoặc action. Đây là chỗ phù hợp để tránh `if admin` hoặc `if user_id == ...` rải rác trong controller và Blade.",
+              "links": [
+                {
+                  "label": "Laravel Auth & Security",
+                  "href": "../laravel/auth-security.html",
+                  "description": "Xem policy, gate, authorize và ownership rule theo flow thật."
+                }
+              ]
+            },
+            {
+              "title": "Blade",
+              "body": "Blade là template engine của Laravel để render giao diện server-side. Nó cho phép viết HTML cùng directive như `@if`, `@foreach`, `@csrf`, `@error`, component và layout."
+            },
+            {
+              "title": "Eloquent",
+              "body": "Eloquent là ORM của Laravel để làm việc với database thông qua model, relationship, scope, cast và query builder ở mức cao hơn. Nó giúp code đọc gần ngôn ngữ domain hơn, nhưng cũng dễ sinh N+1 hoặc logic data mơ hồ nếu dùng bất cẩn.",
+              "links": [
+                {
+                  "label": "Laravel Database & Eloquent",
+                  "href": "../laravel/data.html",
+                  "description": "Xem model, relation, eager loading, transaction và schema theo bài học đầy đủ."
+                },
+                {
+                  "label": "Interview Junior",
+                  "href": "../interview/junior.html",
+                  "description": "Ôn các câu hỏi về relationship, query và N+1 đúng level junior."
+                }
+              ]
+            },
+            {
+              "title": "Service Container",
+              "body": "Service Container là bộ máy resolve dependency và binding của Laravel. Nó cho phép framework tự inject class phù hợp vào controller, command, job, listener hoặc service khác.",
+              "code": "app()->bind(PaymentGateway::class, StripeGateway::class);\n"
+            },
+            {
+              "title": "Service Provider",
+              "body": "Service Provider là nơi đăng ký binding, boot behavior hoặc cấu hình cho package và app. Khi bạn hỏi `cái này được bind ở đâu`, nhiều lúc câu trả lời nằm trong provider."
+            },
+            {
+              "title": "Facade",
+              "body": "Facade là lớp truy cập tĩnh-looking tới service trong container, ví dụ `Cache`, `DB`, `Log`, `Storage`. Nó tiện, nhưng nếu lạm dụng không hiểu bên dưới thì rất dễ dùng mà không hiểu dependency thật."
+            }
+          ]
+        },
+        {
+          "type": "list",
+          "heading": "Database, API và security",
+          "intro": "Đây là nhóm từ khóa người mới rất hay gặp sau khi đã qua bước CRUD đơn giản. Chúng nối web flow với dữ liệu thật, API thật, và các lớp bảo vệ cơ bản nhưng quan trọng.",
+          "breaks": [
+            {
+              "start": 1,
+              "title": "Data, API & protection",
+              "description": "Các khái niệm về schema, query, auth, API behavior và lớp phòng thủ nền tảng."
+            }
+          ],
+          "items": [
+            {
+              "title": "Migration",
+              "body": "Migration là file mô tả thay đổi schema database theo thời gian. Nó giúp team và nhiều môi trường khác nhau cùng tiến theo một lịch sử thay đổi nhất quán thay vì sửa DB thủ công rồi quên ghi lại.",
+              "links": [
+                {
+                  "label": "Laravel Database & Eloquent",
+                  "href": "../laravel/data.html",
+                  "description": "Xem migration, foreign key, seeder, dirty data và schema change thực tế."
+                },
+                {
+                  "label": "Laravel Maintenance & Upgrade",
+                  "href": "../laravel/maintenance-upgrade.html",
+                  "description": "Xem migration nhiều bước và cách giảm downtime khi đổi schema."
+                }
+              ]
+            },
+            {
+              "title": "Seeder",
+              "body": "Seeder là lớp dùng để chèn dữ liệu mẫu hoặc dữ liệu hệ thống ban đầu. Nó hữu ích cho local, test, onboarding và reset môi trường học tập."
+            },
+            {
+              "title": "Foreign Key",
+              "body": "Foreign key là ràng buộc liên kết giữa hai bảng. Nó bảo vệ tính nhất quán tham chiếu, ví dụ một `post` phải thuộc về một `user` có thật, hoặc một `order_item` phải tham chiếu tới `order` tồn tại."
+            },
+            {
+              "title": "Index",
+              "body": "Index là cấu trúc phụ giúp database tìm dữ liệu nhanh hơn. Nhưng index không miễn phí: nó chiếm thêm storage và làm write/update/delete nặng hơn phần nào. Performance tốt luôn gắn với tradeoff.",
+              "links": [
+                {
+                  "label": "Laravel Database & Eloquent",
+                  "href": "../laravel/data.html",
+                  "description": "Xem schema, query plan, index và các bài toán dữ liệu thật."
+                },
+                {
+                  "label": "Laravel Performance, Cache & Search",
+                  "href": "../laravel/performance-search.html",
+                  "description": "Xem index ảnh hưởng query latency, pagination và search ra sao."
+                }
+              ]
+            },
+            {
+              "title": "Transaction",
+              "body": "Transaction cho phép nhiều thay đổi data được coi như một khối: hoặc cùng thành công, hoặc cùng rollback. Nó đặc biệt quan trọng khi một business action chạm nhiều bảng hoặc nhiều bước ghi dữ liệu.",
+              "code": "DB::transaction(function () use ($orderData) {\n    $order = Order::create($orderData);\n    OrderLog::create(['order_id' => $order->id, 'status' => 'created']);\n});\n",
+              "links": [
+                {
+                  "label": "Laravel Database & Eloquent",
+                  "href": "../laravel/data.html",
+                  "description": "Xem transaction, lock, backfill và data consistency ở tầng DB."
+                },
+                {
+                  "label": "Interview Intermediate",
+                  "href": "../interview/intermediate.html",
+                  "description": "Ôn các câu hỏi transaction boundary và consistency ở level giữa."
+                }
+              ]
+            },
+            {
+              "title": "REST API",
+              "body": "REST API là một phong cách tổ chức API quanh resource và HTTP semantics thay vì tạo endpoint hành vi quá tùy tiện. Trong thực tế, nhiều app không hoàn toàn thuần REST, nhưng hiểu tư duy này giúp API dễ đọc hơn."
+            },
+            {
+              "title": "JSON",
+              "body": "JSON là định dạng dữ liệu trao đổi rất phổ biến giữa client và server. Nhiều API Laravel trả JSON thay vì HTML, nên đây là khái niệm nền tảng chứ không chỉ là 'một dạng text'."
+            },
+            {
+              "title": "Authentication",
+              "body": "Authentication là bước xác định bạn là ai, ví dụ login bằng email/password, cookie session, token hoặc OAuth flow. Nhiều người mới lẫn auth với quyền, nhưng auth chỉ mới trả lời câu hỏi `bạn là ai`.",
+              "bullets": [
+                "Từ khóa nhớ nhanh: identity trước, permission sau.",
+                "Đã auth không có nghĩa là được phép làm mọi thứ."
+              ]
+            },
+            {
+              "title": "Authorization",
+              "body": "Authorization là bước quyết định bạn được làm gì sau khi hệ thống đã biết bạn là ai. Ví dụ đã login rồi nhưng vẫn có thể không được sửa post của người khác.",
+              "links": [
+                {
+                  "label": "Laravel Auth & Security",
+                  "href": "../laravel/auth-security.html",
+                  "description": "Xem auth, policy, permission và cách đặt rule đúng lớp."
+                }
+              ],
+              "bullets": [
+                "Hay bị nhầm với authentication.",
+                "Trong Laravel, policy và gate thường là nơi rất phù hợp để đặt lớp này."
+              ]
+            },
+            {
+              "title": "CSRF",
+              "body": "CSRF là kiểu tấn công lừa browser của user gửi request ngoài ý muốn tới app đang đăng nhập. Vì browser tự mang cookie theo request, flow web session-based luôn phải hiểu và bảo vệ lớp này.",
+              "code": "<form method=\"POST\" action=\"/posts\">\n  @csrf\n  <button type=\"submit\">Save</button>\n</form>\n"
+            },
+            {
+              "title": "XSS",
+              "body": "XSS là tình huống dữ liệu đầu vào hoặc nội dung render ra browser có thể chèn script không mong muốn. Đây là lý do Blade mặc định escape `{{ }}` và vì sao raw HTML cần kiểm soát rất kỹ."
+            },
+            {
+              "title": "Rate Limiting",
+              "body": "Rate limiting là cách giới hạn số request trong một khoảng thời gian để bảo vệ API, login endpoint, search hoặc webhook khỏi abuse. Nó là lớp phòng thủ kỹ thuật, không thay thế business permission."
+            }
+          ]
+        },
+        {
+          "type": "list",
+          "heading": "Runtime, DevOps và production thinking",
+          "intro": "Đây là lớp từ vựng bắt đầu rất quan trọng khi app không còn chỉ chạy local. Phần lớn bug khó và phần lớn câu hỏi senior đều có bóng dáng của nhóm thuật ngữ này.",
+          "breaks": [
+            {
+              "start": 1,
+              "title": "Runtime & operations",
+              "description": "Các từ khóa đi cùng môi trường chạy, queue, proxy, deploy, cache và incident."
+            }
+          ],
+          "items": [
+            {
+              "title": "Queue",
+              "body": "Queue là cách đẩy việc nặng hoặc side effect ra xử lý nền, ví dụ gửi mail, resize ảnh, import file hoặc gọi service ngoài. Queue giúp web request trả về nhanh hơn, nhưng mở ra thêm bài toán worker, retry, duplicate job và observability.",
+              "links": [
+                {
+                  "label": "Laravel Async",
+                  "href": "../laravel/async.html",
+                  "description": "Xem job, listener, retry, worker, scheduler và queue reliability."
+                },
+                {
+                  "label": "Interview DevOps",
+                  "href": "../interview/devops.html",
+                  "description": "Luyện câu hỏi queue lag, worker cũ, retry storm và vận hành async."
+                }
+              ]
+            },
+            {
+              "title": "Job Worker",
+              "body": "Worker là process nền lấy job từ queue ra chạy. Nếu worker không restart sau deploy, nó có thể tiếp tục chạy code cũ dù web app đã lên code mới."
+            },
+            {
+              "title": "Cache",
+              "body": "Cache là lớp lưu tạm để giảm truy vấn lặp lại hoặc tăng tốc đọc dữ liệu. Cache nhanh nhưng luôn kéo theo bài toán invalidation, stale data, ownership của cache key và khi nào nên clear đúng lớp.",
+              "bullets": [
+                "Có một câu rất nổi tiếng trong ngành: cache invalidation là một trong những bài toán khó nhất của lập trình.",
+                "Cache không chỉ để tăng tốc; nó còn có thể làm bug khó tái hiện hơn nếu dữ liệu cũ còn treo đâu đó."
+              ]
+            },
+            {
+              "title": "Idempotency",
+              "body": "Idempotency là tính chất cho phép cùng một request hoặc job chạy lặp lại mà không nhân đôi kết quả sai. Nó cực quan trọng trong payment, webhook, queue retry hoặc bất kỳ flow nào có thể bị replay.",
+              "code": "if ($order->payment_reference === $incomingReference) {\n    return;\n}\n",
+              "links": [
+                {
+                  "label": "Laravel API Integration",
+                  "href": "../laravel/api-integration.html",
+                  "description": "Xem webhook, retry, duplicate event và contract với hệ thống ngoài."
+                },
+                {
+                  "label": "Laravel Async",
+                  "href": "../laravel/async.html",
+                  "description": "Xem idempotent job, replay safety và compensation flow."
+                }
+              ],
+              "note": "Ví dụ bug thật: gateway thanh toán gửi lại cùng một webhook 2 lần, và nếu app không idempotent thì sẽ tạo 2 đơn hoặc ghi 2 lần cùng một giao dịch."
+            },
+            {
+              "title": "Env Drift",
+              "body": "Env drift là tình trạng local, staging, worker hoặc production không còn dùng cùng cấu hình, version hoặc biến môi trường. Đây là một trong những nguồn bug khó chịu nhất vì app có thể `chạy được ở máy em` nhưng fail ở nơi khác."
+            },
+            {
+              "title": "Reverse Proxy",
+              "body": "Reverse proxy là lớp đứng trước app như Nginx, load balancer hoặc CDN để nhận request rồi chuyển tiếp vào web server hoặc container nội bộ. Nhiều lỗi về HTTPS loop, host, scheme, IP trust hoặc header sai đều liên quan lớp này.",
+              "links": [
+                {
+                  "label": "Laravel DevOps",
+                  "href": "../laravel/devops.html",
+                  "description": "Xem trusted proxy, forwarded header, HTTPS loop và cấu hình runtime."
+                },
+                {
+                  "label": "Interview DevOps",
+                  "href": "../interview/devops.html",
+                  "description": "Ôn reverse proxy, TLS, load balancer, health check và traffic routing."
+                }
+              ],
+              "note": "Ví dụ bug thật: user truy cập bằng HTTPS nhưng app vẫn redirect vòng lặp hoặc tạo URL `http://...` vì trusted proxy hoặc forwarded header bị cấu hình sai."
+            },
+            {
+              "title": "Nginx",
+              "body": "Nginx thường đóng vai trò web server hoặc reverse proxy đứng trước PHP-FPM/Laravel. Khi mới học backend, nhiều người tưởng bug web luôn nằm ở app code, nhưng routing tới `public/`, header forwarding hay upload limit có thể nằm ở Nginx.",
+              "links": [
+                {
+                  "label": "Laravel DevOps",
+                  "href": "../laravel/devops.html",
+                  "description": "Xem Nginx, PHP-FPM, upload limit, proxy_pass và deploy thực tế."
+                }
+              ]
+            },
+            {
+              "title": "Health Check",
+              "body": "Health check là endpoint hoặc phép kiểm tra để biết app còn sống, còn sẵn sàng hoặc dependency quan trọng đã hỏng. Health check tốt giúp deploy, orchestrator, load balancer và con người ra quyết định nhanh hơn.",
+              "links": [
+                {
+                  "label": "Laravel DevOps",
+                  "href": "../laravel/devops.html",
+                  "description": "Xem liveness, readiness, smoke test và post-deploy watch nên thiết kế ra sao."
+                }
+              ]
+            },
+            {
+              "title": "Observability",
+              "body": "Observability là khả năng nhìn thấy trạng thái hệ thống qua log, metric, trace, dashboard và alert. Không có observability, bạn chỉ biết app hỏng chứ không biết nó hỏng ở lớp nào.",
+              "links": [
+                {
+                  "label": "Laravel Quality",
+                  "href": "../laravel/quality.html",
+                  "description": "Xem log, debug, trace tư duy và quality gate khi support production."
+                },
+                {
+                  "label": "Laravel DevOps",
+                  "href": "../laravel/devops.html",
+                  "description": "Xem dashboard, alert, runbook và metric giúp vận hành app thật."
+                }
+              ]
+            },
+            {
+              "title": "Blast Radius",
+              "body": "Blast radius là phạm vi thiệt hại nếu một thay đổi sai được merge hoặc deploy. Ở level cao, mọi quyết định về DB, queue, proxy, runtime hay AI patch đều nên bắt đầu bằng câu hỏi: nếu sai thì nổ tới đâu?"
+            }
+          ]
+        },
+        {
+          "type": "list",
+          "heading": "Vibe Coding, AI và từ vựng mới của thời AI-assisted coding",
+          "intro": "Đây là nhóm thuật ngữ đang ngày càng quan trọng với người viết code hiện đại. Dùng AI mà không hiểu từ vựng của nó rất dễ rơi vào trạng thái dùng nhanh nhưng không hiểu sâu.",
+          "breaks": [
+            {
+              "start": 1,
+              "title": "AI-assisted development",
+              "description": "Các từ khóa đi cùng prompting, review, hallucination, runtime guardrail và workflow với AI."
+            }
+          ],
+          "items": [
+            {
+              "title": "Prompt",
+              "body": "Prompt là chỉ dẫn bạn đưa cho AI. Với engineering work, prompt không chỉ là `một câu hỏi`, mà là cách nêu outcome, context, constraint, file liên quan và thứ không được chạm."
+            },
+            {
+              "title": "Prompt Scope",
+              "body": "Prompt scope là phạm vi thật sự bạn giao cho AI. Scope càng rõ thì output càng ít drift, ít chạm file ngoài vùng và càng dễ review."
+            },
+            {
+              "title": "Hallucination",
+              "body": "Hallucination là khi AI tự bịa ra API, class, package, flow hoặc assumption không có thật trong codebase hay docs. Đây là một trong những rủi ro cốt lõi khi dùng AI để code chứ không chỉ để trò chuyện."
+            },
+            {
+              "title": "Guardrail",
+              "body": "Guardrail là ràng buộc hoặc checklist đặt ra trước để ngăn AI sinh code phá cấu trúc, phá dữ liệu, chạm vùng runtime nguy hiểm hoặc vượt quá scope được giao."
+            },
+            {
+              "title": "Diff Review",
+              "body": "Diff review là thói quen đọc thay đổi theo patch thay vì dừng ở mức `app chạy được`. Đây là một trong những kỹ năng quan trọng nhất khi làm việc với tool AI coding."
+            },
+            {
+              "title": "Context Drift",
+              "body": "Context drift là tình huống phiên làm việc với AI đã quá dài, khiến mô hình bắt đầu lặp assumption cũ, hiểu sai context mới hoặc kéo theo những quyết định không còn phù hợp."
+            },
+            {
+              "title": "Verify-first",
+              "body": "Đây là tư duy bắt AI hoặc chính mình kiểm tra lớp đang hỏng trước khi đề xuất sửa. Trong vùng runtime, verify-first thường an toàn hơn patch-first rất nhiều."
+            },
+            {
+              "title": "Secret Scrub",
+              "body": "Secret scrub là việc che hoặc loại bỏ token, key, email thật, domain nội bộ hay dữ liệu nhạy cảm trước khi đưa log, config hoặc payload vào AI. Đây là kỹ năng bắt buộc nếu không muốn đẩy dữ liệu nguy hiểm vào prompt."
+            }
+          ]
+        },
+        {
+          "type": "list",
+          "heading": "Testing, debug và chất lượng code",
+          "intro": "Khi người mới bắt đầu đi làm, đây là nhóm thuật ngữ tạo khác biệt rất lớn giữa người chỉ làm cho chạy được và người biết giữ hệ thống sống lâu. Nó cũng là vùng tư duy mà nhiều team đánh giá năng lực rất mạnh.",
+          "breaks": [
+            {
+              "start": 1,
+              "title": "Quality & verification",
+              "description": "Các khái niệm đi cùng test, debug, review, log và thói quen giữ chất lượng code."
+            }
+          ],
+          "items": [
+            {
+              "title": "Unit Test",
+              "body": "Unit test là test nhắm vào một đơn vị logic nhỏ, ví dụ một class, một method hoặc một rule tách biệt. Mục tiêu không phải chứng minh cả hệ thống chạy, mà khóa đúng một behavior nhỏ để khi sửa code bạn biết phần đó có còn đúng không."
+            },
+            {
+              "title": "Feature Test",
+              "body": "Feature test đi theo flow gần với request thật hơn, ví dụ submit form, gọi route, assert response, assert database hoặc assert mail/job/event được dispatch. Với Laravel, feature test thường đem lại giá trị thực tế cao hơn unit test quá vụn.",
+              "code": "$response = $this->post('/posts', ['title' => 'Hello']);\n$response->assertRedirect();\n$this->assertDatabaseHas('posts', ['title' => 'Hello']);\n"
+            },
+            {
+              "title": "Integration Test",
+              "body": "Integration test kiểm tra nhiều lớp làm việc cùng nhau, ví dụ controller + service + database + queue hoặc app + third-party adapter. Đây là vùng rất hữu ích khi bug không nằm ở một method nhỏ mà nằm ở cách nhiều lớp ghép lại."
+            },
+            {
+              "title": "Regression",
+              "body": "Regression là lỗi mới vô tình xuất hiện ở chỗ từng chạy đúng trước đây. Một team trưởng thành không chỉ sửa bug hiện tại, mà còn cố gắng thêm test hoặc checklist để bug cùng loại không quay lại."
+            },
+            {
+              "title": "Flaky Test",
+              "body": "Flaky test là test lúc pass lúc fail dù code không đổi. Đây là loại test rất nguy hiểm vì nó làm team mất niềm tin vào CI. Nguyên nhân thường tới từ race condition, thời gian, external dependency, dữ liệu dùng chung hoặc assertion quá mong manh."
+            },
+            {
+              "title": "Mock",
+              "body": "Mock là đối tượng giả giúp bạn kiểm soát hoặc kiểm tra cách dependency được gọi trong test. Nó hữu ích, nhưng nếu lạm dụng thì test sẽ khóa implementation detail hơn là behavior thật mà người dùng quan tâm."
+            },
+            {
+              "title": "Root Cause",
+              "body": "Root cause là nguyên nhân gốc thực sự tạo ra lỗi, không phải symptom bề mặt. Một bug có thể hiện ra ở UI, nhưng root cause lại nằm ở query, cache, queue, timezone hoặc data cũ. Người debug tốt luôn cố đi tới root cause thay vì chỉ che symptom.",
+              "tip": "Một câu rất nổi tiếng trong kỹ thuật là: đừng vá phần đau trước khi hiểu vì sao nó đau."
+            },
+            {
+              "title": "Code Smell",
+              "body": "Code smell không nhất thiết là bug ngay lập tức, nhưng là dấu hiệu cho thấy code đang khó sống: controller quá béo, helper vô chủ, logic lặp, query ẩn trong view, service làm quá nhiều việc hoặc test rất khó viết. Smell là tín hiệu để bạn nghĩ kỹ hơn, không phải lý do để refactor mù."
+            },
+            {
+              "title": "Static Analysis",
+              "body": "Static analysis là việc dùng tool như PHPStan, Psalm hoặc linter để phân tích code mà không cần chạy app thật. Nó giúp bắt một lớp lỗi rất sớm như type sai, method không tồn tại, dead code hoặc assumption không nhất quán."
+            },
+            {
+              "title": "CI",
+              "body": "CI là continuous integration: pipeline tự động chạy test, lint, static analysis hoặc build khi code được push hoặc mở pull request. Một CI tốt không phải để trang trí quy trình, mà để phát hiện lỗi sớm, đều, và ít phụ thuộc vào trí nhớ của từng cá nhân."
+            }
+          ]
+        },
+        {
+          "type": "list",
+          "heading": "Kiến trúc, mạng và tư duy hệ thống",
+          "intro": "Đây là nhóm từ khóa giúp người mới bắt đầu vượt khỏi mức nhìn code theo từng file riêng lẻ. Khi app lớn dần, phải nhìn theo luồng dữ liệu, boundary, dependency và hành vi của nhiều lớp hạ tầng cùng lúc.",
+          "breaks": [
+            {
+              "start": 1,
+              "title": "Architecture & system thinking",
+              "description": "Các thuật ngữ giúp nối code, infra, network và decision-making thành một bức tranh rõ hơn."
+            }
+          ],
+          "items": [
+            {
+              "title": "Latency",
+              "body": "Latency là độ trễ từ lúc gửi request tới lúc có phản hồi hoặc hoàn tất một bước xử lý. Người mới hay chỉ nhìn `app có chạy không`, còn người làm lâu sẽ nhìn thêm `nó chậm ở đâu`, `độ trễ đến từ DB, network, queue hay third-party`."
+            },
+            {
+              "title": "Throughput",
+              "body": "Throughput là lượng việc hệ thống xử lý được trong một khoảng thời gian, ví dụ request/giây, job/phút, message/giây. Có lúc hệ thống có latency ổn với ít traffic nhưng throughput lại quá yếu khi tải tăng."
+            },
+            {
+              "title": "DNS",
+              "body": "DNS là hệ thống chuyển domain dễ nhớ của con người thành địa chỉ IP máy có thể dùng để định tuyến. Khi bạn đổi domain, migrate server hoặc cutover traffic mà vẫn thấy request chạy sang nơi cũ, nhiều khi vấn đề nằm ở DNS cache chứ không nằm trong app."
+            },
+            {
+              "title": "Load Balancer",
+              "body": "Load balancer là lớp phân phối request sang nhiều instance phía sau để tăng khả năng chịu tải hoặc tăng tính sẵn sàng. Nhưng nó cũng mở thêm bài toán health check, sticky session, forwarded headers, proxy trust và debugging khi request không luôn đi cùng một đường."
+            },
+            {
+              "title": "Concurrency",
+              "body": "Concurrency là việc nhiều request, job hoặc thao tác cùng diễn ra gần như đồng thời. Khi mới học CRUD đơn giản, bạn ít thấy nó. Nhưng khi có payment, booking, inventory, queue retry hoặc nhiều worker, concurrency trở thành nguồn bug cực lớn nếu không có lock, transaction hoặc idempotency phù hợp."
+            },
+            {
+              "title": "Race Condition",
+              "body": "Race condition xảy ra khi kết quả đúng hay sai phụ thuộc vào thứ tự timing của nhiều thao tác cạnh tranh nhau. Đây là loại lỗi rất khó tái hiện, rất hay gây flaky test, và là một trong những lý do `local không sao` nhưng production lại sai khó hiểu.",
+              "links": [
+                {
+                  "label": "Laravel Async",
+                  "href": "../laravel/async.html",
+                  "description": "Xem retry, overlap, lock và duplicate job trong môi trường async."
+                },
+                {
+                  "label": "Interview Senior",
+                  "href": "../interview/senior.html",
+                  "description": "Ôn cách trả lời bug timing, concurrency và consistency ở level cao."
+                }
+              ],
+              "note": "Ví dụ bug thật: hai request cùng lúc cùng trừ tồn kho hoặc cùng đặt một slot cuối, dẫn tới hệ thống chấp nhận cả hai dù chỉ nên có một."
+            },
+            {
+              "title": "Single Point of Failure",
+              "body": "Single point of failure là một chỗ duy nhất mà nếu nó hỏng thì cả hệ thống hoặc một flow quan trọng sẽ tê liệt. Có thể đó là một DB duy nhất, một queue duy nhất, một Redis duy nhất, một cron quan trọng hoặc thậm chí một con người duy nhất giữ tri thức hệ thống."
+            },
+            {
+              "title": "Technical Debt",
+              "body": "Technical debt là món nợ tạo ra khi team chọn giải pháp nhanh, tạm hoặc thiếu chuẩn để đổi lấy tốc độ hiện tại. Nợ kỹ thuật không xấu tuyệt đối, nhưng nếu không ghi nhận và trả dần thì nó sẽ quay lại dưới dạng bug khó, chậm phát triển, review đau đầu hoặc deploy rủi ro.",
+              "links": [
+                {
+                  "label": "Laravel Maintenance & Upgrade",
+                  "href": "../laravel/maintenance-upgrade.html",
+                  "description": "Xem nợ kỹ thuật ảnh hưởng upgrade, refactor và support dài hạn thế nào."
+                },
+                {
+                  "label": "Interview Master",
+                  "href": "../interview/master.html",
+                  "description": "Ôn góc nhìn technical debt ở cấp hệ thống, chiến lược và tổ chức."
+                }
+              ],
+              "tip": "Ward Cunningham, người gắn nổi khái niệm này, dùng hình ảnh 'nợ' để nhấn mạnh rằng tốc độ sớm có cái giá về sau."
+            },
+            {
+              "title": "Tradeoff",
+              "body": "Tradeoff là việc chấp nhận được cái này thì phải bỏ bớt cái khác: nhanh hơn nhưng khó bảo trì hơn, tách lớp sạch hơn nhưng phức tạp hơn, cache nhiều hơn nhưng invalidation khó hơn. Tư duy kỹ thuật tốt không phải là đi tìm giải pháp hoàn hảo, mà là nhìn rõ tradeoff rồi chọn thứ hợp tình huống.",
+              "links": [
+                {
+                  "label": "Laravel Container & Architecture",
+                  "href": "../laravel/container-architecture.html",
+                  "description": "Xem tradeoff khi tách service, repository, action hay giữ flow đơn giản."
+                },
+                {
+                  "label": "Interview Senior",
+                  "href": "../interview/senior.html",
+                  "description": "Ôn các câu tradeoff kỹ thuật, boundary và decision making ở level senior."
+                }
+              ],
+              "bullets": [
+                "Người mới thường đi tìm câu trả lời 'đúng tuyệt đối'.",
+                "Người có kinh nghiệm hơn thường hỏi: đúng với bối cảnh, deadline, team size và blast radius nào?"
+              ]
+            },
+            {
+              "title": "Canonical Source of Truth",
+              "body": "Đây là nơi hoặc hệ thống được coi là nguồn thật nhất cho một loại dữ liệu hoặc ý nghĩa nghiệp vụ. Khi nhiều service, nhiều bảng hoặc nhiều dashboard cùng nói về một khái niệm như `revenue`, `active user` hay `membership status`, nếu không có canonical source of truth thì mỗi nơi có thể 'đúng kỹ thuật' mà vẫn sai business."
+            }
+          ]
+        }
+      ]
+    },
+    "practice": {
+      "metaTitle": "Bài thực hành | Laravel Labs",
+      "eyebrow": "Thực hành",
+      "title": "Kế hoạch luyện tập và mini project",
+      "subtitle": "Biến ghi chú tĩnh thành mini task, bug lab và case study có thể lặp lại để kỹ năng không chỉ dừng ở mức đọc hiểu.",
+      "sections": [
+        {
+          "type": "cards",
+          "heading": "Ý tưởng mini project",
+          "intro": "Giữ các project này nhỏ gọn để mỗi project củng cố một kỹ năng Laravel cụ thể.",
+          "items": [
+            {
+              "title": "Task Tracker",
+              "body": "Luyện CRUD, policy, filter, seeder và phân trang."
+            },
+            {
+              "title": "Blog đơn giản",
+              "body": "Luyện slug, category, comment, upload ảnh và route model binding."
+            },
+            {
+              "title": "Team Dashboard",
+              "body": "Luyện role, lời mời, thẻ chỉ số và luồng hồ sơ người dùng."
+            }
+          ]
+        },
+        {
+          "type": "list",
+          "heading": "Mini task theo nhịp 30 đến 90 phút",
+          "intro": "Đây là loại bài luyện giúp bạn duy trì đà học kể cả khi không có cả buổi để build project dài.",
+          "breaks": [
+            {
+              "start": 1,
+              "title": "Task ngắn",
+              "description": "Bài tập nhỏ nhưng bám đúng thói quen của project thật."
+            }
+          ],
+          "items": [
+            {
+              "title": "Thêm filter + pagination cho danh sách bài viết",
+              "body": "Tự dựng một màn list có keyword, status và phân trang rồi giữ query string khi đổi trang.",
+              "code": "Route::get('/posts', [PostController::class, 'index']);\n\npublic function index(Request $request)\n{\n    $posts = Post::query()\n        ->when($request->filled('keyword'), fn ($query) => $query->where('title', 'like', '%' . $request->keyword . '%'))\n        ->latest()\n        ->paginate(10)\n        ->withQueryString();\n\n    return view('posts.index', compact('posts'));\n}",
+              "tip": "Đây là task rất hợp để luyện query builder, request input, Blade form và giữ state UX.",
+              "note": "Đừng dừng ở mức code chạy được. Hãy tự hỏi list này có bị N+1, có giữ filter state và có dễ mở rộng không."
+            },
+            {
+              "title": "Tách validation khỏi controller bằng Form Request",
+              "body": "Chọn một controller đang validate inline rồi chuyển sang `FormRequest` để code gọn và flow rõ hơn.",
+              "code": "php artisan make:request StorePostRequest",
+              "tip": "Task này giúp bạn cảm được ranh giới giữa request validation, business flow và response."
+            },
+            {
+              "title": "Thêm upload ảnh đại diện có validate",
+              "body": "Luyện đầy đủ flow từ input file, validation, lưu path, hiển thị URL đến xử lý file cũ khi replace.",
+              "code": "$path = $request->file('avatar')->store('avatars', 'public');",
+              "note": "Nếu muốn bài tập khó hơn, hãy thử thêm private disk hoặc signed download."
+            },
+            {
+              "title": "Tự viết một feature test cho flow create đơn giản",
+              "body": "Lấy một flow CRUD bạn đã làm bằng tay rồi khóa nó lại bằng test thay vì chỉ click thủ công.",
+              "code": "$response = $this->post(route('posts.store'), [\n    'title' => 'Hello Laravel',\n    'body' => 'A real feature test.'\n]);\n\n$response->assertRedirect();\n$this->assertDatabaseHas('posts', ['title' => 'Hello Laravel']);",
+              "tip": "Lúc mới học, 1 feature test tốt thường giá trị hơn 5 unit test nhỏ nhưng rời context."
+            }
+          ]
+        },
+        {
+          "type": "list",
+          "heading": "Bug lab và case study nên tự dựng",
+          "intro": "Những bài này giúp bạn chuyển từ học thuộc khái niệm sang học cách điều tra triệu chứng, nguyên nhân và tradeoff sửa lỗi.",
+          "breaks": [
+            {
+              "start": 1,
+              "title": "Bug lab",
+              "description": "Cố tình tạo lỗi rồi tự lần theo flow để sửa."
+            }
+          ],
+          "items": [
+            {
+              "title": "Lab 1: 419 sau khi submit form",
+              "body": "Tự tạo form thiếu `@csrf`, submit rồi lần từ browser về Blade để hiểu vì sao web flow bị chặn.",
+              "code": "<form method=\"POST\" action=\"/posts\">\n    <input name=\"title\" />\n    <button type=\"submit\">Save</button>\n</form>",
+              "note": "Case này rất hợp để luyện HTTP, middleware, session và bảo mật nền tảng."
+            },
+            {
+              "title": "Lab 2: N+1 ở màn danh sách",
+              "body": "Cố tình render relation trong loop mà không eager load, rồi dùng debug bar hoặc query log để nhìn số query tăng.",
+              "code": "@foreach ($posts as $post)\n    <p>{{ $post->author->name }}</p>\n@endforeach",
+              "tip": "Đây là bài tập rất tốt để thấy sự khác nhau giữa app nhỏ local và dataset thật hơn."
+            },
+            {
+              "title": "Lab 3: Queue worker chạy code cũ",
+              "body": "Dispatch job, sửa logic rồi quên restart worker để cảm nhận vì sao deploy xong vẫn thấy hành vi cũ.",
+              "code": "php artisan queue:work\nphp artisan queue:restart",
+              "note": "Case này nối rất đẹp giữa Laravel async, DevOps và interview."
+            },
+            {
+              "title": "Lab 4: Config sửa rồi nhưng app vẫn đọc giá trị cũ",
+              "body": "Đổi `.env`, bật `config:cache` rồi tự debug vì sao app không nhận giá trị mới.",
+              "code": "php artisan config:cache\nphp artisan config:clear",
+              "tip": "Nếu làm lab này kỹ, bạn sẽ bớt rất nhiều bug kiểu local đúng production sai."
+            }
+          ]
+        },
+        {
+          "type": "list",
+          "heading": "Nhịp luyện tập hàng tuần",
+          "intro": "Một nhịp lặp lại giúp bạn vẫn tiến bộ ngay cả khi không có thời gian làm project lớn.",
+          "items": [
+            {
+              "title": "Ngày 1",
+              "body": "Đọc một khái niệm rồi viết lại bằng ghi chú tiếng Anh và tiếng Việt của riêng bạn."
+            },
+            {
+              "title": "Ngày 2",
+              "body": "Xây dựng tính năng nhỏ nhất có thể nhưng vẫn dùng được khái niệm đó."
+            },
+            {
+              "title": "Ngày 3",
+              "body": "Tự gây ra một lỗi liên quan tới khái niệm đó rồi viết lại cách bạn tìm ra nguyên nhân."
+            },
+            {
+              "title": "Ngày 4",
+              "body": "Khóa lại bằng test hoặc checklist review để lần sau không lặp đúng lỗi cũ."
+            }
+          ]
+        },
+        {
+          "type": "list",
+          "heading": "Checklist sau mỗi bài thực hành",
+          "intro": "Nếu chỉ code xong mà không review lại, bạn sẽ học rất chậm dù làm nhiều.",
+          "items": [
+            {
+              "title": "Viết lại flow bằng lời của mình",
+              "body": "Nếu không thể mô tả route -> request -> controller -> data -> response, nghĩa là bạn mới chạm bề mặt."
+            },
+            {
+              "title": "Chỉ ra ít nhất một tradeoff",
+              "body": "Ví dụ: code chạy nhanh hơn nhưng khó test hơn, hoặc query gọn nhưng dễ N+1 hơn."
+            },
+            {
+              "title": "Tạo một checklist ngắn cho lần sau",
+              "body": "Một checklist 3 đến 5 ý như `@csrf`, validation, eager load, queue restart, config clear` thường thực dụng hơn nhiều ghi chú dài."
+            }
+          ]
+        }
+      ]
+    },
+    "interview": {
+      "metaTitle": "Luyện phỏng vấn | Laravel Labs",
+      "eyebrow": "Ngân hàng phỏng vấn",
+      "title": "Luyện phỏng vấn Laravel và PHP",
+      "subtitle": "Trang tổng quan này gom các nhánh phỏng vấn theo level để bạn ôn có trọng tâm, rồi đi vào từng site con riêng với dữ liệu `vi/en` độc lập.",
+      "journeyTitle": "Chọn một level để luyện đúng nhóm câu hỏi",
+      "journeySubtitle": "Mỗi mục bên dưới là một site phỏng vấn riêng. Cách này giúp phần interview không bị dồn hết vào một trang dài, và sau này có thể mở rộng từng level thành question bank sâu hơn.",
+      "menu": [
+        {
+          "anchor": "interview-fresher",
+          "label": "Fresher",
+          "desc": "Nền tảng PHP, Laravel, HTTP, MVC và flow project ở vòng đầu."
+        },
+        {
+          "anchor": "interview-junior",
+          "label": "Junior",
+          "desc": "CRUD, validation, auth, Eloquent, bug thực tế và cách debug cơ bản."
+        },
+        {
+          "anchor": "interview-intermediate",
+          "label": "Intermediate",
+          "desc": "Tradeoff kiến trúc, queue, cache, test và cách tách lớp hợp lý."
+        },
+        {
+          "anchor": "interview-senior",
+          "label": "Senior",
+          "desc": "Tư duy hệ thống, production risk, maintainability và review depth."
+        },
+        {
+          "anchor": "interview-master",
+          "label": "Master",
+          "desc": "Upgrade, migration strategy, dirty data, ownership và technical judgment."
+        },
+        {
+          "anchor": "interview-devops",
+          "label": "DevOps",
+          "desc": "Deploy, queue worker, env drift, health check, rollback và vận hành."
+        }
+      ],
+      "sections": [
+        {
+          "type": "cards",
+          "heading": "Nhóm câu hỏi",
+          "intro": "Đi từ nền tảng trước, sau đó chuyển sang debug, kiến trúc, vận hành và cách trả lời theo từng cấp độ.",
+          "items": [
+            {
+              "title": "Câu hỏi về ngôn ngữ PHP",
+              "body": "Biến, OOP, trait, interface, reference, Composer và autoloading."
+            },
+            {
+              "title": "Câu hỏi Laravel cốt lõi",
+              "body": "Service container, lifecycle, middleware, Eloquent, queue, event và caching."
+            },
+            {
+              "title": "Câu hỏi về trải nghiệm project",
+              "body": "Bạn đã xây gì, phần nào hỏng, cách bạn debug và điều bạn sẽ cải tiến tiếp theo."
+            }
+          ]
+        },
+        {
+          "type": "list",
+          "heading": "Cách dùng khu phỏng vấn này",
+          "intro": "Đừng học thuộc toàn bộ câu trả lời trong một lần. Hãy chọn đúng level, luyện theo nhóm nhỏ và tự nói lại bằng project thật của bạn.",
+          "items": [
+            {
+              "title": "Bắt đầu từ level đang gần nhất với bạn",
+              "body": "Nếu đang làm vài CRUD project đầu tiên, hãy đi từ `Fresher` hoặc `Junior` trước. Nhảy thẳng lên `Senior` thường chỉ khiến câu trả lời bị rỗng."
+            },
+            {
+              "title": "Mỗi câu nên gắn với một ví dụ project thật",
+              "body": "Ngay cả khi câu hỏi lý thuyết, hãy nối nó về trải nghiệm như Breeze, Chirper, queue, upload, deploy hoặc bug bạn từng gặp."
+            },
+            {
+              "title": "Luyện theo vòng ngắn",
+              "body": "Một vòng tốt thường là: đọc câu hỏi, tự trả lời miệng, mở site con để xem flow chuẩn, rồi ghi lại phiên bản ngắn của riêng bạn."
+            }
+          ]
+        },
+        {
+          "type": "list",
+          "heading": "Checklist khi trả lời",
+          "intro": "Dùng một cấu trúc đơn giản để câu trả lời nghe vững vàng thay vì học thuộc.",
+          "items": [
+            {
+              "title": "Định nghĩa khái niệm",
+              "body": "Bắt đầu bằng một giải thích ngắn trong một hoặc hai câu."
+            },
+            {
+              "title": "Đưa ví dụ thực tế",
+              "body": "Liên hệ câu trả lời với một lab của bạn như Breeze hoặc Jetstream."
+            },
+            {
+              "title": "Nêu tradeoff",
+              "body": "Chỉ ra khi nào cách làm đó hữu ích và khi nào nó bắt đầu hạn chế."
+            }
+          ]
+        }
+      ]
+    },
+    "vibeCoding": {
+      "metaTitle": "Vibe Coding | Laravel Labs",
+      "eyebrow": "Vibe Coding",
+      "title": "Hub Vibe Coding và AI-assisted build flow",
+      "subtitle": "Tách riêng một khu để gom cách làm việc mới cùng AI: mô tả bằng ngôn ngữ tự nhiên, để AI sinh code, rồi review, test và siết chất lượng đầu ra.",
+      "journeyTitle": "Chọn một nhánh Vibe Coding để học hoặc thực hành",
+      "journeySubtitle": "Mỗi mục bên dưới là một site con riêng để bạn gom workflow, prompt, checklist, ví dụ và các guardrail quan trọng. Cách này giúp phần AI-assisted coding không bị trộn lẫn với Laravel learning thông thường.",
+      "menu": [
+        {
+          "anchor": "vibe-prompting",
+          "label": "Prompting",
+          "desc": "Viết prompt đúng, chia scope, đặt constraint và hiểu ranh giới giữa nhờ AI với hiểu hệ thống."
+        },
+        {
+          "anchor": "vibe-ai-crud",
+          "label": "AI CRUD",
+          "desc": "Dùng AI để dựng CRUD, form, validation, upload, API và flow feature Laravel thật."
+        },
+        {
+          "anchor": "vibe-ai-review",
+          "label": "AI Review",
+          "desc": "Review output AI, trace bug, bóc code smell, refactor và kiểm soát diff."
+        },
+        {
+          "anchor": "vibe-ai-runtime",
+          "label": "AI Runtime",
+          "desc": "Dùng AI gần Docker, queue, deploy, env, secret và production risk mà không tự phá hệ thống."
+        }
+      ],
+      "sections": [
+        {
+          "type": "cards",
+          "heading": "4 hướng Vibe Coding nên có",
+          "intro": "Đi từ khái niệm nền, sang build feature bằng AI, rồi tới review/refactor và guardrail runtime. Đây là cách chia dễ học và cũng đúng thứ người dùng AI code hay vấp nhất.",
+          "items": [
+            {
+              "title": "Prompting",
+              "body": "Giải thích vibe coding là gì, prompt đóng vai trò gì, AI giỏi ở đâu và dở ở đâu."
+            },
+            {
+              "title": "AI CRUD",
+              "body": "Cho AI sinh CRUD, auth, upload, filter, API rồi học cách chốt yêu cầu và giữ output không lệch."
+            },
+            {
+              "title": "AI Review",
+              "body": "Đây là phần quan trọng nhất: không tin output mù, mà biết đọc, test, bóc smell và sửa."
+            },
+            {
+              "title": "AI Runtime",
+              "body": "Nói về Docker, queue, deploy, env, secret, migration và những chỗ AI rất dễ đẩy người dùng vào lỗi production."
+            }
+          ]
+        },
+        {
+          "type": "list",
+          "heading": "Vì sao nhánh này đáng thêm?",
+          "intro": "Ngoài PHP, Laravel và phỏng vấn, phần còn thiếu lớn là cách làm việc thật với AI coding tool. Nhiều người đã dùng rồi, nhưng lại chưa có khung rõ để dùng cho đúng.",
+          "items": [
+            {
+              "title": "AI sinh code rất nhanh nhưng dễ lệch",
+              "body": "Nếu không có cách viết prompt, chia việc, review output và kiểm tra runtime, code sinh ra rất dễ chạy được mà vẫn sai kiến trúc hoặc sai business."
+            },
+            {
+              "title": "Người học cần guardrail chứ không chỉ cần tốc độ",
+              "body": "Điểm mạnh thật sự không phải là để AI code nhanh hơn, mà là biết khi nào tin, khi nào nghi, và khi nào phải tự bóc từng lớp."
+            },
+            {
+              "title": "Đây là kỹ năng làm việc mới",
+              "body": "Vibe coding không chỉ là công cụ. Nó đổi cách phân rã task, cách review PR, cách debug bug và cách trao đổi yêu cầu."
+            }
+          ]
+        },
+        {
+          "type": "list",
+          "heading": "Cách dùng khu Vibe Coding này",
+          "intro": "Mỗi site con nên giống một workflow nhỏ: prompt gì, giao cho AI phần nào, chỗ nào phải review kỹ, và chỗ nào tuyệt đối không nên tin mù.",
+          "items": [
+            {
+              "title": "Giữ mỗi workflow một mục tiêu rõ",
+              "body": "Ví dụ: chỉ nhờ AI dựng form + validation, hoặc chỉ nhờ AI refactor controller, thay vì quăng cả project vào một prompt mù."
+            },
+            {
+              "title": "Luôn review output theo lớp",
+              "body": "Nhìn route, request, controller, model, query, auth, file upload, config và runtime riêng rẽ thay vì chỉ thấy app chạy là xong."
+            },
+            {
+              "title": "Kèm checklist kiểm tra",
+              "body": "Nên có sẵn prompt, expected output, command test, case fail, note bảo mật và các dấu hiệu output AI đang bịa hoặc đang phá structure."
+            }
+          ]
+        },
+        {
+          "type": "list",
+          "heading": "Prompt bank nên copy và chỉnh lại",
+          "intro": "Đây không phải prompt thần chú. Hãy coi chúng như khung mở đầu để ép AI nói rõ assumption, scope, file chạm tới và cách verify.",
+          "breaks": [
+            {
+              "start": 1,
+              "title": "Prompt templates",
+              "description": "Những prompt ngắn nhưng có guardrail rõ ràng."
+            }
+          ],
+          "items": [
+            {
+              "title": "Prompt dựng feature Laravel nhỏ",
+              "body": "Dùng khi muốn AI dựng nhanh một flow CRUD hoặc form nhưng vẫn phải nói rõ file nào chạm tới và rủi ro chính.",
+              "code": "You are working inside an existing Laravel app.\nBuild only the smallest working version of this feature: [describe feature].\nConstraints:\n- keep routes, FormRequest, controller, model, and Blade responsibilities separate\n- list every file you changed\n- call out validation, auth, and database risks\n- do not touch unrelated files\n- give me the exact artisan and test commands to verify it",
+              "tip": "Prompt tốt thường nói rõ scope, guardrail và cách verify thay vì chỉ mô tả UI."
+            },
+            {
+              "title": "Prompt review diff AI sinh ra",
+              "body": "Dùng sau khi AI đã sinh code. Mục tiêu là bóc rủi ro chứ không phải xin một lời khen dài.",
+              "code": "Review this Laravel diff as a strict senior reviewer.\nFocus on:\n- broken request flow\n- validation gaps\n- policy / auth drift\n- N+1 or query waste\n- risky runtime or env assumptions\n- files that should not have changed\nReturn:\n1. highest-risk findings first\n2. missing tests\n3. whether you would approve this diff",
+              "note": "Đây là prompt hợp với `AI Review` hơn là `AI CRUD`."
+            },
+            {
+              "title": "Prompt debug lỗi local đúng production sai",
+              "body": "Dùng khi nghi có env drift, cache, queue worker hoặc config mismatch.",
+              "code": "Act like a Laravel production debugger.\nSymptom: [describe symptom].\nLocal works, production fails.\nGive me:\n- the most likely layers to inspect first\n- the exact Laravel / PHP / runtime commands to run\n- what evidence would confirm or reject each hypothesis\n- the order that minimizes blast radius",
+              "tip": "Prompt debug tốt phải ép AI trả về thứ tự điều tra, không chỉ quăng danh sách khả năng vô hạn."
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

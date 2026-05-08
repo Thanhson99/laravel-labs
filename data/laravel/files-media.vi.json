@@ -1,0 +1,642 @@
+{
+  "anchor": "laravel-files-media",
+  "type": "list",
+  "heading": "File, upload và media handling: từ `storage` cơ bản tới media pipeline sống được ngoài đời",
+  "intro": "Site này gom toàn bộ kiến thức thực chiến quanh file, upload và media trong Laravel. Mục tiêu không chỉ là biết `Storage::put()`, mà là hiểu disk, public link, quyền truy cập, naming, metadata, validate, upload lớn, S3, signed URL, queue xử lý ảnh, import-export, cleanup, observability và các lỗi production thường gặp.",
+  "breaks": [
+    {
+      "start": 1,
+      "title": "I. Nền Tảng File Và Storage",
+      "description": "Bắt đầu từ file là gì trong app web, disk là gì, `storage/` khác `public/` thế nào và Laravel nhìn file ra sao.",
+      "tone": "amber"
+    },
+    {
+      "start": 15,
+      "title": "II. Disk, Config Và Cách Kết Nối Storage",
+      "description": "Cấu hình `filesystems.php`, local, public, S3, nhiều disk, environment config và quyền truy cập file.",
+      "tone": "copper"
+    },
+    {
+      "start": 31,
+      "title": "III. Upload Cơ Bản, Validation Và Naming",
+      "description": "Luồng upload chuẩn, `multipart/form-data`, validate file, đặt tên, thư mục, metadata và cách lưu cho đỡ loạn về sau.",
+      "tone": "sand"
+    },
+    {
+      "start": 49,
+      "title": "IV. Public Access, Download, Signed URL Và Bảo Mật",
+      "description": "File public hay private, stream/download, signed URL, hotlink, malware, mime spoofing và các lỗ hổng phổ biến.",
+      "tone": "amber"
+    },
+    {
+      "start": 65,
+      "title": "V. Ảnh, Media Processing Và Các Thao Tác Hậu Xử Lý",
+      "description": "Resize, thumbnail, crop, convert format, EXIF, optimization, queue xử lý media và media library mindset.",
+      "tone": "copper"
+    },
+    {
+      "start": 81,
+      "title": "VI. Upload Lớn, Cloud, S3 Và Phân Phối File",
+      "description": "Large upload, chunk, direct-to-S3, CDN, temporary URL, lifecycle policy và các vấn đề hạ tầng liên quan media.",
+      "tone": "sand"
+    },
+    {
+      "start": 97,
+      "title": "VII. Import, Export, Cleanup Và Tính Toàn Vẹn Dữ Liệu",
+      "description": "CSV, Excel, PDF, orphan file, delete strategy, version file, backup và giữ DB với storage không lệch nhau.",
+      "tone": "amber"
+    },
+    {
+      "start": 113,
+      "title": "VIII. Test, Quan Sát, Case Thực Chiến Và Tư Duy Dài Hạn",
+      "description": "Fake storage, debug upload, log, monitoring, bug production thật và cách giữ lớp media không thành bãi rác.",
+      "tone": "copper"
+    }
+  ],
+  "items": [
+    {
+      "title": "1. File trong một app Laravel thường là những loại gì?",
+      "body": "Ảnh đại diện, tài liệu đính kèm, hóa đơn PDF, video, file import CSV, file export Excel, avatar, audio, bản scan, backup tạm hoặc output xử lý nền."
+    },
+    {
+      "title": "2. Vì sao file handling lại là phần dễ bị xem nhẹ?",
+      "body": "Vì lúc demo chỉ cần upload được là đủ. Nhưng lên production sẽ lộ ra quyền truy cập, naming, cleanup, duplicate, storage đầy, file rác, CDN, private access và performance."
+    },
+    {
+      "title": "3. `storage/` trong Laravel dùng để làm gì?",
+      "body": "Đây là nơi Laravel đặt nhiều dữ liệu runtime như logs, cache, session file, và cả file ứng dụng lưu nếu bạn dùng disk local.",
+      "code": "storage/\n  app/\n  app/public/\n  framework/\n  logs/",
+      "note": "Chỉ nhìn nhanh cây thư mục này là đã phân biệt được vùng app lưu file với vùng framework runtime."
+    },
+    {
+      "title": "4. `public/` khác `storage/` thế nào?",
+      "body": "`public/` là web root cho asset có thể truy cập công khai. `storage/` là vùng ứng dụng quản lý nội bộ hơn. Một số file trong `storage/app/public` được public hóa qua symbolic link."
+    },
+    {
+      "title": "5. Disk là gì trong Laravel?",
+      "body": "Disk là một cấu hình lưu trữ trừu tượng. Nó cho phép app dùng cùng API để lưu file lên local, S3 hoặc storage tương thích khác."
+    },
+    {
+      "title": "6. Tại sao abstraction của `Storage` hữu ích?",
+      "body": "Vì code lưu, đọc, xóa file ít phụ thuộc nơi lưu thật. Bạn có thể đổi local sang S3 mà không phải sửa toàn bộ business logic."
+    },
+    {
+      "title": "7. File path và file URL có phải là một không?",
+      "body": "Không. Path là nơi file nằm trong storage backend, còn URL là cách client truy cập. Nhiều bug xảy ra vì team trộn hai khái niệm này."
+    },
+    {
+      "title": "8. Metadata file thường gồm những gì?",
+      "body": "Tên gốc, tên lưu thực tế, mime type, extension, size, disk, path, URL public nếu có, checksum, width-height với ảnh, uploader, thời gian upload."
+    },
+    {
+      "title": "9. Có nên lưu file trực tiếp vào database không?",
+      "body": "Thường là không với file lớn hoặc media phổ biến. DB phù hợp hơn để lưu metadata, path, trạng thái xử lý và quan hệ tới thực thể nghiệp vụ."
+    },
+    {
+      "title": "10. Khi nào blob trong database vẫn có thể hợp lý?",
+      "body": "Khi file rất nhỏ, mang tính transaction cao hoặc hệ thống đặc thù cần atomicity cao. Nhưng phần lớn web app vẫn hợp với object storage hơn."
+    },
+    {
+      "title": "11. Tại sao file lifecycle cần được nghĩ từ đầu?",
+      "body": "Vì file không tự biến mất khi record DB bị xóa. Nếu không có lifecycle rõ ràng, storage sẽ đầy lên bởi orphan file và media rác."
+    },
+    {
+      "title": "12. Một hệ thống file tốt nên trả lời được câu hỏi gì?",
+      "body": "File đang nằm ở đâu, ai tải lên, thuộc record nào, có public không, có thể xóa khi nào, có bản resize nào, có backup hay không và nếu mất DB thì còn truy vết được không."
+    },
+    {
+      "title": "13. Tư duy file handling khác gì tư duy lưu text data?",
+      "body": "File lớn hơn, nặng IO hơn, liên quan tới browser, content-type, virus, quota, CDN, network và cleanup. Nó hiếm khi chỉ là 'một field nữa trong form'."
+    },
+    {
+      "title": "14. Nền tảng quan trọng nhất khi làm phần file là gì?",
+      "body": "Phải nghĩ cả vòng đời của file: upload, validate, lưu, public hoặc private access, hậu xử lý, thay thế, xóa, backup và quan sát lỗi."
+    },
+    {
+      "title": "15. `config/filesystems.php` dùng để làm gì?",
+      "body": "Đây là nơi Laravel định nghĩa các disk và driver tương ứng như local, public, s3 cùng root path, visibility, URL hoặc bucket config."
+    },
+    {
+      "title": "16. Disk `local` thường lưu ở đâu?",
+      "body": "Mặc định là `storage/app`. Nó tốt cho file nội bộ, tạm, import, export hoặc môi trường local nhỏ."
+    },
+    {
+      "title": "17. Disk `public` thường lưu ở đâu?",
+      "body": "Mặc định là `storage/app/public`, sau đó được expose qua symbolic link tới `public/storage` để browser truy cập được."
+    },
+    {
+      "title": "18. `php artisan storage:link` làm gì?",
+      "body": "Nó tạo symbolic link từ `public/storage` sang `storage/app/public`, để file trên disk `public` có thể được truy cập qua URL public.",
+      "code": "php artisan storage:link\n\n# sau đó file ở storage/app/public/avatars/a.jpg\n# sẽ truy cập được qua /storage/avatars/a.jpg"
+    },
+    {
+      "title": "19. Vì sao clone project xong ảnh không hiện dù DB vẫn có path?",
+      "body": "Thường vì chưa chạy `storage:link`, chưa có file thật, sai disk config hoặc storage volume local chưa đồng bộ với dữ liệu DB."
+    },
+    {
+      "title": "20. S3 driver phù hợp khi nào?",
+      "body": "Khi app cần lưu file bền hơn local disk, scale tốt hơn, chia sẻ qua nhiều server app, hoặc cần direct upload và CDN dễ dàng hơn."
+    },
+    {
+      "title": "21. S3-compatible storage là gì?",
+      "body": "Là các object storage nói cùng kiểu API như Amazon S3, ví dụ MinIO, DigitalOcean Spaces hoặc Cloudflare R2."
+    },
+    {
+      "title": "22. Có nên dùng nhiều disk trong một app không?",
+      "body": "Có thể rất hợp lý. Ví dụ disk local cho temp file, disk public cho asset nhỏ, disk s3 cho tài liệu chính thức, disk private cho hồ sơ nhạy cảm."
+    },
+    {
+      "title": "23. `FILESYSTEM_DISK` ảnh hưởng gì?",
+      "body": "Nó quyết định default disk nếu code không chỉ rõ. Việc dựa vào default quá mù mờ đôi khi làm local và production lưu file khác chỗ mà team không nhận ra."
+    },
+    {
+      "title": "24. Có nên chỉ định disk rõ trong code không?",
+      "body": "Nếu file thuộc domain quan trọng, thường nên chỉ rõ để intent rõ ràng. Dùng default disk vô tội vạ dễ làm behavior khó đoán khi môi trường đổi."
+    },
+    {
+      "title": "25. Visibility trong storage nghĩa là gì?",
+      "body": "Nó mô tả file là public hay private theo khả năng truy cập. Với cloud storage, visibility có thể map sang ACL hoặc policy tương ứng."
+    },
+    {
+      "title": "26. Vì sao visibility không phải lúc nào cũng đủ để bảo mật?",
+      "body": "Vì quyền truy cập còn phụ thuộc bucket policy, signed URL, CDN behavior, cache và cách app expose link. Đặt `private` không tự động giải quyết mọi thứ."
+    },
+    {
+      "title": "27. URL config trong filesystem dùng để làm gì?",
+      "body": "Nó giúp Laravel tạo ra đường dẫn public đúng cho file, đặc biệt khi app dùng domain asset riêng hoặc CDN."
+    },
+    {
+      "title": "28. Root path sai sẽ gây vấn đề gì?",
+      "body": "App có thể lưu file vào thư mục không mong muốn, đọc nhầm nơi khác hoặc tạo cảm giác upload thành công nhưng không tìm thấy file sau đó."
+    },
+    {
+      "title": "29. Production nhiều server app có làm local disk nguy hiểm không?",
+      "body": "Có. Nếu mỗi server có local disk riêng, request này upload ở server A nhưng request khác đọc ở server B sẽ không thấy file."
+    },
+    {
+      "title": "30. Một tip senior khi config file storage là gì?",
+      "body": "Luôn nghĩ sớm xem app có chạy đa server không, có cần CDN không, file có nhạy cảm không và có cần direct-to-cloud không. Đừng đợi tới lúc traffic tăng mới vá."
+    },
+    {
+      "title": "31. Browser gửi file lên server thường bằng cách nào?",
+      "body": "Thường qua form `multipart/form-data` hoặc upload qua JavaScript dùng `FormData`."
+    },
+    {
+      "title": "32. `UploadedFile` trong Laravel là gì?",
+      "body": "Đó là object đại diện cho file người dùng vừa gửi lên, cho phép bạn kiểm tra tên gốc, extension, mime type, size và lưu file."
+    },
+    {
+      "title": "33. Upload flow cơ bản nên gồm những bước nào?",
+      "body": "Nhận request, validate, chọn disk, sinh tên/path, lưu file, ghi metadata vào DB, rồi nếu cần thì queue hậu xử lý như resize hoặc scan.",
+      "code": "$request->validate([\n    'document' => ['required', 'file', 'max:5120'],\n]);\n\n$path = $request->file('document')->store('documents', 'private');\n\nDocument::create([\n    'user_id' => $request->user()->id,\n    'disk' => 'private',\n    'path' => $path,\n    'original_name' => $request->file('document')->getClientOriginalName(),\n]);"
+    },
+    {
+      "title": "34. Validation file nên kiểm tra những gì?",
+      "body": "Ít nhất nên kiểm tra file có tồn tại, mime hoặc type hợp lệ, dung lượng tối đa, đôi khi là chiều ảnh, số trang hoặc extension cho loại nghiệp vụ đặc thù."
+    },
+    {
+      "title": "35. `mimes` và `mimetypes` khác nhau ra sao trong tư duy?",
+      "body": "Một cái thiên về extension được chấp nhận, cái kia thiên về mime type. Trong bảo mật, chỉ tin extension là chưa đủ."
+    },
+    {
+      "title": "36. Vì sao phải cẩn thận với mime spoofing?",
+      "body": "Kẻ xấu có thể đổi đuôi file để trông như ảnh hay PDF. Nếu app tin mù extension hoặc client-side validation thì rất nguy hiểm."
+    },
+    {
+      "title": "37. Có nên giữ nguyên tên file người dùng tải lên không?",
+      "body": "Thường không nên dùng làm tên lưu duy nhất. Tên gốc có thể trùng, có ký tự lạ, dài quá mức hoặc chứa thông tin nhạy cảm."
+    },
+    {
+      "title": "38. Cách đặt tên file an toàn hơn là gì?",
+      "body": "Dùng UUID, hash, timestamp kết hợp random hoặc cấu trúc domain rõ ràng. Tên gốc có thể giữ ở metadata để hiển thị cho người dùng.",
+      "code": "$filename = (string) Str::uuid().'.'.$request->file('avatar')->extension();\n$path = $request->file('avatar')->storeAs(\n    'users/'.$user->id.'/avatars',\n    $filename,\n    'public'\n);",
+      "note": "Tên file lưu thực tế nên ổn định và ít va chạm. Tên gốc chỉ nên giữ làm metadata hiển thị."
+    },
+    {
+      "title": "39. Thư mục lưu file nên tổ chức thế nào?",
+      "body": "Nên theo domain hoặc thực thể như `users/{id}/avatars`, `orders/{id}/attachments`, `exports/{date}` thay vì nhét tất cả vào một chỗ."
+    },
+    {
+      "title": "40. Có nên encode business meaning vào path không?",
+      "body": "Có thể ở mức vừa đủ. Path có ngữ nghĩa giúp debug dễ hơn, nhưng đừng để path trở thành nguồn sự thật duy nhất thay cho metadata DB."
+    },
+    {
+      "title": "41. Vì sao nên lưu metadata vào DB sau khi lưu file?",
+      "body": "Để app còn truy vấn, lọc, audit, liên kết, hiển thị và cleanup được. Chỉ lưu path trong file system mà không có metadata sẽ rất khó quản lý lâu dài."
+    },
+    {
+      "title": "42. Có nên lưu size và mime type vào DB không?",
+      "body": "Rất nên với nhiều nghiệp vụ. Nó giúp hiển thị, kiểm soát quota, debug và tránh phải đọc file thật mỗi lần cần thông tin."
+    },
+    {
+      "title": "43. Khi replace file cũ bằng file mới, cần cẩn thận gì?",
+      "body": "Phải nghĩ transaction và rollback. Nếu xóa file cũ quá sớm mà DB update fail, hoặc lưu file mới fail sau khi đã đổi metadata, hệ thống sẽ lệch trạng thái."
+    },
+    {
+      "title": "44. Có nên xóa file cũ ngay khi người dùng upload file mới?",
+      "body": "Không phải lúc nào cũng nên. Nhiều hệ thống đổi metadata trước, xác nhận lưu file mới thành công rồi mới dọn file cũ hoặc dời việc dọn sang queue."
+    },
+    {
+      "title": "45. Upload nhiều file một lúc cần nghĩ thêm gì?",
+      "body": "Cần validate từng file, xử lý lỗi theo từng item, giới hạn tổng dung lượng và tránh để một file hỏng làm cả batch rơi vào trạng thái mù mờ."
+    },
+    {
+      "title": "46. Có nên để client gửi path hoặc URL file tự do lên server không?",
+      "body": "Rất cẩn thận. App nên phân biệt rõ upload mới, chọn file đã tồn tại hay tham chiếu tài nguyên ngoài. Tin URL người dùng gửi có thể mở ra SSRF hoặc lỗi bảo mật khác."
+    },
+    {
+      "title": "47. Tại sao progress upload quan trọng với UX?",
+      "body": "Với file vừa và lớn, người dùng cần biết request đang chạy thật hay bị treo. Upload không có progress rất dễ bị bấm lại dẫn đến duplicate."
+    },
+    {
+      "title": "48. Một tip thực chiến với upload là gì?",
+      "body": "Đừng coi upload thành công chỉ vì request trả `200`. Hãy xác nhận file đã lưu, metadata đã ghi, và nếu có hậu xử lý thì trạng thái đó cũng cần được biểu diễn rõ."
+    },
+    {
+      "title": "49. File public khác file private ở mức sản phẩm thế nào?",
+      "body": "File public có thể truy cập trực tiếp qua URL, còn file private cần app kiểm soát quyền xem hoặc tải. Quyết định này ảnh hưởng mạnh tới hạ tầng và UX.",
+      "code": "$avatarUrl = Storage::disk('public')->url($user->avatar_path);\n\nreturn Storage::disk('private')->download(\n    $document->path,\n    $document->original_name\n);",
+      "note": "Cùng là file, nhưng public thường trả URL trực tiếp còn private thường đi qua controller hoặc signed URL."
+    },
+    {
+      "title": "50. Khi nào nên dùng file public?",
+      "body": "Cho ảnh sản phẩm, thumbnail, asset tĩnh, tài nguyên không nhạy cảm và thứ mà ai có URL cũng xem được không gây vấn đề."
+    },
+    {
+      "title": "51. Khi nào nên giữ file private?",
+      "body": "Cho hồ sơ cá nhân, hợp đồng, giấy tờ, file thanh toán, export nội bộ, bản scan hoặc bất kỳ thứ gì cần kiểm soát truy cập theo user hoặc role."
+    },
+    {
+      "title": "52. Signed URL là gì?",
+      "body": "Là URL có chữ ký hoặc token tạm thời cho phép truy cập file private trong khoảng thời gian ngắn mà không phải mở public toàn bộ.",
+      "code": "$url = Storage::disk('s3')->temporaryUrl(\n    $document->path,\n    now()->addMinutes(10)\n);",
+      "note": "Signed URL hợp cho file private cần tải trực tiếp từ object storage mà vẫn có hạn dùng rõ ràng."
+    },
+    {
+      "title": "53. Signed URL hữu ích ở đâu?",
+      "body": "Rất hữu ích khi app lưu file private trên S3 nhưng vẫn muốn browser tải trực tiếp, hoặc muốn chia sẻ link có hạn cho người dùng."
+    },
+    {
+      "title": "54. Vì sao signed URL thường tốt hơn proxy file qua app?",
+      "body": "Nó giảm tải cho app server và tận dụng object storage/CDN tốt hơn. App chỉ cấp quyền truy cập tạm thời thay vì stream toàn bộ byte."
+    },
+    {
+      "title": "55. Khi nào vẫn cần stream file qua controller?",
+      "body": "Khi cần kiểm tra permission phức tạp, watermark động, log tải file rất chi tiết, hoặc backend cần chỉnh nội dung trước khi gửi."
+    },
+    {
+      "title": "56. `Storage::download()` và `Storage::response()` khác nhau ở tư duy nào?",
+      "body": "Một cái thiên về tải xuống dạng attachment, cái kia thiên về trả nội dung file trực tiếp. Chọn sai sẽ ảnh hưởng cách browser xử lý."
+    },
+    {
+      "title": "57. Content-Disposition quan trọng thế nào?",
+      "body": "Nó quyết định browser mở inline hay tải file xuống. Với tài liệu và ảnh, trải nghiệm có thể khác hẳn chỉ vì header này."
+    },
+    {
+      "title": "58. Hotlinking là gì?",
+      "body": "Là khi site khác dùng trực tiếp URL file của bạn để hiển thị tài nguyên. Nó có thể ăn băng thông của bạn nếu file public không được kiểm soát."
+    },
+    {
+      "title": "59. File upload có thể là vector tấn công nào?",
+      "body": "Upload mã độc, file giả mime, zip bomb, hình ảnh có payload độc, SVG chứa script, file cực lớn để ăn tài nguyên hoặc tài liệu nhúng nội dung nguy hiểm."
+    },
+    {
+      "title": "60. Có nên cho phép upload SVG không?",
+      "body": "Rất cẩn thận. SVG là XML có thể chứa script và nội dung nguy hiểm. Nếu cho phép, nên sanitize kỹ hoặc chỉ cho nguồn rất tin cậy."
+    },
+    {
+      "title": "61. Virus scanning có cần không?",
+      "body": "Nếu app xử lý file từ người dùng ở mức rủi ro cao như tuyển dụng, tài liệu doanh nghiệp, chia sẻ file công cộng hoặc hồ sơ nhạy cảm, thường rất nên có."
+    },
+    {
+      "title": "62. Vì sao chỉ validate ở frontend là vô nghĩa cho bảo mật?",
+      "body": "Vì client-side validation dễ bị bỏ qua. Mọi rule về type, size, content risk vẫn phải kiểm ở server hoặc pipeline xử lý."
+    },
+    {
+      "title": "63. Một tip senior về file security là gì?",
+      "body": "Đừng chỉ hỏi 'upload được chưa', hãy hỏi 'nếu kẻ xấu cố tình upload file nguy hiểm thì app, storage, CDN và browser sẽ hành xử ra sao'."
+    },
+    {
+      "title": "64. Có nên lưu file thực thi ở vùng browser truy cập được không?",
+      "body": "Không nên. File nhạy cảm hoặc có rủi ro thực thi không nên nằm ở chỗ web server phục vụ công khai mà thiếu kiểm soát."
+    },
+    {
+      "title": "65. Ảnh là loại file đặc biệt ở điểm nào?",
+      "body": "Nó thường cần resize, crop, thumbnail, optimize, giữ hoặc bỏ EXIF, tạo nhiều variant và hiển thị ở nhiều kích cỡ khác nhau.",
+      "code": "ProcessAvatarJob::dispatch($avatar->id);\n\nclass ProcessAvatarJob implements ShouldQueue\n{\n    public function handle(): void\n    {\n        // đọc file gốc, resize, tạo thumbnail, lưu variant\n    }\n}",
+      "note": "Đừng ép request upload của user phải chờ resize hoặc optimize nặng nếu có thể dời sang queue."
+    },
+    {
+      "title": "66. Vì sao không nên luôn dùng ảnh gốc cho mọi nơi?",
+      "body": "Ảnh gốc lớn gây tốn băng thông, chậm trang và tệ cho mobile. Nhiều app cần thumbnail hoặc nhiều size phù hợp từng ngữ cảnh."
+    },
+    {
+      "title": "67. Thumbnail pipeline là gì?",
+      "body": "Là quy trình sinh ra các phiên bản nhỏ hơn của ảnh để dùng trong list, card, preview hoặc avatar."
+    },
+    {
+      "title": "68. Nên xử lý resize ảnh đồng bộ hay qua queue?",
+      "body": "Ảnh nhỏ có thể xử lý ngay, nhưng ảnh lớn hoặc nhiều biến thể thường nên đẩy sang queue để request upload không chậm quá."
+    },
+    {
+      "title": "69. EXIF data là gì và vì sao cần để ý?",
+      "body": "Đó là metadata trong ảnh như orientation, vị trí, thiết bị. Đôi khi nó cần cho hiển thị đúng chiều, nhưng đôi khi lại là rủi ro riêng tư."
+    },
+    {
+      "title": "70. WebP, AVIF, JPEG, PNG nên nghĩ thế nào?",
+      "body": "Mỗi định dạng có trade-off riêng về chất lượng, nén, hỗ trợ trình duyệt và alpha channel. Không có một định dạng tốt nhất cho mọi ngữ cảnh."
+    },
+    {
+      "title": "71. Image optimization là gì?",
+      "body": "Là giảm dung lượng file ảnh mà vẫn giữ chất lượng chấp nhận được. Nó giúp page load, bandwidth và chi phí CDN tốt hơn."
+    },
+    {
+      "title": "72. Có nên overwrite ảnh gốc sau khi optimize không?",
+      "body": "Tùy chiến lược. Có nơi giữ ảnh gốc để tái tạo variant sau này, có nơi chỉ giữ bản đã xử lý để tiết kiệm dung lượng."
+    },
+    {
+      "title": "73. Media library mindset là gì?",
+      "body": "Thay vì coi mỗi file là một path rời rạc, bạn coi nó là tài nguyên có metadata, collection, conversions, visibility, owner, tags và lifecycle."
+    },
+    {
+      "title": "74. Khi nào package media library đáng dùng?",
+      "body": "Khi app có nhiều loại media, nhiều conversions, attach media cho nhiều model và bạn muốn chuẩn hóa thay vì tự ráp mọi thứ bằng tay."
+    },
+    {
+      "title": "75. PDF generation thuộc lớp media không?",
+      "body": "Có. PDF hóa hóa đơn, hợp đồng, báo cáo là phần rất thực chiến và thường kéo theo chuyện queue, font, layout, size file và lưu trữ output."
+    },
+    {
+      "title": "76. Watermark hay stamping ảnh/tài liệu có gì khó?",
+      "body": "Nó cần pipeline xử lý, hiệu năng, chất lượng output và đôi khi là nhiều phiên bản theo quyền truy cập hoặc mục đích chia sẻ khác nhau."
+    },
+    {
+      "title": "77. Video upload khác ảnh ở đâu?",
+      "body": "Nó lớn hơn nhiều, upload lâu hơn, transcode nặng hơn, có thumbnail preview, duration metadata và thường cần hạ tầng hoặc service chuyên biệt hơn."
+    },
+    {
+      "title": "78. Audio, subtitle, document preview có nên nhét chung một logic không?",
+      "body": "Không nên quá mức. Cùng là media nhưng mỗi loại có metadata, pipeline và UX riêng."
+    },
+    {
+      "title": "79. Tại sao trạng thái xử lý media nên có trong DB?",
+      "body": "Để biết file vừa upload, đang scan, đang resize, đã sẵn sàng, lỗi hay cần retry. Không có state rõ thì UI và support sẽ rất mù."
+    },
+    {
+      "title": "80. Một tip thực chiến với ảnh/media là gì?",
+      "body": "Upload xong không có nghĩa media đã sẵn sàng dùng. Hãy biểu diễn rõ trạng thái hậu xử lý để tránh UI trỏ vào asset chưa được sinh xong."
+    },
+    {
+      "title": "81. Upload file lớn vì sao dễ fail trước cả khi tới controller?",
+      "body": "Vì web server, PHP config, proxy, load balancer hoặc giới hạn request body có thể chặn trước khi Laravel kịp xử lý.",
+      "code": "upload_max_filesize=50M\npost_max_size=50M\n\n# nginx\nclient_max_body_size 50M;",
+      "note": "Nhiều bug 'Laravel không nhận file' thực ra nằm ở PHP hoặc web server, không nằm trong controller."
+    },
+    {
+      "title": "82. `upload_max_filesize` và `post_max_size` ảnh hưởng gì?",
+      "body": "Đây là giới hạn cấp PHP. Nếu file vượt ngưỡng, request có thể fail hoặc file không xuất hiện đúng trong input."
+    },
+    {
+      "title": "83. Nginx hay Apache có thể chặn upload lớn không?",
+      "body": "Có. Ví dụ Nginx có `client_max_body_size`. Nhiều bug 'Laravel không nhận file' thực ra nằm ở tầng web server."
+    },
+    {
+      "title": "84. Upload chunked là gì?",
+      "body": "Là chia file lớn thành nhiều phần nhỏ để tải dần, giúp mạng kém ổn hơn và cho phép resume tốt hơn."
+    },
+    {
+      "title": "85. Direct-to-S3 upload là gì?",
+      "body": "Là khi browser tải file thẳng lên S3 hoặc object storage qua presigned URL thay vì đi xuyên qua app server.",
+      "code": "// backend cấp presigned upload URL\nreturn response()->json([\n    'upload_url' => $temporaryUploadUrl,\n    'path' => $path,\n]);",
+      "note": "Sai lầm thường gặp: upload thẳng cloud xong coi như xong bài toán. Cách sửa là luôn có bước finalize để app ghi metadata và xác nhận file thật sự tồn tại."
+    },
+    {
+      "title": "86. Vì sao direct-to-S3 rất đáng cân nhắc?",
+      "body": "Nó giảm tải CPU, memory và bandwidth của app server, đặc biệt tốt cho video, tài liệu lớn hoặc hệ có nhiều upload đồng thời."
+    },
+    {
+      "title": "87. Direct upload có làm app mất kiểm soát không?",
+      "body": "Không nếu thiết kế đúng. App vẫn phát presigned upload URL, lưu metadata, xác nhận completion và khởi động pipeline hậu xử lý."
+    },
+    {
+      "title": "88. Temporary URL trong cloud storage dùng để làm gì?",
+      "body": "Nó cho phép truy cập tạm thời vào file private mà không public toàn bucket."
+    },
+    {
+      "title": "89. CDN liên quan gì tới file/media?",
+      "body": "CDN giúp phân phối file nhanh hơn, giảm tải origin và ổn định hơn cho người dùng ở nhiều khu vực."
+    },
+    {
+      "title": "90. Cache của CDN có thể gây bug gì?",
+      "body": "File mới thay nhưng người dùng vẫn thấy bản cũ, signed URL hết hạn nhưng edge còn giữ response, hoặc invalidation không chạy đúng lúc."
+    },
+    {
+      "title": "91. Lifecycle policy ở S3 là gì?",
+      "body": "Là quy tắc tự động chuyển lớp lưu trữ hoặc xóa file sau một thời gian, rất hữu ích cho temp upload, export cũ hoặc archive."
+    },
+    {
+      "title": "92. Cross-region và latency có đáng nghĩ không?",
+      "body": "Có khi file lớn hoặc user phân tán. Storage region quá xa có thể làm upload/download chậm rõ rệt."
+    },
+    {
+      "title": "93. Có nên dùng app server để proxy mọi file cloud về browser không?",
+      "body": "Thường không nếu file lớn và không cần xử lý thêm. Nó làm app server thành cổ chai không cần thiết."
+    },
+    {
+      "title": "94. Một lỗi cloud storage hay gặp là gì?",
+      "body": "Sai bucket, sai region, sai ACL/policy hoặc sai endpoint của S3-compatible storage khiến upload có vẻ thành công nhưng URL truy cập lại hỏng."
+    },
+    {
+      "title": "95. Cost mindset với media là gì?",
+      "body": "File không chỉ tốn disk, mà còn tốn request, bandwidth, CDN, egress, image processing và backup. Thiết kế media tệ sẽ lộ chi phí rất nhanh."
+    },
+    {
+      "title": "96. Tip production với large upload là gì?",
+      "body": "Nếu file đủ lớn hoặc người dùng upload nhiều, hãy nghĩ direct-to-cloud sớm thay vì cố giữ mô hình upload qua PHP mãi."
+    },
+    {
+      "title": "97. Import file như CSV hay Excel có điểm gì đặc biệt?",
+      "body": "Nó không chỉ là lưu file, mà còn là parse, validate từng dòng, báo lỗi theo row, queue xử lý, rollback một phần và audit dữ liệu đã nhập.",
+      "code": "$path = $request->file('spreadsheet')->store('imports', 'local');\n\nImportUsersJob::dispatch($path, $request->user()->id);",
+      "note": "Import file gần như luôn kéo theo pipeline nền chứ không chỉ là upload xong rồi thôi."
+    },
+    {
+      "title": "98. Export file cũng cần pipeline riêng sao?",
+      "body": "Có. Export lớn nên queue, lưu file output, báo khi sẵn sàng tải, có TTL dọn dẹp và kiểm soát quyền xem."
+    },
+    {
+      "title": "99. Orphan file là gì?",
+      "body": "Là file còn tồn tại trong storage nhưng record DB liên quan đã mất hoặc không còn đường nào tham chiếu tới nó."
+    },
+    {
+      "title": "100. Orphan metadata là gì?",
+      "body": "Ngược lại, DB còn record trỏ tới file nhưng file thật đã mất hoặc nằm sai chỗ."
+    },
+    {
+      "title": "101. Cleanup strategy nên có từ đầu không?",
+      "body": "Rất nên. Dọn temp file, export cũ, conversion lỗi, avatar cũ, version cũ và orphan file là việc chắc chắn sẽ đến."
+    },
+    {
+      "title": "102. Xóa file nên làm đồng bộ hay qua queue?",
+      "body": "Tùy mức độ. Xóa một file nhỏ có thể làm ngay, nhưng dọn nhiều variant, nhiều provider hoặc xóa sau retention period thường hợp với queue hơn."
+    },
+    {
+      "title": "103. Soft delete ở record có làm file nên giữ lại không?",
+      "body": "Thường có. Nếu record còn khả năng restore, xóa file quá sớm sẽ làm restore mất ý nghĩa."
+    },
+    {
+      "title": "104. File versioning có ích gì?",
+      "body": "Nó hữu ích khi cần lịch sử tài liệu, rollback asset hoặc tránh cache cũ của CDN/browser."
+    },
+    {
+      "title": "105. Có nên overwrite cùng một path mãi không?",
+      "body": "Chỉ nên khi hiểu rõ hậu quả cache. Nhiều hệ thống thích path mới cho mỗi phiên bản để tránh người dùng thấy file cũ."
+    },
+    {
+      "title": "106. Backup media có cần tách khỏi backup DB không?",
+      "body": "Có thể cần chiến lược riêng. DB backup không tự bảo vệ object storage, và ngược lại snapshot bucket cũng không thay thế audit metadata trong DB."
+    },
+    {
+      "title": "107. Reconciliation giữa DB và storage là gì?",
+      "body": "Là đối chiếu định kỳ để phát hiện record mất file, file mồ côi, dung lượng bất thường hoặc conversion chưa hoàn tất.",
+      "code": "$dbPaths = MediaFile::query()->pluck('path');\n\nforeach ($dbPaths as $path) {\n    if (! Storage::disk('s3')->exists($path)) {\n        logger()->warning('missing-media-file', ['path' => $path]);\n    }\n}",
+      "note": "Reconciliation rất hữu ích sau các lần import lớn, deploy pipeline media mới hoặc khi support báo 'DB có record nhưng tải file bị 404'."
+    },
+    {
+      "title": "108. Một lỗi import-export hay gặp là gì?",
+      "body": "File đã upload xong nhưng job parse fail âm thầm, hoặc export đã tạo xong nhưng đường dẫn tải, TTL hoặc quyền truy cập cấu hình sai."
+    },
+    {
+      "title": "109. Vì sao temp file cần được dọn rất rõ?",
+      "body": "Vì temp file là loại dễ bị quên nhất và phình nhanh nhất, đặc biệt ở import, export, preview hoặc image processing pipeline."
+    },
+    {
+      "title": "110. Tip lâu năm về cleanup là gì?",
+      "body": "Không có chiến lược cleanup thì storage luôn trở thành bãi rác chứ không phải nếu. Câu hỏi chỉ là mất bao lâu để bạn nhận ra."
+    },
+    {
+      "title": "111. Test file upload trong Laravel nên dùng gì?",
+      "body": "Laravel có `Storage::fake()` và fake uploaded file để test flow upload, path, validation, xóa file và các hành vi liên quan mà không đụng storage thật."
+    },
+    {
+      "title": "112. `Storage::fake()` có ích gì?",
+      "body": "Nó giúp test dễ, nhanh, cô lập và không để test suite làm bẩn storage thật."
+    },
+    {
+      "title": "113. Có nên test chỉ việc request trả `200` khi upload không?",
+      "body": "Không đủ. Nên test file đã được lưu, metadata đã ghi, permission đúng, cleanup đúng và side effect quan trọng đã diễn ra.",
+      "code": "Storage::fake('avatars');\n\n$file = UploadedFile::fake()->image('avatar.jpg');\n\n$response = $this->post('/profile/avatar', [\n    'avatar' => $file,\n]);\n\nStorage::disk('avatars')->assertExists('avatars/'.$file->hashName());"
+    },
+    {
+      "title": "114. Log gì khi debug file issue?",
+      "body": "Disk, path, mime, size, user, request id, job id, bước pipeline hiện tại và exception cụ thể. Không log quá tay nội dung nhạy cảm."
+    },
+    {
+      "title": "115. Metric nào hữu ích cho media subsystem?",
+      "body": "Upload success rate, average upload size, processing time, queue lag, failed conversion count, orphan file count và storage growth rate.",
+      "code": "logger()->info('media-upload-finished', [\n    'disk' => 's3',\n    'mime' => $media->mime_type,\n    'size_bytes' => $media->size_bytes,\n    'processing_status' => $media->processing_status,\n]);"
+    },
+    {
+      "title": "116. Alert nên đặt ở đâu với phần media?",
+      "body": "Alert khi conversion fail tăng đột biến, queue media lag cao, bucket access fail, storage tăng bất thường hoặc upload success rate rớt mạnh."
+    },
+    {
+      "title": "117. Local chạy ổn nhưng production file hỏng thường vì đâu?",
+      "body": "Hay do `storage:link`, permission, volume mount, nhiều server app, bucket policy, queue worker cũ, giới hạn upload ở proxy hoặc thiếu extension xử lý ảnh."
+    },
+    {
+      "title": "118. Vì sao ảnh upload xong nhưng không hiện ngay?",
+      "body": "Có thể vì URL sai, CDN cache, signed URL hết hạn, conversion chưa xong, queue lag hoặc file private bị render như thể nó public."
+    },
+    {
+      "title": "119. Một playbook khi người dùng báo 'tải file xuống lỗi' là gì?",
+      "body": "Kiểm tra permission business, disk config, path DB, file tồn tại thật không, signed URL còn hạn không, CDN/cache, response header và log request cụ thể."
+    },
+    {
+      "title": "120. Một playbook khi upload lớn chỉ fail ở production là gì?",
+      "body": "Kiểm tra `upload_max_filesize`, `post_max_size`, web server limit, proxy body size, timeout, queue media, volume storage, network tới bucket và xem file fail trước hay sau khi vào Laravel."
+    },
+    {
+      "title": "121. Mùi code xấu của lớp file/media là gì?",
+      "body": "Controller tự làm hết: validate, đặt tên, lưu file, resize ảnh, xóa file cũ, tạo URL, xử lý lỗi và cập nhật nhiều model cùng lúc."
+    },
+    {
+      "title": "122. Khi nào nên tách media service hoặc module riêng?",
+      "body": "Khi nhiều màn hình dùng chung logic upload, conversion, signed URL, cleanup, audit hoặc khi media bắt đầu thành subsystem rõ rệt."
+    },
+    {
+      "title": "123. Có nên để domain model biết quá nhiều về path vật lý không?",
+      "body": "Không nên quá chặt. Model nên biết media nào thuộc về nó, nhưng chi tiết storage backend và pipeline có thể nên nằm ở lớp dịch vụ rõ hơn."
+    },
+    {
+      "title": "124. Rà soát cuối: site files-media nên có tối thiểu những mảng nào?",
+      "body": "Ít nhất phải có nền tảng storage, disk config, upload-validation-naming, public/private access, security, image-media processing, large upload-cloud-CDN, cleanup-import-export, testing-observability và case production."
+    },
+    {
+      "title": "125. Checksum file có ích gì?",
+      "body": "Checksum giúp kiểm tra file có bị trùng, bị hỏng hoặc bị thay đổi ngoài ý muốn không. Nó rất hữu ích khi làm direct upload, deduplication hoặc audit."
+    },
+    {
+      "title": "126. Direct upload xong rồi vì sao vẫn cần bước finalize ở backend?",
+      "body": "Vì browser tải thẳng lên cloud chưa có nghĩa app của bạn đã biết file đó hợp lệ. Backend thường vẫn cần xác nhận object tồn tại, lưu metadata và kích hoạt pipeline xử lý."
+    },
+    {
+      "title": "127. Quota theo user hoặc tenant có nên có không?",
+      "body": "Nếu app cho upload nhiều hoặc tính phí theo dung lượng, quota rất quan trọng. Nó ngăn storage bị lạm dụng và giúp business kiểm soát chi phí tốt hơn."
+    },
+    {
+      "title": "128. Retention policy là gì trong ngữ cảnh file/media?",
+      "body": "Đó là quy tắc giữ file bao lâu, khi nào archive, khi nào xóa hẳn. Nó đặc biệt quan trọng với export tạm, tài liệu pháp lý và dữ liệu nhạy cảm."
+    },
+    {
+      "title": "129. File chứa PII hoặc tài liệu nhạy cảm cần nghĩ thêm gì?",
+      "body": "Cần nghĩ về encryption at rest, audit access, signed URL ngắn hạn, policy tải xuống, retention rõ ràng và quyền xóa theo yêu cầu pháp lý nếu có."
+    },
+    {
+      "title": "130. Queue retry cho media job cần cẩn thận gì?",
+      "body": "Nếu job resize, scan hoặc convert bị retry nhiều lần mà không idempotent, bạn có thể sinh duplicate variant, ghi đè sai hoặc tiêu tốn tài nguyên vô ích."
+    },
+    {
+      "title": "131. Có nên có trạng thái `failed_processing` hoặc `needs_retry` riêng không?",
+      "body": "Rất nên với media pipeline nghiêm túc. Nó giúp support và UI biết file đã upload xong nhưng hậu xử lý thất bại, thay vì nhìn như thể file biến mất."
+    },
+    {
+      "title": "132. Package xử lý ảnh hay media có nên bọc qua service của app không?",
+      "body": "Nên nếu package đó quan trọng. Bọc qua service giúp giảm phụ thuộc trực tiếp, dễ đổi package và gom policy resize, quality, naming vào một chỗ."
+    },
+    {
+      "title": "133. Một bug thực chiến hay gặp với signed URL là gì?",
+      "body": "Link được sinh đúng nhưng browser hoặc CDN cache lại response cũ, hoặc người dùng giữ tab quá lâu khiến URL hết hạn rồi tưởng file bị lỗi."
+    },
+    {
+      "title": "134. File upload có liên quan gì tới compliance hoặc audit?",
+      "body": "Rất nhiều trong hệ thống doanh nghiệp. Ai tải lên, ai xem, ai tải xuống, ai xóa, bản nào đang hiệu lực và file có bị thay đổi sau khi phát hành không đều có thể trở thành câu hỏi audit."
+    },
+    {
+      "title": "135. Ví dụ upload file cơ bản với validation và lưu vào disk",
+      "body": "Đây là snippet rất hay gặp khi bắt đầu build tính năng upload thật.",
+      "code": "$request->validate([\n    'avatar' => ['required', 'image', 'max:2048'],\n]);\n\n$path = $request->file('avatar')->store('avatars', 'public');\n\n$user->update([\n    'avatar_path' => $path,\n]);",
+      "bullets": [
+        "Validation nên chặn mime, size và đôi khi cả dimension nếu bài toán cần.",
+        "`store(..., 'public')` giúp bạn lưu đúng disk thay vì hardcode path lộn xộn.",
+        "Database thường chỉ nên giữ path hoặc metadata, không phải binary file."
+      ]
+    },
+    {
+      "title": "136. Ví dụ tạo URL file và download file an toàn hơn",
+      "body": "Lưu được file mới chỉ là nửa câu chuyện. Còn phải phát file ra đúng cách.",
+      "code": "$url = Storage::disk('public')->url($user->avatar_path);\n\nreturn Storage::disk('private')->download($document->path, $document->original_name);",
+      "note": "Public URL phù hợp cho asset công khai. Với tài liệu riêng tư, hãy đi qua controller hoặc signed flow thay vì lộ thẳng đường dẫn storage."
+    },
+    {
+      "title": "137. Ví dụ cấu hình disk S3 trong `filesystems.php`",
+      "body": "Nhiều người dùng S3 nhưng không thật sự đọc lớp config này nên rất dễ lệch env hoặc URL.",
+      "code": "'s3' => [\n    'driver' => 's3',\n    'key' => env('AWS_ACCESS_KEY_ID'),\n    'secret' => env('AWS_SECRET_ACCESS_KEY'),\n    'region' => env('AWS_DEFAULT_REGION'),\n    'bucket' => env('AWS_BUCKET'),\n    'url' => env('AWS_URL'),\n],",
+      "note": "Hiểu cấu hình disk giúp bạn debug nhanh hơn khi local, staging và production dùng storage khác nhau."
+    },
+    {
+      "title": "138. Đánh giá sau rà soát: phần files-media đã đủ chi tiết chưa?",
+      "body": "Ở mức portal học tập thì phần này đã khá đầy: có storage foundation, disk config, upload flow, security, media processing, cloud delivery, cleanup, test, observability và case production. Nếu muốn đi sâu hơn nữa sau này, hướng tốt nhất là tách riêng site con cho image pipeline, video/media streaming, import-export documents và storage security/compliance."
+    }
+  ]
+}

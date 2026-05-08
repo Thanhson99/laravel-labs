@@ -1,0 +1,36 @@
+{
+  "anchor": "laravel-overview",
+  "type": "list",
+  "heading": "Laravel is more than CRUD, routes, and Blade",
+  "intro": "Once you stay with Laravel long enough, it starts to feel more like a city than a single framework. There is a runtime core, a feature-building layer, a package ecosystem, debugging tools, deployment concerns, and long-term maintenance work. This overview exists so you can see that whole shape before diving into the topic sites one by one.",
+  "items": [
+    {
+      "title": "Foundation layer: how Laravel handles a request",
+      "body": "This is where you learn routes, controllers, middleware, Blade, validation, migrations, models, and the baseline rhythm of a Laravel application."
+    },
+    {
+      "title": "Application layer: how code stays readable as the project grows",
+      "body": "As the app becomes less trivial, you start needing service classes, policies, form requests, actions, queues, cache, and better boundaries for business logic."
+    },
+    {
+      "title": "Ecosystem layer: packages, tools, and real runtime environments",
+      "body": "Composer, vendor, npm, Vite, Sail, Redis, Horizon, testing, logging, and deployment all live here. This is the layer that moves Laravel beyond tutorial mode and closer to real application work."
+    },
+    {
+      "title": "Expansion layer: what real products eventually run into",
+      "body": "APIs, uploads, search, realtime behavior, team workflows, roles or permissions, third-party integrations, and performance pressure usually arrive once the product starts meeting real users."
+    },
+    {
+      "title": "A short practical starting point if you are returning to Laravel",
+      "body": "Instead of reading randomly, run one small command flow and map each step to the relevant topic pages in this portal.",
+      "code": "composer install\ncp .env.example .env\nphp artisan key:generate\nphp artisan migrate\nnpm install\nnpm run dev\nphp artisan route:list",
+      "bullets": [
+        "If you get stuck at `composer install`, jump to `Composer & vendor`.",
+        "If `key:generate`, `migrate`, or `route:list` still feel fuzzy, jump to `PHP Commands & Artisan`.",
+        "If you get blocked at `npm install` or `npm run dev`, jump to `Node, npm, and the frontend layer around Laravel`.",
+        "Once the app is running, continue with `App structure`, `Request flow`, and `Blade & UI` to reconnect the full picture."
+      ],
+      "note": "A good overview page should not only say how broad Laravel is. It should also give you a concrete enough entry path so you can restart without feeling lost."
+    }
+  ]
+}

@@ -1,0 +1,711 @@
+{
+  "anchor": "laravel-async",
+  "type": "list",
+  "heading": "Queue, event, scheduler và lớp xử lý bất đồng bộ trong Laravel",
+  "intro": "Site này tổng hợp toàn bộ phần async trong Laravel theo hướng thực chiến. Mục tiêu không chỉ là biết `dispatch()` hay `queue:work`, mà là hiểu khi nào nên tách việc ra khỏi request, job nên chứa gì, event dùng tới đâu, Redis và Horizon giúp gì, retry có mặt trái gì, idempotency quan trọng ra sao và làm thế nào để hệ background không trở thành vùng bug âm thầm nhất của app.",
+  "breaks": [
+    {
+      "start": 1,
+      "title": "I. Nền Tảng Xử Lý Bất Đồng Bộ",
+      "description": "Async là gì, tại sao phải có queue, sự khác nhau giữa xử lý đồng bộ và nền, và Laravel bước vào lớp này như thế nào.",
+      "tone": "amber"
+    },
+    {
+      "start": 17,
+      "title": "II. Job, Queue Và Worker",
+      "description": "Thiết kế job, dispatch, queue connection, worker, delay, timeout, retry và ranh giới trách nhiệm của background job.",
+      "tone": "copper"
+    },
+    {
+      "start": 39,
+      "title": "III. Event, Listener Và Cách Tách Side Effect",
+      "description": "Event dùng để biểu diễn chuyện gì vừa xảy ra, listener dùng khi nào, và làm sao để không biến event thành mê cung.",
+      "tone": "sand"
+    },
+    {
+      "start": 57,
+      "title": "IV. Mail, Notification, Webhook Và Integration Async",
+      "description": "Email, notification, webhook, sync data, external API và những use case async rất thường gặp trong app thật.",
+      "tone": "amber"
+    },
+    {
+      "start": 75,
+      "title": "V. Scheduler, Cron Và Công Việc Định Kỳ",
+      "description": "Task theo lịch, cleanup, reconciliation, reports, cron, overlap và các lỗi scheduler rất thường gặp trong production.",
+      "tone": "copper"
+    },
+    {
+      "start": 91,
+      "title": "VI. Redis, Horizon, Độ Tin Cậy Và Vận Hành Worker",
+      "description": "Queue backend, Redis, Horizon, scaling worker, dead-letter mindset, queue lag, restart worker và giám sát nền.",
+      "tone": "sand"
+    },
+    {
+      "start": 109,
+      "title": "VII. Failure, Retry, Idempotency Và Data Consistency",
+      "description": "Job fail, retry, duplicate side effect, transaction boundary, exactly-once illusion và cách giữ hệ thống không tự phá dữ liệu.",
+      "tone": "amber"
+    },
+    {
+      "start": 127,
+      "title": "VIII. Test, Debug, Case Production Và Tư Duy Dài Hạn",
+      "description": "Queue fake, test async flow, quan sát worker, debug job mất dấu, và các bug production điển hình của lớp background.",
+      "tone": "copper"
+    }
+  ],
+  "items": [
+    {
+      "title": "1. Xử lý bất đồng bộ là gì trong Laravel?",
+      "body": "Là đưa một phần việc ra khỏi request hiện tại để xử lý sau hoặc ở nơi khác, thay vì bắt người dùng chờ toàn bộ tác vụ nặng hoàn tất."
+    },
+    {
+      "title": "2. Vì sao app thật cần async?",
+      "body": "Vì gửi mail, resize ảnh, gọi API chậm, đồng bộ dữ liệu, export file lớn, webhook processing và báo cáo định kỳ đều không nên chặn request người dùng lâu."
+    },
+    {
+      "title": "3. Sync và async khác nhau thế nào ở góc nhìn người dùng?",
+      "body": "Sync làm người dùng chờ kết quả ngay trong request. Async trả phản hồi sớm hơn và để phần việc nặng chạy nền."
+    },
+    {
+      "title": "4. Async có phải lúc nào cũng tốt hơn sync không?",
+      "body": "Không. Async thêm độ phức tạp, trạng thái trung gian, retry, monitoring và eventual consistency. Không phải việc gì cũng đáng đẩy ra nền."
+    },
+    {
+      "title": "5. Dấu hiệu cho thấy một tác vụ nên chuyển sang queue là gì?",
+      "body": "Tác vụ chậm, gọi service ngoài, CPU nặng, có thể chạy sau, không cần kết quả ngay, hoặc có nguy cơ làm request timeout."
+    },
+    {
+      "title": "6. Dấu hiệu cho thấy không nên async hóa quá sớm là gì?",
+      "body": "Khi logic rất đơn giản, cần phản hồi chắc chắn ngay lập tức hoặc business không chịu được trạng thái pending phức tạp."
+    },
+    {
+      "title": "7. Queue trong Laravel dùng để làm gì?",
+      "body": "Queue là nơi xếp các job chờ worker xử lý. Nó giúp ứng dụng tách request của người dùng khỏi phần việc nặng hoặc chậm.",
+      "code": "SendWelcomeMail::dispatch($user->id);\n\nreturn response()->json([\n    'message' => 'User created. Email will be sent in background.',\n], 202);",
+      "note": "Đây là kiểu flow async cơ bản nhất: request trả sớm, còn side effect chạy sau."
+    },
+    {
+      "title": "8. Worker là gì?",
+      "body": "Worker là process chạy nền, liên tục lấy job từ queue rồi thực thi chúng."
+    },
+    {
+      "title": "9. Event trong Laravel là gì?",
+      "body": "Event biểu diễn một chuyện đã xảy ra trong hệ thống, ví dụ `OrderPlaced`, `UserRegistered`, `InvoicePaid`."
+    },
+    {
+      "title": "10. Listener là gì?",
+      "body": "Listener là phần phản ứng với event, ví dụ gửi mail chào mừng hoặc tạo audit log sau khi `UserRegistered` xảy ra."
+    },
+    {
+      "title": "11. Scheduler là gì?",
+      "body": "Scheduler là lớp giúp Laravel định nghĩa các công việc chạy theo lịch như cron cleanup, báo cáo hàng ngày, reconciliation hoặc nhắc việc."
+    },
+    {
+      "title": "12. Redis liên quan gì tới async layer?",
+      "body": "Redis thường được dùng làm queue backend, cache, rate limiter, session store và là hạ tầng quan trọng cho worker chạy nhanh, ổn định."
+    },
+    {
+      "title": "13. Horizon là gì?",
+      "body": "Horizon là dashboard và supervisor cho queue Redis trong Laravel, giúp giám sát, scale, restart và nhìn sức khỏe queue tốt hơn."
+    },
+    {
+      "title": "14. Async layer dễ bị xem nhẹ vì sao?",
+      "body": "Vì người dùng không luôn nhìn thấy nó ngay. Nhưng bug ở lớp nền lại thường gây dữ liệu lệch, email không gửi, export không ra, webhook mất dấu và support cực khó điều tra."
+    },
+    {
+      "title": "15. Tư duy nền tảng quan trọng nhất với async là gì?",
+      "body": "Đừng hỏi chỉ 'job có chạy không', mà phải hỏi 'job có chạy đúng, chạy một lần hay nhiều lần, fail ra sao, retry thế nào và dữ liệu còn nhất quán không'."
+    },
+    {
+      "title": "16. Async có liên quan chặt tới observability vì sao?",
+      "body": "Vì nếu không có log, metric, queue lag, failed job visibility và trace, background bug sẽ giống như biến mất trong không khí."
+    },
+    {
+      "title": "17. Job trong Laravel nên đại diện cho điều gì?",
+      "body": "Một đơn vị công việc đủ rõ nghĩa để worker xử lý, ví dụ `SendInvoiceEmail`, `GenerateReportPdf`, `SyncOrderToERP`.",
+      "code": "class SyncOrderToErp implements ShouldQueue\n{\n    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;\n\n    public function __construct(public int $orderId)\n    {\n    }\n\n    public function handle(ErpGateway $erp): void\n    {\n        $order = Order::findOrFail($this->orderId);\n\n        $erp->pushOrder($order);\n    }\n}"
+    },
+    {
+      "title": "18. Job tốt nên nhỏ tới mức nào?",
+      "body": "Đủ nhỏ để rõ trách nhiệm và dễ retry, nhưng không nhỏ tới mức app biến thành hàng trăm micro-step vô nghĩa rất khó hiểu."
+    },
+    {
+      "title": "19. `dispatch()` làm gì?",
+      "body": "Nó đẩy job vào queue hoặc xử lý theo cơ chế tương ứng để worker chạy sau."
+    },
+    {
+      "title": "20. `dispatchSync()` khác gì `dispatch()`?",
+      "body": "`dispatchSync()` chạy job ngay trong request hiện tại. Nó hữu ích khi muốn tận dụng class job như một command object nhưng chưa cần queue thật."
+    },
+    {
+      "title": "21. Có nên nhét business logic dài vào controller rồi cuối cùng mới queue một phần nhỏ không?",
+      "body": "Không nên nếu phần việc thật sự là background concern. Job hoặc service orchestration nên mang trách nhiệm chính thay vì controller ôm hết."
+    },
+    {
+      "title": "22. Job constructor nên chứa gì?",
+      "body": "Thường chỉ nên chứa dữ liệu cần để chạy job, ví dụ ID hoặc payload gọn. Tránh nhét object nặng, closure khó serialize hoặc trạng thái mơ hồ."
+    },
+    {
+      "title": "23. Vì sao thường nên truyền ID thay vì model đầy đủ vào job?",
+      "body": "Vì worker có thể chạy sau nhiều giây hoặc nhiều phút, trong khi dữ liệu DB đã đổi. Truyền ID rồi load lại thường rõ trạng thái thật hơn.",
+      "code": "// tốt hơn\nSendInvoiceMail::dispatch($invoice->id);\n\n// dễ gây hiểu nhầm trạng thái\nSendInvoiceMail::dispatch($invoice);",
+      "note": "Khi job chạy muộn, object cũ rất dễ khiến dev tưởng đang nhìn dữ liệu hiện tại trong DB."
+    },
+    {
+      "title": "24. Khi nào serializing model trong job có thể gây bất ngờ?",
+      "body": "Khi model quan hệ thay đổi, bị xóa, hoặc worker đọc dữ liệu cũ hơn kỳ vọng của lập trình viên."
+    },
+    {
+      "title": "25. `handle()` của job nên làm gì?",
+      "body": "Nó nên thực thi phần việc chính của job, gọi service cần thiết, xử lý lỗi hợp lý và để lại log hoặc state rõ khi cần."
+    },
+    {
+      "title": "26. Có nên để job gọi thẳng nhiều provider ngoài và cập nhật nhiều bảng một lúc không?",
+      "body": "Cần rất cẩn thận. Job quá nhiều trách nhiệm rất khó retry đúng và khó đảm bảo data consistency."
+    },
+    {
+      "title": "27. Queue connection là gì?",
+      "body": "Đó là backend queue cụ thể như database, Redis, SQS. Mỗi loại có trade-off về tốc độ, độ bền, scale và vận hành."
+    },
+    {
+      "title": "28. Queue `database` phù hợp khi nào?",
+      "body": "Nó tiện để bắt đầu hoặc dự án nhỏ, nhưng thường không mạnh bằng Redis hoặc dịch vụ queue chuyên dụng khi workload lớn."
+    },
+    {
+      "title": "29. Redis queue mạnh ở điểm nào?",
+      "body": "Nhanh, phổ biến, hỗ trợ Horizon tốt và hợp với nhiều app Laravel có background processing đáng kể."
+    },
+    {
+      "title": "30. Có nên tách nhiều queue name khác nhau không?",
+      "body": "Rất nên khi app có loại việc ưu tiên khác nhau, ví dụ email, media processing, webhook, reports. Điều này giúp worker không để job nặng chặn job quan trọng.",
+      "code": "SendWelcomeMail::dispatch($user->id)->onQueue('mail');\nProcessVideo::dispatch($video->id)->onQueue('media');\nHandlePartnerWebhook::dispatch($payload)->onQueue('webhooks');"
+    },
+    {
+      "title": "31. Delay job dùng khi nào?",
+      "body": "Khi cần xử lý sau một khoảng thời gian, ví dụ chờ transaction ổn định, debounce một hành động hoặc gửi nhắc việc sau vài phút."
+    },
+    {
+      "title": "32. Delay có phải giải pháp thay cho thiết kế state đúng không?",
+      "body": "Không. Delay chỉ dời thời điểm chạy, không tự giải quyết logic trạng thái sai hoặc race condition."
+    },
+    {
+      "title": "33. Timeout của job quan trọng ra sao?",
+      "body": "Rất quan trọng vì job treo lâu sẽ giữ worker, làm queue lag và có thể bị xử lý lặp nếu cấu hình timeout và retry không khớp.",
+      "code": "class GenerateMonthlyReport implements ShouldQueue\n{\n    public int $timeout = 120;\n    public int $tries = 3;\n    public array $backoff = [30, 120, 300];\n}"
+    },
+    {
+      "title": "34. `tries` và `backoff` nên nghĩ thế nào?",
+      "body": "`tries` là số lần thử tối đa, `backoff` là khoảng chờ giữa các lần. Chọn bừa sẽ hoặc làm mất job quá sớm, hoặc spam retry vô ích."
+    },
+    {
+      "title": "35. Có nên retry mọi job nhiều lần không?",
+      "body": "Không. Một số lỗi là vĩnh viễn như dữ liệu sai, file mất, permission hỏng. Retry mù chỉ làm hệ thống ồn và tốn tài nguyên."
+    },
+    {
+      "title": "36. Batch job là gì?",
+      "body": "Là nhóm nhiều job liên quan được theo dõi cùng nhau, hữu ích cho import lớn, export, backfill hoặc pipeline nhiều bước."
+    },
+    {
+      "title": "37. Chain job là gì?",
+      "body": "Là chạy job này xong mới tới job kia. Nó hữu ích cho quy trình tuần tự nhưng cần cẩn thận với failure ở giữa chuỗi."
+    },
+    {
+      "title": "38. Một tip thực chiến với job design là gì?",
+      "body": "Mỗi job nên có input rõ, side effect rõ và điều kiện thành công rõ. Nếu không mô tả được ba thứ đó, job có thể đang quá mơ hồ."
+    },
+    {
+      "title": "39. Event khác job ở điểm cốt lõi nào?",
+      "body": "Job là công việc cần làm, còn event là chuyện đã xảy ra. Đừng dùng lẫn hai khái niệm này nếu muốn code dễ đọc."
+    },
+    {
+      "title": "40. Khi nào nên phát event?",
+      "body": "Khi một sự kiện nghiệp vụ đáng được các phần khác của hệ thống lắng nghe, ví dụ user đăng ký, order được tạo, thanh toán thành công.",
+      "code": "event(new OrderPaid($order));\n\nclass SendReceiptListener implements ShouldQueue\n{\n    public function handle(OrderPaid $event): void\n    {\n        Mail::to($event->order->user)->send(new ReceiptMail($event->order));\n    }\n}"
+    },
+    {
+      "title": "41. Listener có nên luôn queue không?",
+      "body": "Không phải lúc nào cũng cần, nhưng listener làm việc nặng hoặc gọi service ngoài thường rất hợp để queue."
+    },
+    {
+      "title": "42. Event giúp giảm coupling như thế nào?",
+      "body": "Phần tạo ra sự kiện không cần biết mọi side effect phía sau, ví dụ sau `OrderPlaced` có thể gửi mail, tạo analytics, sync ERP mà order flow không phải gọi hết từng thứ."
+    },
+    {
+      "title": "43. Mặt trái của event-driven quá đà là gì?",
+      "body": "Flow rất khó lần, side effect ẩn nhiều nơi, debug khó và người mới không biết một hành động kéo theo bao nhiêu thứ."
+    },
+    {
+      "title": "44. Có nên dùng event cho mọi use case không?",
+      "body": "Không. Nhiều chỗ gọi service trực tiếp hoặc orchestration rõ ràng dễ hiểu hơn."
+    },
+    {
+      "title": "45. Event tên nên đặt thế nào?",
+      "body": "Nên phản ánh chuyện đã xảy ra ở quá khứ như `InvoicePaid`, `UserRegistered`, `ReportGenerated` thay vì tên hành động mơ hồ."
+    },
+    {
+      "title": "46. Listener tốt nên có trách nhiệm ra sao?",
+      "body": "Nên gọn, rõ mục tiêu, dễ test và không trộn quá nhiều side effect không liên quan trong cùng một listener."
+    },
+    {
+      "title": "47. Event broadcasting có thuộc cùng nhóm async không?",
+      "body": "Có liên quan, dù mục tiêu là realtime hơn. Nó cũng là một dạng phản ứng sau sự kiện, thường đi cùng queue và background processing."
+    },
+    {
+      "title": "48. Domain event và framework event khác nhau ở tư duy nào?",
+      "body": "Domain event phản ánh nghiệp vụ cốt lõi, còn framework event có thể là event kỹ thuật hoặc hạ tầng. Trộn lẫn hai loại làm kiến trúc mờ đi."
+    },
+    {
+      "title": "49. Có nên phát event trước khi transaction DB commit xong không?",
+      "body": "Phải rất cẩn thận. Nếu side effect chạy sớm rồi transaction rollback, hệ thống sẽ lệch trạng thái."
+    },
+    {
+      "title": "50. Vì sao `afterCommit` mindset quan trọng với async?",
+      "body": "Nó giúp side effect nền chỉ chạy khi dữ liệu chính đã thực sự commit, giảm nguy cơ job hoặc listener nhìn thấy state chưa ổn định.",
+      "code": "DB::transaction(function () use ($orderData) {\n    $order = Order::create($orderData);\n\n    dispatch(new SyncOrderToErp($order->id))->afterCommit();\n});",
+      "note": "Sai lầm thường gặp: dispatch job trong transaction rồi job chạy khi dữ liệu chính còn chưa commit xong."
+    },
+    {
+      "title": "51. Event storm là gì?",
+      "body": "Là khi một hành động nhỏ phát quá nhiều event và listener, gây khó hiểu, tốn tài nguyên và làm flow rất khó debug."
+    },
+    {
+      "title": "52. Một tip thực chiến với event là gì?",
+      "body": "Nếu một use case quan trọng mà đọc code không đoán nổi sau cùng sẽ tạo ra những side effect nào, kiến trúc event của bạn có thể đã quá mù."
+    },
+    {
+      "title": "53. Listener fail thì nên nhìn như thế nào?",
+      "body": "Nếu listener queue, nó là job fail cần retry hoặc failed handling rõ. Nếu listener sync, lỗi của nó có thể làm hỏng cả request gốc."
+    },
+    {
+      "title": "54. Có nên để listener tự gọi thêm event khác vô hạn không?",
+      "body": "Cần cực kỳ cẩn thận. Chuỗi event quá sâu dễ thành mê cung side effect."
+    },
+    {
+      "title": "55. Event có giúp audit tốt không?",
+      "body": "Có nếu dùng đúng. Nhiều audit log hoặc analytics pipeline bắt đầu từ event rõ nghĩa."
+    },
+    {
+      "title": "56. Mùi code xấu ở phần event-listener là gì?",
+      "body": "Mọi thứ đều là event, listener gọi nhau vòng vo, side effect bị giấu khắp nơi và không ai dám sửa vì sợ chạm dây chuyền."
+    },
+    {
+      "title": "57. Gửi mail là use case async điển hình vì sao?",
+      "body": "Mail thường không cần user chờ ngay trong request, lại phụ thuộc provider ngoài nên rất hợp với queue.",
+      "code": "Mail::to($user)->queue(new WelcomeMail($user));\n\n$user->notify((new InvoicePaidNotification($invoice))->delay(now()->addMinutes(1)));"
+    },
+    {
+      "title": "58. Notification trong Laravel giúp gì?",
+      "body": "Nó chuẩn hóa việc gửi thông báo qua nhiều kênh như mail, database, Slack hoặc broadcast."
+    },
+    {
+      "title": "59. Có nên gửi email sync ngay sau đăng ký không?",
+      "body": "Nếu mail provider chậm hoặc không ổn định, request đăng ký sẽ bị ảnh hưởng. Queue thường là lựa chọn khỏe hơn."
+    },
+    {
+      "title": "60. Webhook processing vì sao rất hợp với queue?",
+      "body": "Webhook sender thường chỉ cần `2xx` sớm, còn xử lý nặng nên đi qua background để tránh timeout và duplicate retry."
+    },
+    {
+      "title": "61. Sync dữ liệu sang ERP, CRM hoặc partner API có nên async không?",
+      "body": "Rất thường nên async vì provider ngoài có thể chậm, lỗi hoặc cần retry mà không nên làm kẹt request người dùng."
+    },
+    {
+      "title": "62. Export file lớn thuộc nhóm async điển hình như thế nào?",
+      "body": "Người dùng bấm tạo export, app trả trạng thái đang xử lý, job nền tạo file rồi thông báo khi sẵn sàng tải."
+    },
+    {
+      "title": "63. Import file lớn cũng nên async vì sao?",
+      "body": "Vì parse, validate và ghi hàng loạt dữ liệu có thể rất lâu, cần progress, retry và error reporting rõ."
+    },
+    {
+      "title": "64. Có nên queue mọi notification không?",
+      "body": "Không phải lúc nào cũng cần, nhưng nhiều notification liên quan mail hoặc provider ngoài thường nên queue."
+    },
+    {
+      "title": "65. Async integration có điểm nguy hiểm gì?",
+      "body": "Bạn dễ nghĩ request thành công là xong, trong khi side effect thật còn pending, có thể fail hoặc chạy lặp sau đó."
+    },
+    {
+      "title": "66. Một trạng thái `pending_sync` hay `processing` có hữu ích không?",
+      "body": "Rất hữu ích. Nó giúp UI, support và backend cùng hiểu rằng tác vụ chưa hoàn tất và không nên giả vờ như mọi thứ đã xong."
+    },
+    {
+      "title": "67. Có nên để người dùng bấm lại hành động đang async mà không kiểm soát?",
+      "body": "Cần cẩn thận vì bấm lại có thể tạo duplicate job, duplicate email, duplicate export hoặc duplicate giao dịch."
+    },
+    {
+      "title": "68. Debounce hoặc unique job có liên quan gì?",
+      "body": "Nó giúp tránh xử lý lặp những việc giống nhau trong khoảng thời gian ngắn, rất hữu ích với sync, reindex, regenerate report hoặc refresh cache."
+    },
+    {
+      "title": "69. External API gọi từ job cần thêm gì so với gọi từ request?",
+      "body": "Vẫn cần timeout, retry, logging, idempotency và phân biệt network error với business error. Chạy nền không làm các vấn đề đó biến mất."
+    },
+    {
+      "title": "70. Mail queue fail có thể gây ảnh hưởng business ra sao?",
+      "body": "Email xác minh, hóa đơn, OTP, thông báo thanh toán hoặc reset password bị chậm hoặc mất có thể làm cả flow sản phẩm trục trặc."
+    },
+    {
+      "title": "71. Một tip thực chiến với async integration là gì?",
+      "body": "Mọi side effect quan trọng nên có trạng thái và audit đủ để biết nó đã được lên lịch, đang chạy, thành công hay thất bại."
+    },
+    {
+      "title": "72. Có nên gộp email, notification, webhook, sync partner vào một job lớn không?",
+      "body": "Không nên. Một job quá nhiều side effect rất khó retry đúng và khó biết bước nào thực sự fail."
+    },
+    {
+      "title": "73. Async layer có liên quan tới UX thế nào?",
+      "body": "Rất nhiều. UI cần biết khi nào hiển thị pending, khi nào refresh, khi nào poll trạng thái và khi nào báo retry cho người dùng."
+    },
+    {
+      "title": "74. Mùi code xấu ở integration async là gì?",
+      "body": "Job gọi thẳng nhiều provider, không log request id, không có retry policy rõ, không có trạng thái nội bộ và support không biết bắt đầu debug từ đâu."
+    },
+    {
+      "title": "75. Scheduler trong Laravel giúp gì hơn cron thuần?",
+      "body": "Nó cho phép định nghĩa lịch chạy bằng code PHP, dễ review trong repo và gom các task định kỳ vào một chỗ dễ quản lý hơn.",
+      "code": "protected function schedule(Schedule $schedule): void\n{\n    $schedule->command('reports:daily')->dailyAt('01:00');\n    $schedule->command('cleanup:temp-files')->hourly();\n}"
+    },
+    {
+      "title": "76. `schedule:run` hoạt động thế nào?",
+      "body": "Cron hệ điều hành thường gọi `php artisan schedule:run` mỗi phút, rồi Laravel quyết định task nào đến giờ chạy."
+    },
+    {
+      "title": "77. Scheduler thường dùng cho việc gì?",
+      "body": "Cleanup, gửi báo cáo định kỳ, nhắc việc, reconciliation, sync dữ liệu, expire token, archive log hoặc refresh cache."
+    },
+    {
+      "title": "78. Có nên chạy tác vụ nặng trực tiếp trong scheduler không?",
+      "body": "Thường nên để scheduler dispatch job thay vì tự làm việc nặng, để dễ scale, retry và quan sát hơn."
+    },
+    {
+      "title": "79. `withoutOverlapping()` có ý nghĩa gì?",
+      "body": "Nó giúp tránh task mới chạy chồng lên task cũ chưa xong, rất hữu ích cho report, sync và cleanup dài.",
+      "code": "$schedule->command('reports:daily')\n    ->withoutOverlapping()\n    ->onOneServer();"
+    },
+    {
+      "title": "80. `onOneServer()` dùng khi nào?",
+      "body": "Khi app chạy nhiều server và một task chỉ nên chạy một lần toàn hệ thống, ví dụ báo cáo hàng ngày hoặc reconcile payment."
+    },
+    {
+      "title": "81. Vì sao scheduler local chạy mà production không chạy?",
+      "body": "Thường vì cron chưa cấu hình, sai user chạy cron, path PHP sai, env sai hoặc worker/scheduler process không được giám sát đúng."
+    },
+    {
+      "title": "82. Một lỗi scheduler hay gặp là gì?",
+      "body": "Task tưởng chạy mỗi ngày nhưng thực ra fail âm thầm từ lâu vì không có log, alert hay giám sát."
+    },
+    {
+      "title": "83. Scheduler có nên dùng cho reconciliation không?",
+      "body": "Rất hợp. Nhiều hệ thống dùng scheduler để đối chiếu dữ liệu với provider ngoài và phát hiện job hoặc webhook bị mất."
+    },
+    {
+      "title": "84. Report generation theo lịch cần cẩn thận gì?",
+      "body": "Khối lượng dữ liệu, timezone, duplicate run, retention file output và việc email hoặc publish report chỉ nên xảy ra sau khi file tạo xong."
+    },
+    {
+      "title": "85. Timezone ảnh hưởng scheduler ra sao?",
+      "body": "Nếu user, server và business timezone khác nhau, task có thể chạy sai giờ, gửi mail sai ngày hoặc cắt kỳ báo cáo sai mốc."
+    },
+    {
+      "title": "86. Có nên dùng scheduler để poll provider ngoài liên tục không?",
+      "body": "Được trong một số case, nhưng cần nghĩ rate limit, backoff và xem webhook có phải mô hình phù hợp hơn không."
+    },
+    {
+      "title": "87. Cleanup task theo lịch rất quan trọng vì sao?",
+      "body": "Temp file, old export, token hết hạn, pending record cũ, cache rác và orphan data nếu không dọn định kỳ sẽ phình rất nhanh."
+    },
+    {
+      "title": "88. Một tip thực chiến với scheduler là gì?",
+      "body": "Mọi task định kỳ quan trọng đều nên có dấu vết lần chạy gần nhất, số lượng item xử lý và trạng thái thành công hoặc lỗi."
+    },
+    {
+      "title": "89. Mùi code xấu của scheduler là gì?",
+      "body": "Cron gọi script shell rải rác ngoài repo, không ai biết task nào đang chạy, task nào quan trọng, task nào fail."
+    },
+    {
+      "title": "90. Scheduler có liên quan tới async layer dài hạn thế nào?",
+      "body": "Nó là xương sống của rất nhiều công việc nền định kỳ, từ cleanup tới reconciliation. Bỏ qua nó là bỏ qua vận hành thực tế của backend."
+    },
+    {
+      "title": "91. Redis queue khác database queue ở góc vận hành nào?",
+      "body": "Redis thường nhanh hơn, scale tốt hơn và đi cùng Horizon mạnh hơn, trong khi database queue đơn giản hơn để bắt đầu."
+    },
+    {
+      "title": "92. Horizon giúp gì nhiều nhất?",
+      "body": "Nó cho bạn nhìn queue depth, throughput, failed job, worker health, tags và cho phép quản trị worker tốt hơn."
+    },
+    {
+      "title": "93. Queue lag là gì?",
+      "body": "Là độ trễ giữa lúc job được đẩy vào queue và lúc thực sự được xử lý. Lag cao làm async UX xấu và có thể che giấu sự cố hạ tầng."
+    },
+    {
+      "title": "94. Worker nên chạy bằng gì trong production?",
+      "body": "Thường được giám sát bởi supervisor, systemd, Horizon hoặc nền tảng container orchestration, để tự restart khi crash."
+    },
+    {
+      "title": "95. Vì sao `queue:restart` quan trọng sau deploy?",
+      "body": "Worker là process sống lâu, có thể vẫn chạy code cũ. Restart giúp worker nạp code và config mới.",
+      "code": "php artisan queue:restart"
+    },
+    {
+      "title": "96. Nếu quên restart worker sau deploy thì sao?",
+      "body": "Bạn có thể thấy request web chạy code mới nhưng job nền vẫn chạy logic cũ, gây bug rất khó hiểu."
+    },
+    {
+      "title": "97. Scale worker theo kiểu nào?",
+      "body": "Theo độ ưu tiên queue, loại workload, CPU/IO profile và queue lag thực tế, chứ không chỉ tăng worker mù mờ."
+    },
+    {
+      "title": "98. Job CPU-bound và IO-bound khác nhau thế nào cho scaling?",
+      "body": "CPU-bound như image/video processing cần cân nhắc tài nguyên máy, còn IO-bound như email/API call bị chi phối bởi network và timeout."
+    },
+    {
+      "title": "99. Failed jobs nên được nhìn như tín hiệu gì?",
+      "body": "Chúng là tín hiệu sản phẩm và vận hành quan trọng, không chỉ là log kỹ thuật. Failed job có thể đồng nghĩa khách không nhận mail hoặc data sync bị lệch."
+    },
+    {
+      "title": "100. Dead-letter mindset là gì?",
+      "body": "Là chấp nhận rằng có job không nên retry mãi và cần bị giữ lại để con người kiểm tra, thay vì lặp vô tận."
+    },
+    {
+      "title": "101. Có nên flush failed jobs bừa bãi không?",
+      "body": "Không nên. Bạn có thể xóa mất dấu vết của bug hoặc mất cơ hội retry có kiểm soát cho những job có giá trị business."
+    },
+    {
+      "title": "102. Tag job trong Horizon hoặc logging có ích gì?",
+      "body": "Nó giúp lọc theo domain như orders, reports, media, payments để điều tra nhanh khi có sự cố."
+    },
+    {
+      "title": "103. Queue priority nên thiết kế ra sao?",
+      "body": "Job quan trọng cho trải nghiệm người dùng như email xác minh hoặc xử lý thanh toán không nên chờ sau batch job nặng như import hoặc report."
+    },
+    {
+      "title": "104. Worker memory leak là gì?",
+      "body": "Là khi process chạy lâu và dùng ngày càng nhiều RAM do thư viện, object lớn hoặc job không giải phóng tài nguyên tốt."
+    },
+    {
+      "title": "105. Vì sao restart worker định kỳ đôi khi vẫn hợp lý?",
+      "body": "Để giảm rủi ro memory leak tích lũy và giữ process nền ổn định hơn."
+    },
+    {
+      "title": "106. Một tip vận hành async layer là gì?",
+      "body": "Đừng chỉ nhìn queue có chạy hay không, hãy nhìn queue lag, failed rate, retry rate và thời gian hoàn tất của từng domain quan trọng."
+    },
+    {
+      "title": "107. Mùi hệ thống xấu ở lớp worker là gì?",
+      "body": "Không ai biết worker nào xử lý queue nào, không có restart policy, không có giám sát và khi job fail thì chỉ mong chờ người dùng báo."
+    },
+    {
+      "title": "108. Redis outage ảnh hưởng async layer ra sao?",
+      "body": "Queue, cache, rate limit, session hoặc Horizon có thể cùng bị ảnh hưởng, nên đây không chỉ là sự cố 'queue hơi chậm'."
+    },
+    {
+      "title": "109. Retry là con dao hai lưỡi vì sao?",
+      "body": "Nó cứu lỗi tạm thời nhưng cũng có thể nhân đôi side effect như gửi mail lặp, tạo record lặp hoặc gọi provider nhiều lần.",
+      "code": "class CapturePayment implements ShouldQueue\n{\n    public int $tries = 2;\n\n    public function handle(PaymentGateway $gateway): void\n    {\n        $gateway->capture($this->paymentId);\n    }\n}",
+      "note": "Nếu `capture()` không idempotent, retry có thể tự tạo vấn đề lớn hơn lỗi ban đầu."
+    },
+    {
+      "title": "110. Idempotency trong job nghĩa là gì?",
+      "body": "Là job có thể bị chạy lại mà không gây thêm tác dụng phụ ngoài ý muốn."
+    },
+    {
+      "title": "111. Tại sao exactly-once processing thường là ảo tưởng?",
+      "body": "Trong hệ phân tán, timeout, retry, crash, duplicate delivery và race condition làm exactly-once rất khó. Ta thường hướng tới at-least-once với idempotency."
+    },
+    {
+      "title": "112. Job nào đặc biệt cần idempotency?",
+      "body": "Payment capture, webhook handling, sync sang partner, gửi email quan trọng, tạo invoice, cấp quyền truy cập hoặc tạo export."
+    },
+    {
+      "title": "113. Làm sao để job idempotent hơn?",
+      "body": "Dùng unique key, kiểm tra trạng thái trước khi side effect, lưu idempotency token, transaction rõ hoặc audit event đã xử lý.",
+      "code": "if ($invoice->receipt_sent_at) {\n    return;\n}\n\nMail::to($invoice->user)->send(new ReceiptMail($invoice));\n\n$invoice->forceFill(['receipt_sent_at' => now()])->save();"
+    },
+    {
+      "title": "114. Transaction boundary liên quan async thế nào?",
+      "body": "Nếu dispatch job trước khi dữ liệu chính commit xong, worker có thể thấy state chưa ổn định hoặc record chưa tồn tại."
+    },
+    {
+      "title": "115. `afterCommit` mindset đặc biệt quan trọng ở đâu?",
+      "body": "Trong create/update flow mà job nền hoặc listener phụ thuộc dữ liệu vừa ghi. Nó giúp tránh đọc state nửa vời."
+    },
+    {
+      "title": "116. Duplicate job có thể đến từ đâu?",
+      "body": "Người dùng bấm lại, request retry, webhook gửi lại, scheduler overlap, worker timeout, deploy gián đoạn hoặc code dispatch ở nhiều nơi."
+    },
+    {
+      "title": "117. Có nên retry job ghi dữ liệu sang provider ngoài vô hạn không?",
+      "body": "Không. Cần giới hạn, alert và chiến lược manual intervention cho các case không thể tự hồi phục."
+    },
+    {
+      "title": "118. Compensation là gì trong async workflow?",
+      "body": "Là hành động sửa sai hoặc rollback logic khi một bước async thành công mà bước sau thất bại, ví dụ hủy payment tạm giữ hoặc đánh dấu sync lỗi để con người xử lý."
+    },
+    {
+      "title": "119. Saga mindset có liên quan không?",
+      "body": "Có với workflow nhiều bước và nhiều side effect. Nó nhắc bạn rằng không phải lúc nào cũng có transaction DB đơn giản bao trọn mọi thứ."
+    },
+    {
+      "title": "120. Một bug dữ liệu kinh điển của async là gì?",
+      "body": "Order đã tạo nhưng email/ERP/payment sync fail âm thầm, khiến các hệ thống nhìn thấy các phiên bản thật khác nhau của cùng một sự kiện."
+    },
+    {
+      "title": "121. Tại sao `pending`, `processing`, `failed`, `completed` state hữu ích?",
+      "body": "Vì chúng cho cả UI và support biết workflow đang ở đâu, thay vì chỉ có thành công giả hoặc lỗi biến mất."
+    },
+    {
+      "title": "122. Outbox pattern có liên quan thế nào tới async?",
+      "body": "Nó giúp đảm bảo sự kiện hoặc job cần phát sinh sau khi DB commit không bị mất nếu app crash ở thời điểm nhạy cảm."
+    },
+    {
+      "title": "123. Một tip thực chiến về consistency là gì?",
+      "body": "Đừng xem queue chỉ là kỹ thuật nền. Nó là một phần của business flow và trạng thái business phải phản ánh điều đó."
+    },
+    {
+      "title": "124. Mùi hệ thống xấu ở phần retry-idempotency là gì?",
+      "body": "Không ai biết job nào an toàn để retry, job nào sẽ tạo duplicate và mọi người chỉ bấm retry theo cảm tính."
+    },
+    {
+      "title": "125. Khi nào nên có manual reprocess tool?",
+      "body": "Khi job có giá trị business cao như sync invoice, regenerate export, resend webhook hoặc rebuild document. Manual tooling tốt giúp support không phải can thiệp DB thô."
+    },
+    {
+      "title": "126. Độ tin cậy thật của async layer phụ thuộc vào điều gì?",
+      "body": "Không chỉ queue backend, mà còn vào idempotency, observability, retry policy, state modeling và quy trình vận hành khi có lỗi."
+    },
+    {
+      "title": "127. Test async flow trong Laravel nên bắt đầu từ đâu?",
+      "body": "Từ việc xác nhận hành động đúng có dispatch job, event hay notification, rồi test từng job hoặc listener với input rõ ràng.",
+      "code": "Queue::fake();\n\n$response = $this->post('/orders', $payload);\n\nQueue::assertPushed(SyncOrderToErp::class);"
+    },
+    {
+      "title": "128. `Queue::fake()` có ích gì?",
+      "body": "Nó giúp kiểm tra job nào được dispatch mà không cần chạy worker thật trong test."
+    },
+    {
+      "title": "129. `Bus::fake()` và fake queue mindset giúp gì thêm?",
+      "body": "Nó giúp test orchestration, batch, chain và khẳng định flow async xảy ra đúng như thiết kế."
+    },
+    {
+      "title": "130. Có nên chỉ test rằng job đã được dispatch là đủ không?",
+      "body": "Không đủ. Cũng cần test logic bên trong job, failure path, idempotency và các side effect quan trọng.",
+      "code": "$job = new SendInvoiceMail($invoice->id);\n$job->handle();\n\n$this->assertNotNull($invoice->fresh()->sent_at);"
+    },
+    {
+      "title": "131. Debug background bug khó hơn request bug vì sao?",
+      "body": "Vì nó chạy muộn hơn, ở process khác, có retry, có trạng thái pending và đôi khi request gốc đã biến mất khỏi bối cảnh."
+    },
+    {
+      "title": "132. Log gì cho job?",
+      "body": "Job class, domain entity id, correlation id, attempt number, queue name, latency và loại lỗi tổng quát. Đủ để truy ra mà không lộ dữ liệu nhạy cảm."
+    },
+    {
+      "title": "133. Metric nào hữu ích cho async subsystem?",
+      "body": "Queue lag, throughput, failed job count, retry count, processing time, success rate theo domain và time-to-completion cho workflow quan trọng."
+    },
+    {
+      "title": "134. Alert nên đặt ở đâu?",
+      "body": "Khi failed jobs tăng đột biến, queue lag cao, worker chết, mail queue đứng, webhook queue backlog hoặc report generation vượt SLA."
+    },
+    {
+      "title": "135. Một case production kinh điển là gì?",
+      "body": "Web request thành công nhưng worker chết từ sáng, nên email, export, sync partner và notification đều pending mà không ai biết."
+    },
+    {
+      "title": "136. Một case khác rất thật là gì?",
+      "body": "Deploy xong quên restart worker, dẫn tới phần web dùng code mới còn job nền chạy code cũ, tạo bug lệch hành vi rất khó hiểu."
+    },
+    {
+      "title": "137. Vì sao scheduler hay bị quên giám sát?",
+      "body": "Vì nó ít lộ diện trước mặt user. Nhưng khi scheduler fail, cleanup, reconcile, token expiry và báo cáo định kỳ đều âm thầm ngừng chạy."
+    },
+    {
+      "title": "138. Một playbook khi queue backlog tăng là gì?",
+      "body": "Kiểm tra worker health, queue priority, loại job đang nghẽn, timeout, Redis/DB queue backend, deploy gần nhất và xem có job nào mới quá nặng vừa được thêm vào không."
+    },
+    {
+      "title": "139. Một playbook khi job fail hàng loạt sau deploy là gì?",
+      "body": "Kiểm tra config/env drift, migration chưa chạy, worker chưa restart, payload serialization thay đổi hoặc provider ngoài đang lỗi."
+    },
+    {
+      "title": "140. Một playbook khi người dùng báo 'email không tới' là gì?",
+      "body": "Kiểm tra mail queue, failed jobs, provider response, retry loop, queue lag, suppression/bounce và xem notification có thực sự được dispatch không."
+    },
+    {
+      "title": "141. Mùi code xấu của lớp async là gì?",
+      "body": "Async bị nhét vào khắp nơi nhưng không có state, không có log, không có dashboard, không có owner và chỉ được nhớ tới khi cháy."
+    },
+    {
+      "title": "142. Khi nào async layer trở thành một subsystem riêng đúng nghĩa?",
+      "body": "Khi app có nhiều workflow nền, nhiều queue domain, SLA khác nhau, observability riêng và cần công cụ reprocess/support chuyên biệt."
+    },
+    {
+      "title": "143. Rà soát cuối: site async nên có tối thiểu những mảng nào?",
+      "body": "Ít nhất phải có nền tảng async, job-queue-worker, event-listener, mail-notification-integration, scheduler-cron, Redis-Horizon-ops, retry-idempotency-consistency, testing-debugging và case production."
+    },
+    {
+      "title": "144. `ShouldBeUnique` hoặc unique job có ích gì?",
+      "body": "Nó giúp ngăn cùng một loại job bị nhét lặp quá nhiều vào queue, rất hữu ích cho regenerate report, refresh cache, sync profile hoặc rebuild index."
+    },
+    {
+      "title": "145. Unique job có phải thuốc chữa mọi duplicate không?",
+      "body": "Không. Nó giúp ở lớp enqueue, nhưng duplicate side effect vẫn cần state model và idempotency ở lớp xử lý."
+    },
+    {
+      "title": "146. Job middleware trong Laravel dùng để làm gì?",
+      "body": "Nó cho phép bọc hành vi chung quanh job như rate limiting, overlap control, lock hoặc retry policy tinh chỉnh mà không nhét hết vào `handle()`."
+    },
+    {
+      "title": "147. `WithoutOverlapping` và lock middleware có ích ở đâu?",
+      "body": "Rất hữu ích khi một job cùng loại không nên chạy song song, ví dụ đồng bộ cùng một tenant, cùng một order hoặc cùng một báo cáo."
+    },
+    {
+      "title": "148. Queueable listener khác gì listener thường?",
+      "body": "Queueable listener biến phản ứng sau event thành background work thật, giúp tách side effect nặng khỏi request và khỏi event source rõ ràng hơn."
+    },
+    {
+      "title": "149. Supervisor hoặc systemd có vai trò gì với worker?",
+      "body": "Chúng giữ worker sống, tự khởi động lại khi chết và giúp production bớt phụ thuộc vào việc ai đó nhớ chạy tay lệnh queue."
+    },
+    {
+      "title": "150. Poison job là gì?",
+      "body": "Là job cứ fail hoặc treo mỗi lần chạm vào, làm queue bị nghẽn hoặc tạo vòng retry ồn ào. Nó cần bị cô lập và điều tra sớm."
+    },
+    {
+      "title": "151. Batch cancel hoặc partial failure trong batch quan trọng ra sao?",
+      "body": "Với import/export/backfill lớn, bạn cần biết nếu một phần batch fail thì nên dừng cả đợt, bỏ qua item lỗi hay cho phép resume có kiểm soát."
+    },
+    {
+      "title": "152. Rate-limited job dùng khi nào?",
+      "body": "Khi gọi provider ngoài có quota, gửi notification số lượng lớn hoặc đồng bộ hàng loạt mà nếu bắn quá nhanh sẽ bị chặn hoặc phản tác dụng."
+    },
+    {
+      "title": "153. Ví dụ job cơ bản và cách dispatch vào queue",
+      "body": "Đây là block rất đáng tự tay gõ vài lần để hiểu async bắt đầu từ đâu.",
+      "code": "class SendInvoiceMail implements ShouldQueue\n{\n    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;\n\n    public function __construct(public int $invoiceId)\n    {\n    }\n\n    public function handle(): void\n    {\n        // load invoice and send mail\n    }\n}\n\nSendInvoiceMail::dispatch($invoice->id);",
+      "note": "Khi đã vào queue, flow xử lý không còn nằm trong request hiện tại nữa. Đây là chỗ tư duy observability và retry bắt đầu quan trọng."
+    },
+    {
+      "title": "154. Ví dụ scheduler cho command định kỳ",
+      "body": "Scheduler là lớp rất hay bị quên dù ảnh hưởng lớn tới dữ liệu và tác vụ nền.",
+      "code": "protected function schedule(Schedule $schedule): void\n{\n    $schedule->command('reports:daily')->dailyAt('01:00');\n    $schedule->command('cleanup:temp-files')->hourly();\n}",
+      "bullets": [
+        "Cron hệ điều hành phải thực sự gọi scheduler đều đặn.",
+        "Command nền nên có log hoặc tín hiệu thành công-thất bại tối thiểu.",
+        "Nếu task nặng, hãy cân nhắc dispatch job thay vì làm tất cả ngay trong command."
+      ]
+    },
+    {
+      "title": "155. Ví dụ event và listener queueable",
+      "body": "Đây là cách rất hay để tách side effect ra khỏi luồng business chính mà vẫn giữ event-driven mindset.",
+      "code": "class OrderPaid\n{\n    use Dispatchable, SerializesModels;\n\n    public function __construct(public Order $order)\n    {\n    }\n}\n\nclass SendReceiptListener implements ShouldQueue\n{\n    public function handle(OrderPaid $event): void\n    {\n        Mail::to($event->order->user)->send(new ReceiptMail($event->order));\n    }\n}",
+      "note": "Khi listener queueable, event được phát ra nhanh hơn và side effect nặng có thể xử lý nền thay vì giữ request chờ."
+    },
+    {
+      "title": "156. Đánh giá sau rà soát: phần async đã đủ chi tiết chưa?",
+      "body": "Ở mức portal học tập thì phần này đã khá đầy: có foundation, job-worker-event, async integration, scheduler, Redis-Horizon, retry-idempotency, observability, support playbook và case production. Nếu muốn đi sâu hơn nữa sau này, hướng tách riêng tốt nhất là một site con cho queue reliability, một site cho event-driven workflow và một site cho scheduler-operational playbook."
+    }
+  ]
+}

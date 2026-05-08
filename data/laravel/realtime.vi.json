@@ -1,0 +1,709 @@
+{
+  "anchor": "laravel-realtime",
+  "type": "list",
+  "heading": "Realtime và trải nghiệm cập nhật tức thời: từ event backend tới UI sống",
+  "intro": "Site này tổng hợp toàn bộ kiến thức thực chiến quanh realtime trong Laravel. Mục tiêu không chỉ là biết broadcasting hay cài Echo, mà là hiểu khi nào realtime đáng dùng, event nào nên đẩy ra client, auth channel hoạt động thế nào, private và presence khác nhau ra sao, fallback polling dùng khi nào, và làm sao vận hành WebSocket hoặc hạ tầng realtime mà không tự tạo một vùng bug rất khó debug.",
+  "breaks": [
+    {
+      "start": 1,
+      "title": "I. Tư Duy Realtime Và Giá Trị Sản Phẩm",
+      "description": "Realtime là gì, vì sao người dùng thích cập nhật tức thời, khi nào nên dùng và khi nào không nên đẩy complexity vào hệ thống.",
+      "tone": "amber"
+    },
+    {
+      "start": 17,
+      "title": "II. Broadcasting, Event Và Channel",
+      "description": "Laravel broadcasting hoạt động ra sao, event nào nên broadcast, channel công khai hay riêng tư và cách mô hình hóa dữ liệu realtime.",
+      "tone": "copper"
+    },
+    {
+      "start": 39,
+      "title": "III. Echo, WebSocket, SSE Và Cầu Nối Tới Frontend",
+      "description": "Laravel Echo, WebSocket server, client subscription, event naming, reconnect, payload size và lựa chọn transport phù hợp.",
+      "tone": "sand"
+    },
+    {
+      "start": 61,
+      "title": "IV. Auth, Private Channel, Presence Và Security",
+      "description": "Private channel auth, presence, permission realtime, tenant boundary, auth drift và các lỗ hổng rất thật của lớp live update.",
+      "tone": "amber"
+    },
+    {
+      "start": 83,
+      "title": "V. Notification Live, Chat, Feed Và Trải Nghiệm Người Dùng",
+      "description": "Use case phổ biến như thông báo live, chat, dashboard, unread counter, activity feed, optimistic UI và state đồng bộ với người dùng.",
+      "tone": "copper"
+    },
+    {
+      "start": 105,
+      "title": "VI. Queue, Scale, Reliability Và Hạ Tầng Realtime",
+      "description": "Broadcast queue, throughput, fan-out, Redis, horizontal scale, backpressure, delivery guarantee và cost của realtime.",
+      "tone": "sand"
+    },
+    {
+      "start": 125,
+      "title": "VII. Polling, Fallback, Observability Và Debugging",
+      "description": "Khi WebSocket không phù hợp, polling hay hybrid model, log, trace, connection health và playbook xử lý sự cố realtime.",
+      "tone": "amber"
+    },
+    {
+      "start": 145,
+      "title": "VIII. Case Thực Chiến, Anti-Pattern Và Đánh Giá Cuối",
+      "description": "Những lỗi production điển hình, mùi realtime sai chỗ và tiêu chí để biết hệ live update của bạn thực sự khỏe hay chưa.",
+      "tone": "copper"
+    }
+  ],
+  "items": [
+    {
+      "title": "1. Realtime trong app Laravel nghĩa là gì?",
+      "body": "Là khả năng đẩy dữ liệu hoặc trạng thái mới tới client gần như ngay khi sự kiện xảy ra, thay vì bắt người dùng phải refresh tay.",
+      "code": "Route::post('/orders/{order}/ship', function (Order $order) {\n    $order->update(['status' => 'shipped']);\n\n    broadcast(new OrderUpdated($order))->toOthers();\n\n    return response()->json(['status' => 'ok']);\n});",
+      "note": "Sai lầm thường gặp: nghĩ realtime là một hệ riêng biệt tách khỏi flow business. Cách sửa là nhìn nó như phần tiếp nối của action backend sau khi state thực sự đổi."
+    },
+    {
+      "title": "2. Realtime có phải luôn là 'instant tuyệt đối' không?",
+      "body": "Không. Thực tế thường là near real-time với một độ trễ nhỏ nhưng đủ để người dùng thấy hệ thống sống."
+    },
+    {
+      "title": "3. Vì sao người dùng thích realtime?",
+      "body": "Vì nó giảm thao tác refresh, tăng cảm giác app đang phản hồi theo thời gian thực và phù hợp với dashboard, chat, trading-lite, ops board hoặc collaboration."
+    },
+    {
+      "title": "4. Khi nào realtime thật sự có giá trị sản phẩm?",
+      "body": "Khi thông tin mới cần tác động ngay tới quyết định hoặc hành vi người dùng, ví dụ tin nhắn mới, notification quan trọng, dashboard vận hành hoặc trạng thái job dài."
+    },
+    {
+      "title": "5. Khi nào không nên thêm realtime?",
+      "body": "Khi dữ liệu thay đổi ít, người dùng không cần thấy ngay, hoặc polling đơn giản đã đủ mà realtime chỉ thêm complexity."
+    },
+    {
+      "title": "6. Vì sao realtime là bài toán sản phẩm chứ không chỉ kỹ thuật?",
+      "body": "Vì bạn phải quyết định cái gì đáng cập nhật ngay, cái gì chỉ cần sau vài giây, và cái gì không cần làm người dùng bị phân tâm."
+    },
+    {
+      "title": "7. Realtime UX tệ có thể biểu hiện như thế nào?",
+      "body": "Thông tin nhảy loạn, unread count sai, list reorder khó hiểu, chat trùng tin nhắn hoặc giao diện cập nhật quá nhiều khiến người dùng mất phương hướng."
+    },
+    {
+      "title": "8. Polling và realtime khác nhau ở đâu?",
+      "body": "Polling là client hỏi lại định kỳ, còn realtime thường là server chủ động đẩy sự kiện ra khi có thay đổi."
+    },
+    {
+      "title": "9. Tại sao không phải mọi 'cập nhật tự động' đều cần WebSocket?",
+      "body": "Vì nhiều trường hợp polling 10-30 giây, lazy refresh hoặc background sync là đủ mà rẻ hơn rất nhiều về vận hành."
+    },
+    {
+      "title": "10. Một tip senior về realtime mindset là gì?",
+      "body": "Đừng bắt đầu từ công nghệ. Hãy bắt đầu từ câu hỏi: người dùng nào cần thấy thay đổi nào, nhanh tới mức nào và nếu trễ vài giây thì có thật sự đau không.",
+      "code": "if ($order->status !== 'paid') {\n    return;\n}\n\nbroadcast(new OrderUpdated($order));",
+      "note": "Không phải thay đổi nào cũng đáng broadcast. Hãy bắt đầu từ event có giá trị sản phẩm rõ nhất."
+    },
+    {
+      "title": "11. Realtime có làm tăng cognitive load không?",
+      "body": "Có thể. Cập nhật liên tục không kiểm soát dễ làm màn hình mất ổn định và khiến người dùng khó tập trung."
+    },
+    {
+      "title": "12. Realtime có liên quan tới trust của sản phẩm không?",
+      "body": "Có. Nếu UI lúc live đúng lúc sai, người dùng sẽ mất niềm tin vào trạng thái hiển thị."
+    },
+    {
+      "title": "13. App admin và app end-user khác nhau gì ở nhu cầu realtime?",
+      "body": "App admin thường cần dashboard, trạng thái hàng đợi, ticket, order feed. App end-user hay cần chat, notification, live status hoặc collaborative update."
+    },
+    {
+      "title": "14. Realtime có thay thế hoàn toàn request-response truyền thống không?",
+      "body": "Không. Nó bổ sung cho các flow cần live update, còn phần lớn CRUD vẫn dựa trên request-response bình thường."
+    },
+    {
+      "title": "15. Nền tảng quan trọng nhất khi học realtime là gì?",
+      "body": "Hiểu ranh giới giữa business event, transport event và UI state update. Nếu ba lớp này lẫn nhau, realtime rất dễ rối."
+    },
+    {
+      "title": "16. Kết luận ngắn về phần mindset là gì?",
+      "body": "Realtime chỉ đáng khi giá trị cho người dùng lớn hơn chi phí complexity, hạ tầng và debug."
+    },
+    {
+      "title": "17. Broadcasting trong Laravel là gì?",
+      "body": "Là cơ chế phát event backend ra client thông qua channel, thường dùng với WebSocket hoặc dịch vụ tương tự.",
+      "code": "class MessageSent implements ShouldBroadcast\n{\n    public function __construct(public Message $message)\n    {\n    }\n\n    public function broadcastOn(): array\n    {\n        return [new PrivateChannel('rooms.'.$this->message->room_id)];\n    }\n}",
+      "bullets": [
+        "Event backend được broadcast như một contract cho frontend.",
+        "Channel quyết định ai có quyền nghe event đó."
+      ]
+    },
+    {
+      "title": "18. Event nào nên broadcast?",
+      "body": "Những event mà client thật sự cần biết gần như ngay lập tức, ví dụ `MessageSent`, `OrderStatusUpdated`, `JobFinished`, `NotificationCreated`."
+    },
+    {
+      "title": "19. Event nào không nên broadcast?",
+      "body": "Những event nội bộ kỹ thuật, quá chi tiết, quá nhạy cảm hoặc không có giá trị trực tiếp cho UI."
+    },
+    {
+      "title": "20. Public channel là gì?",
+      "body": "Là channel mà ai cũng có thể subscribe, phù hợp cho dữ liệu công khai hoặc room không cần auth."
+    },
+    {
+      "title": "21. Private channel là gì?",
+      "body": "Là channel yêu cầu auth và authorization trước khi subscribe, phù hợp cho dữ liệu riêng của user, order, team hoặc tenant."
+    },
+    {
+      "title": "22. Presence channel là gì?",
+      "body": "Là channel riêng tư có thêm thông tin ai đang online hoặc đang hiện diện trong cùng channel."
+    },
+    {
+      "title": "23. Presence channel phù hợp ở đâu?",
+      "body": "Chat room, collaborative editing, support dashboard hoặc bất kỳ chỗ nào cần biết thành viên nào đang tham gia."
+    },
+    {
+      "title": "24. Có nên broadcast toàn bộ model ra client không?",
+      "body": "Không nên theo thói quen. Payload nên vừa đủ cho UI cần hiển thị, tránh lộ dữ liệu nhạy cảm hoặc kéo payload quá lớn.",
+      "code": "public function broadcastWith(): array\n{\n    return [\n        'id' => $this->order->id,\n        'status' => $this->order->status,\n        'updated_at' => $this->order->updated_at,\n    ];\n}",
+      "note": "Payload nhỏ và rõ nghĩa giúp frontend merge state dễ hơn và giảm nguy cơ lộ field nội bộ."
+    },
+    {
+      "title": "25. Vì sao payload design quan trọng với realtime?",
+      "body": "Vì payload quá nặng làm tăng băng thông, latency và độ khó evolve event contract.",
+      "code": "public function broadcastWith(): array\n{\n    return [\n        'id' => $this->order->id,\n        'status' => $this->order->status,\n        'updated_at' => $this->order->updated_at?->toIso8601String(),\n    ];\n}",
+      "note": "Đừng đẩy nguyên model với mọi relation chỉ vì tiện. Frontend thường chỉ cần một lát mỏng dữ liệu để cập nhật UI."
+    },
+    {
+      "title": "26. Event name nên đặt thế nào?",
+      "body": "Nên rõ nghĩa và phản ánh chuyện đã xảy ra, ví dụ `message.sent`, `order.shipped`, `report.finished` hoặc convention nhất quán tương tự."
+    },
+    {
+      "title": "27. Event contract là gì?",
+      "body": "Là hình dạng payload mà frontend kỳ vọng khi nhận event realtime. Nó cần ổn định gần giống contract của API."
+    },
+    {
+      "title": "28. Broadcast event có phải chỉ là 'gửi dữ liệu' không?",
+      "body": "Không. Nó còn là thiết kế ngữ nghĩa: client nhận event này thì nên hiểu trạng thái gì đã đổi."
+    },
+    {
+      "title": "29. Có nên broadcast từng thay đổi nhỏ li ti không?",
+      "body": "Cần cẩn thận. Quá nhiều event nhỏ có thể tạo noise, tốn hạ tầng và làm frontend khó quản lý state."
+    },
+    {
+      "title": "30. Coarse-grained event và fine-grained event khác nhau thế nào?",
+      "body": "Coarse-grained event gộp thay đổi ở mức business lớn hơn, dễ hiểu hơn nhưng ít chi tiết. Fine-grained event chi tiết hơn nhưng dễ làm hệ thống ồn và rối."
+    },
+    {
+      "title": "31. Broadcasting có cần queue không?",
+      "body": "Rất thường có. Queue giúp request chính không phải chờ fan-out event ra nhiều subscriber."
+    },
+    {
+      "title": "32. Nếu event broadcast được queue, UI có thể bị trễ không?",
+      "body": "Có, nhưng thường độ trễ nhỏ. Đây là trade-off hợp lý để giữ request path khỏe hơn."
+    },
+    {
+      "title": "33. Một tip thực chiến với event broadcast là gì?",
+      "body": "Hãy nghĩ event như API nhỏ cho frontend. Nếu payload và meaning mơ hồ, bug realtime sẽ rất khó debug."
+    },
+    {
+      "title": "34. Broadcast before commit có nguy hiểm không?",
+      "body": "Có. Nếu event được phát ra trước khi transaction commit xong, client có thể thấy trạng thái chưa thực sự tồn tại."
+    },
+    {
+      "title": "35. `afterCommit` mindset quan trọng ở realtime vì sao?",
+      "body": "Vì UI realtime rất nhạy với ghost event: client nhận được update nhưng DB thực tế rollback hoặc chưa ổn định."
+    },
+    {
+      "title": "36. Có nên để frontend tự suy luận quá nhiều từ một event mơ hồ không?",
+      "body": "Không nên. Event nên đủ rõ để frontend không phải đoán business state bằng may rủi."
+    },
+    {
+      "title": "37. Một anti-pattern ở lớp broadcasting là gì?",
+      "body": "Dùng event backend như log kỹ thuật rồi đẩy nguyên sang client, khiến UI phải hiểu quá nhiều chi tiết nội bộ."
+    },
+    {
+      "title": "38. Mùi hệ thống xấu ở phần channel là gì?",
+      "body": "Channel naming tùy hứng, auth rule rải rác, không ai biết event nào đi qua channel nào và vì sao."
+    },
+    {
+      "title": "39. Echo trong Laravel dùng để làm gì?",
+      "body": "Echo là lớp client-side giúp subscribe channel và lắng nghe event broadcast một cách tiện hơn từ frontend."
+    },
+    {
+      "title": "40. WebSocket là gì trong bối cảnh realtime?",
+      "body": "Là kết nối lâu dài giữa client và server cho phép trao đổi dữ liệu hai chiều hoặc gần như tức thời thay vì request-response ngắt quãng."
+    },
+    {
+      "title": "41. SSE là gì?",
+      "body": "Server-Sent Events là cách server đẩy dữ liệu một chiều xuống client qua HTTP stream, đơn giản hơn WebSocket trong một số case.",
+      "code": "return response()->stream(function () {\n    echo \"event: ping\\n\";\n    echo 'data: '.json_encode(['time' => now()->toDateTimeString()]).\"\\n\\n\";\n    ob_flush();\n    flush();\n}, 200, [\n    'Content-Type' => 'text/event-stream',\n    'Cache-Control' => 'no-cache',\n]);",
+      "note": "SSE hợp khi server chỉ cần đẩy xuống client, ví dụ progress nhẹ hoặc dashboard đơn giản, mà không cần kênh hai chiều đầy đủ."
+    },
+    {
+      "title": "42. WebSocket và SSE khác nhau ở điểm nào?",
+      "body": "WebSocket hai chiều và linh hoạt hơn, còn SSE đơn giản hơn cho luồng server đẩy xuống client mà không cần client gửi nhiều sự kiện ngược lại."
+    },
+    {
+      "title": "43. Có phải mọi realtime Laravel đều bắt buộc dùng WebSocket?",
+      "body": "Không. Tùy use case có thể dùng polling, SSE, webhook + refresh hoặc hybrid model."
+    },
+    {
+      "title": "44. Pusher-style service khác self-hosted WebSocket ở đâu?",
+      "body": "Hosted service giảm gánh vận hành nhưng tăng phụ thuộc nhà cung cấp và cost. Self-hosted cho bạn nhiều kiểm soát hơn nhưng đòi năng lực vận hành."
+    },
+    {
+      "title": "45. Laravel Reverb hoặc server WebSocket tương tự giúp gì?",
+      "body": "Nó cung cấp lớp server realtime tích hợp hơn với hệ Laravel, giúp đội có lựa chọn self-hosted rõ ràng hơn."
+    },
+    {
+      "title": "46. Client reconnect là gì và vì sao quan trọng?",
+      "body": "Kết nối realtime có thể rớt vì mạng, tab sleep hoặc deploy. Client phải biết reconnect đủ mượt để UX không gãy."
+    },
+    {
+      "title": "47. Reconnect có thể gây duplicate subscribe không?",
+      "body": "Có nếu client xử lý kém. Điều này dễ tạo duplicate event hoặc memory leak ở frontend."
+    },
+    {
+      "title": "48. Event ordering có đảm bảo tuyệt đối không?",
+      "body": "Không nên assume tuyệt đối. Mạng, queue và reconnect có thể làm event tới chậm hoặc theo thứ tự khó đoán."
+    },
+    {
+      "title": "49. Vì sao UI state không nên phụ thuộc mù vào thứ tự event?",
+      "body": "Vì chỉ cần out-of-order nhỏ là unread count, status hoặc list có thể lệch ngay.",
+      "code": "if ($incoming.updated_at < $current.updated_at) {\n    return;\n}\n\nsetOrderState($incoming);",
+      "note": "Một cách tự vệ cơ bản là so mốc thời gian hoặc version thay vì tin tuyệt đối rằng event luôn tới đúng thứ tự."
+    },
+    {
+      "title": "50. Payload lớn ảnh hưởng frontend realtime ra sao?",
+      "body": "Tăng latency, tốn bandwidth, làm parse nặng và khiến mobile hoặc tab yếu phản ứng kém."
+    },
+    {
+      "title": "51. Frontend có nên refetch API sau khi nhận event không?",
+      "body": "Nhiều case nên. Event có thể chỉ báo 'có thay đổi', còn API mới là nguồn lấy state đầy đủ và nhất quán hơn."
+    },
+    {
+      "title": "52. Push full state hay push signal rồi refetch, chọn thế nào?",
+      "body": "Push full state nhanh hơn cho UI đơn giản, nhưng signal + refetch thường bền hơn khi state phức tạp hoặc dễ drift."
+    },
+    {
+      "title": "53. Một tip thực chiến với Echo là gì?",
+      "body": "Đừng trộn logic subscribe, merge state, unread logic và reconnect handling vào một khối frontend hỗn loạn. Realtime UI cần cấu trúc rất rõ."
+    },
+    {
+      "title": "54. Mùi frontend xấu ở lớp realtime là gì?",
+      "body": "Component nào cũng tự subscribe, tự mutate state theo cách riêng và không có một chiến lược state thống nhất."
+    },
+    {
+      "title": "55. Có nên render mọi event ngay lên UI không?",
+      "body": "Không phải lúc nào cũng nên. Có chỗ cần debounce, batch update hoặc chỉ báo badge thay vì làm màn hình nhảy liên tục."
+    },
+    {
+      "title": "56. Connection status nên hiển thị khi nào?",
+      "body": "Khi realtime là cốt lõi trải nghiệm như chat, ops dashboard, collaborative UI hoặc live support."
+    },
+    {
+      "title": "57. Một mùi hệ thống xấu ở transport layer là gì?",
+      "body": "Không ai biết client đang dùng polling, WebSocket hay hybrid, và khi event không tới thì cả backend lẫn frontend đều đổ lỗi cho nhau."
+    },
+    {
+      "title": "58. Private channel auth trong Laravel hoạt động thế nào?",
+      "body": "Client gửi yêu cầu auth subscribe, backend kiểm tra user hiện tại có quyền vào channel đó không rồi mới cấp phép.",
+      "code": "Broadcast::channel('teams.{teamId}.chat', function ($user, $teamId) {\n    return $user->teams()->whereKey($teamId)->exists();\n});",
+      "note": "Sai lầm thường gặp: chỉ check channel name đúng format là cho qua. Cách sửa là luôn check quyền business thật."
+    },
+    {
+      "title": "59. Vì sao private channel auth là điểm sống còn của realtime security?",
+      "body": "Vì chỉ một sai sót nhỏ là người dùng có thể subscribe dữ liệu không thuộc về họ."
+    },
+    {
+      "title": "60. Presence channel rò thông tin kiểu gì nếu thiết kế tệ?",
+      "body": "Bạn có thể vô tình lộ danh sách user online, team membership hoặc trạng thái hoạt động cho người không nên thấy."
+    },
+    {
+      "title": "61. Tenant boundary trong channel cần cẩn thận gì?",
+      "body": "Key channel và auth rule phải luôn gắn tenant rõ. Thiếu boundary đúng sẽ rất dễ rò realtime event giữa tenant."
+    },
+    {
+      "title": "62. Channel naming nên encode context ra sao?",
+      "body": "Nên đủ rõ như `orders.{id}`, `teams.{teamId}.chat`, `users.{id}.notifications` để rule auth và debug dễ hiểu hơn."
+    },
+    {
+      "title": "63. Có nên dùng wildcard channel bừa không?",
+      "body": "Cần rất cẩn thận. Wildcard tiện nhưng dễ tạo rule auth mơ hồ và khó audit."
+    },
+    {
+      "title": "64. Realtime permission drift là gì?",
+      "body": "Là khi permission ở API và permission ở channel auth không còn đồng bộ, khiến UI thấy event mà API không cho xem hoặc ngược lại."
+    },
+    {
+      "title": "65. Session auth, token auth và realtime có thể lệch nhau không?",
+      "body": "Có. Client có thể còn giữ kết nối hoặc auth token khác trạng thái web/API hiện tại nếu revoke hoặc login state đổi.",
+      "code": "Echo.connector.pusher.connection.bind('state_change', (states) => {\n    console.log('socket state', states.previous, states.current);\n});",
+      "bullets": [
+        "Web vẫn login không có nghĩa private channel subscribe chắc chắn pass.",
+        "Token bị revoke rồi nhưng socket cũ chưa refresh là nguồn bug rất thật."
+      ]
+    },
+    {
+      "title": "66. Nếu user bị revoke quyền trong lúc đang subscribe thì sao?",
+      "body": "Hệ thống cần nghĩ tới disconnect, refresh auth, expire token hoặc ít nhất đảm bảo event tiếp theo không còn bị đẩy sai."
+    },
+    {
+      "title": "67. Có nên broadcast dữ liệu nhạy cảm rồi trông cậy frontend ẩn bớt không?",
+      "body": "Không bao giờ nên. Payload broadcast phải an toàn ngay từ phía server."
+    },
+    {
+      "title": "68. Signed auth endpoint hoặc CSRF có liên quan gì tới realtime?",
+      "body": "Auth subscribe vẫn là request cần bảo vệ đúng. Nếu auth endpoint sai cấu hình, private channel sẽ fail hoặc lộ lỗ hổng."
+    },
+    {
+      "title": "69. Một tip senior về realtime security là gì?",
+      "body": "Hãy audit payload và channel như audit API. Realtime không phải đường tắt bỏ qua authorization."
+    },
+    {
+      "title": "70. Presence count có luôn chính xác tuyệt đối không?",
+      "body": "Không nên assume tuyệt đối. Disconnect bất ngờ, reconnect và network issues có thể làm count lệch trong thời gian ngắn."
+    },
+    {
+      "title": "71. Có nên dùng presence để làm source of truth cho business logic không?",
+      "body": "Thường không nên. Presence phù hợp hơn cho UX và tín hiệu mềm, không nên là nền tảng duy nhất cho quyết định business quan trọng."
+    },
+    {
+      "title": "72. Một anti-pattern ở auth channel là gì?",
+      "body": "Rule auth được copy-paste khác nhau ở nhiều nơi, không ai chắc private channel có đang bảo vệ đúng như API hay không."
+    },
+    {
+      "title": "73. Mùi hệ thống xấu ở security layer là gì?",
+      "body": "Ai đó có thể 'nghe lén' event chỉ bằng cách đoán channel name và không ai phát hiện sớm."
+    },
+    {
+      "title": "74. Notification live là use case realtime phổ biến nhất vì sao?",
+      "body": "Vì người dùng rất dễ hiểu giá trị của nó: có thông báo mới, badge cập nhật, không cần refresh."
+    },
+    {
+      "title": "75. Chat realtime có khó hơn notification không?",
+      "body": "Khó hơn nhiều. Nó có message ordering, unread, typing, online status, retry, duplicate message và lịch sử đồng bộ."
+    },
+    {
+      "title": "76. Activity feed live dùng khi nào?",
+      "body": "Khi người dùng cần theo dõi sự kiện mới xuất hiện liên tục như support desk, audit stream, ops dashboard hoặc moderation panel."
+    },
+    {
+      "title": "77. Dashboard realtime cần cẩn thận gì?",
+      "body": "Dễ bị quá tải bởi update dày, metric nhấp nháy liên tục và state không ổn định nếu không batch hoặc debounce."
+    },
+    {
+      "title": "78. Unread counter là bài toán đơn giản hay phức tạp?",
+      "body": "Thường phức tạp hơn vẻ ngoài vì phải xử lý multi-device, event tới trễ, mark-as-read, reconnect và refresh state."
+    },
+    {
+      "title": "79. Optimistic UI có liên quan gì tới realtime?",
+      "body": "Rất liên quan trong chat hoặc action live. UI có thể hiện message hoặc state trước, rồi reconcile khi server xác nhận hoặc broadcast ngược lại."
+    },
+    {
+      "title": "80. Duplicate message trong chat có thể đến từ đâu?",
+      "body": "Optimistic append + broadcast append, reconnect, resend hoặc retry phía client và queue."
+    },
+    {
+      "title": "81. Typing indicator có nên là business event bền không?",
+      "body": "Không. Đây là tín hiệu ephemeral, nên xử lý như trạng thái tạm thời chứ không như dữ liệu cần lưu vĩnh viễn.",
+      "code": "Echo.private(`rooms.${roomId}`)\n    .listenForWhisper('typing', (event) => {\n        setTypingUsers(event.user_id);\n    });\n\nEcho.private(`rooms.${roomId}`)\n    .whisper('typing', { user_id: currentUserId });",
+      "note": "Typing indicator là tín hiệu UX ngắn hạn. Đừng biến nó thành record business phải lưu vào DB rồi sync lại khắp nơi."
+    },
+    {
+      "title": "82. Presence và typing đều là ephemeral state nghĩa là gì?",
+      "body": "Nó có giá trị trải nghiệm tức thời nhưng không nên bị xem như dữ liệu cốt lõi cần bảo toàn lâu dài."
+    },
+    {
+      "title": "83. Realtime job status page rất đáng dùng ở đâu?",
+      "body": "Export/import, media processing, report generation hoặc bất kỳ flow nền dài mà người dùng cần biết tiến độ."
+    },
+    {
+      "title": "84. Có nên update UI mỗi khi một phần trăm progress đổi không?",
+      "body": "Không phải lúc nào cũng cần. Quá nhiều update nhỏ có thể lãng phí và gây giật UI."
+    },
+    {
+      "title": "85. Feed reorder realtime có thể gây khó chịu thế nào?",
+      "body": "Nếu item đang đọc bỗng nhảy vị trí liên tục, người dùng sẽ mất ngữ cảnh. Nhiều app chọn badge 'có nội dung mới' thay vì reorder tức thì."
+    },
+    {
+      "title": "86. Một tip UX realtime là gì?",
+      "body": "Không phải cập nhật nào cũng nên auto-apply ngay. Đôi khi báo 'có cập nhật mới' tốt hơn nhiều so với làm giao diện tự nhảy."
+    },
+    {
+      "title": "87. Multi-tab hoặc multi-device làm realtime phức tạp hơn ra sao?",
+      "body": "Unread count, read receipt, active room và state cá nhân có thể lệch giữa tab hoặc giữa mobile và web."
+    },
+    {
+      "title": "88. Reconcile API và event trong chat/feed nên làm thế nào?",
+      "body": "Event thường đẩy cập nhật mới, còn API hoặc initial fetch vẫn nên là nguồn dựng state đầu và nguồn kiểm tra lại khi reconnect."
+    },
+    {
+      "title": "89. Notification live chỉ đẩy event là đủ chưa?",
+      "body": "Chưa. Còn cần persistence, read state, deduplication và đôi khi cả push notification ngoài browser/app.",
+      "code": "NotificationCreated::dispatch($notification->id);\n\n$notifications = Notification::query()\n    ->where('user_id', $user->id)\n    ->latest()\n    ->take(20)\n    ->get();",
+      "note": "Event live chỉ giúp UI biết có thay đổi. Danh sách notification thật vẫn cần API hoặc data store rõ ràng để rebuild state."
+    },
+    {
+      "title": "90. Mùi UX xấu của realtime là gì?",
+      "body": "App cập nhật liên tục nhưng người dùng không hiểu chuyện gì vừa đổi, thứ gì cần chú ý và thứ gì chỉ là noise."
+    },
+    {
+      "title": "91. Queue có vai trò gì trong broadcasting?",
+      "body": "Nó giúp tách việc fan-out event khỏi request chính, đặc biệt khi nhiều client hoặc event volume đáng kể."
+    },
+    {
+      "title": "92. Fan-out là gì?",
+      "body": "Là việc một event được phát tới nhiều subscriber hoặc nhiều channel liên quan."
+    },
+    {
+      "title": "93. Fan-out lớn làm hạ tầng realtime đau ở đâu?",
+      "body": "Băng thông, CPU serialization, queue throughput, broker/WebSocket server và đôi khi cost dịch vụ hosted."
+    },
+    {
+      "title": "94. Redis liên quan gì tới broadcasting backend?",
+      "body": "Redis thường đóng vai trò pub/sub, queue backend hoặc hỗ trợ coordination cho hạ tầng realtime."
+    },
+    {
+      "title": "95. Horizontal scale với WebSocket server khó hơn app web thường ở đâu?",
+      "body": "Vì phải nghĩ connection state, sticky session hoặc broker đồng bộ, presence state và phân phối event giữa nhiều node."
+    },
+    {
+      "title": "96. Sticky session có phải lúc nào cũng cần không?",
+      "body": "Không luôn, nhưng một số kiến trúc connection-aware cần nó hoặc cần broker trung gian tốt hơn để tránh phụ thuộc vào node đơn lẻ."
+    },
+    {
+      "title": "97. Backpressure trong realtime là gì?",
+      "body": "Là khi event đến nhanh hơn khả năng xử lý hoặc đẩy tới client, khiến backlog hoặc latency tăng.",
+      "code": "BroadcastHeavyMetricUpdate::dispatch($payload)\n    ->onQueue('broadcast');",
+      "note": "Nếu feed sự kiện tới quá dày, bạn sẽ thấy queue lag, socket delay hoặc UI giật. Đây không chỉ là chuyện backend mà là trải nghiệm người dùng."
+    },
+    {
+      "title": "98. Realtime có cần SLA riêng không?",
+      "body": "Rất nên nghĩ như vậy nếu nó là trải nghiệm cốt lõi, ví dụ chat hoặc dashboard vận hành."
+    },
+    {
+      "title": "99. Delivery guarantee của realtime có tuyệt đối không?",
+      "body": "Thường không tuyệt đối. Client disconnect, queue fail, reconnect hoặc network issues có thể làm miss event."
+    },
+    {
+      "title": "100. Vì sao event realtime nên có khả năng self-heal qua API refresh?",
+      "body": "Vì không nên kỳ vọng client sẽ luôn nhận đủ 100% event. API refresh giúp khôi phục state đúng."
+    },
+    {
+      "title": "101. Hosted realtime service có cost pattern như thế nào?",
+      "body": "Chi phí có thể tăng theo số connection, số message, số channel hoặc throughput, nên product growth kéo cost tăng khá rõ."
+    },
+    {
+      "title": "102. Self-hosted realtime có cost ẩn gì?",
+      "body": "Ops, monitoring, scaling, on-call, debug network và kiến thức hạ tầng mà team phải tự gánh."
+    },
+    {
+      "title": "103. Broadcast queue fail có ảnh hưởng gì?",
+      "body": "Request backend vẫn có thể thành công nhưng UI không nhận event, làm người dùng thấy app 'không live' hoặc stale."
+    },
+    {
+      "title": "104. Queue lag ảnh hưởng realtime ra sao?",
+      "body": "Nếu event phát chậm vài chục giây, trải nghiệm realtime gần như mất ý nghĩa."
+    },
+    {
+      "title": "105. Có nên dùng queue riêng cho broadcasting không?",
+      "body": "Rất đáng cân nhắc nếu app có job nặng khác. Event realtime không nên chờ sau media processing hoặc import lớn.",
+      "code": "class OrderUpdated implements ShouldBroadcast\n{\n    public string $broadcastQueue = 'broadcast';\n}",
+      "bullets": [
+        "Queue broadcast riêng giúp live event không bị chôn sau import hoặc media job.",
+        "Đây là một quyết định ops rất thực dụng khi app bắt đầu lớn."
+      ]
+    },
+    {
+      "title": "106. Một tip thực chiến với scale realtime là gì?",
+      "body": "Đừng chỉ load test HTTP. Hãy đo connection count, fan-out rate, queue lag và hành vi reconnect khi deploy hoặc khi mạng xấu."
+    },
+    {
+      "title": "107. Mùi kiến trúc xấu ở hạ tầng realtime là gì?",
+      "body": "Connection tăng mà không ai biết giới hạn ở đâu, queue nào phục vụ broadcast, hoặc event bị rớt mà không có dashboard nào chỉ ra."
+    },
+    {
+      "title": "108. Realtime có nên đi cùng retention log ngắn hạn không?",
+      "body": "Có thể rất hữu ích để điều tra event nào đã được phát, phát cho ai, và vì sao client nào đó không thấy."
+    },
+    {
+      "title": "109. Polling vẫn đáng dùng trong nhiều app vì sao?",
+      "body": "Vì nó đơn giản, dễ debug, phù hợp với dữ liệu ít thay đổi và rẻ hơn nhiều về hạ tầng."
+    },
+    {
+      "title": "110. Long polling khác polling thường ra sao?",
+      "body": "Long polling giữ request lâu hơn để chờ dữ liệu thay đổi, giảm số lần hỏi lại liên tục hơn polling interval ngắn."
+    },
+    {
+      "title": "111. Hybrid model là gì?",
+      "body": "Là kết hợp realtime cho tín hiệu quan trọng và polling hoặc periodic refresh cho phần state đầy đủ hoặc ít quan trọng hơn."
+    },
+    {
+      "title": "112. Khi nào hybrid model là lựa chọn tốt nhất?",
+      "body": "Khi full realtime quá phức tạp, nhưng vẫn có vài điểm trải nghiệm rất đáng cập nhật nhanh như badge, job status hoặc new message alert."
+    },
+    {
+      "title": "113. Fallback polling quan trọng vì sao?",
+      "body": "Nó cứu UX khi WebSocket bị chặn bởi mạng công ty, browser policy, mobile conditions hoặc lỗi hạ tầng.",
+      "code": "setInterval(async () => {\n    if (!window.Echo?.connector?.socketId()) {\n        await refreshNotifications();\n    }\n}, 15000);",
+      "note": "Fallback không phải giải pháp hạng hai vô dụng. Nó là lớp cứu hộ để app vẫn usable khi realtime path gãy."
+    },
+    {
+      "title": "114. Realtime observability nên nhìn gì?",
+      "body": "Connection count, auth fail rate, subscribe fail rate, queue lag, event throughput, reconnect rate và end-to-end delivery delay."
+    },
+    {
+      "title": "115. End-to-end delivery delay là gì?",
+      "body": "Là thời gian từ lúc event business xảy ra tới lúc client thực sự nhận và áp dụng được nó."
+    },
+    {
+      "title": "116. Log gì cho một event realtime?",
+      "body": "Event name, entity id, channel pattern, queue path nếu có, timing chính và lỗi auth hoặc delivery tổng quát nếu phát sinh."
+    },
+    {
+      "title": "117. Client-side logging có đáng cân nhắc không?",
+      "body": "Có trong hệ realtime quan trọng, vì nhiều lỗi chỉ lộ ở subscribe, reconnect, state merge hoặc browser network layer."
+    },
+    {
+      "title": "118. Một playbook khi client không nhận event là gì?",
+      "body": "Kiểm tra event có được phát không, queue có xử lý không, auth subscribe có pass không, channel có đúng không, kết nối client có sống không và payload có bị filter hoặc merge sai không."
+    },
+    {
+      "title": "119. Một playbook khi private channel subscribe fail là gì?",
+      "body": "Kiểm tra auth endpoint, session/token, CSRF nếu liên quan, policy channel, tenant boundary và log response từ bước authorize."
+    },
+    {
+      "title": "120. Một playbook khi presence count sai là gì?",
+      "body": "Kiểm tra disconnect cleanup, reconnect loop, nhiều tab, session churn và cách frontend merge trạng thái presence."
+    },
+    {
+      "title": "121. Một playbook khi queue broadcast backlog tăng là gì?",
+      "body": "Kiểm tra worker health, queue priority, throughput event, fan-out spike, deploy gần nhất và payload có đột ngột phình to hay không.",
+      "code": "php artisan horizon\nphp artisan queue:work --queue=broadcast --tries=3",
+      "note": "Nếu backlog tăng mà không ai nhìn queue riêng cho broadcast, app sẽ 'có realtime nhưng như không'."
+    },
+    {
+      "title": "122. Một tip thực chiến về debugging realtime là gì?",
+      "body": "Hãy lần theo chuỗi hoàn chỉnh: business event -> broadcast event -> queue -> realtime backend -> client subscribe -> state merge. Thiếu một mắt xích là debug mò mẫm."
+    },
+    {
+      "title": "123. Polling có thể là giải pháp bền hơn WebSocket ở đâu?",
+      "body": "Một số dashboard nhẹ, notification ít cập nhật hoặc màn hình admin ít người dùng có thể đủ tốt với polling mà đỡ vận hành hơn nhiều."
+    },
+    {
+      "title": "124. Anti-pattern phổ biến ở fallback là gì?",
+      "body": "Không có fallback nào cả, khiến chỉ cần WebSocket hỏng là UI coi như mù hoàn toàn."
+    },
+    {
+      "title": "125. Một hệ realtime khỏe cần gì ngoài code?",
+      "body": "Runbook, dashboard, owner, test đủ, fallback hợp lý và hiểu rõ use case nào xứng đáng complexity đó."
+    },
+    {
+      "title": "126. Một bug production điển hình với realtime là gì?",
+      "body": "Backend đã update thành công nhưng client không thấy gì vì queue broadcast chết hoặc subscribe fail âm thầm."
+    },
+    {
+      "title": "127. Một bug khác rất thật là gì?",
+      "body": "User A nhìn thấy event của user B vì channel auth hoặc key context viết sai."
+    },
+    {
+      "title": "128. Chat duplicate message là bug thường gặp vì sao?",
+      "body": "Do optimistic append, resend, reconnect và broadcast cùng đẩy vào UI mà không có deduplication tốt."
+    },
+    {
+      "title": "129. Presence ghost user là gì?",
+      "body": "Là khi UI cho thấy ai đó vẫn online dù thực tế đã rời đi, do disconnect cleanup hoặc reconnect handling không tốt.",
+      "code": "Echo.join(`rooms.${roomId}`)\n    .here((users) => setMembers(users))\n    .joining((user) => addMember(user))\n    .leaving((user) => removeMember(user));",
+      "note": "Presence UI cần logic `here / joining / leaving` rõ. Nếu chỉ append mà không cleanup đúng, ghost user xuất hiện rất nhanh."
+    },
+    {
+      "title": "130. Một bug nữa ở dashboard realtime là gì?",
+      "body": "Metric nhảy liên tục theo từng event nhỏ làm người dùng hoảng hoặc khó đọc, trong khi thực ra chỉ cần batch update mỗi vài giây."
+    },
+    {
+      "title": "131. Vì sao 'realtime everywhere' là anti-pattern?",
+      "body": "Vì nó đẩy complexity vào mọi nơi dù nhiều màn hình không cần live thật sự."
+    },
+    {
+      "title": "132. Anti-pattern ở event design là gì?",
+      "body": "Broadcast mọi thứ có thể broadcast, không có ownership, không có contract rõ và frontend phải tự đoán cách hợp nhất state."
+    },
+    {
+      "title": "133. Anti-pattern ở frontend realtime là gì?",
+      "body": "Mỗi component tự subscribe riêng, event handler trùng lặp và không có single source of truth cho state live."
+    },
+    {
+      "title": "134. Anti-pattern ở security realtime là gì?",
+      "body": "Xem channel auth như chuyện phụ và chỉ kiểm permission kỹ ở API thường."
+    },
+    {
+      "title": "135. Anti-pattern ở vận hành là gì?",
+      "body": "Không theo dõi connection, queue broadcast hay auth fail rate mà vẫn tin realtime đang ổn vì local từng chạy được."
+    },
+    {
+      "title": "136. Một câu hỏi senior trước khi thêm realtime là gì?",
+      "body": "Nếu tính năng này không còn realtime mà chỉ cập nhật mỗi 15 giây thì giá trị sản phẩm mất bao nhiêu, và có đáng trả complexity hiện tại không?"
+    },
+    {
+      "title": "137. Một câu hỏi senior khác về state là gì?",
+      "body": "Nếu client bỏ lỡ một event hoặc nhận trùng hai event thì UI có tự hồi phục được không?"
+    },
+    {
+      "title": "138. Khi nào realtime layer trở thành một subsystem riêng?",
+      "body": "Khi app có nhiều live workflow, nhiều channel domain, auth phức tạp, hạ tầng riêng và support playbook riêng."
+    },
+    {
+      "title": "139. Tiêu chí nào cho thấy realtime implementation đang trưởng thành?",
+      "body": "Channel rõ, auth đúng, event contract ổn, fallback có, observability đủ và UI không lệch khỏi source of truth quá lâu."
+    },
+    {
+      "title": "140. Tiêu chí nào cho thấy realtime đang bị lạm dụng?",
+      "body": "Team không giải thích được vì sao màn nào cũng cần live, bug nhiều hơn giá trị, và production ops trở thành gánh nặng liên tục."
+    },
+    {
+      "title": "141. Một tip cuối về realtime product design là gì?",
+      "body": "Realtime tốt không phải là cập nhật nhiều nhất, mà là cập nhật đúng thứ người dùng cần đúng lúc họ cần."
+    },
+    {
+      "title": "142. Rà soát cuối: site realtime nên có tối thiểu những mảng nào?",
+      "body": "Ít nhất phải có realtime mindset, broadcasting-event-channel, Echo/WebSocket transport, private/presence security, live UX use case, queue-scale-reliability, fallback-observability-debugging và case production."
+    },
+    {
+      "title": "143. Whisper hoặc ephemeral client event là gì?",
+      "body": "Đó là tín hiệu realtime ngắn hạn như typing, hover, đang chọn, đang nhập... thường không cần lưu bền và không nên bị trộn với business event chính."
+    },
+    {
+      "title": "144. Replay hoặc recovery strategy sau mất kết nối quan trọng thế nào?",
+      "body": "Rất quan trọng nếu client có thể bỏ lỡ event. App nên biết khi reconnect thì chỉ refresh snapshot, replay từ mốc nào đó hay hiển thị cần đồng bộ lại."
+    },
+    {
+      "title": "145. Channel auth cache có nên dùng không?",
+      "body": "Chỉ nên rất cẩn thận. Nó có thể giảm load auth endpoint, nhưng nếu cache sai hoặc TTL không hợp lý thì revoke permission sẽ chậm phản ánh."
+    },
+    {
+      "title": "146. Presence churn là gì?",
+      "body": "Là khi người dùng liên tục vào-ra hoặc reconnect làm state presence dao động mạnh, khiến UI online/offline nhấp nháy và khó tin cậy."
+    },
+    {
+      "title": "147. Ví dụ event broadcasting cơ bản",
+      "body": "Đây là khối code người học Laravel nên thấy tận mắt để realtime bớt trừu tượng.",
+      "code": "class OrderUpdated implements ShouldBroadcast\n{\n    public function __construct(public Order $order)\n    {\n    }\n\n    public function broadcastOn(): array\n    {\n        return [new PrivateChannel('orders.'.$this->order->id)];\n    }\n}",
+      "note": "Event chỉ là một nửa. Bạn còn cần queue, broadcaster, channel auth và client subscribe đúng phía frontend."
+    },
+    {
+      "title": "148. Ví dụ client Echo subscribe vào private channel",
+      "body": "Không có đoạn client này, phần broadcasting ở backend sẽ không tạo ra UX realtime hoàn chỉnh.",
+      "code": "Echo.private(`orders.${orderId}`)\n    .listen('OrderUpdated', (event) => {\n        console.log('Order updated', event.order);\n    });",
+      "bullets": [
+        "Tên channel ở client phải khớp contract ở backend.",
+        "Private channel kéo theo auth flow phía server.",
+        "Khi debug, hãy kiểm tra cả phía event emit lẫn phía socket subscription."
+      ]
+    },
+    {
+      "title": "149. Ví dụ auth callback cho private channel",
+      "body": "Nếu private hoặc presence channel không auth đúng, frontend sẽ 'nghe như không nghe'.",
+      "code": "Broadcast::channel('orders.{orderId}', function ($user, $orderId) {\n    return Order::whereKey($orderId)\n        ->where('user_id', $user->id)\n        ->exists();\n});",
+      "note": "Channel auth là ranh giới bảo mật rất quan trọng của realtime, không chỉ là bước cấu hình phụ."
+    },
+    {
+      "title": "150. Đánh giá sau rà soát: phần realtime đã đủ chi tiết chưa?",
+      "body": "Ở mức portal học tập thì phần này đã khá đầy: có mindset, broadcasting, transport, auth/presence, live UX, scale, fallback, observability và case production. Nếu muốn đi sâu hơn nữa sau này, hướng tách riêng tốt nhất là một site con cho broadcasting-security, một site cho chat/presence UX và một site cho realtime infrastructure operations."
+    }
+  ]
+}

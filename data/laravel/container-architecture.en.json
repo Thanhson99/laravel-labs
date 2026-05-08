@@ -1,0 +1,438 @@
+{
+  "anchor": "laravel-container-architecture",
+  "type": "list",
+  "heading": "Service container and app architecture: from dependency injection to keeping the app out of maze territory",
+  "intro": "This site moves from fundamentals such as the service container, bindings, singletons, and service providers into more practical architecture decisions: when to split logic into services, when repositories are unnecessary, when feature-based structure becomes useful, and why many Laravel apps fail not because they lack patterns but because responsibilities end up in the wrong places.",
+  "breaks": [
+    {
+      "start": 1,
+      "title": "Container Foundations",
+      "description": "What the service container is, what dependency injection means, and why Laravel relies on container resolution across so many important layers.",
+      "tone": "amber"
+    },
+    {
+      "start": 13,
+      "title": "Bindings, Singletons, And Providers",
+      "description": "What to bind, when to use singletons, what providers really do, and why so much app behavior begins in bootstrap-level rules.",
+      "tone": "copper"
+    },
+    {
+      "start": 25,
+      "title": "Services, Actions, Policies, Jobs, And Responsibility Split",
+      "description": "Not only service classes, but the entire request flow must delegate to the right objects if the app is going to stay readable over time.",
+      "tone": "olive"
+    },
+    {
+      "start": 39,
+      "title": "Repositories, Layering, And Feature Organization",
+      "description": "When abstractions are truly useful, when they are just ceremony, and how large repos grow without forcing endless file-jumping.",
+      "tone": "ocean"
+    },
+    {
+      "start": 53,
+      "title": "Real Cases, Anti-Patterns, And Long-Term Mindset",
+      "description": "The architectural failures teams hit in real projects: bloated controllers, god services, ownerless helpers, unnecessary abstractions, and flows that become hard to predict.",
+      "tone": "slate"
+    }
+  ],
+  "items": [
+    {
+      "title": "1. What is the service container?",
+      "body": "The service container is where Laravel knows how to create objects and resolve dependencies for you. It is behind many places where the framework seems to somehow know what to inject into controllers, middleware, commands, listeners, or service classes."
+    },
+    {
+      "title": "2. What is dependency injection?",
+      "body": "It is the practice of receiving dependencies from the outside instead of creating everything internally with manual `new` calls. That makes code easier to replace, easier to test, and more explicit about what it depends on.",
+      "code": "class ReportController extends Controller\n{\n    public function __construct(private SalesReportService $reports)\n    {\n    }\n\n    public function index()\n    {\n        return view('reports.sales', [\n            'rows' => $this->reports->monthly(),\n        ]);\n    }\n}",
+      "note": "Common mistake: the controller manually `new`s `SalesReportService` and then manually creates three more nested dependencies. The fix is to let the container resolve them through constructor injection."
+    },
+    {
+      "title": "3. Why does Laravel use the container so heavily?",
+      "body": "Because applications grow quickly in both class count and dependency count. If every controller, command, and service had to wire everything manually, the codebase would become noisy very fast. The container centralizes the creation rules."
+    },
+    {
+      "title": "4. How is container resolution different from manually creating objects?",
+      "body": "Manual `new` keeps creation explicit but forces you to own the whole dependency chain. Container resolution hides some of that ceremony and scales better once many classes depend on other classes."
+    },
+    {
+      "title": "5. A very common example: injecting a service into a controller",
+      "body": "You type-hint a dependency in a constructor or method, and Laravel attempts to resolve it from the container instead of requiring you to assemble it manually.",
+      "code": "class OrderController\n{\n    public function __construct(private OrderService $orders) {}\n}"
+    },
+    {
+      "title": "6. Why does DI make testing easier?",
+      "body": "Because you can replace a real dependency with a fake, mock, or alternate implementation. A class that constructs too much internally is much harder to isolate in tests."
+    },
+    {
+      "title": "7. Practical question: does this class depend on too many things already?",
+      "body": "If a constructor grows unusually long, or one class requires many unrelated services, that usually signals the class is trying to own too much responsibility."
+    },
+    {
+      "title": "8. What is the difference between method injection and constructor injection?",
+      "body": "Constructor injection fits core dependencies of the class. Method injection fits a dependency needed for one specific action only. Used poorly, either style can make the class heavier or the action harder to read.",
+      "code": "class InvoiceController extends Controller\n{\n    public function __construct(private InvoiceService $invoices)\n    {\n    }\n\n    public function download(Invoice $invoice, PdfBuilder $pdf)\n    {\n        return $pdf->download($invoice);\n    }\n}",
+      "bullets": [
+        "`InvoiceService` is a core dependency, so constructor injection makes sense.",
+        "`PdfBuilder` is only needed for one action, so method injection is reasonable.",
+        "If every method injects a different object, the class often lacks a clear boundary."
+      ]
+    },
+    {
+      "title": "9. Should everything go through the container?",
+      "body": "No. Tiny value objects, extremely local classes, or simple objects do not always need binding or container ceremony. Good architecture does not mean making every class part of a ritual."
+    },
+    {
+      "title": "10. How does the container help with packages and extensibility?",
+      "body": "It lets apps or packages bind interfaces, swap implementations, decorate services, or override behavior without changing every call site in the app."
+    },
+    {
+      "title": "11. Foundational tip: understand the container to reduce the feeling that Laravel is 'magic'",
+      "body": "Many things in Laravel do not appear from nowhere. The container is resolving the right object at the right time. Once you understand that, debugging becomes much more grounded."
+    },
+    {
+      "title": "12. Core mindset: the container is a dependency-management tool, not an architecture trophy",
+      "body": "It is valuable when it keeps code clearer and more durable. If you only bind things for style points, you are adding ceremony, not clarity."
+    },
+    {
+      "title": "13. What is a binding?",
+      "body": "A binding is how you tell the container what implementation or creation rule should be used when something asks for a class or abstraction.",
+      "code": "$this->app->bind(InvoiceExporter::class, function ($app) {\n    return new PdfInvoiceExporter(\n        storage_path('app/invoices'),\n        $app->make(LogoResolver::class),\n    );\n});",
+      "note": "A binding is not limited to interface-to-class mapping. It can also describe how to build an object that needs config, paths, or more complex setup."
+    },
+    {
+      "title": "14. What is a singleton in container terms?",
+      "body": "A singleton means the container creates one instance for the current application lifecycle and reuses it. That is useful for services that should share initialized state or expensive setup."
+    },
+    {
+      "title": "15. When should you use a singleton?",
+      "body": "When the object is expensive to build or should exist only once per lifecycle, such as some clients, registries, or services that cache prepared configuration."
+    },
+    {
+      "title": "16. When can singleton become a trap?",
+      "body": "When the service carries state in ways that become hard to reason about. If you do not understand application lifecycle, singletons can make bugs feel random."
+    },
+    {
+      "title": "17. What is the real value of interface binding?",
+      "body": "It lets the code depend on abstractions instead of one hard-coded implementation. That matters when you have multiple valid implementations, need fakes for tests, or want to decouple the app from a package-specific concrete class."
+    },
+    {
+      "title": "18. But is introducing an interface always better?",
+      "body": "No. An interface is only useful when it expresses a real abstraction. If the app has one obvious implementation that is unlikely to vary, the interface may only add file count and jump cost."
+    },
+    {
+      "title": "19. What is a service provider?",
+      "body": "A service provider is where Laravel registers bindings and boots startup behaviors for the app or a package. If the container is the rule engine, the provider is where many of those rules are installed.",
+      "code": "class BillingServiceProvider extends ServiceProvider\n{\n    public function register(): void\n    {\n        $this->app->bind(PaymentGateway::class, StripeGateway::class);\n    }\n\n    public function boot(): void\n    {\n        Gate::policy(Invoice::class, InvoicePolicy::class);\n    }\n}",
+      "note": "When the app seems to 'just do something automatically', a provider is often one of the first places worth opening."
+    },
+    {
+      "title": "20. What is the difference between `register()` and `boot()`?",
+      "body": "`register()` is usually for binding things into the container. `boot()` is usually for logic that should run after the app and its services are ready, such as observers, macros, route model bindings, or custom framework extensions."
+    },
+    {
+      "title": "21. Why do experienced developers inspect providers early?",
+      "body": "Because many important behaviors such as observers, macros, policies, package hooks, and interface bindings are wired there. If the app seems to do something 'automatically', a provider is a prime suspect."
+    },
+    {
+      "title": "22. Real case: when app behavior seems to appear out of nowhere, where does it often come from?",
+      "body": "Providers, global helpers, observers, macros, middleware, or package boot logic are frequent sources of invisible behavior."
+    },
+    {
+      "title": "23. Where should bindings live so the repo stays understandable?",
+      "body": "Bindings grouped by domain or feature often age better than one giant provider with everything mixed together. Small apps survive centralized binding more easily than large ones."
+    },
+    {
+      "title": "24. Practical tip: a good provider makes the app clearer, not more mysterious",
+      "body": "If someone can open a provider and understand what is being wired and why, that is healthy. If the provider becomes a home for strange startup behavior, the repo gets tiring fast."
+    },
+    {
+      "title": "25. What should controllers do in the architecture?",
+      "body": "Controllers should coordinate request flow: receive the request, call a service or action, return a response. They should not become the place where business rules, heavy queries, authorization logic, and side effects all live together.",
+      "code": "class OrderController extends Controller\n{\n    public function store(StoreOrderRequest $request, CreateOrderAction $action)\n    {\n        $order = $action->execute($request->validated(), $request->user());\n\n        return redirect()->route('orders.show', $order);\n    }\n}",
+      "bullets": [
+        "The controller receives valid input from the request layer.",
+        "The main use case is delegated to an action or service.",
+        "The response still belongs to the controller because that is the HTTP boundary."
+      ],
+      "note": "Common mistake: putting validation, transactions, mail delivery, external API calls, and response formatting into one controller method."
+    },
+    {
+      "title": "26. When is a service class worth extracting?",
+      "body": "When the logic has multiple steps, is reused, creates side effects, touches many models, or deserves its own tests. If the behavior is tiny and very local, extracting too early can make the repo feel diluted."
+    },
+    {
+      "title": "27. How is an action class different from a service class?",
+      "body": "An action class often represents one very specific operation such as `CreateOrder`, `InviteTeamMember`, or `SyncInvoice`. A service class may be broader and hold several related behaviors in one domain. There is no rigid law, but actions often make business flow more readable."
+    },
+    {
+      "title": "28. Is the idea of a domain service too heavy for Laravel?",
+      "body": "Not at all. If business logic has real lifespan and does not belong cleanly to a model, controller, or integration layer, a well-named domain service can be extremely valuable."
+    },
+    {
+      "title": "29. Form Requests are architecture too",
+      "body": "They keep validation and request authorization out of controllers. That is not just convenience; it is a structural choice that keeps the request layer readable.",
+      "code": "class StoreOrderRequest extends FormRequest\n{\n    public function authorize(): bool\n    {\n        return $this->user()->can('create', Order::class);\n    }\n\n    public function rules(): array\n    {\n        return [\n            'customer_id' => ['required', 'exists:customers,id'],\n            'items' => ['required', 'array', 'min:1'],\n        ];\n    }\n}",
+      "note": "Once `authorize()` and `rules()` move into a Form Request, the controller reads much more clearly as orchestration."
+    },
+    {
+      "title": "30. Policies and Gates are architecture too",
+      "body": "If permission rules are scattered across controllers, Blade, and services, the app becomes hard to reason about. Policies centralize authorization around resources and actions."
+    },
+    {
+      "title": "31. What architectural role do events and listeners play?",
+      "body": "They separate side effects from core logic. For example, after creating a user, the app may send mail, log audit entries, or sync an external system. Putting everything into one main service creates bloat quickly.",
+      "code": "event(new OrderPlaced($order));\n\nclass SendOrderConfirmation\n{\n    public function handle(OrderPlaced $event): void\n    {\n        Mail::to($event->order->customer_email)\n            ->send(new OrderConfirmationMail($event->order));\n    }\n}",
+      "note": "Common mistake: introducing events for tiny actions that do not need real decoupling. Use events when multiple independent reactions genuinely deserve to exist."
+    },
+    {
+      "title": "32. What architectural role do jobs and queues play?",
+      "body": "They let the app distinguish between work that must happen inside the request and work that can happen later. That is both a UX and consistency decision."
+    },
+    {
+      "title": "33. Notifications and mail should also be placed deliberately",
+      "body": "Do not make controllers own every detail of mail delivery. Depending on the case, events, listeners, notifications, or dedicated services usually lead to cleaner architecture."
+    },
+    {
+      "title": "34. Practical tip: healthy architecture delegates work to the right kind of object",
+      "body": "Many ugly apps are not missing patterns. They simply keep all important behavior inside a few habitual files such as controllers, models, or helpers."
+    },
+    {
+      "title": "35. Can a service become too small?",
+      "body": "Yes. If a service only wraps one line and adds no real clarity, it simply increases file count and forces extra navigation."
+    },
+    {
+      "title": "36. What about a service that becomes too large?",
+      "body": "That becomes a god service. It owns too many use cases, too many dependencies, and too many side effects. That is not an improvement over a bloated controller; it is just the same problem in a new file."
+    },
+    {
+      "title": "37. When should you organize logic by use case rather than by object type?",
+      "body": "When the feature is large enough that readers need to follow the business behavior more than the technical layer. `Orders/CreateOrder` is often easier to reason about than a repo split only into controllers, services, and repositories across the whole app."
+    },
+    {
+      "title": "38. Why does naming matter so much in architecture?",
+      "body": "Class names are the first signal of responsibility. `CreateInvoiceAction` is easier to trust than `InvoiceManager`, and `BillingGateway` is usually clearer than `PaymentHelper`."
+    },
+    {
+      "title": "39. Are repositories really necessary in Laravel?",
+      "body": "Not by default. If Eloquent already expresses the data access clearly, repositories that only wrap basic CRUD become ceremony. They matter when abstraction truly brings flexibility or clarity.",
+      "code": "interface InvoiceReadRepository\n{\n    public function overdueForTeam(int $teamId): Collection;\n}\n\nclass EloquentInvoiceReadRepository implements InvoiceReadRepository\n{\n    public function overdueForTeam(int $teamId): Collection\n    {\n        return Invoice::query()\n            ->where('team_id', $teamId)\n            ->wherePast('due_at')\n            ->whereNull('paid_at')\n            ->get();\n    }\n}",
+      "note": "A repository becomes meaningful when it describes a useful business-oriented read/write contract, not when it merely wraps `find()` and `save()`."
+    },
+    {
+      "title": "40. When do repositories become genuinely useful?",
+      "body": "When the data source may change, complex queries need a clearer contract, or the app reads from several sources such as a database, external API, cache layer, or search engine."
+    },
+    {
+      "title": "41. Real case: adding repositories just because a tutorial said so often makes the app harder to read",
+      "body": "Many repos have repositories that only restate `Model::query()` or `find()`. In that case the team pays for extra files, extra abstraction, and extra naming without receiving real value."
+    },
+    {
+      "title": "42. Where does layer-based structure start hurting once the app grows?",
+      "body": "Readers must jump through many folders to understand one feature: routes in one place, requests in another, controllers elsewhere, services somewhere else, policies in another layer, and views in yet another area."
+    },
+    {
+      "title": "43. What does feature-based structure improve?",
+      "body": "It keeps code related to the same business problem closer together. Readers follow real features instead of a purely technical map.",
+      "code": "app/\n  Domain/\n    Orders/\n      Actions/\n        CreateOrderAction.php\n      Policies/\n        OrderPolicy.php\n      Requests/\n        StoreOrderRequest.php\n      Queries/\n        ListOrdersQuery.php\n  Http/\n    Controllers/\n      OrderController.php",
+      "note": "This exact tree is not mandatory. The point is that opening the `Orders` feature should reveal most related code nearby."
+    },
+    {
+      "title": "44. Should every app move to feature-based structure?",
+      "body": "No. Smaller apps may not need it yet. But once the team starts saying 'I do not know how many places this feature is spread across', it is worth thinking about seriously."
+    },
+    {
+      "title": "45. How can layer and feature organization be combined sensibly?",
+      "body": "Many teams use structures such as `app/Domain/Orders/Actions`, `Requests`, `Policies`, or `Queries`. The point is to keep rules while aligning more closely with business concerns."
+    },
+    {
+      "title": "46. Why is 'just enough' the key phrase in Laravel architecture?",
+      "body": "Too little separation creates blobs. Too much separation creates mazes. Each extra layer should have a reason: easier reading, safer change, or better testing."
+    },
+    {
+      "title": "47. How does architecture affect onboarding?",
+      "body": "A strong repo lets a new developer follow one use case without asking constant questions. A weak repo forces knowledge transfer by memory because the code no longer explains the structure."
+    },
+    {
+      "title": "48. How do tests reflect architecture quality?",
+      "body": "If tests require enormous setup just to touch one small use case, or nobody knows where to fake dependencies because everything is tangled, the architecture is making flows harder to isolate."
+    },
+    {
+      "title": "49. Do not confuse 'more folders' with 'better architecture'",
+      "body": "More folders can simply mean splitting by taste. Better architecture must make readers understand the system faster, not travel further."
+    },
+    {
+      "title": "50. Extra tip: every class should answer 'what am I responsible for?' in one short sentence",
+      "body": "If a class cannot answer that cleanly, it is probably doing too much or its name no longer reflects its role."
+    },
+    {
+      "title": "51. Real case: many Laravel apps do not fail because they lack a container, but because they lack clear rules for where logic belongs",
+      "body": "The framework gives you enough tools. The real question is whether the team has shared discipline about how to use them. Without that, each developer solves the same problem in a different place."
+    },
+    {
+      "title": "52. Transitional insight: once the app makes you ask 'why is this here?', the architecture is already asking for attention",
+      "body": "That is a more practical signal than waiting until the code becomes so ugly that everyone is afraid to change it."
+    },
+    {
+      "title": "53. Anti-pattern: the bloated controller",
+      "body": "A controller that owns validation, queries, policies, events, notifications, formatting, external calls, and transactions is one of the most common Laravel smells in fast-moving teams."
+    },
+    {
+      "title": "54. Anti-pattern: the over-smart model",
+      "body": "A model that owns business rules, side effects, HTTP calls, permissions, caching, and reporting queries is a sign the team is putting everything nearest the data layer instead of the most appropriate layer."
+    },
+    {
+      "title": "55. Anti-pattern: the god service",
+      "body": "At first the team extracts controllers into services to make things cleaner, but then every use case in the same domain is shoved into one service hundreds of lines long. That is not improvement; it is relocation of the same pain."
+    },
+    {
+      "title": "56. Anti-pattern: ownerless global helpers",
+      "body": "Helpers are convenient, so they are easy to abuse. Once business rules, special formatting, or hidden queries move into helpers, the repo becomes much harder to trace."
+    },
+    {
+      "title": "57. Anti-pattern: abstractions added because a tutorial recommended them, not because the problem needed them",
+      "body": "Repositories, DTOs, contracts, adapters, strategies, and factories are all useful in the right context. Using all of them at once just because they sound professional will exhaust the team without clear benefit."
+    },
+    {
+      "title": "58. Anti-pattern: providers doing too much",
+      "body": "A provider that binds many things, boots strange logic, reads config in odd ways, and performs surprising startup behavior becomes one of the least understandable parts of the app."
+    },
+    {
+      "title": "59. Anti-pattern: going event-driven for very simple flows",
+      "body": "Some flows only need one service to trigger one notification. They do not need four events and six listeners. Over-engineering makes the app harder to trace, not more powerful."
+    },
+    {
+      "title": "60. Real case: a business rule changes, but nobody knows whether to edit the controller, service, policy, or observer",
+      "body": "That is a sign the logic is spread around without a clear center. When one rule lives in too many places, the architecture is charging interest every time the team changes it."
+    },
+    {
+      "title": "61. Real case: the same use case behaves differently in web flow and API flow for no good reason",
+      "body": "If web `create order` goes through one service while API `create order` rewrites the logic in another controller, those flows will diverge sooner or later. Good architecture keeps the business core from forking chaotically."
+    },
+    {
+      "title": "62. Practical tip: healthy architecture makes core use cases reusable while allowing input and output layers to vary",
+      "body": "A web controller, API controller, command, or queued job may all be different entry points, but the core business path should still have a reasonably clear center."
+    },
+    {
+      "title": "63. Questions to ask before creating yet another layer",
+      "body": "Will this new layer make the flow clearer, make tests easier, reduce meaningful duplication, or help a new developer understand the code faster? If all four answers are vague, the layer may not be worth it."
+    },
+    {
+      "title": "64. Questions to ask when one class has grown too large",
+      "body": "Which use cases are crowding together, which dependencies are no longer tightly related, what state is being held unnecessarily, and what boundary could be extracted without turning the flow into dust?"
+    },
+    {
+      "title": "65. Final practical insight: architecture is not for showing off patterns, but for making sure other people will still dare to change the app after you",
+      "body": "That is the most practical benchmark. If the next developer can guess where the logic lives, where to change rules, where to test, and where side effects are handled, then the app is being structured in the right direction."
+    },
+    {
+      "title": "66. Are DTOs worth using in Laravel?",
+      "body": "They can be, but they are not a default requirement. DTOs help when data travels across multiple layers, needs a clear shape, or should not remain a loose array forever. In a small problem, they may only add ceremony.",
+      "code": "final class CreateOrderData\n{\n    public function __construct(\n        public int $customerId,\n        public array $items,\n        public ?string $note,\n    ) {}\n}",
+      "note": "A DTO is worth it when the same data shape moves through requests, actions, jobs, or integrations and you want to reduce bugs caused by loose arrays."
+    },
+    {
+      "title": "67. When should an array of data become a named object?",
+      "body": "When the same shape gets passed through several services, actions, or integrations, or when the field list grows long enough to become error-prone. A named object is often safer than a long associative array."
+    },
+    {
+      "title": "68. Where should package integrations sit in the architecture?",
+      "body": "Avoid letting controllers or models call heavy package APIs directly if the app will depend on them for a long time. A clear gateway, adapter, or service layer usually makes replacement and testing easier later.",
+      "code": "interface SmsGateway\n{\n    public function send(string $to, string $message): void;\n}\n\nfinal class TwilioSmsGateway implements SmsGateway\n{\n    public function send(string $to, string $message): void\n    {\n        // call the SDK/package here\n    }\n}",
+      "note": "Do not scatter package calls across controllers, jobs, and listeners. Put them behind a clear gateway so changing providers hurts less."
+    },
+    {
+      "title": "69. Real case: the app becomes locked to a package because package APIs are called everywhere",
+      "body": "It feels fast at first, but when the package changes its API, stops being maintained, or needs replacing, the whole codebase suffers at once. That is why selective abstraction can be worth it."
+    },
+    {
+      "title": "70. Where should transaction boundaries live?",
+      "body": "Usually in the orchestration layer of the use case, where you understand which writes must succeed together. Putting transactions too deep inside one model or tiny helper often makes the flow harder to reason about.",
+      "code": "class CreateOrderAction\n{\n    public function execute(array $data, User $user): Order\n    {\n        return DB::transaction(function () use ($data, $user) {\n            $order = Order::create([\n                ...$data,\n                'created_by' => $user->id,\n            ]);\n\n            $order->items()->createMany($data['items']);\n\n            event(new OrderPlaced($order));\n\n            return $order;\n        });\n    }\n}",
+      "note": "Common mistake: transactions are scattered inside small model helpers, while events or side effects fire from unpredictable places. The fix is to place the boundary in a use case layer that can see the whole write flow."
+    },
+    {
+      "title": "71. Why are transaction boundaries an architecture decision, not only a database decision?",
+      "body": "Because they define which business operation counts as one consistent unit. If the transaction boundary is wrong, the app may commit halfway, trigger side effects at the wrong time, or roll back in ways that no longer match the real use case."
+    },
+    {
+      "title": "72. How are domain events different from framework events in practical terms?",
+      "body": "Framework events are the technical mechanism. Domain events are the business-language meaning of something that happened, such as `OrderPlaced` or `InvoicePaid`. Good event naming makes business flow much easier to understand."
+    },
+    {
+      "title": "73. Should every small change become an event?",
+      "body": "No. Too many low-value events make the flow harder to trace. Create events when something meaningful happened that other parts of the system should react to independently."
+    },
+    {
+      "title": "74. What is an internal module in a practical Laravel sense?",
+      "body": "It can simply be a group of code around one domain or feature with a reasonably clear boundary, without becoming a separate package. This becomes useful once the app is large enough to need more internal separation inside `app/`."
+    },
+    {
+      "title": "75. When should a module stay internal, and when should it become a package?",
+      "body": "If the logic only serves one app, an internal module is often enough. A separate package only makes sense when reuse across projects or an independent release lifecycle is truly needed."
+    },
+    {
+      "title": "76. Real case: extracting packages too early hurts more than it helps",
+      "body": "A package adds versioning, releases, test matrices, and integration complexity. If reuse value is still vague, keeping the code internal usually creates much less friction."
+    },
+    {
+      "title": "77. How is maintaining app service providers different from maintaining package service providers?",
+      "body": "App providers may lean on project-specific assumptions. Package providers usually need to stay more neutral, more configurable, and less opinionated because they must work in many environments."
+    },
+    {
+      "title": "78. Does better architecture also improve logging and debugging?",
+      "body": "Yes. When responsibilities are clear, logs can be placed at meaningful transitions such as controllers, services, integrations, jobs, or events. Vague architecture usually produces vague logs."
+    },
+    {
+      "title": "79. Real case: the code is not terrible, but the flow is still hard to follow because naming is weak",
+      "body": "Names like `handle`, `process`, `manager`, or `helper` everywhere erase architectural signals. When names do not communicate role, readers must open many more files just to guess what is happening."
+    },
+    {
+      "title": "80. Anti-pattern: everything is called a `Service`",
+      "body": "If the repo has `UserService`, `PaymentService`, `OrderService`, `MailService`, and `SystemService` without any naming discipline, the word `Service` gradually stops helping anyone predict responsibility."
+    },
+    {
+      "title": "81. Anti-pattern: using static helpers to avoid the container and dependency injection",
+      "body": "Static helpers may feel fast early on, but over time they hide dependencies, make testing harder, and make implementations harder to swap. This is a very common 'save time now, pay later' move.",
+      "code": "// anti-pattern\nPriceHelper::convert($amount, 'USD');\n\n// easier to live with\nclass CheckoutService\n{\n    public function __construct(private CurrencyConverter $converter) {}\n}",
+      "note": "A static helper shortens the call site, but it often hides the real dependency. Injection is slightly more verbose but makes the flow and tests much clearer."
+    },
+    {
+      "title": "82. Practical tip: if one class is painful to test, that is usually an architecture signal, not only a testing signal",
+      "body": "A class that is hard to fake, requires booting too much framework state, or touches too many unrelated dependencies is often telling you that responsibilities have been mixed too far."
+    },
+    {
+      "title": "83. Practical tip: split layers to reduce cognitive load, not to increase the number of concepts",
+      "body": "Every new class forces the reader to learn one more name and one more responsibility. If that new class does not make the mental model lighter, it may have added cost instead of value."
+    },
+    {
+      "title": "84. What should you ask when reviewing the architecture of a PR?",
+      "body": "Is the new logic placed in the right layer, does it create confusing dependencies, does it duplicate a core use case in another flow, does the class name match its real responsibility, and is the new abstraction solving a problem or just avoiding a longer existing file?"
+    },
+    {
+      "title": "85. Additional final insight: a durable app is not the one with the most patterns, but the one that still lets the team see the path as business rules keep changing",
+      "body": "Laravel gives you many tools. The real value is using them clearly enough that months or years later, the team can still change business rules without feeling like they are touching a delayed explosion."
+    },
+    {
+      "title": "86. Example of binding an interface to an implementation in a service provider",
+      "body": "This is a basic example that shows the container is not magic, but an intentional registry.",
+      "code": "class AppServiceProvider extends ServiceProvider\n{\n    public function register(): void\n    {\n        $this->app->bind(OrderGateway::class, StripeOrderGateway::class);\n    }\n}",
+      "note": "When a controller or service type-hints `OrderGateway`, the container knows which implementation to provide."
+    },
+    {
+      "title": "87. Example of constructor injection in a controller or service",
+      "body": "This style makes dependencies visible instead of hiding behavior behind static helpers everywhere.",
+      "code": "class OrderController extends Controller\n{\n    public function __construct(private OrderService $orders)\n    {\n    }\n\n    public function store(StoreOrderRequest $request)\n    {\n        $order = $this->orders->create($request->validated());\n\n        return redirect()->route('orders.show', $order);\n    }\n}",
+      "bullets": [
+        "The dependency is visible immediately in the constructor.",
+        "The class becomes easier to test because the dependency can be replaced with a fake or mock.",
+        "Readers can often infer the class responsibility by looking at its constructor signature."
+      ]
+    },
+    {
+      "title": "88. Example of a small action class for one focused use case",
+      "body": "When a flow is clear and independent enough, an action class can be easier to read than an overly generic service.",
+      "code": "class CreateOrderAction\n{\n    public function execute(array $data): Order\n    {\n        return DB::transaction(fn () => Order::create($data));\n    }\n}",
+      "note": "A name like `CreateOrderAction` communicates the use-case boundary faster than vague names such as `OrderManager`."
+    }
+  ]
+}

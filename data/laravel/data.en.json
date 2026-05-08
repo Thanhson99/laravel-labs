@@ -1,0 +1,577 @@
+{
+  "anchor": "laravel-data",
+  "type": "list",
+  "heading": "Database, migrations, and Eloquent: from data foundations to production thinking",
+  "intro": "Nearly every Laravel app lives or dies with its data layer. This topic starts from the basics such as what a database is, what a table is, and how Laravel connects to it, then moves through migrations, Eloquent, querying, relationships, indexing, transactions, database switching, and the practical habits that matter in real systems.",
+  "breaks": [
+    {
+      "start": 1,
+      "title": "Data Foundations",
+      "description": "What a database is, what tables and rows are, what primary and foreign keys do, and why Laravel apps revolve around structured data.",
+      "tone": "amber"
+    },
+    {
+      "start": 10,
+      "title": "Database Connections in Laravel",
+      "description": "How `.env`, `config/database.php`, drivers, multiple connections, and choosing MySQL, PostgreSQL, or SQLite actually work.",
+      "tone": "copper"
+    },
+    {
+      "start": 20,
+      "title": "Schema, Migrations, and Table Design",
+      "description": "Creating and changing tables, choosing column types, naming keys, adding indexes, and making schema decisions that age well.",
+      "tone": "olive"
+    },
+    {
+      "start": 35,
+      "title": "Seeders, Factories, and Sample Data",
+      "description": "Bootstrap data, test data, seeding discipline, and why strong factories speed up the whole team.",
+      "tone": "ocean"
+    },
+    {
+      "start": 41,
+      "title": "Eloquent, Models, and Relationships",
+      "description": "What models do, how relationships work, how eager loading helps, and where Eloquent shines versus where it becomes too magical.",
+      "tone": "indigo"
+    },
+    {
+      "start": 53,
+      "title": "Queries, Performance, and Production Thinking",
+      "description": "Query builder, raw SQL, N+1, pagination, chunking, transactions, locking, profiling, indexing, and common data-layer smells.",
+      "tone": "rose"
+    },
+    {
+      "start": 75,
+      "title": "Common Failures, Configuration, and Debug Playbooks",
+      "description": "From basic connection mistakes and missing drivers to stale config cache, charset issues, deadlocks, and structured ways to debug them.",
+      "tone": "stone"
+    },
+    {
+      "start": 93,
+      "title": "Switching Databases, Review, and Long-Term Discipline",
+      "description": "When to move between database engines, what portability really costs, and how to review and maintain the data layer over time.",
+      "tone": "slate"
+    },
+    {
+      "start": 100,
+      "title": "Real Cases, Backfills, And Dirty Data",
+      "description": "The production problems teams hit often: safe migrations, dirty historical data, query plans, backfills, soft deletes, locking, and hard decisions once data is large.",
+      "tone": "stone"
+    }
+  ],
+  "items": [
+    {
+      "title": "1. What is a database?",
+      "body": "A database is the structured storage layer where an application writes, reads, updates, and deletes organized data. In Laravel apps, core behavior such as authentication, posts, orders, permissions, business logs, and notifications usually depend directly on it."
+    },
+    {
+      "title": "2. Why does a backend developer need database knowledge, not just framework knowledge?",
+      "body": "Because the framework only makes access easier. If you do not understand how data is structured, how queries behave, whether indexes exist, or whether transactions are correct, clean Laravel code can still produce a slow, fragile, or difficult-to-upgrade system."
+    },
+    {
+      "title": "3. What are tables, columns, and rows?",
+      "body": "A table stores one kind of data such as `users`, `posts`, or `orders`. Columns describe attributes such as `name`, `email`, or `status`. A row is one concrete record. This is basic, but getting these concepts solid early prevents confusion later."
+    },
+    {
+      "title": "4. What is a primary key?",
+      "body": "A primary key uniquely identifies each row in a table. In Laravel, many tables default to an incrementing `id`, but some applications use UUIDs or other keys instead."
+    },
+    {
+      "title": "5. What is a foreign key?",
+      "body": "A foreign key links one table to another, for example `posts.user_id` pointing to `users.id`. This is foundational for understanding Eloquent relationships."
+    },
+    {
+      "title": "6. What is a relational database?",
+      "body": "It is a database that organizes information into related tables. Laravel works naturally with this model, especially through MySQL, PostgreSQL, and SQLite."
+    },
+    {
+      "title": "7. Why do Laravel applications often use relational databases?",
+      "body": "Because many business entities such as users, roles, orders, payments, articles, categories, invoices, teams, and permissions have clear relationships. Eloquent is particularly strong with that kind of data model."
+    },
+    {
+      "title": "8. What is schema?",
+      "body": "Schema is the structure of the database: which tables exist, what columns they have, which types, keys, indexes, and constraints are in place. Managing schema well means managing the data backbone of the application well."
+    },
+    {
+      "title": "9. Core mindset: the database is not only storage, it encodes business reality",
+      "body": "Table names, column names, keys, indexes, nullability, enums, relationships, and unique constraints all reflect how the system understands the real business world. Bad choices here can hurt a system for years."
+    },
+    {
+      "title": "10. Where does Laravel get database connection settings?",
+      "body": "Laravel reads database configuration from `.env` and `config/database.php`. Driver, host, port, database name, username, and password all flow through that configuration layer."
+    },
+    {
+      "title": "11. What is `DB_CONNECTION`?",
+      "body": "It is the environment variable that tells Laravel which driver is active, such as `mysql`, `pgsql`, `sqlite`, or `sqlsrv`."
+    },
+    {
+      "title": "12. A basic database config in `.env`",
+      "body": "You usually see variables such as `DB_CONNECTION`, `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME`, and `DB_PASSWORD`.",
+      "code": "DB_CONNECTION=mysql\nDB_HOST=127.0.0.1\nDB_PORT=3306\nDB_DATABASE=laravel_app\nDB_USERNAME=root\nDB_PASSWORD=secret"
+    },
+    {
+      "title": "13. Why should database config live in `.env` instead of being hardcoded?",
+      "body": "Because local, staging, and production environments usually differ. Hardcoding values in application code or static config makes environment changes brittle and increases secret-management risk."
+    },
+    {
+      "title": "14. What role does `config/database.php` play?",
+      "body": "It defines how Laravel maps environment values into one or more database connections and driver-specific settings."
+    },
+    {
+      "title": "15. Can Laravel use multiple database connections at once?",
+      "body": "Yes. You can configure multiple connections and choose a specific connection for a model or query. This is useful for legacy databases, split setups, or read/write scenarios.",
+      "code": "// config/database.php\n'connections' => [\n    'mysql' => [\n        'driver' => 'mysql',\n        'host' => env('DB_HOST', '127.0.0.1'),\n    ],\n    'legacy' => [\n        'driver' => 'mysql',\n        'host' => env('LEGACY_DB_HOST', '127.0.0.1'),\n    ],\n]\n\n$rows = DB::connection('legacy')->table('customers')->limit(10)->get();",
+      "note": "A common mistake is mixing multiple databases all over the codebase. The fix is to define a clear boundary: which connection is for legacy reads and which one is for the main app."
+    },
+    {
+      "title": "16. When is MySQL a good fit?",
+      "body": "MySQL is common, easy to host, easy to onboard, and good enough for a huge number of business web applications. If the team wants a familiar ecosystem with low friction, MySQL is often a safe choice."
+    },
+    {
+      "title": "17. When is PostgreSQL a good fit?",
+      "body": "PostgreSQL is strong for richer data features, more advanced querying, strong JSON/JSONB usage, useful extensions, and a generally stricter data model. Teams with more demanding data needs often prefer it."
+    },
+    {
+      "title": "18. When is SQLite a good fit?",
+      "body": "SQLite is excellent for local demos, tiny apps, tests, and learning. It is file-based and lightweight. But for heavier concurrent production systems, you need to evaluate carefully."
+    },
+    {
+      "title": "19. There is no absolute best database choice, only real tradeoffs",
+      "body": "MySQL is broadly practical. PostgreSQL is strong and feature-rich. SQLite is small and convenient. The right choice depends on team skill, hosting model, query complexity, data shape, and operational comfort."
+    },
+    {
+      "title": "20. Practical tip: before arguing which database is better, ask what the project actually needs",
+      "body": "Many MySQL-versus-PostgreSQL debates add no value if the team has not first clarified whether the app is mostly ordinary CRUD, analytics-heavy, search-heavy, JSON-heavy, or enterprise-workflow-heavy."
+    },
+    {
+      "title": "21. What is a migration?",
+      "body": "A migration is Laravel's way of version-controlling schema changes in code. Instead of modifying tables manually per environment, the team records schema changes in migration files that every environment can replay."
+    },
+    {
+      "title": "22. Why are migrations so important?",
+      "body": "Because schema should not live as tribal knowledge in one developer's head or in one shared database only. Migrations make schema reproducible."
+    },
+    {
+      "title": "23. Which command creates a migration?",
+      "body": "You usually use `php artisan make:migration ...` so Laravel creates a timestamped file that follows conventions.",
+      "code": "php artisan make:migration create_posts_table\nphp artisan make:migration add_status_to_orders_table --table=orders"
+    },
+    {
+      "title": "24. What is the difference between `Schema::create` and `Schema::table`?",
+      "body": "`Schema::create` creates a new table. `Schema::table` changes an existing table."
+    },
+    {
+      "title": "25. Common column types in migrations",
+      "body": "You will frequently see `string`, `text`, `integer`, `bigInteger`, `boolean`, `date`, `dateTime`, `timestamp`, `json`, `decimal`, `foreignId`, and nullable or unsigned variants."
+    },
+    {
+      "title": "26. What does `timestamps()` do?",
+      "body": "It adds the familiar `created_at` and `updated_at` columns."
+    },
+    {
+      "title": "27. What does `softDeletes()` do?",
+      "body": "It adds `deleted_at` to support soft deletion, where records are marked deleted instead of removed permanently."
+    },
+    {
+      "title": "28. What does `foreignId()->constrained()` do?",
+      "body": "It is a common Laravel-style way to declare a foreign key using conventions.",
+      "code": "$table->foreignId('user_id')->constrained()->cascadeOnDelete();"
+    },
+    {
+      "title": "29. Why do naming conventions for tables and keys matter?",
+      "body": "They matter a lot. Clear plural table names, foreign keys such as `user_id`, and sensible pivot names make Eloquent more natural and reduce cognitive load for readers."
+    },
+    {
+      "title": "30. Choosing column types is not a trivial detail",
+      "body": "For example, money often should not live in float columns if you need precision. Status values sometimes should not be arbitrary strings if the domain is stable. Wrong types lead to bugs and performance pain later."
+    },
+    {
+      "title": "31. Should `nullable()` be used frequently?",
+      "body": "Only when the business truly allows missing data. Casual nullability is a sign of a loose schema and weaker data quality."
+    },
+    {
+      "title": "32. What is a unique constraint for?",
+      "body": "It lets the database enforce uniqueness for values such as email, slug, or some business identifier. Do not rely only on app-level validation."
+    },
+    {
+      "title": "33. What is an index?",
+      "body": "An index helps the database find rows faster on columns commonly used for filtering, sorting, joins, or lookups. But indexes are not free; too many of them slow down writes.",
+      "code": "Schema::table('orders', function (Blueprint $table) {\n    $table->index(['team_id', 'status']);\n    $table->index('created_at');\n});",
+      "note": "A good index usually follows a real query pattern, not a vague belief that 'indexes make everything faster'."
+    },
+    {
+      "title": "34. When should you think about indexes?",
+      "body": "When tables grow, when the same filters repeat, or when foreign keys and joins become central to important screens or jobs."
+    },
+    {
+      "title": "35. What is a seeder?",
+      "body": "A seeder inserts bootstrap data such as default admin users, base roles, or reference records."
+    },
+    {
+      "title": "36. What is a factory?",
+      "body": "A factory generates realistic fake data for tests, demos, and large sample datasets."
+    },
+    {
+      "title": "37. When do you use a seeder versus a factory?",
+      "body": "Seeders are for known startup data. Factories are for flexible test and demo data."
+    },
+    {
+      "title": "38. Why do strong factories speed teams up so much?",
+      "body": "Because once testing, local development, and demos require users, products, invoices, orders, or permission graphs, strong factories make that setup nearly instant."
+    },
+    {
+      "title": "39. What is the difference between `db:seed` and `migrate --seed`?",
+      "body": "`db:seed` only seeds data. `migrate --seed` runs migrations and then seeds immediately."
+    },
+    {
+      "title": "40. Practical tip: production seed data and local demo seed data should not blur together",
+      "body": "Many teams start by seeding everything from one place and later discover that production accidentally consumed demo-oriented assumptions. This is a very real source of pain."
+    },
+    {
+      "title": "41. What is an Eloquent model?",
+      "body": "A model is the object representation of a table or domain entity. It lets you work with records through an ORM style instead of writing SQL everywhere."
+    },
+    {
+      "title": "42. Why is Eloquent so popular?",
+      "body": "Because it makes relational work feel natural, reads cleanly, integrates deeply with Laravel, and fits many common business application flows very well."
+    },
+    {
+      "title": "43. What are `$fillable` and `$guarded`?",
+      "body": "They protect against unsafe mass assignment by controlling which model attributes may be filled in bulk."
+    },
+    {
+      "title": "44. What are casts in Eloquent for?",
+      "body": "Casts automatically convert values such as `boolean`, `datetime`, `array`, or `json` when models are read or written."
+    },
+    {
+      "title": "45. What are accessors and mutators?",
+      "body": "Accessors format data when reading from a model. Mutators transform data before saving. They are useful, but can become confusing if overloaded."
+    },
+    {
+      "title": "46. What is a scope?",
+      "body": "A scope lets you reuse common query logic such as `active`, `published`, `recent`, or `forTeam` without repeating conditions everywhere."
+    },
+    {
+      "title": "47. What are `hasOne`, `hasMany`, `belongsTo`, and `belongsToMany`?",
+      "body": "They are common Eloquent relationship types for one-to-one, one-to-many, many-to-one, and many-to-many data modeling."
+    },
+    {
+      "title": "48. Why do you need to understand relationships instead of just calling them mechanically?",
+      "body": "Because relationships affect querying, eager loading, joins, pivot design, key naming, and domain reasoning."
+    },
+    {
+      "title": "49. What is a pivot table?",
+      "body": "It is the intermediate table behind many-to-many relationships such as user-role, post-tag, or team-user."
+    },
+    {
+      "title": "50. What is eager loading?",
+      "body": "Eager loading preloads relationships so the app avoids N+1 queries. This is one of the most important real-world Eloquent skills.",
+      "code": "$posts = Post::with('user', 'comments')->latest()->get();"
+    },
+    {
+      "title": "51. What is an N+1 query problem?",
+      "body": "It happens when you load a list and then each item triggers additional relationship queries, causing the query count to explode. This is one of the most common performance bugs in Laravel."
+    },
+    {
+      "title": "52. When is Eloquent great, and when should you think harder?",
+      "body": "Eloquent is excellent for CRUD, relationship-heavy business flows, ordinary filters, pagination, and common dashboards. But for heavy reporting, deep aggregation, or database-specific SQL, query builder or raw SQL may be better."
+    },
+    {
+      "title": "53. What is the query builder?",
+      "body": "It is Laravel's lower-level query layer. It is less ORM-like than Eloquent but still expressive and often more suitable for custom query shapes."
+    },
+    {
+      "title": "54. Is raw SQL inherently bad?",
+      "body": "No. Raw SQL is a tool. The problem is using it carelessly or without clarity. For some heavy or database-specific tasks, raw SQL is the correct choice."
+    },
+    {
+      "title": "55. `select`, `where`, `orderBy`, `limit`, and `groupBy` are concepts you must truly understand",
+      "body": "Even if you use Eloquent or the query builder, you are still working with query logic. If SQL basics remain vague, the ORM becomes dangerous magic."
+    },
+    {
+      "title": "56. Why does pagination matter?",
+      "body": "Because you should not query and render thousands of records into one screen naively. Pagination keeps the app lighter and the experience clearer.",
+      "code": "$users = User::latest()->paginate(20);"
+    },
+    {
+      "title": "57. Are chunking and cursors useful?",
+      "body": "Very. They matter for large data processing, exports, re-sync jobs, and command-line batch work because they avoid loading entire tables into memory."
+    },
+    {
+      "title": "58. What is a transaction?",
+      "body": "A transaction groups multiple database writes into one unit so they either all succeed or all roll back. It is critical for order flow, payment flow, inventory updates, and multi-table consistency."
+    },
+    {
+      "title": "59. When is a transaction effectively required?",
+      "body": "When several writes must either all be correct together or all fail together. Otherwise, the system can end up half-right and half-broken."
+    },
+    {
+      "title": "60. What is locking?",
+      "body": "Locking is how you control concurrency when multiple requests or jobs touch the same row at the same time. It becomes very important in real production systems."
+    },
+    {
+      "title": "61. When do you use `lockForUpdate()`?",
+      "body": "When rows must be protected inside a transaction to avoid race conditions in situations such as inventory subtraction, balance updates, or critical workflow transitions."
+    },
+    {
+      "title": "62. What is a race condition in the data layer?",
+      "body": "It happens when two processes read the same old state and both write based on outdated assumptions, producing invalid final data."
+    },
+    {
+      "title": "63. How do you debug queries in Laravel?",
+      "body": "You can use query logging, Telescope, Debugbar, `toSql()`, `dd()`, or other profiling tools. The key is knowing how many queries run and which ones are actually expensive.",
+      "code": "DB::listen(function ($query) {\n    logger()->info('sql', [\n        'sql' => $query->sql,\n        'bindings' => $query->bindings,\n        'time_ms' => $query->time,\n    ]);\n});",
+      "note": "Do not stop at logging the SQL text. Log bindings and timing as well so you can distinguish between a long-looking query and a truly expensive one."
+    },
+    {
+      "title": "64. Does `toSql()` tell the whole truth?",
+      "body": "Not fully. It is helpful for seeing query shape, but bindings, execution plans, and runtime behavior still matter."
+    },
+    {
+      "title": "65. Good indexing is not the same as indexing every column",
+      "body": "Indexes should follow real query patterns. Too many indexes slow writes and make schema heavier."
+    },
+    {
+      "title": "66. Is denormalization always bad?",
+      "body": "No. In some reporting, caching, or read-heavy scenarios it can be worth it. But it raises data synchronization complexity, so it should not be your first move."
+    },
+    {
+      "title": "67. Where are soft deletes useful, and where can they become dangerous?",
+      "body": "Soft deletes are useful for recoverability, audit-like behavior, and caution around data loss. But if the team forgets their query implications, unique logic and scopes can become confusing."
+    },
+    {
+      "title": "68. Senior-level tip: do not let the model become the home of all data-related logic",
+      "body": "Models are convenient, so they are easy to overload. Once one model holds heavy queries, business rules, side effects, and integration triggers all together, the repo becomes tiring fast."
+    },
+    {
+      "title": "69. Senior-level tip: read queries like you would read a production electricity bill",
+      "body": "A slow query repeated thousands of times per day hurts very real systems. Experienced developers do not only ask whether a query is correct; they ask what it costs when the data grows tenfold."
+    },
+    {
+      "title": "70. Senior-level tip: do not trust tiny local data when judging performance",
+      "body": "A few dozen records hide many sins. Real production data exposes weak indexing, bad eager loading, expensive sorts, and unstable pagination quickly."
+    },
+    {
+      "title": "71. Anti-pattern: forcing everything through Eloquent even when the query is reporting-heavy",
+      "body": "Eloquent is elegant, but not every problem should become a long chain of ORM calls. Sometimes query builder or raw SQL is clearer and faster."
+    },
+    {
+      "title": "72. Anti-pattern: writing migrations without thinking about rollback",
+      "body": "Migrations are not only about `up()`. If rollback is meaningless or dangerously unclear, release pipelines become painful."
+    },
+    {
+      "title": "73. Anti-pattern: important uniqueness enforced only in app validation",
+      "body": "App validation is useful, but if the business truly requires uniqueness, the database should help enforce it too."
+    },
+    {
+      "title": "74. Anti-pattern: changing production schema without understanding old data impact",
+      "body": "Renaming columns, changing types, splitting tables, backfilling values, or adding unique indexes over dirty data can create serious production incidents if the existing data shape is not examined first."
+    },
+    {
+      "title": "75. The most basic mistake: changing `.env` and forgetting `config:clear` or `optimize:clear`",
+      "body": "Laravel may still be using cached configuration. If you change `DB_HOST`, `DB_DATABASE`, `DB_USERNAME`, or `DB_PASSWORD` and the app still shows the old error, think about config cache before assuming the rest of the stack is broken.",
+      "code": "php artisan config:clear\nphp artisan optimize:clear"
+    },
+    {
+      "title": "76. When do `Access denied` or wrong username/password errors usually happen?",
+      "body": "Usually when the database user lacks the right privileges, the password is wrong, the app is reading the wrong `.env`, or a container and its database are not actually sharing the same credentials. This is basic, but it wastes a lot of time because many people edit `.env` without clearing config cache."
+    },
+    {
+      "title": "77. What does `could not find driver` usually mean?",
+      "body": "It usually means PHP is missing the relevant extension such as `pdo_mysql` or `pdo_pgsql`, or the runtime driver differs from what you thought the environment was using. This is common on new laptops, new Docker images, and new servers."
+    },
+    {
+      "title": "78. Why can `DB_HOST=127.0.0.1` and `DB_HOST=localhost` behave differently?",
+      "body": "Depending on the OS and driver, `localhost` may use a socket while `127.0.0.1` uses TCP. In Docker, `127.0.0.1` usually points back to the app container itself, not the database service. This is a classic beginner configuration trap."
+    },
+    {
+      "title": "79. When should you consider multiple connections or read/write splitting?",
+      "body": "When the app talks to a legacy database, separates data sources, or starts scaling into read-heavy traffic. But multiple connections raise debugging complexity, make cross-connection transaction thinking harder, and demand stronger consistency discipline."
+    },
+    {
+      "title": "80. Are charset, collation, and timezone worth caring about early?",
+      "body": "Yes. Wrong charset can break Vietnamese text, emoji, or special characters. Collation mismatches can change sorting and equality behavior between environments. Timezone mismatches can create painful bugs in reports, schedules, and audits."
+    },
+    {
+      "title": "81. Why do foreign key errors or migration failures happen so often?",
+      "body": "Very often because migration order is wrong, primary and foreign key types do not match, the parent table does not exist yet, collations differ, or old data is already dirty and cannot satisfy the new constraint."
+    },
+    {
+      "title": "82. What should make you nervous before adding a unique index in production?",
+      "body": "The biggest risk is that old data already contains duplicates and the team has not measured that yet. Then the migration can fail mid-release or block deployment. Experienced developers usually run duplicate-detection queries before adding the constraint."
+    },
+    {
+      "title": "83. What is a deadlock, and where does it usually appear?",
+      "body": "A deadlock happens when transactions lock resources in conflicting orders and end up waiting on each other. It often appears in order flow, inventory, wallet, payout, or batch-job scenarios that touch the same records. This is a real concurrency problem, not a rare edge case."
+    },
+    {
+      "title": "84. Slow queries are usually not Laravel's fault first",
+      "body": "Many slow paths come from missing indexes, bad sort columns, filters that cannot use indexes, expensive joins, selecting too many columns, heavy aggregation, or simply much larger data volume. The framework is only the surface; the cost usually lives in the query plan."
+    },
+    {
+      "title": "85. Example playbook when the app cannot connect to the database",
+      "body": "A structured order prevents chaos: check `.env`, check config cache, confirm the database service is running, try an external connection tool, confirm PHP extensions, and only then assume application code is wrong.",
+      "bullets": [
+        "Read the exact error: `Access denied`, `Connection refused`, `Unknown database`, and `could not find driver` point to very different classes of failure.",
+        "Verify the database service is running and that host and port match the current environment.",
+        "If Docker is involved, verify the internal service name instead of assuming `127.0.0.1`."
+      ]
+    },
+    {
+      "title": "86. Example playbook when a migration fails halfway",
+      "body": "Do not immediately drop the database and retry in an important environment. Separate whether the failure is in schema design, old data, migration order, or engine-specific behavior.",
+      "bullets": [
+        "Read the exact migration file that failed.",
+        "Check whether the referenced table or column already exists.",
+        "Check whether existing data violates the new unique or foreign-key rule.",
+        "In production, think about backfill strategy and multi-step deploys instead of one giant migration."
+      ]
+    },
+    {
+      "title": "87. Example playbook when a query is fine locally but slow in production",
+      "body": "Local datasets are too small to reveal many real problems. Compare the actual production query shape, data cardinality, and execution plan instead of trusting local intuition.",
+      "bullets": [
+        "Check whether eager loading is correct.",
+        "Check for careless `select *` usage.",
+        "Check whether filter and sort columns have the right indexes.",
+        "Check whether pagination, chunking, or result limiting is being used appropriately."
+      ]
+    },
+    {
+      "title": "88. Example playbook when duplicate data appears even though validation exists",
+      "body": "Request validation does not block race conditions or inserts from other sources. If the data must truly be unique, return to schema design and ask whether the database is enforcing that rule."
+    },
+    {
+      "title": "89. Senior tip: running locally on SQLite is not enough proof that production will be fine",
+      "body": "SQLite is excellent for fast tests, but if the app relies on JSON querying, foreign-key behavior, collation, locking behavior, or engine-specific SQL, also test against an engine much closer to production."
+    },
+    {
+      "title": "90. Senior tip: classify the database bug before trying to fix it",
+      "body": "Ask whether this is a connection problem, a config problem, a schema problem, a dirty-data problem, a query problem, a transaction problem, or a concurrency problem. Correct classification prevents you from rewriting controllers when the real issue is an index or a migration."
+    },
+    {
+      "title": "91. Senior tip: do not treat the database as a passive storage bucket",
+      "body": "Strong teams review migrations carefully, discuss constraints explicitly, watch heavy queries, and think about dirty data early. Beginners often treat the database as a side layer; experienced developers know it is where the most expensive bugs are born."
+    },
+    {
+      "title": "92. In what order should you learn configuration from basic to advanced?",
+      "body": "Start with one clean `.env` connection, then understand `config/database.php`, then migration discipline, indexing, transactions, multiple connections, read/write splitting, backup mindset, and only after that dive deep into portability or engine-specific tuning."
+    },
+    {
+      "title": "93. When should you seriously consider switching from MySQL to PostgreSQL or the other way around?",
+      "body": "Only when there is a real reason such as changed product needs, more advanced data features, a shift in team experience, or infrastructure requirements. Do not switch just because another database sounds more fashionable."
+    },
+    {
+      "title": "94. Switching databases is not just changing `DB_CONNECTION`",
+      "body": "It also affects data types, SQL syntax, index behavior, default values, JSON handling, collation, full-text support, extensions, migration compatibility, and the entire test surface."
+    },
+    {
+      "title": "95. SQLite is great for tests, but not identical to production databases",
+      "body": "SQLite helps tests run quickly, but it behaves differently from MySQL or PostgreSQL in some details. If your schema or queries are special enough, do not become overconfident."
+    },
+    {
+      "title": "96. Backup and restore are part of data thinking, not only ops thinking",
+      "body": "Backend developers may not own backup infrastructure directly, but they should still understand how dependent the product is on data durability and how painful restore scenarios could be."
+    },
+    {
+      "title": "97. A PR review checklist for data-layer changes",
+      "body": "Does it include a migration, is that migration safe, does the query create N+1 issues, are relations eagerly loaded where needed, are indexes sensible, does old data get impacted, is a unique constraint necessary, and do tests cover the risky flow?"
+    },
+    {
+      "title": "98. A debugging checklist for a database-related bug",
+      "body": "Ask whether the bug lives in schema design, query logic, transaction handling, race conditions, migration history, cached data, or incorrect relationship loading. The fix becomes far clearer once the category is right."
+    },
+    {
+      "title": "99. Final practical insight: a good database layer makes bad business states harder to create",
+      "body": "Application code can guard many things, but strong schema, good constraints, and disciplined query design are what make a system durable over time. Experienced developers look very closely at the data layer because they know a data bug is usually more expensive than a UI bug."
+    },
+    {
+      "title": "100. Safe production migrations are usually designed in multiple steps, not as one giant change",
+      "body": "For example: add a new column, deploy code that supports both paths, backfill old data, gradually switch reads and writes, and only then remove the old column. Beginners often want one neat migration, but production data rarely cooperates."
+    },
+    {
+      "title": "101. What is a backfill, and why is it a real problem?",
+      "body": "A backfill is the process of populating new data for old records after schema or business rules change. It often appears when adding columns, splitting tables, changing data formats, or deriving new values for a feature."
+    },
+    {
+      "title": "102. Why should backfills not always live entirely inside migrations?",
+      "body": "If the dataset is large, a migration that changes schema and updates huge numbers of rows may slow deploys, hold locks too long, or fail halfway. Many teams separate schema migration from a dedicated backfill job or command."
+    },
+    {
+      "title": "103. When should you write a dedicated command or job instead of updating data directly inside a request?",
+      "body": "When the record count is large, the work is expensive, or data needs to be repaired gradually and safely. User-facing requests should not carry large-scale repair work."
+    },
+    {
+      "title": "104. What is dirty data in a real project?",
+      "body": "It is data that no longer follows business rules: duplicate emails, contradictory statuses, orphaned foreign keys, malformed text, non-unique slugs, or legacy rows missing important fields. Local demos rarely expose enough of this."
+    },
+    {
+      "title": "105. Why do many database changes fail because of old dirty data rather than new code?",
+      "body": "New logic may be perfectly valid, but if historical data already violates the intended rules, a new unique index, foreign key, cast, or validation assumption will fail immediately. Experienced developers always ask what old data really looks like before deploying."
+    },
+    {
+      "title": "106. Is `EXPLAIN` or query-plan reading worth learning early?",
+      "body": "Yes. Once a query becomes meaningfully slow, you need to know whether the database is scanning whole tables, which indexes it is using, how joins are ordered, and why the query is expensive. Without query-plan literacy, optimization becomes guesswork.",
+      "code": "EXPLAIN SELECT *\nFROM orders\nWHERE team_id = 5\n  AND status = 'paid'\nORDER BY created_at DESC\nLIMIT 20;",
+      "note": "A common mistake is jumping straight to cache when a query is slow. The better move is to inspect the plan first and see whether the database is missing an index, sorting badly, or scanning too many rows."
+    },
+    {
+      "title": "107. Real case: the query is logically correct but still slow because sorting or filtering misses the right index",
+      "body": "Many admin screens and reports return the right rows but stay slow because the sorted or filtered columns do not have matching indexes, or because the query shape prevents the engine from using the index it already has."
+    },
+    {
+      "title": "108. Where do soft deletes create practical trouble?",
+      "body": "They complicate uniqueness rules, reporting, restores, relationship queries, and dashboards whenever the team forgets `deleted_at` exists. Bugs like 'that email was deleted but still cannot be reused' often come from this area."
+    },
+    {
+      "title": "109. Should foreign keys always be enabled everywhere?",
+      "body": "There is no rigid answer. Foreign keys make data stricter, but in some legacy systems, bulk-import flows, or edge cases, teams may choose tradeoffs. The important thing is understanding which safety layer you are giving up if you skip them."
+    },
+    {
+      "title": "110. Real case: deleting one record looks simple until it drags an entire data tree behind it",
+      "body": "A user, order, team, or product may be connected to many other tables. Hard delete, soft delete, cascade delete, and archival are not just database techniques; they are business and audit decisions."
+    },
+    {
+      "title": "111. What is lock contention, and why does it hurt much more in larger systems?",
+      "body": "When many requests or jobs touch the same hot rows, the database must wait on locks or compete for them, making requests slower or causing timeouts. This is the kind of bug that local low-traffic environments almost never reproduce well."
+    },
+    {
+      "title": "112. How is seeding core system data different from seeding demo data?",
+      "body": "Core seed data is what the system truly needs to behave correctly, such as base roles, settings, or default plans. Demo data only serves local development, staging, or presentations. Mixing them eventually creates dirty environments."
+    },
+    {
+      "title": "113. Real case: everyone thinks the schema is fine because local uses SQLite or a tiny database",
+      "body": "Then production arrives with larger datasets, different collations, different locking behavior, or stricter modes, and the real issues finally appear. This is why database thinking must always consider real environments."
+    },
+    {
+      "title": "114. A practical checklist before adding a new constraint to a table that already has data",
+      "body": "Ask whether old data violates it, whether the migration will hold locks too long, whether a backfill is required first, whether a multi-step deploy is safer, whether rollback is realistic, and whether monitoring exists to spot database pain during release."
+    },
+    {
+      "title": "115. Example of basic database connection settings in `.env`, and why you should be able to read them",
+      "body": "Many database bugs do not start with a query. They start because the app is talking to the wrong host, the wrong user, or the wrong driver.",
+      "code": "DB_CONNECTION=mysql\nDB_HOST=127.0.0.1\nDB_PORT=3306\nDB_DATABASE=laravel_app\nDB_USERNAME=root\nDB_PASSWORD=secret",
+      "bullets": [
+        "`DB_CONNECTION` influences the driver and part of the connection behavior.",
+        "`DB_HOST` and `DB_PORT` are often different in Docker or on real servers.",
+        "A wrong database name or underprivileged user can break migrations or only fail on certain queries."
+      ]
+    },
+    {
+      "title": "116. Example of a migration and a matching Eloquent model",
+      "body": "This pair is very practical for understanding how Laravel maps between schema and model behavior.",
+      "code": "Schema::create('posts', function (Blueprint $table) {\n    $table->id();\n    $table->foreignId('user_id')->constrained()->cascadeOnDelete();\n    $table->string('title');\n    $table->text('body');\n    $table->timestamps();\n});\n\nclass Post extends Model\n{\n    protected $fillable = ['user_id', 'title', 'body'];\n\n    public function user()\n    {\n        return $this->belongsTo(User::class);\n    }\n}",
+      "note": "The migration defines what the database needs, while the model defines how the application will interact with that table."
+    },
+    {
+      "title": "117. Example of using a transaction when one flow writes multiple tables",
+      "body": "When a business flow has several write steps, a transaction helps prevent dangerous half-finished state.",
+      "code": "DB::transaction(function () use ($payload) {\n    $order = Order::create($payload['order']);\n\n    foreach ($payload['items'] as $item) {\n        $order->items()->create($item);\n    }\n\n    $order->payments()->create([\n        'amount' => $payload['amount'],\n        'status' => 'pending',\n    ]);\n});",
+      "note": "A transaction does not solve every consistency problem, but it is a foundational protection when several records must succeed or roll back together."
+    },
+    {
+      "title": "118. Additional final insight: a strong database layer is not the place where any query can be written, but the place where data can still change safely after the system has many active users",
+      "body": "At the beginning, almost anyone can write CRUD. The hard part starts when data is large, many requests run concurrently, background jobs are active, and the business still wants to change rules without corrupting old data."
+    }
+  ]
+}

@@ -1,0 +1,328 @@
+{
+  "anchor": "laravel-php-commands",
+  "type": "list",
+  "heading": "Lệnh PHP & Artisan: nhóm lệnh nền để dựng, vận hành và debug app Laravel",
+  "intro": "Site này gom các lệnh `php` và `php artisan` theo nhóm công việc thay vì liệt kê rời rạc. Mục tiêu là để người học hiểu vì sao cần chạy lệnh đó, chạy ở thời điểm nào, và nếu không chạy thì app thường vướng kiểu lỗi gì.",
+  "breaks": [
+    {
+      "start": 1,
+      "title": "Nền Tảng và Bootstrap Ban Đầu",
+      "description": "Hiểu `php`, `composer`, `artisan`, flow clone project, `key:generate`, `serve` và những lệnh nền đầu tiên.",
+      "tone": "amber"
+    },
+    {
+      "start": 5,
+      "title": "Database và Dữ Liệu",
+      "description": "Các lệnh migration, seeder, status, fresh và cách dùng database command đúng ngữ cảnh.",
+      "tone": "copper"
+    },
+    {
+      "start": 8,
+      "title": "Cache, Inspect và Debug Môi Trường",
+      "description": "Clear cache đúng lớp, xem route, `about`, `tinker`, model/db inspect và các mẹo tránh debug sai hướng.",
+      "tone": "olive"
+    },
+    {
+      "start": 15,
+      "title": "Storage, Queue, Scheduler và Test",
+      "description": "Các lệnh vận hành nền của app thật: file, worker, failed jobs, scheduler, test và maintenance mode.",
+      "tone": "ocean"
+    },
+    {
+      "start": 21,
+      "title": "Generate Code, Tip và Playbook",
+      "description": "Nhóm `make:*`, anti-pattern thường gặp, tip từ cơ bản tới nâng cao và các playbook tình huống ngoài đời.",
+      "tone": "slate"
+    }
+  ],
+  "items": [
+    {
+      "title": "Hiểu nhanh: `php`, `composer` và `php artisan` là ba tầng khác nhau",
+      "body": "`php` là binary chạy mã PHP. `composer` quản lý dependency và autoload. `php artisan` là CLI của chính ứng dụng Laravel, nghĩa là chỉ có tác dụng đúng khi app đã được dựng đủ để Laravel bootstrap được. Vì thế nhiều flow thật sẽ đi theo chuỗi: cài dependency bằng Composer, cấu hình `.env`, rồi mới chạy lệnh Artisan."
+    },
+    {
+      "title": "Flow dựng project Laravel mới clone về thường gồm những bước nào?",
+      "body": "Không có một công thức duy nhất cho mọi repo, nhưng có một khung rất hay gặp: cài dependency PHP, chuẩn bị file môi trường, tạo application key, dựng database, link storage nếu app có file upload, rồi mới chạy server local hoặc frontend.",
+      "code": "composer install\ncp .env.example .env\nphp artisan key:generate\nphp artisan migrate\nphp artisan storage:link\nnpm install\nnpm run dev",
+      "bullets": [
+        "`composer install`: dựng lại `vendor/` theo `composer.lock`.",
+        "`key:generate`: tạo `APP_KEY` cho cơ chế mã hóa của Laravel.",
+        "`migrate`: tạo schema database để app có bảng mà chạy.",
+        "`storage:link`: nối file public với thư mục storage khi app có upload."
+      ]
+    },
+    {
+      "title": "Vì sao `php artisan key:generate` quan trọng?",
+      "body": "Lệnh này tạo `APP_KEY` và ghi vào `.env`. Key này được Laravel dùng cho nhiều phần quan trọng như encrypted cookie, session, signed data và một số cơ chế mã hóa khác. Nếu thiếu key, app thường lỗi ngay từ sớm hoặc chạy trong trạng thái không an toàn.",
+      "code": "php artisan key:generate",
+      "note": "Nếu bạn vừa copy `.env.example` sang `.env`, đây thường là một trong các lệnh đầu tiên cần chạy."
+    },
+    {
+      "title": "`php artisan serve`: khi cần dựng nhanh web local để nhìn app chạy",
+      "body": "Đây là lệnh tiện nhất khi bạn chỉ cần mở nhanh một Laravel app trên máy local mà chưa muốn cấu hình Nginx, Apache hay Valet. Nó dùng PHP built-in server nên rất hợp cho học tập, demo nhanh hoặc test flow cơ bản.",
+      "code": "php artisan serve\nphp artisan serve --host=127.0.0.1 --port=8080",
+      "bullets": [
+        "Dùng khi mới clone project xong và muốn kiểm tra app có lên được không.",
+        "Dùng để debug local nhanh, không phải giải pháp production.",
+        "Nếu project dùng queue, websocket, Vite hoặc nhiều service khác, `serve` chỉ là một mảnh của môi trường chạy."
+      ]
+    },
+    {
+      "title": "Nhóm lệnh database: `migrate`, `rollback`, `fresh`, `seed`",
+      "body": "Đây là nhóm lệnh bạn sẽ đụng cực thường xuyên khi học Laravel. Chúng kiểm soát schema và dữ liệu khởi tạo. Cần dùng đúng ngữ cảnh vì có lệnh an toàn để tiến lên, và có lệnh phá dữ liệu để dựng lại từ đầu.",
+      "code": "php artisan migrate\nphp artisan migrate:rollback\nphp artisan migrate:fresh\nphp artisan db:seed\nphp artisan migrate --seed",
+      "bullets": [
+        "`migrate`: áp các migration mới chưa chạy.",
+        "`rollback`: quay lại batch migration gần nhất.",
+        "`fresh`: xóa toàn bộ bảng rồi migrate lại từ đầu, rất mạnh tay.",
+        "`seed`: bơm dữ liệu khởi tạo hoặc dữ liệu mẫu."
+      ],
+      "note": "Đừng quen tay dùng `migrate:fresh` trên môi trường có dữ liệu quan trọng."
+    },
+    {
+      "title": "Khi nào nên dùng `migrate` và khi nào nên dùng `migrate:fresh`?",
+      "body": "Nếu bạn chỉ thêm hoặc sửa migration mới theo luồng bình thường, `migrate` là lựa chọn tự nhiên. `migrate:fresh` hợp hơn khi đang phát triển local, muốn dựng lại sạch từ đầu, hoặc test luồng seed hoàn chỉnh. Nó không dành cho tình huống giữ dữ liệu cũ."
+    },
+    {
+      "title": "`php artisan migrate:status`, `db:seed --class`, `make:migration`: các lệnh database nên biết thêm",
+      "body": "Ngoài `migrate` và `fresh`, có vài lệnh rất hữu ích để hiểu trạng thái database và thao tác có kiểm soát hơn. Chúng giúp bạn bớt làm việc mù khi schema đã lớn.",
+      "code": "php artisan migrate:status\nphp artisan db:seed --class=RolesSeeder\nphp artisan make:migration add_status_to_orders_table --table=orders",
+      "bullets": [
+        "`migrate:status`: xem migration nào đã chạy, migration nào còn pending.",
+        "`db:seed --class=...`: chỉ chạy đúng một seeder khi không muốn bơm toàn bộ dữ liệu mẫu.",
+        "`make:migration`: tạo file migration mới đúng chuẩn thay vì viết tay tên file."
+      ]
+    },
+    {
+      "title": "Nhóm lệnh cache và tối ưu: rất hay cứu bạn khỏi bug 'sửa rồi mà không đổi'",
+      "body": "Laravel có nhiều lớp cache: config, route, view, event, compiled bootstrap. Vì vậy đôi khi code đúng mà app vẫn cư xử như cũ do cache chưa được làm mới.",
+      "code": "php artisan optimize:clear\nphp artisan config:clear\nphp artisan route:clear\nphp artisan view:clear\nphp artisan cache:clear\nphp artisan config:cache\nphp artisan route:cache",
+      "bullets": [
+        "`optimize:clear`: dọn nhiều loại cache cùng lúc, rất thực dụng khi local bị rối.",
+        "`config:cache` hoặc `route:cache`: hay dùng ở deploy hoặc production-like setup.",
+        "Nếu `.env` đổi mà app vẫn dùng giá trị cũ, hãy nghĩ ngay tới config cache."
+      ]
+    },
+    {
+      "title": "Vì sao không phải lúc nào cũng chỉ chạy `php artisan optimize:clear`?",
+      "body": "`optimize:clear` rất tiện vì nó dọn nhiều lớp cache một lượt, nên trong local khi app đang rối nó thường là phát bắn đầu tiên hợp lý. Nhưng nó là cách dọn tổng lực, không phải lúc nào cũng là cách hiểu vấn đề tốt nhất. Khi bạn muốn biết chính xác bug nằm ở config, route, view hay cache app, chạy từng lệnh riêng sẽ giúp chẩn đoán rõ hơn thay vì chỉ 'quét sạch rồi cầu may'.",
+      "code": "php artisan optimize:clear\nphp artisan config:clear\nphp artisan route:clear\nphp artisan view:clear\nphp artisan cache:clear",
+      "bullets": [
+        "`optimize:clear`: hợp khi local đang loạn, đổi nhiều thứ cùng lúc, hoặc cần reset nhanh nhiều lớp cache.",
+        "`config:clear`: hợp khi vừa đổi `.env`, đổi driver mail, queue, cache, database mà app vẫn giữ giá trị cũ.",
+        "`route:clear`: hợp khi vừa sửa route, middleware, binding route model mà kết quả vẫn như cũ.",
+        "`view:clear`: hợp khi Blade render ra giao diện cũ hoặc nghi view compiled bị stale.",
+        "`cache:clear`: hợp khi app đang dùng cache dữ liệu, flag hoặc computed result và bạn muốn xóa đúng phần app cache."
+      ],
+      "note": "Kinh nghiệm thực tế: để debug nhanh thì bắt đầu bằng `optimize:clear`; để hiểu sâu và tránh đoán mò thì clear từng lớp đúng chỗ."
+    },
+    {
+      "title": "`view:cache`, `event:cache`, `event:clear`: các lệnh ít gặp hơn nhưng đáng biết",
+      "body": "Khi app lớn hơn, bạn sẽ gặp thêm nhu cầu cache view compiled hoặc event discovery map. Đây không phải lệnh ngày nào cũng chạy, nhưng rất hữu ích khi tối ưu môi trường thật hoặc debug hành vi liên quan tới event.",
+      "code": "php artisan view:cache\nphp artisan event:cache\nphp artisan event:clear",
+      "bullets": [
+        "`view:cache`: precompile Blade để giảm chi phí render đầu tiên ở môi trường thật.",
+        "`event:cache`: cache event discovery map khi app có nhiều event/listener.",
+        "`event:clear`: xóa event cache khi vừa thay đổi listener mà app chưa nhận."
+      ]
+    },
+    {
+      "title": "Một mẹo quan trọng: đừng biến `optimize:clear` thành phản xạ mù",
+      "body": "Nhiều người mới cứ thấy app lạ là chạy `optimize:clear` trước. Cách đó cứu được vài ca, nhưng nếu lạm dụng thì bạn sẽ chậm lớn về kỹ năng debug. Người có kinh nghiệm thường tự hỏi: mình vừa đổi cái gì, lớp nào của framework chịu trách nhiệm cho phần đó, rồi mới chọn đúng lệnh. Như vậy vừa nhanh hơn, vừa học được cách Laravel thực sự vận hành.",
+      "bullets": [
+        "Đổi `.env` hoặc config driver: nghĩ tới `config:clear` trước.",
+        "Sửa Blade mà giao diện chưa đổi: nghĩ tới `view:clear` trước.",
+        "Sửa route hoặc middleware: nghĩ tới `route:clear` trước.",
+        "Sửa code mà queue worker vẫn xử lý theo logic cũ: nghĩ tới `queue:restart` chứ không phải chỉ clear cache."
+      ]
+    },
+    {
+      "title": "Nhóm lệnh xem cấu trúc app: `route:list`, `about`, `tinker`",
+      "body": "Không phải mọi lệnh Artisan đều để thay đổi dữ liệu. Nhiều lệnh cực hữu ích để hiểu app lạ hoặc debug nhanh trạng thái framework.",
+      "code": "php artisan route:list\nphp artisan about\nphp artisan tinker",
+      "bullets": [
+        "`route:list`: nhìn toàn bộ route, middleware, method và controller đang map.",
+        "`about`: xem nhanh thông tin môi trường, driver, cache, queue, database.",
+        "`tinker`: REPL để thử model, query, helper và container trực tiếp."
+      ]
+    },
+    {
+      "title": "`model:show`, `db:show`, `db:table`: xem nhanh dữ liệu và cấu trúc thay vì mò tay",
+      "body": "Các bản Laravel mới có thêm vài lệnh khá hữu ích để quan sát model hoặc database ngay từ CLI. Chúng không thay thế GUI quản trị DB, nhưng rất tiện để đọc nhanh project lạ.",
+      "code": "php artisan model:show User\nphp artisan db:show\nphp artisan db:table users",
+      "bullets": [
+        "`model:show`: xem attribute, relation, cast của model.",
+        "`db:show`: tóm tắt database connection, số bảng hoặc một số thông tin nền.",
+        "`db:table`: xem nhanh cấu trúc bảng cụ thể."
+      ],
+      "note": "Tùy version Laravel, một số lệnh mới có thể chưa tồn tại trong project cũ."
+    },
+    {
+      "title": "Nhóm lệnh file và storage",
+      "body": "Nếu app có upload, ảnh, export file hoặc avatar, bạn sẽ sớm gặp `storage:link`. Đây là lệnh tạo symlink từ `public/storage` sang `storage/app/public` để file có thể được web server phục vụ.",
+      "code": "php artisan storage:link",
+      "note": "Nếu upload thành công nhưng trình duyệt không xem được file, đây là một trong các lệnh nên kiểm tra đầu tiên."
+    },
+    {
+      "title": "Nhóm lệnh queue, scheduler và vận hành nền",
+      "body": "Khi app lớn hơn CRUD cơ bản, nhiều việc sẽ bị đẩy ra khỏi request như gửi mail, xử lý ảnh, sync API, nhắc việc, báo cáo định kỳ. Khi đó nhóm lệnh queue và scheduler trở thành lõi vận hành backend.",
+      "code": "php artisan queue:work\nphp artisan queue:listen\nphp artisan schedule:run\nphp artisan horizon",
+      "bullets": [
+        "`queue:work`: chạy worker xử lý job trong hàng đợi.",
+        "`schedule:run`: mô phỏng cron gọi scheduler của Laravel.",
+        "`horizon`: dùng khi project chạy Redis queue và có Horizon."
+      ]
+    },
+    {
+      "title": "`queue:restart`, `queue:failed`, `queue:retry`: bộ lệnh nên biết khi queue có vấn đề",
+      "body": "Khi queue chạy thật, bạn không chỉ cần `queue:work`. Bạn còn cần biết cách yêu cầu worker nạp code mới, xem job nào fail và retry chúng có kiểm soát.",
+      "code": "php artisan queue:restart\nphp artisan queue:failed\nphp artisan queue:retry all\nphp artisan queue:flush",
+      "bullets": [
+        "`queue:restart`: báo cho worker đang chạy khởi động lại sau khi deploy code mới.",
+        "`queue:failed`: liệt kê các job lỗi để đọc và điều tra.",
+        "`queue:retry`: chạy lại job lỗi sau khi đã sửa nguyên nhân.",
+        "`queue:flush`: xóa danh sách failed job, nên dùng cẩn thận."
+      ]
+    },
+    {
+      "title": "`schedule:list` và `schedule:test`: hiểu scheduler trước khi đổ lỗi cron",
+      "body": "Nếu project có command định kỳ mà bạn không rõ có đang chạy không, hai lệnh này rất hữu ích để quan sát scheduler. Chúng giúp xác định lỗi nằm ở Laravel schedule hay nằm ở cron/system supervisor.",
+      "code": "php artisan schedule:list\nphp artisan schedule:test",
+      "bullets": [
+        "`schedule:list`: xem các task định kỳ đang được đăng ký chạy như thế nào.",
+        "`schedule:test`: thử một task scheduler cụ thể trong local/debug flow."
+      ],
+      "note": "Một số lệnh scheduler mới phụ thuộc version Laravel, nên project cũ có thể không có đầy đủ."
+    },
+    {
+      "title": "`php artisan test`: chạy test từ chính ecosystem Laravel",
+      "body": "Dù phía dưới là PHPUnit hay Pest, đây là entry point rất tự nhiên để chạy test trong project Laravel. Nó thường tích hợp tốt với environment test, parallel test và các option quen thuộc của framework.",
+      "code": "php artisan test\nphp artisan test --filter=AuthTest\nphp artisan test --parallel",
+      "bullets": [
+        "Dùng trước khi commit, sau khi update dependency, hoặc sau khi thay đổi flow quan trọng.",
+        "`--filter`: chỉ chạy một test class hoặc test case cụ thể.",
+        "`--parallel`: tăng tốc trên project có bộ test đủ lớn."
+      ]
+    },
+    {
+      "title": "Nhóm lệnh generate code: tiện nhưng đừng lạm dụng",
+      "body": "Laravel hỗ trợ scaffold khá nhiều class để bạn bắt đầu nhanh. Nó hữu ích khi muốn đúng namespace và đúng vị trí file, nhưng không nên biến thành thói quen tạo ra quá nhiều lớp chỉ vì CLI hỗ trợ.",
+      "code": "php artisan make:controller PostController\nphp artisan make:model Post -mfs\nphp artisan make:request StorePostRequest\nphp artisan make:job SyncOrderJob\nphp artisan make:policy PostPolicy --model=Post",
+      "bullets": [
+        "`make:model -mfs` có thể tạo model, migration, factory, seeder cùng lúc.",
+        "Hãy generate vừa đủ, sau đó tự tổ chức code theo feature nếu project lớn.",
+        "CLI giúp bắt đầu đúng chuẩn, không thay thế được tư duy kiến trúc."
+      ]
+    },
+    {
+      "title": "Các lệnh `make:*` khác rất hay gặp khi project lớn dần",
+      "body": "Ngoài controller, model hay request, Laravel còn có nhiều lệnh scaffold cho command, mail, notification, listener, event, middleware, cast hoặc rule. Biết chúng tồn tại sẽ giúp bạn nhớ rằng framework đã chuẩn bị sẵn nhiều điểm mở rộng.",
+      "code": "php artisan make:command SyncLegacyOrders\nphp artisan make:mail InvoicePaid\nphp artisan make:notification OrderShipped\nphp artisan make:event OrderCreated\nphp artisan make:listener SendOrderEmail --event=OrderCreated\nphp artisan make:middleware EnsureUserIsAdmin",
+      "bullets": [
+        "Dùng khi bạn muốn tạo class đúng namespace và đúng thư mục nhanh hơn.",
+        "Hữu ích cho project nhiều convention vì giảm lỗi đặt sai chỗ.",
+        "Nhưng vẫn cần tự quyết định lớp nào thật sự nên tồn tại."
+      ]
+    },
+    {
+      "title": "`php artisan down` và `php artisan up`: maintenance mode khi cần chặn truy cập tạm thời",
+      "body": "Đây là cặp lệnh dành cho lúc cần bảo trì ngắn, deploy thủ công hoặc tạm chặn user trong quá trình xử lý hệ thống. Nó không thay thế chiến lược deploy tốt, nhưng vẫn là công cụ cần biết.",
+      "code": "php artisan down\nphp artisan down --retry=60\nphp artisan up",
+      "bullets": [
+        "`down`: đưa app vào maintenance mode.",
+        "`up`: mở app lại sau khi xong việc.",
+        "`--retry`: gợi ý cho client hoặc proxy biết bao lâu nữa nên thử lại."
+      ],
+      "note": "Trong hệ thống production tốt, maintenance mode thường đi cùng quy trình deploy có kế hoạch chứ không dùng bừa."
+    },
+    {
+      "title": "Một số lỗi rất hay gặp khi chạy lệnh `php artisan`",
+      "body": "Nếu Artisan không chạy, đừng vội nghĩ do chính lệnh đó. Nhiều lỗi nằm ở bootstrap app: thiếu `.env`, thiếu `APP_KEY`, DB chưa chạy, package provider lỗi, permission thư mục sai, hoặc autoload chưa đồng bộ.",
+      "code": "php artisan about\nphp artisan optimize:clear\ncomposer dump-autoload\nphp artisan config:clear",
+      "bullets": [
+        "`No application encryption key has been specified`: cần `php artisan key:generate`.",
+        "DB connection error khi migrate: kiểm tra `.env`, service DB và credential.",
+        "Class not found: đôi khi cần `composer dump-autoload` hoặc kiểm tra namespace."
+      ]
+    },
+    {
+      "title": "Tip và kinh nghiệm từ mức cơ bản đến nâng cao",
+      "body": "Phần này không phải 'chân lý cứng', nhưng là những thói quen rất hay được chia sẻ bởi người làm Laravel lâu hơn. Nó giúp bạn tránh những cú mò mẫm mất thời gian.",
+      "bullets": [
+        "Mức cơ bản: sau khi clone, đừng chạy loạn lệnh. Đi theo flow `composer install` -> `.env` -> `key:generate` -> `migrate` -> `serve`.",
+        "Mức cơ bản: đọc lỗi đầu tiên thật kỹ. Dòng đầu tiên có ý nghĩa thường giá trị hơn việc nhìn cả màn hình stack trace.",
+        "Mức trung cấp: gặp lỗi lạ, chạy `php artisan about` để nhìn nhanh môi trường trước khi đổ lỗi vào code.",
+        "Mức trung cấp: sau deploy có queue, nhớ `queue:restart`; rất nhiều người quên bước này rồi tưởng code mới không hoạt động.",
+        "Mức trung cấp: nếu app dùng cache dữ liệu thật, đừng clear cache production bừa bãi vì có thể làm tăng tải đột ngột.",
+        "Mức nâng cao: hãy phân biệt lỗi bootstrap app, lỗi business logic và lỗi hạ tầng. Không phải lỗi nào cũng nên giải bằng Artisan.",
+        "Mức nâng cao: trước khi thêm lệnh vào tài liệu onboarding, tự hỏi lệnh đó là bắt buộc cho mọi người hay chỉ là workaround cho máy của một dev.",
+        "Mức nâng cao: với production, ưu tiên quy trình deploy rõ ràng hơn là ghi nhớ vài lệnh cứu cháy."
+      ],
+      "note": "Tip tốt nhất thường không phải 'nhớ nhiều lệnh hơn', mà là biết đúng lúc cần lệnh nào và đúng lúc không nên chạm vào nó."
+    },
+    {
+      "title": "Playbook nhỏ theo tình huống đời thực",
+      "body": "Đây là vài pattern rất hay gặp khi làm dự án Laravel thật. Chúng giúp người học nối được lệnh với bối cảnh, thay vì học lẻ từng command.",
+      "code": "1) Mới clone project:\ncomposer install\ncp .env.example .env\nphp artisan key:generate\nphp artisan migrate\nphp artisan serve\n\n2) Đổi .env mà app vẫn như cũ:\nphp artisan config:clear\n\n3) Sửa route mà app chưa nhận:\nphp artisan route:clear\n\n4) Queue chạy code cũ sau deploy:\nphp artisan queue:restart\n\n5) Blade không đổi giao diện:\nphp artisan view:clear",
+      "bullets": [
+        "Nếu hành vi cũ còn giữ, hãy nghĩ theo lớp chịu trách nhiệm trước khi clear mọi thứ.",
+        "Nếu production có vấn đề, ưu tiên đọc log, kiểm tra worker, process manager, config môi trường rồi mới bắn lệnh dọn dẹp.",
+        "Nếu local bị rối quá và chưa rõ hướng, `optimize:clear` là nút reset tốt, nhưng đừng dừng tư duy ở đó."
+      ]
+    },
+    {
+      "title": "Tư duy dùng lệnh theo nhóm việc, không học thuộc rời rạc",
+      "body": "Thực tế đi làm ít ai nhớ Artisan như một từ điển dài. Người ta nhớ theo tình huống: mới clone project, sửa database, clear cache, đọc route, chạy queue, debug môi trường, generate class. Cách học này thân thiện hơn và giúp bạn biết tìm đúng lệnh khi dự án thật bắt đầu có nhiều moving parts."
+    },
+    {
+      "title": "275. `config:cache` và `route:cache` rất đáng sợ nếu dùng mà không hiểu trạng thái deploy",
+      "body": "Hai lệnh này hữu ích ở production, nhưng nếu deploy chưa đúng thứ tự hoặc môi trường chưa sạch thì bạn có thể cache nhầm cấu hình hoặc route cũ. Lúc đó bug rất khó chịu vì app trông như không nghe code mới."
+    },
+    {
+      "title": "276. Case thật: queue worker chạy code cũ dù bạn đã deploy code mới",
+      "body": "Rất hay vì worker là process sống lâu. Bạn cần nhớ `queue:restart` hoặc chiến lược restart worker phù hợp, nếu không job mới vẫn bị xử lý bằng bộ code cũ đang nằm trong memory."
+    },
+    {
+      "title": "277. `schedule:run` chạy được chưa đủ, quan trọng là cron ngoài hệ thống có đang gọi nó đều hay không",
+      "body": "Nhiều người test local thấy command chạy được rồi tưởng scheduler ổn, nhưng production còn phụ thuộc cron, timezone, user chạy cron và log giám sát. Đây là kiểu lỗi vận hành nền rất hay bị bỏ qua."
+    },
+    {
+      "title": "278. `tinker` rất tiện nhưng đừng biến nó thành nơi sửa dữ liệu production theo cảm hứng",
+      "body": "Tinker mạnh vì cho bạn chạm thẳng model và query, nhưng cũng nguy hiểm vì rất dễ tạo thay đổi không được review, không được log thành command rõ ràng và khó tái hiện lại sau này."
+    },
+    {
+      "title": "279. Tip bổ sung: lệnh tốt không chỉ là biết chạy, mà là biết khi nào không nên chạy trên môi trường thật",
+      "body": "Nhiều lệnh local rất tiện như `migrate:fresh`, clear cache tổng lực, seed demo hoặc sửa tay bằng Tinker, nhưng production cần kỷ luật khác hoàn toàn. Kinh nghiệm lâu năm là biết dừng tay trước những lệnh có vẻ vô hại."
+    },
+    {
+      "title": "280. Ví dụ flow Artisan tối thiểu khi mới clone project Laravel",
+      "body": "Đây là chuỗi rất hay gặp khi dự án vừa được kéo về và cần dựng lên cho chạy.",
+      "code": "php artisan key:generate\nphp artisan migrate\nphp artisan db:seed\nphp artisan storage:link\nphp artisan route:list",
+      "bullets": [
+        "`key:generate` tạo `APP_KEY` cần cho encryption và session.",
+        "`migrate` dựng schema cần thiết.",
+        "`db:seed` nạp dữ liệu khởi tạo nếu project yêu cầu.",
+        "`storage:link` nối file public sang storage khi app có upload media.",
+        "`route:list` giúp bạn kiểm tra nhanh app đang có những endpoint nào."
+      ]
+    },
+    {
+      "title": "281. Ví dụ nhóm lệnh clear cache và cách chọn đúng lệnh",
+      "body": "Không phải lúc nào cũng nên phản xạ bắn `optimize:clear` ngay.",
+      "code": "php artisan config:clear\nphp artisan route:clear\nphp artisan view:clear\nphp artisan cache:clear\nphp artisan optimize:clear",
+      "bullets": [
+        "Đổi `.env` hoặc config mà app chưa nhận thì nghĩ tới `config:clear`.",
+        "Sửa route mà hành vi vẫn cũ thì nhìn `route:clear`.",
+        "Sửa Blade mà UI chưa đổi đúng thì nghĩ tới `view:clear`.",
+        "`cache:clear` chỉ nên dùng khi biết app đang phụ thuộc application cache nào.",
+        "`optimize:clear` tiện để reset nhanh local, nhưng không nên thay thế việc debug đúng lớp chịu lỗi."
+      ]
+    },
+    {
+      "title": "282. Ví dụ vài lệnh vận hành queue và scheduler mà người mới hay quên",
+      "body": "Laravel app sống không chỉ bằng web request, mà còn nhờ process nền.",
+      "code": "php artisan queue:work\nphp artisan queue:restart\nphp artisan queue:failed\nphp artisan queue:retry all\nphp artisan schedule:list\nphp artisan schedule:run",
+      "note": "`queue:restart` rất quan trọng sau deploy vì worker có thể đang giữ code cũ trong memory. `schedule:list` giúp bạn xem cron logic dự kiến, còn `schedule:run` hữu ích để test local hoặc debug nhanh."
+    }
+  ]
+}

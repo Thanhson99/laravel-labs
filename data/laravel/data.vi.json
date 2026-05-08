@@ -1,0 +1,577 @@
+{
+  "anchor": "laravel-data",
+  "type": "list",
+  "heading": "Database, migration và Eloquent: từ nền tảng dữ liệu tới tư duy production",
+  "intro": "Gần như mọi app Laravel sống chết cùng dữ liệu. Site này đi từ khái niệm cơ bản nhất như database là gì, bảng là gì, Laravel kết nối thế nào, tới migration, Eloquent, query, relation, index, transaction, đổi database và các tip kiểu người làm lâu năm mới bắt đầu thấy quan trọng.",
+  "breaks": [
+    {
+      "start": 1,
+      "title": "Nền Tảng Dữ Liệu",
+      "description": "Database là gì, bảng là gì, row/column là gì, khóa chính là gì và vì sao app Laravel luôn xoay quanh lớp dữ liệu.",
+      "tone": "amber"
+    },
+    {
+      "start": 10,
+      "title": "Kết Nối Database Trong Laravel",
+      "description": "Cấu hình `.env`, `config/database.php`, driver, nhiều connection và khi nào nên chọn MySQL, PostgreSQL hay SQLite.",
+      "tone": "copper"
+    },
+    {
+      "start": 20,
+      "title": "Schema, Migration và Thiết Kế Bảng",
+      "description": "Cách tạo bảng, sửa bảng, khóa, index, naming convention và những quyết định schema ảnh hưởng rất lâu về sau.",
+      "tone": "olive"
+    },
+    {
+      "start": 34,
+      "title": "Seeder, Factory và Dữ Liệu Mẫu",
+      "description": "Dữ liệu khởi tạo, dữ liệu test, cách seed đúng ngữ cảnh và vì sao factory tốt giúp team đi nhanh hơn rất nhiều.",
+      "tone": "ocean"
+    },
+    {
+      "start": 42,
+      "title": "Eloquent, Model và Relationship",
+      "description": "Model là gì, relation là gì, eager loading, accessor, mutator, cast, scope và cách đọc dữ liệu theo tư duy ORM.",
+      "tone": "indigo"
+    },
+    {
+      "start": 60,
+      "title": "Query, Hiệu Năng và Production Thinking",
+      "description": "Query builder, raw SQL, N+1, index, pagination, transaction, locking, profiling và các mùi dữ liệu rất hay gặp trong app thật.",
+      "tone": "rose"
+    },
+    {
+      "start": 75,
+      "title": "Lỗi Thường Gặp, Config và Playbook Xử Lý",
+      "description": "Từ lỗi không kết nối được database, thiếu driver, cache config cũ, sai charset, deadlock tới cách debug có lớp lang thay vì sửa mò.",
+      "tone": "stone"
+    },
+    {
+      "start": 93,
+      "title": "Đổi Database, Review và Mindset Dài Hạn",
+      "description": "Khi nào đổi MySQL sang PostgreSQL, cách nghĩ về portability, backup, migration discipline và checklist review tầng dữ liệu.",
+      "tone": "slate"
+    },
+    {
+      "start": 100,
+      "title": "Case Thực Chiến, Backfill Và Data Bẩn",
+      "description": "Những bài toán production rất hay gặp: migration an toàn, dữ liệu cũ bẩn, query plan, backfill, soft delete, lock và các quyết định khó khi data đã lớn.",
+      "tone": "stone"
+    }
+  ],
+  "items": [
+    {
+      "title": "1. Database là gì?",
+      "body": "Database là nơi lưu trữ dữ liệu có cấu trúc để ứng dụng có thể ghi, đọc, sửa và xóa dữ liệu một cách có tổ chức. Trong app Laravel, rất nhiều hành vi cốt lõi như đăng nhập, bài viết, đơn hàng, permission, log business hay notification đều gắn trực tiếp với database."
+    },
+    {
+      "title": "2. Vì sao backend developer phải hiểu database chứ không chỉ hiểu framework?",
+      "body": "Vì framework chỉ là lớp giúp bạn thao tác dễ hơn. Nếu bạn không hiểu dữ liệu đang được tổ chức ra sao, query đang chạy thế nào, bảng có index chưa, transaction có đúng chưa, thì dù code Laravel đẹp bạn vẫn có thể tạo ra app chậm, lỗi hoặc khó nâng cấp."
+    },
+    {
+      "title": "3. Bảng, cột và dòng là gì?",
+      "body": "Bảng là nơi chứa một loại dữ liệu như `users`, `posts`, `orders`. Cột mô tả từng thuộc tính như `name`, `email`, `status`. Dòng là một bản ghi cụ thể. Đây là mức nền nhất nhưng phải chắc thì về sau mới đỡ rối khi nhìn schema lớn."
+    },
+    {
+      "title": "4. Primary key là gì?",
+      "body": "Primary key là khóa chính dùng để định danh duy nhất mỗi bản ghi trong bảng. Trong Laravel, rất nhiều bảng mặc định dùng `id` tăng dần, nhưng tùy bài toán có thể dùng UUID hoặc khóa khác."
+    },
+    {
+      "title": "5. Foreign key là gì?",
+      "body": "Foreign key là khóa dùng để nối quan hệ giữa hai bảng, ví dụ `posts.user_id` trỏ về `users.id`. Nó là nền tảng để hiểu relationship trong Eloquent về sau."
+    },
+    {
+      "title": "6. Database quan hệ là gì?",
+      "body": "Đó là kiểu database tổ chức dữ liệu thành các bảng có quan hệ với nhau. Laravel mặc định làm việc rất tự nhiên với hệ này, nhất là MySQL, PostgreSQL và SQLite."
+    },
+    {
+      "title": "7. Vì sao app Laravel thường dùng relational database?",
+      "body": "Vì nhiều bài toán business như user, role, order, payment, article, category, invoice, team, permission đều có quan hệ rõ ràng. ORM như Eloquent cũng rất mạnh khi đi cùng relational data model."
+    },
+    {
+      "title": "8. Schema là gì?",
+      "body": "Schema là cấu trúc dữ liệu của database: có bảng nào, cột nào, kiểu dữ liệu gì, khóa gì, index gì, ràng buộc gì. Khi nói team quản lý schema tốt hay kém, ý là team đó đang kiểm soát phần xương sống dữ liệu của hệ thống tốt hay không."
+    },
+    {
+      "title": "9. Tư duy nền: database không chỉ là nơi lưu dữ liệu, mà là nơi encode business reality",
+      "body": "Tên bảng, tên cột, khóa, index, nullability, enum, relation, unique constraint đều phản ánh cách hệ thống hiểu thế giới thật. Chọn sai ở đây có thể làm app đau đầu nhiều năm."
+    },
+    {
+      "title": "10. Laravel kết nối database qua đâu?",
+      "body": "Laravel đọc cấu hình database từ `.env` và `config/database.php`. Driver, host, port, database name, username, password đều đi qua lớp cấu hình này."
+    },
+    {
+      "title": "11. `DB_CONNECTION` là gì?",
+      "body": "Đây là biến môi trường cho biết app đang dùng driver nào như `mysql`, `pgsql`, `sqlite` hoặc `sqlsrv`."
+    },
+    {
+      "title": "12. Một cấu hình database cơ bản trong `.env`",
+      "body": "Bạn thường thấy các biến như `DB_CONNECTION`, `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD`.",
+      "code": "DB_CONNECTION=mysql\nDB_HOST=127.0.0.1\nDB_PORT=3306\nDB_DATABASE=laravel_app\nDB_USERNAME=root\nDB_PASSWORD=secret"
+    },
+    {
+      "title": "13. Vì sao cấu hình database nên nằm ở `.env` chứ không hardcode?",
+      "body": "Vì local, staging, production thường khác nhau. Nếu hardcode thẳng trong code hoặc config cố định, việc đổi môi trường sẽ rất dễ lỗi và nguy hiểm hơn với secret."
+    },
+    {
+      "title": "14. `config/database.php` giữ vai trò gì?",
+      "body": "Đó là file gom cấu hình nhiều connection và định nghĩa Laravel sẽ map các biến `.env` thành driver config cụ thể như thế nào."
+    },
+    {
+      "title": "15. Laravel có thể có nhiều connection cùng lúc không?",
+      "body": "Có. Bạn có thể cấu hình nhiều database connection và chọn connection riêng cho model hoặc query. Điều này hữu ích khi app cần đọc từ legacy DB, multi-DB setup hoặc tách read/write.",
+      "code": "// config/database.php\n'connections' => [\n    'mysql' => [\n        'driver' => 'mysql',\n        'host' => env('DB_HOST', '127.0.0.1'),\n    ],\n    'legacy' => [\n        'driver' => 'mysql',\n        'host' => env('LEGACY_DB_HOST', '127.0.0.1'),\n    ],\n]\n\n$rows = DB::connection('legacy')->table('customers')->limit(10)->get();",
+      "note": "Sai lầm thường gặp: thấy có nhiều DB rồi gọi lẫn lộn khắp codebase. Cách sửa là đặt boundary rõ: connection nào cho legacy read, connection nào cho app chính."
+    },
+    {
+      "title": "16. MySQL phù hợp khi nào?",
+      "body": "MySQL rất phổ biến, dễ tìm hosting, dễ onboarding và đủ tốt cho rất nhiều web app business thông thường. Nếu team muốn ecosystem phổ biến và ít friction, MySQL thường là lựa chọn an toàn."
+    },
+    {
+      "title": "17. PostgreSQL phù hợp khi nào?",
+      "body": "PostgreSQL mạnh ở nhiều tính năng dữ liệu nâng cao, query phức tạp hơn, JSON/JSONB tốt, extension phong phú và độ chặt dữ liệu cao. Nhiều team có yêu cầu dữ liệu kỹ hơn hoặc thích độ chuẩn chỉnh cao thường nghiêng về PostgreSQL."
+    },
+    {
+      "title": "18. SQLite phù hợp khi nào?",
+      "body": "SQLite rất tiện cho local demo, app nhỏ, test hoặc project học tập. Nó cực gọn vì dữ liệu nằm trong file. Nhưng với production đa người dùng hoặc hệ thống cần scale nhiều hơn, bạn phải cân nhắc kỹ."
+    },
+    {
+      "title": "19. Chọn database nào không có đáp án tuyệt đối, nhưng có tradeoff rất thật",
+      "body": "MySQL dễ phổ cập. PostgreSQL mạnh và chặt hơn ở nhiều khía cạnh. SQLite nhẹ và tiện cho test hoặc học. Quan trọng là chọn theo bối cảnh team, hạ tầng, loại query, độ phức tạp dữ liệu và kinh nghiệm vận hành."
+    },
+    {
+      "title": "20. Tip thực tế: trước khi tranh luận database nào tốt hơn, hãy hỏi project cần gì hơn là hỏi trend gì mạnh hơn",
+      "body": "Nhiều cuộc tranh luận MySQL vs PostgreSQL không có giá trị nếu team chưa rõ app chủ yếu là CRUD web thường, analytics phức tạp, full-text search, JSON-heavy hay workflow enterprise."
+    },
+    {
+      "title": "21. Migration là gì?",
+      "body": "Migration là cách Laravel version-control schema database bằng code. Thay vì sửa bảng thủ công bằng tay trên từng máy, team ghi lại thay đổi schema thành file migration để mọi môi trường chạy cùng một lịch sử thay đổi."
+    },
+    {
+      "title": "22. Vì sao migration rất quan trọng?",
+      "body": "Vì schema không nên là tri thức nằm trong đầu một dev hoặc trong một database duy nhất. Migration giúp clone project về là có thể dựng lại schema tương đối chuẩn."
+    },
+    {
+      "title": "23. Tạo migration bằng lệnh nào?",
+      "body": "Bạn thường dùng `php artisan make:migration ...` để Laravel tạo file đúng timestamp và đúng convention.",
+      "code": "php artisan make:migration create_posts_table\nphp artisan make:migration add_status_to_orders_table --table=orders"
+    },
+    {
+      "title": "24. `Schema::create` và `Schema::table` khác nhau gì?",
+      "body": "`Schema::create` dùng khi tạo bảng mới. `Schema::table` dùng khi sửa bảng đang có."
+    },
+    {
+      "title": "25. Kiểu cột thường gặp trong migration",
+      "body": "Bạn sẽ gặp `string`, `text`, `integer`, `bigInteger`, `boolean`, `date`, `dateTime`, `timestamp`, `json`, `decimal`, `foreignId` và các biến thể nullable/unsigned."
+    },
+    {
+      "title": "26. `timestamps()` là gì?",
+      "body": "Đây là shorthand cực quen thuộc để thêm `created_at` và `updated_at` vào bảng."
+    },
+    {
+      "title": "27. `softDeletes()` là gì?",
+      "body": "Nó thêm cột `deleted_at` để hỗ trợ soft delete, tức là record được đánh dấu xóa thay vì mất hẳn khỏi database."
+    },
+    {
+      "title": "28. `foreignId()->constrained()` để làm gì?",
+      "body": "Đây là cách rất phổ biến để tạo khóa ngoại theo convention Laravel.",
+      "code": "$table->foreignId('user_id')->constrained()->cascadeOnDelete();"
+    },
+    {
+      "title": "29. Naming convention cho bảng và khóa quan trọng ra sao?",
+      "body": "Rất quan trọng. Bảng plural, tên rõ nghĩa, foreign key như `user_id`, pivot như `role_user` hoặc convention phù hợp giúp Eloquent hoạt động tự nhiên hơn và người đọc bớt phải đoán."
+    },
+    {
+      "title": "30. Chọn kiểu dữ liệu không nên qua loa",
+      "body": "Ví dụ tiền thường không nên để float nếu bạn cần độ chính xác. Status đôi khi không nên để string tự do nếu domain đã rõ. Kiểu dữ liệu sai sẽ kéo theo bug và performance issue về sau."
+    },
+    {
+      "title": "31. `nullable()` có nên dùng nhiều không?",
+      "body": "Chỉ nên dùng khi business thật sự cho phép dữ liệu vắng mặt. Cột nullable vô tội vạ là dấu hiệu schema lỏng và data quality dễ trôi."
+    },
+    {
+      "title": "32. Unique constraint để làm gì?",
+      "body": "Để database tự bảo vệ tính duy nhất như email, slug hoặc mã định danh nào đó. Đừng chỉ dựa vào validation ở ứng dụng rồi bỏ quên ràng buộc dưới database."
+    },
+    {
+      "title": "33. Index là gì?",
+      "body": "Index giúp database tìm dữ liệu nhanh hơn trên các cột hay được lọc, join, sort hoặc lookup. Nhưng index không miễn phí; quá nhiều index cũng làm ghi chậm hơn.",
+      "code": "Schema::table('orders', function (Blueprint $table) {\n    $table->index(['team_id', 'status']);\n    $table->index('created_at');\n});",
+      "note": "Một index tốt thường bám vào query thật đang lọc hoặc sort, không phải thêm đại vì nghe nói 'index sẽ nhanh hơn'."
+    },
+    {
+      "title": "34. Khi nào nên nghĩ tới index?",
+      "body": "Khi bảng lớn dần, query lọc theo một cột nào đó lặp đi lặp lại, hoặc relation/join thường xuyên đi qua một foreign key. Đây là thứ người mới hay bỏ qua cho tới khi app bắt đầu chậm."
+    },
+    {
+      "title": "35. Seeder là gì?",
+      "body": "Seeder dùng để bơm dữ liệu khởi tạo như admin mặc định, role cơ bản, config mặc định hoặc dữ liệu tham chiếu."
+    },
+    {
+      "title": "36. Factory là gì?",
+      "body": "Factory giúp tạo dữ liệu giả có cấu trúc đúng để phục vụ test, local dev, demo hoặc seed dữ liệu số lượng lớn."
+    },
+    {
+      "title": "37. Khi nào dùng seeder, khi nào dùng factory?",
+      "body": "Seeder hợp cho dữ liệu chuẩn hoặc dữ liệu khởi tạo cố định. Factory hợp cho dữ liệu giả linh hoạt, test flow hoặc bơm hàng loạt bản ghi."
+    },
+    {
+      "title": "38. Vì sao factory tốt giúp team nhanh hơn?",
+      "body": "Vì khi test hoặc local cần tạo user, order, product, invoice, permission graph phức tạp, factory tốt sẽ giúp dựng data rất nhanh mà không phải insert tay."
+    },
+    {
+      "title": "39. `db:seed` và `migrate --seed` khác nhau gì?",
+      "body": "`db:seed` chỉ seed dữ liệu. `migrate --seed` chạy migration rồi seed ngay sau đó."
+    },
+    {
+      "title": "40. Tip thực tế: dữ liệu seed production và dữ liệu seed local không nên bị lẫn một cách mù mờ",
+      "body": "Nhiều team ban đầu seed mọi thứ chung một chỗ rồi sau này production ăn cả dữ liệu demo hoặc dữ liệu test. Đây là lỗi rất thực tế và rất khó chịu."
+    },
+    {
+      "title": "41. Model Eloquent là gì?",
+      "body": "Model là lớp đại diện cho một bảng hoặc thực thể dữ liệu trong hệ thống. Nó cho phép bạn thao tác với record theo phong cách object thay vì viết SQL mọi nơi."
+    },
+    {
+      "title": "42. Vì sao Eloquent được yêu thích?",
+      "body": "Vì nó làm việc với relational data khá tự nhiên, cú pháp dễ đọc, tích hợp sâu với Laravel và rất mạnh cho phần lớn flow business thông thường."
+    },
+    {
+      "title": "43. `$fillable` và `$guarded` là gì?",
+      "body": "Đây là cơ chế mass assignment protection. Nó ngăn việc gán bừa dữ liệu nguy hiểm vào model qua input không kiểm soát."
+    },
+    {
+      "title": "44. Cast trong Eloquent để làm gì?",
+      "body": "Cast giúp Laravel tự động chuyển kiểu dữ liệu khi đọc/ghi model như `boolean`, `datetime`, `array`, `json` hoặc custom cast."
+    },
+    {
+      "title": "45. Accessor và mutator là gì?",
+      "body": "Accessor giúp định dạng dữ liệu khi đọc. Mutator giúp xử lý dữ liệu trước khi ghi. Chúng hữu ích nhưng không nên biến model thành nơi chứa đủ mọi phép biến đổi khó đoán."
+    },
+    {
+      "title": "46. Scope là gì?",
+      "body": "Scope giúp tái sử dụng logic query phổ biến như `active`, `published`, `recent`, `forTeam` mà không copy-paste điều kiện khắp nơi."
+    },
+    {
+      "title": "47. `hasOne`, `hasMany`, `belongsTo`, `belongsToMany` là gì?",
+      "body": "Đây là các loại relationship phổ biến trong Eloquent để mô tả quan hệ 1-1, 1-n, n-1 và n-n giữa các model."
+    },
+    {
+      "title": "48. Vì sao phải hiểu relation chứ không chỉ gọi cho chạy được?",
+      "body": "Vì relation ảnh hưởng trực tiếp đến cách bạn query, eager load, join dữ liệu, đặt foreign key, thiết kế pivot table và tư duy domain."
+    },
+    {
+      "title": "49. Pivot table là gì?",
+      "body": "Đó là bảng trung gian cho quan hệ many-to-many như user-role, post-tag, team-user."
+    },
+    {
+      "title": "50. Eager loading là gì?",
+      "body": "Eager loading là cách nạp sẵn relation để tránh N+1 query. Đây là một trong những kiến thức quan trọng nhất khi dùng Eloquent thật.",
+      "code": "$posts = Post::with('user', 'comments')->latest()->get();"
+    },
+    {
+      "title": "51. N+1 query là gì?",
+      "body": "Đó là tình huống bạn query danh sách rồi mỗi item lại query thêm relation riêng, làm số lượng query phình lên rất nhanh. Đây là bug hiệu năng cực phổ biến trong app Laravel."
+    },
+    {
+      "title": "52. Khi nào Eloquent rất tiện, khi nào nên nghĩ thêm?",
+      "body": "Eloquent rất tiện cho CRUD, relation business, filter vừa phải, pagination, dashboard phổ biến. Nhưng khi query quá nặng, aggregate phức tạp, reporting lớn hoặc SQL đặc thù, bạn nên cân nhắc query builder hoặc raw SQL."
+    },
+    {
+      "title": "53. Query builder là gì?",
+      "body": "Query builder là lớp query trung gian của Laravel, ít mang tính ORM hơn Eloquent nhưng vẫn giúp viết query khá sạch và linh hoạt."
+    },
+    {
+      "title": "54. Raw SQL có phải điều xấu không?",
+      "body": "Không. Raw SQL là công cụ. Điều xấu là dùng nó bừa bãi hoặc dùng mà không giải thích. Với một số bài toán nặng, raw SQL hoặc DB-specific feature là lựa chọn đúng."
+    },
+    {
+      "title": "55. `select`, `where`, `orderBy`, `limit`, `groupBy` là các khái niệm phải nắm chắc",
+      "body": "Dù bạn dùng Eloquent hay query builder, cuối cùng bạn vẫn đang làm việc với tư duy query. Không hiểu SQL nền thì ORM sẽ thành ma thuật đen rất nguy hiểm."
+    },
+    {
+      "title": "56. Pagination vì sao quan trọng?",
+      "body": "Vì không nên query và render hàng nghìn bản ghi vào một màn hình một cách ngây thơ. Pagination giúp app nhẹ hơn và UX rõ hơn.",
+      "code": "$users = User::latest()->paginate(20);"
+    },
+    {
+      "title": "57. Chunking và cursor có hữu ích không?",
+      "body": "Rất hữu ích khi xử lý dữ liệu lớn, export, re-sync hoặc command background. Thay vì nạp cả bảng vào memory, bạn xử lý theo chunk hoặc stream."
+    },
+    {
+      "title": "58. Transaction là gì?",
+      "body": "Transaction giúp gom nhiều thao tác DB thành một đơn vị hoặc thành công hết, hoặc rollback hết. Nó rất quan trọng cho order flow, payment flow, inventory update hoặc các thao tác nhiều bảng."
+    },
+    {
+      "title": "59. Khi nào transaction là bắt buộc?",
+      "body": "Khi nhiều ghi thay đổi dữ liệu phải cùng đúng hoặc cùng fail. Nếu không, hệ thống có thể rơi vào trạng thái dữ liệu nửa đúng nửa sai."
+    },
+    {
+      "title": "60. Locking là gì?",
+      "body": "Locking là cách kiểm soát cạnh tranh khi nhiều request hoặc job cùng đụng một dòng dữ liệu. Đây là thứ ít ai để ý sớm, nhưng về production rất quan trọng."
+    },
+    {
+      "title": "61. `lockForUpdate()` dùng khi nào?",
+      "body": "Khi bạn cần khóa row trong transaction để tránh race condition ở các ca như trừ tồn kho, xử lý số dư, đổi trạng thái workflow quan trọng."
+    },
+    {
+      "title": "62. Race condition trong dữ liệu là gì?",
+      "body": "Là khi hai process cùng đọc và cùng ghi theo giả định cũ, dẫn đến trạng thái sai. Đây là bug rất production-minded."
+    },
+    {
+      "title": "63. Debug query trong Laravel bằng cách nào?",
+      "body": "Bạn có thể dùng log query, Telescope, Debugbar, `toSql()`, `dd()`, hoặc profiling tùy môi trường. Quan trọng là biết mình đang chạy bao nhiêu query và query nào thật sự nặng.",
+      "code": "DB::listen(function ($query) {\n    logger()->info('sql', [\n        'sql' => $query->sql,\n        'bindings' => $query->bindings,\n        'time_ms' => $query->time,\n    ]);\n});",
+      "note": "Đừng chỉ log SQL rồi thôi. Hãy log cả bindings và thời gian để còn phân biệt query chậm thật với query nhìn dài nhưng không tốn nhiều chi phí."
+    },
+    {
+      "title": "64. `toSql()` có cho bạn thấy toàn bộ sự thật không?",
+      "body": "Không hoàn toàn. Nó hữu ích để xem shape query, nhưng bindings và execution plan vẫn cần nhìn thêm nếu debug sâu."
+    },
+    {
+      "title": "65. Index tốt không phải là thêm index cho mọi cột",
+      "body": "Index nên bám vào pattern query thật. Thêm index vô tội vạ làm write chậm hơn và schema nặng hơn."
+    },
+    {
+      "title": "66. Denormalization có phải lúc nào cũng xấu không?",
+      "body": "Không. Trong một số case reporting, cache aggregate hoặc truy vấn đọc nặng, denormalization có thể đáng giá. Nhưng nó tăng độ phức tạp đồng bộ dữ liệu nên không nên dùng sớm nếu chưa cần."
+    },
+    {
+      "title": "67. Soft delete hữu ích ở đâu và nguy hiểm ở đâu?",
+      "body": "Hữu ích khi bạn cần hoàn tác, audit nhẹ hoặc tránh mất dữ liệu ngay. Nhưng nếu team quên scope soft delete, query hoặc unique logic có thể sinh bug khó chịu."
+    },
+    {
+      "title": "68. Tip từ người làm lâu năm: đừng để model trở thành nơi chứa mọi logic data-related",
+      "body": "Model rất tiện nên dễ bị lạm dụng. Nếu nó ôm query phức tạp, business rule, side effect, event và integration cùng lúc thì repo sẽ nhanh mệt."
+    },
+    {
+      "title": "69. Tip từ người làm lâu năm: hãy đọc query như đọc tiền điện production",
+      "body": "Một query chậm lặp vài nghìn lần mỗi ngày sẽ đau rất thật. Người có kinh nghiệm không chỉ hỏi 'query này chạy đúng chưa', mà còn hỏi 'query này sẽ tốn bao nhiêu khi data gấp 10 lần?'."
+    },
+    {
+      "title": "70. Tip từ người làm lâu năm: đừng tin local data nhỏ khi đánh giá hiệu năng",
+      "body": "Local vài chục record không lộ ra nhiều vấn đề. Production vài trăm nghìn record sẽ lộ hết chuyện index kém, eager loading sai, sort nặng, query phình hoặc pagination dở."
+    },
+    {
+      "title": "71. Anti-pattern: mọi thứ đều là Eloquent dù query rất reporting-heavy",
+      "body": "Eloquent đẹp, nhưng không phải mọi bài toán đều nên giải bằng chain method dài dằng dặc. Có lúc query builder hoặc raw SQL sẽ rõ và nhanh hơn."
+    },
+    {
+      "title": "72. Anti-pattern: migration viết xong không nghĩ rollback",
+      "body": "Migration không chỉ là `up()`. Nếu rollback hoàn toàn vô nghĩa hoặc quá nguy hiểm mà team không biết, pipeline release rất dễ đau."
+    },
+    {
+      "title": "73. Anti-pattern: dữ liệu quan trọng mà không có unique constraint ở DB",
+      "body": "Validation ở app là tốt, nhưng chưa đủ. Nếu business thực sự yêu cầu uniqueness, database nên cùng bảo vệ."
+    },
+    {
+      "title": "74. Anti-pattern: đổi schema production mà không hiểu ảnh hưởng data cũ",
+      "body": "Rename cột, change type, split table, backfill field hay thêm unique index trên data bẩn đều có thể gây sự cố lớn nếu không kiểm tra dữ liệu hiện hữu trước."
+    },
+    {
+      "title": "75. Lỗi cơ bản nhất: sửa `.env` rồi quên `config:clear` hoặc `optimize:clear`",
+      "body": "Laravel có thể đang dùng cấu hình đã cache. Nếu bạn đổi `DB_HOST`, `DB_DATABASE`, `DB_USERNAME` hoặc `DB_PASSWORD` mà app vẫn báo lỗi cũ, hãy nghĩ ngay tới cache config trước khi nghi ngờ mọi thứ khác.",
+      "code": "php artisan config:clear\nphp artisan optimize:clear"
+    },
+    {
+      "title": "76. Lỗi `Access denied` hoặc sai user/password thường xuất hiện khi nào?",
+      "body": "Thường là do user database chưa được cấp quyền đúng, password sai, app đang đọc nhầm `.env`, hoặc container và host đang không nói chuyện với nhau theo cặp credentials giống nhau. Đây là lỗi rất cơ bản nhưng rất hay mất thời gian vì nhiều người đổi `.env` mà quên clear cache."
+    },
+    {
+      "title": "77. Lỗi `could not find driver` nghĩa là gì?",
+      "body": "Nó thường nghĩa là PHP chưa cài extension tương ứng như `pdo_mysql`, `pdo_pgsql` hoặc driver đang chạy khác với driver bạn tưởng. Đây là kiểu lỗi môi trường rất hay gặp khi clone project sang máy mới, Docker image mới hoặc server mới."
+    },
+    {
+      "title": "78. Vì sao `DB_HOST=127.0.0.1` và `DB_HOST=localhost` đôi khi cho kết quả khác nhau?",
+      "body": "Tùy hệ điều hành và driver, `localhost` có thể đi theo socket còn `127.0.0.1` đi theo TCP. Trong Docker, `127.0.0.1` thường không trỏ tới container database mà trỏ vào chính container app. Đây là một trong những lỗi config nhập môn nhưng rất dễ làm người mới rối."
+    },
+    {
+      "title": "79. Khi nào nên dùng nhiều connection hoặc read/write connection?",
+      "body": "Khi app có database legacy, khi cần tách dữ liệu theo nguồn, hoặc khi scale bắt đầu đụng read-heavy workload. Nhưng nhiều connection làm tăng độ khó debug, transaction xuyên connection khó hơn, và consistency mindset phải chặt hơn."
+    },
+    {
+      "title": "80. Charset, collation và timezone có đáng quan tâm sớm không?",
+      "body": "Có. Nếu charset sai, tiếng Việt, emoji hoặc ký tự đặc biệt có thể lỗi hoặc bị cắt. Nếu collation lệch, sort và so sánh chuỗi có thể ra kết quả khác nhau giữa môi trường. Nếu timezone lệch, dữ liệu thời gian sẽ gây bug khó chịu ở report, schedule và audit."
+    },
+    {
+      "title": "81. Foreign key fail hoặc migration fail thường do đâu?",
+      "body": "Rất hay do thứ tự migration sai, kiểu dữ liệu khóa chính và khóa ngoại không khớp, bảng cha chưa tồn tại, collation khác nhau, hoặc dữ liệu cũ đã bẩn sẵn nên không thêm được constraint mới."
+    },
+    {
+      "title": "82. Thêm unique index trên production cần sợ điều gì?",
+      "body": "Sợ nhất là dữ liệu cũ đã trùng rồi nhưng team chưa kiểm kê. Khi đó migration có thể fail giữa chừng hoặc chặn release. Người có kinh nghiệm thường chạy query kiểm tra dữ liệu bẩn trước rồi mới thêm unique constraint."
+    },
+    {
+      "title": "83. Deadlock là gì và khi nào hay gặp?",
+      "body": "Deadlock xảy ra khi hai transaction giữ tài nguyên theo thứ tự khác nhau rồi chờ nhau. Nó hay xuất hiện ở order flow, inventory, wallet, payout hoặc job batch đụng cùng một tập dữ liệu. Đây không phải lỗi hiếm ở production mà là bài toán concurrency thực sự."
+    },
+    {
+      "title": "84. Query chậm thường không phải do Laravel trước tiên",
+      "body": "Rất nhiều ca chậm là do thiếu index, sort sai cột, where không ăn index, join nặng, select quá nhiều cột, aggregate lớn, hoặc data volume tăng nhanh. Framework chỉ là bề mặt; chi phí thật thường nằm ở query plan."
+    },
+    {
+      "title": "85. Ví dụ playbook khi app không kết nối được database",
+      "body": "Đi theo thứ tự sẽ đỡ loạn hơn: kiểm tra `.env`, kiểm tra cache config, kiểm tra service database có chạy không, thử kết nối bằng tool ngoài, kiểm tra PHP extension, rồi mới nghĩ tới bug trong code.",
+      "bullets": [
+        "Đọc chính xác thông báo lỗi: `Access denied`, `Connection refused`, `Unknown database`, `could not find driver` là các lớp lỗi khác nhau.",
+        "Xác minh database service đang chạy và host/port đúng với môi trường hiện tại.",
+        "Nếu dùng Docker, kiểm tra tên service nội bộ thay vì mặc định `127.0.0.1`."
+      ]
+    },
+    {
+      "title": "86. Ví dụ playbook khi migrate fail giữa chừng",
+      "body": "Đừng vội xóa database và chạy lại trong môi trường quan trọng. Hãy tách xem fail ở schema design, ở dữ liệu cũ, ở thứ tự migration hay ở engine-specific behavior.",
+      "bullets": [
+        "Đọc đúng migration file đang fail.",
+        "Xem bảng hoặc cột liên quan đã tồn tại chưa.",
+        "Kiểm tra dữ liệu cũ có vi phạm unique hoặc foreign key mới không.",
+        "Nếu production, nghĩ tới chiến lược backfill và deploy nhiều bước thay vì một migration duy nhất."
+      ]
+    },
+    {
+      "title": "87. Ví dụ playbook khi query đúng ở local nhưng chậm ở production",
+      "body": "Local data ít nên không lộ vấn đề. Hãy so query thật, cardinality thật và execution plan thật thay vì tin cảm giác local.",
+      "bullets": [
+        "Xem query có eager load đúng chưa.",
+        "Xem có `select *` vô tội vạ không.",
+        "Xem cột filter và sort đã có index phù hợp chưa.",
+        "Xem có đang paginate, chunk hoặc giới hạn kết quả đúng cách không."
+      ]
+    },
+    {
+      "title": "88. Ví dụ playbook khi dữ liệu bị trùng dù app có validation",
+      "body": "Validation ở request không chặn được race condition hoặc insert từ nguồn khác. Nếu dữ liệu thực sự phải duy nhất, hãy quay lại schema và hỏi xem database đã tự bảo vệ chưa."
+    },
+    {
+      "title": "89. Tip kinh nghiệm: local chạy bằng SQLite không đủ để tin production sẽ ổn",
+      "body": "SQLite rất tiện cho test nhanh, nhưng nếu app dựa vào JSON query, foreign key behavior, collation, lock behavior hoặc SQL đặc thù, hãy test thêm trên engine gần production hơn."
+    },
+    {
+      "title": "90. Tip kinh nghiệm: database bug nên được phân lớp trước khi sửa",
+      "body": "Hãy hỏi đây là lỗi kết nối, lỗi config, lỗi schema, lỗi dữ liệu cũ, lỗi query, lỗi transaction hay lỗi concurrency. Phân lớp đúng giúp bạn không nhảy vào sửa controller trong khi nguyên nhân thật nằm ở migration hoặc index."
+    },
+    {
+      "title": "91. Tip kinh nghiệm: đừng coi database chỉ là thứ lưu xong là xong",
+      "body": "Những team mạnh thường có thói quen review migration kỹ, nói chuyện rõ về constraint, quan sát query nặng, và nghĩ tới dữ liệu bẩn từ sớm. Người mới hay nhìn database như tầng phụ; người có kinh nghiệm biết nó là nơi bug đắt tiền nhất dễ sinh ra."
+    },
+    {
+      "title": "92. Cấu hình từ cơ bản tới nâng cao nên học theo thứ tự nào?",
+      "body": "Bắt đầu từ một connection chuẩn trong `.env`, rồi hiểu `config/database.php`, sau đó học migration discipline, index, transaction, nhiều connection, read/write split, backup mindset và cuối cùng mới đào sâu portability hoặc tuning đặc thù theo engine."
+    },
+    {
+      "title": "93. Khi nào nên nghĩ tới đổi MySQL sang PostgreSQL hoặc ngược lại?",
+      "body": "Chỉ nên nghĩ nghiêm túc khi có lý do rõ như feature data phức tạp hơn, query pattern thay đổi, team có kinh nghiệm khác, hoặc hạ tầng yêu cầu khác. Không nên đổi chỉ vì nghe nói database kia 'xịn' hơn."
+    },
+    {
+      "title": "94. Chuyển database không chỉ là đổi `DB_CONNECTION`",
+      "body": "Nó còn liên quan kiểu dữ liệu, syntax SQL, behavior index, default value, JSON handling, collation, full text, extension, migration compatibility và test lại toàn bộ tầng dữ liệu."
+    },
+    {
+      "title": "95. SQLite trong test rất tiện nhưng không giống production hoàn toàn",
+      "body": "SQLite giúp test nhanh, nhưng behavior của nó có thể khác MySQL/PostgreSQL ở vài chi tiết. Nếu project có query hoặc schema đặc thù, đừng quá chủ quan."
+    },
+    {
+      "title": "96. Backup và restore là một phần của tư duy data, không chỉ là việc của ops",
+      "body": "Backend dev không nhất thiết tự làm hạ tầng backup, nhưng nên hiểu app phụ thuộc dữ liệu ở mức nào và rủi ro nếu restore khó đến đâu."
+    },
+    {
+      "title": "97. Checklist review PR liên quan tới data",
+      "body": "Có migration không, migration có an toàn không, query có tạo N+1 không, relation có eager load chưa, index có hợp lý không, data cũ có bị ảnh hưởng không, unique constraint có cần không, test có cover flow quan trọng không."
+    },
+    {
+      "title": "98. Checklist khi đọc một bug liên quan database",
+      "body": "Hỏi xem bug nằm ở schema, ở query, ở transaction, ở race condition, ở migration, ở cache dữ liệu hay ở relation load sai. Chỉ khi phân lớp đúng thì sửa mới đỡ mò."
+    },
+    {
+      "title": "99. Kinh nghiệm cuối: database tốt là database khiến business rule khó bị phá bằng dữ liệu bẩn",
+      "body": "Code application có thể guard nhiều thứ, nhưng schema tốt, constraint tốt và query discipline tốt mới giúp hệ thống bền lâu. Người làm lâu năm thường nhìn rất kỹ tầng data vì họ biết một bug dữ liệu luôn đắt hơn bug giao diện."
+    },
+    {
+      "title": "100. Migration production an toàn thường nghĩ theo nhiều bước chứ không phải một cú sửa lớn",
+      "body": "Ví dụ thêm cột mới, deploy code tương thích hai chiều, backfill dữ liệu cũ, chuyển dần luồng đọc ghi, rồi mới xóa cột cũ. Người mới hay muốn một migration duy nhất cho gọn, nhưng production data hiếm khi chiều theo ý đó."
+    },
+    {
+      "title": "101. Backfill là gì và vì sao nó là bài toán thật?",
+      "body": "Backfill là việc điền dữ liệu mới cho các record cũ khi schema hoặc rule business thay đổi. Nó thường xuất hiện khi thêm cột mới, tách bảng, sửa format dữ liệu hoặc tạo dữ liệu dẫn xuất cho tính năng mới."
+    },
+    {
+      "title": "102. Vì sao backfill không nên luôn nhét hết vào migration?",
+      "body": "Nếu dữ liệu lớn, migration vừa đổi schema vừa update hàng loạt record có thể làm deploy chậm, lock bảng lâu hoặc fail giữa chừng. Nhiều team tách schema migration và backfill job hoặc command riêng."
+    },
+    {
+      "title": "103. Khi nào nên viết command hoặc job riêng thay vì chạy update dữ liệu ngay trong request?",
+      "body": "Khi số lượng record lớn, tác vụ tốn thời gian, hoặc dữ liệu cần sửa dần có kiểm soát. Request của người dùng không nên gánh các ca sửa dữ liệu hàng loạt."
+    },
+    {
+      "title": "104. Dữ liệu bẩn là gì trong dự án thật?",
+      "body": "Là dữ liệu không còn tuân đúng rule business như email trùng, trạng thái mâu thuẫn, foreign key mồ côi, text sai format, slug không duy nhất, hoặc dữ liệu legacy thiếu trường quan trọng. Đây là thứ local demo rất ít khi phản ánh đủ."
+    },
+    {
+      "title": "105. Vì sao nhiều thay đổi database fail không phải vì code mới, mà vì data cũ bẩn?",
+      "body": "Code mới có thể đúng về mặt logic, nhưng nếu dữ liệu cũ đã lệch chuẩn thì unique index mới, foreign key mới, cast mới hoặc rule mới sẽ vấp ngay. Người làm lâu năm luôn hỏi 'data cũ đang ở trạng thái nào?' trước khi deploy."
+    },
+    {
+      "title": "106. `EXPLAIN` hoặc query plan đáng học sớm không?",
+      "body": "Có. Khi query bắt đầu chậm thật, bạn cần biết database đang scan toàn bảng, đang dùng index nào, join theo thứ tự nào và vì sao query đó đắt. Không hiểu query plan thì rất dễ tối ưu theo cảm giác.",
+      "code": "EXPLAIN SELECT *\nFROM orders\nWHERE team_id = 5\n  AND status = 'paid'\nORDER BY created_at DESC\nLIMIT 20;",
+      "note": "Sai lầm thường gặp: thấy query chậm là thêm cache ngay. Cách sửa là nhìn plan trước để biết DB đang thiếu index, sort sai hay quét quá nhiều dòng."
+    },
+    {
+      "title": "107. Case thật: query đúng nhưng vẫn chậm vì sort hoặc filter không ăn index",
+      "body": "Nhiều màn admin hoặc báo cáo lọc đúng kết quả nhưng chậm vì cột đang sort hoặc where không có index phù hợp, hoặc query shape làm database bỏ qua index sẵn có."
+    },
+    {
+      "title": "108. Soft delete gây rắc rối thực tế ở đâu?",
+      "body": "Unique logic, report, restore dữ liệu, relation query và dashboard rất dễ bị lệch nếu team quên `deleted_at` tồn tại. Có những bug kiểu 'email đã xóa rồi mà vẫn không tạo lại được' xuất phát từ đây."
+    },
+    {
+      "title": "109. Foreign key có phải lúc nào cũng nên bật hết mọi nơi không?",
+      "body": "Không có đáp án cứng. Foreign key giúp dữ liệu chặt hơn, nhưng ở một số hệ thống legacy, import lớn hoặc bài toán đặc thù, team cần cân nhắc tradeoff vận hành. Điều quan trọng là biết mình đang bỏ lớp bảo vệ nào nếu không dùng."
+    },
+    {
+      "title": "110. Case thật: xóa record tưởng đơn giản nhưng lại kéo theo cả cây dữ liệu",
+      "body": "Một user, order, team hoặc product có thể gắn với hàng chục bảng. Xóa cứng, soft delete, cascade delete hay archive không chỉ là kỹ thuật DB mà là quyết định business và audit."
+    },
+    {
+      "title": "111. Lock contention là gì và vì sao app lớn mới hay đau rõ?",
+      "body": "Khi nhiều request hoặc job cùng đụng các row nóng, database phải chờ lock hoặc tranh chấp lock, làm request chậm hoặc timeout. Đây là kiểu bug mà local ít người dùng gần như không tái hiện được."
+    },
+    {
+      "title": "112. Seed dữ liệu ban đầu và seed dữ liệu demo khác nhau ở đâu về tư duy?",
+      "body": "Dữ liệu ban đầu là thứ hệ thống cần để sống đúng như role gốc, setting gốc hoặc plan mặc định. Dữ liệu demo là thứ chỉ phục vụ local, staging hoặc trình diễn. Trộn hai loại này lâu dần rất dễ sinh môi trường bẩn."
+    },
+    {
+      "title": "113. Case thật: local chạy bằng SQLite hoặc DB nhỏ nên ai cũng tưởng schema ổn",
+      "body": "Đến khi production có lượng data lớn hơn, collation khác, lock khác hoặc strict mode khác thì lỗi mới lộ ra. Đây là lý do tại sao tư duy database phải luôn nghĩ theo environment thật."
+    },
+    {
+      "title": "114. Checklist thực chiến trước khi thêm constraint mới vào bảng đang có dữ liệu",
+      "body": "Hỏi xem dữ liệu cũ có vi phạm không, migration có lock lâu không, có cần backfill trước không, có cần deploy nhiều bước không, rollback có thực tế không và có alert nào để biết release đang làm đau DB không."
+    },
+    {
+      "title": "115. Ví dụ cấu hình kết nối database cơ bản trong `.env` và vì sao phải đọc được nó",
+      "body": "Nhiều bug database không bắt đầu từ query, mà bắt đầu từ việc app đang nói chuyện với nhầm host, nhầm user hoặc nhầm driver.",
+      "code": "DB_CONNECTION=mysql\nDB_HOST=127.0.0.1\nDB_PORT=3306\nDB_DATABASE=laravel_app\nDB_USERNAME=root\nDB_PASSWORD=secret",
+      "bullets": [
+        "`DB_CONNECTION` quyết định driver và một phần behavior của connection.",
+        "`DB_HOST` và `DB_PORT` rất hay lệch khi chạy trong Docker hoặc trên server thật.",
+        "Sai `DB_DATABASE` hoặc user quyền thiếu có thể làm migrate fail hoặc app chỉ lỗi ở một số query."
+      ]
+    },
+    {
+      "title": "116. Ví dụ migration và model Eloquent cơ bản đi cùng nhau",
+      "body": "Đây là cặp ví dụ rất thực dụng để hiểu Laravel map giữa schema và model như thế nào.",
+      "code": "Schema::create('posts', function (Blueprint $table) {\n    $table->id();\n    $table->foreignId('user_id')->constrained()->cascadeOnDelete();\n    $table->string('title');\n    $table->text('body');\n    $table->timestamps();\n});\n\nclass Post extends Model\n{\n    protected $fillable = ['user_id', 'title', 'body'];\n\n    public function user()\n    {\n        return $this->belongsTo(User::class);\n    }\n}",
+      "note": "Migration nói database cần cột gì, còn model nói ứng dụng sẽ tương tác với bảng đó ra sao."
+    },
+    {
+      "title": "117. Ví dụ transaction khi một flow cần ghi nhiều bảng cùng lúc",
+      "body": "Khi business flow có nhiều bước ghi dữ liệu, transaction giúp tránh trạng thái nửa chừng rất nguy hiểm.",
+      "code": "DB::transaction(function () use ($payload) {\n    $order = Order::create($payload['order']);\n\n    foreach ($payload['items'] as $item) {\n        $order->items()->create($item);\n    }\n\n    $order->payments()->create([\n        'amount' => $payload['amount'],\n        'status' => 'pending',\n    ]);\n});",
+      "note": "Transaction không thay thế mọi chiến lược consistency, nhưng nó là lớp nền quan trọng khi nhiều record phải cùng thành công hoặc cùng rollback."
+    },
+    {
+      "title": "118. Kinh nghiệm cuối bổ sung: database mạnh không phải là nơi query nào cũng viết được, mà là nơi thay đổi dữ liệu vẫn an toàn khi hệ thống đã đông người dùng",
+      "body": "Ở giai đoạn đầu, ai cũng viết được CRUD. Khó nhất là khi dữ liệu đã lớn, nhiều request chạy đồng thời, nhiều job chạy nền, và business vẫn muốn đổi luật mà không được làm hỏng dữ liệu cũ."
+    }
+  ]
+}

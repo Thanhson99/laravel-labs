@@ -1,0 +1,514 @@
+{
+  "anchor": "php-intermediate",
+  "badge": "Level 2",
+  "actionLabel": "Open intermediate level",
+  "title": "Level 2: Practical code, request-response, and backend foundations",
+  "summary": "This level moves from isolated syntax into real backend flow: arrays, functions, files, requests, responses, cookies, uploads, JSON, logging, databases, external services, and code-organization habits that make debugging easier.",
+  "highlights": [
+    "This is the stage where syntax turns into real flow: receive input, clean data, validate, call files, call the database, and return a response.",
+    "You now meet backend-shaped pieces such as `session`, `cookie`, `header()`, `http_response_code()`, import-export, JSON error handling, and external service calls.",
+    "This level also introduces structure habits: splitting files, splitting functions, grouping boundaries, reading stack traces, and debugging through data flow.",
+    "The goal of level 2 is to make plain PHP practical enough that controllers, services, and Laravel request flow start looking familiar instead of magical."
+  ],
+  "modules": [
+    {
+      "title": "Variables and Data Types",
+      "description": "Variables store values and always begin with `$` in PHP.",
+      "bullets": [
+        "Common types: string, int, float, bool, array, null.",
+        "Use meaningful names like `$userName` instead of `$x`.",
+        "Understand assignment, concatenation, and basic type comparison."
+      ]
+    },
+    {
+      "title": "Arrays and Data Traversal",
+      "description": "Arrays appear everywhere in PHP because they carry lists, settings, form data, and database results.",
+      "bullets": [
+        "Use indexed arrays for ordered lists and associative arrays for named fields.",
+        "Prefer `foreach` when iterating over arrays because it usually reads better than `for` for this case.",
+        "Tip: if an array item represents one concept such as a user or product, keep the keys consistent across items.",
+        "As you grow, you will meet helpers like `array_map`, `array_filter`, and `array_reduce` for cleaner transformations."
+      ]
+    },
+    {
+      "title": "Conditions and Decision Flow",
+      "description": "Conditional logic decides which branch of code should run.",
+      "bullets": [
+        "Use `if`, `elseif`, and `else` for branching.",
+        "Use comparison operators like `===`, `!==`, `>`, `<`, `>=`, `<=`.",
+        "Prefer explicit conditions over clever but unclear shortcuts.",
+        "Tip: if one condition becomes too long, break parts into named booleans such as `$isActiveUser` or `$canCheckout`."
+      ]
+    },
+    {
+      "title": "Loops and Repetition",
+      "description": "Loops help you process repeated work across arrays or numeric ranges.",
+      "bullets": [
+        "Use `for` when you control an index.",
+        "Use `foreach` when looping over arrays.",
+        "Use `while` for open-ended repetition with care to avoid infinite loops.",
+        "Tip: read every loop in this order: starting value, stop condition, update step, then loop body."
+      ]
+    },
+    {
+      "title": "Functions",
+      "description": "Functions package logic into reusable units.",
+      "bullets": [
+        "A function can accept parameters and return a value.",
+        "Choose names that describe behavior, such as `calculateTotal`.",
+        "Keep one function focused on one job whenever possible.",
+        "A function that validates, stores data, sends mail, and renders output is usually doing too much."
+      ]
+    },
+    {
+      "title": "Include, Require, and File Splitting",
+      "description": "As scripts grow, you stop keeping everything in one file. PHP gives you simple tools for splitting code early.",
+      "bullets": [
+        "Use `require` when a file is mandatory for the script to run.",
+        "Use `include` when a file is optional or non-critical.",
+        "Use `require_once` or `include_once` when you want to avoid loading the same helper or config file more than once.",
+        "Tip: if the script cannot behave normally without that file, lean toward `require` or `require_once` instead of `include`."
+      ]
+    },
+    {
+      "title": "Hashing, passwords, and sensitive comparisons",
+      "description": "At the intermediate stage, you should clearly separate general hashing from safe password handling.",
+      "bullets": [
+        "`hash()` is useful when you need a fingerprint or checksum of data under a specific algorithm.",
+        "For passwords, prefer `password_hash` and `password_verify` instead of inventing your own hash flow.",
+        "Tip: when comparing sensitive tokens or secrets, pay attention to helpers such as `hash_equals` when appropriate."
+      ]
+    },
+    {
+      "title": "switch, match, and clearer branching",
+      "description": "A long `if / elseif` chain is not always the most readable branching tool.",
+      "bullets": [
+        "`switch` works well when many branches depend on the same input value.",
+        "`match` in modern PHP gives a tighter expression style and avoids the fall-through behavior of `switch`.",
+        "Tip: choose the branching tool that makes the code easiest to scan, not just the one that looks shortest."
+      ]
+    },
+    {
+      "title": "Scope and Shared State",
+      "description": "Intermediate PHP learners should understand where variables live and why some values are available in one place but not another.",
+      "bullets": [
+        "Local variables exist only inside the function or block where they are created.",
+        "Global state is easy to abuse, so pass values through parameters whenever possible.",
+        "Tip: if a function needs many globals to work, that is a warning sign that the design can be cleaner."
+      ]
+    },
+    {
+      "title": "Input Handling and Superglobals",
+      "description": "PHP often reads data from `$_GET`, `$_POST`, `$_SERVER`, `$_FILES`, and `$_SESSION`.",
+      "bullets": [
+        "Treat every incoming value as untrusted until it is validated.",
+        "Normalize input early with helpers like `trim` or explicit casting where appropriate.",
+        "Tip: read from superglobals near the edge of the script, then pass clean values deeper into your functions.",
+        "Functions such as `header()` and `http_response_code()` also tend to belong near the response edge instead of in the middle of business logic."
+      ]
+    },
+    {
+      "title": "Sessions, Cookies, and User State",
+      "description": "As soon as an application has login or remembers behavior, you start touching `session` and `cookie` concepts.",
+      "bullets": [
+        "`$_SESSION` is commonly used for server-side state such as whether a user is logged in.",
+        "Cookies travel through the browser, so only keep data there that truly belongs on the client side.",
+        "Learn early about `setcookie` and ideas such as expiration time, `HttpOnly`, `Secure`, and `SameSite`.",
+        "Tip: do not stuff sensitive data or too much decision logic into cookies just because they are convenient."
+      ]
+    },
+    {
+      "title": "Small data-reading helpers you use every day",
+      "description": "In real backend work, many useful lines come from small helpers rather than from complicated techniques.",
+      "bullets": [
+        "`isset`, `empty`, and `??` help you read uncertain data more safely.",
+        "`trim`, `explode`, `implode`, `strtolower`, and `filter_var` appear constantly when cleaning or reshaping input.",
+        "Tip: if a helper appears again and again, understand it clearly instead of only copying it by habit."
+      ]
+    },
+    {
+      "title": "Files and Directories in Practical Code",
+      "description": "PHP often deals with config files, logs, uploads, small exports, and simple file reads.",
+      "bullets": [
+        "Knowing how to read a file, check its existence, and build safe paths is immediately useful.",
+        "When handling uploads, validate file name, size, and type before saving anything.",
+        "Tip: keep file receiving, file validation, and file writing as separate steps so debugging stays manageable."
+      ]
+    },
+    {
+      "title": "Common Backend Mistakes and How to Notice Them",
+      "description": "At the intermediate level, you should start recognizing that backend bugs are not only `syntax errors`. They are often data flow, state, and control-flow problems.",
+      "bullets": [
+        "A common mistake is skipping validation and letting dirty input reach business logic or the database.",
+        "Another common mistake is assuming data always exists when real inputs may be `null`, empty, or malformed.",
+        "Tip: when a backend feature fails, do not inspect only the error line. Inspect the request, the input, the output, and the related data state."
+      ]
+    },
+    {
+      "title": "Database Connections and External Services",
+      "description": "PHP does not only work with HTML. It often needs to talk to databases, mail services, storage services, or external APIs.",
+      "bullets": [
+        "Databases are commonly accessed through `PDO` or framework abstractions such as Laravel query builder or Eloquent.",
+        "External services may include email sending, cloud storage, payment gateways, or remote synchronization APIs.",
+        "Tip: outbound integration code should usually live inside clear functions, classes, or services instead of being scattered across views or controllers."
+      ]
+    },
+    {
+      "title": "Import, Export, and Tabular Data",
+      "description": "Practical PHP backends often need to read or export data through `csv`, `json`, `txt`, and sometimes Excel files.",
+      "bullets": [
+        "For simple tabular data, `csv` is often lighter and easier to process than Excel.",
+        "With `json`, the key skill is understanding the data shape and checking decode or encode errors.",
+        "Excel usually comes through a library such as `PhpSpreadsheet`, so at the intermediate level it is enough to understand the import-export problem before choosing the exact tool.",
+        "Tip: when importing data, validate each row instead of assuming the whole file is clean.",
+        "When reading JSON, learn the error signals too, such as `json_last_error()` or how to react when decoding fails."
+      ]
+    },
+    {
+      "title": "Responses, redirects, and status codes",
+      "description": "Backend code does not only compute data. It also has to return the right response shape to the browser or another client.",
+      "bullets": [
+        "`header()` is commonly used to set headers or trigger redirects.",
+        "`http_response_code()` lets you return codes such as `200`, `302`, `400`, `404`, or `422` more explicitly.",
+        "Tip: decide the response intentionally near the end of the flow instead of scattering it across many unrelated places."
+      ]
+    },
+    {
+      "title": "CSRF, XSS, and SQL injection from a backend learner's angle",
+      "description": "These three names appear constantly in backend web learning, so you should get used to recognizing them early.",
+      "bullets": [
+        "XSS is about user data being rendered into the interface without proper escaping.",
+        "SQL injection is about input being pushed directly into a query instead of using prepared statements or safe binding.",
+        "CSRF is about a state-changing request being sent without strong proof that it came from the correct user session.",
+        "Tip: you do not need deep academic detail yet, but you should recognize the risks and build the right basic reflexes."
+      ]
+    },
+    {
+      "title": "Logging and Behavior Tracing",
+      "description": "Once the code grows, temporary `echo` statements are no longer enough. At that point you need to understand logging as a way to trace backend behavior.",
+      "bullets": [
+        "Logs help you see which request arrived, which data caused a failure, and which processing step the backend reached.",
+        "A useful log usually carries context such as user id, route, record id, or current processing state.",
+        "Tip: do not dump sensitive data carelessly into logs just for convenience, especially tokens, passwords, or personal information."
+      ]
+    },
+    {
+      "title": "Intermediate Debugging Habits",
+      "description": "At this stage, debugging should become a skill, not only a reaction.",
+      "bullets": [
+        "Use `var_dump`, `print_r`, or temporary logging to inspect the real shape of data.",
+        "When stuck in `if` or `for`, print the variables that decide the branch instead of rereading the same code ten times.",
+        "Tip: debug the smallest possible slice first, then expand once the local behavior is correct."
+      ]
+    },
+    {
+      "title": "try, catch, and more organized failure handling",
+      "description": "At this stage, you should start seeing that not every failure should crash the script in a vague or unmanaged way.",
+      "bullets": [
+        "`try/catch` helps you group risky operations and choose a more intentional reaction.",
+        "It is especially useful around database work, important file access, or external service calls.",
+        "Tip: do not catch exceptions only to hide them. If you catch, either log them or translate them into a meaningful response."
+      ]
+    },
+    {
+      "title": "Mail, storage, HTTP APIs, and related services",
+      "description": "In real backend work, PHP rarely lives alone. It often connects to mail, file storage, cache, queues, or APIs owned by other systems.",
+      "bullets": [
+        "Mail services are common for verification emails, password reset flows, invoices, and background notifications.",
+        "Storage services may be local disk, S3, or a framework abstraction for uploads and exports.",
+        "HTTP APIs are often used for CRM systems, payment gateways, shipping providers, AI services, or internal tools.",
+        "Tip: every outbound integration should have timeouts, failure logging, and one clear call site instead of being scattered everywhere."
+      ]
+    },
+    {
+      "title": "Reading stack traces without panic",
+      "description": "As the codebase grows, learners need to read errors in context instead of reacting to one red line.",
+      "bullets": [
+        "Find the main message first: what failed, in which file, and on which line.",
+        "If a stack trace exists, walk the call chain to see which function called which function before the failure happened.",
+        "Tip: do not immediately patch the last file in the trace. The real bug may have started earlier with bad input or a wrong caller."
+      ]
+    },
+    {
+      "title": "Simple code layering to reduce chaos",
+      "description": "You do not need giant architecture yet, but you should begin separating request input, business work, and external resource access.",
+      "bullets": [
+        "A controller or entry script should mostly read the request and coordinate the flow.",
+        "Business work should move into functions or classes so it becomes easier to test and debug.",
+        "Database, mail, file storage, and HTTP API calls should be grouped into clear boundaries."
+      ]
+    },
+    {
+      "title": "Authentication, session, and login flow",
+      "description": "As soon as you start building real backend work, you run into login, stored user state, and logout behavior.",
+      "bullets": [
+        "A basic flow is: receive credentials, verify them, store login state, then read that state on later requests.",
+        "`session` is often the first server-side place where login state lives at beginner and intermediate level.",
+        "Tip: do not mix password checks, session creation, and response rendering into one long block. Split the steps so the flow stays readable."
+      ]
+    },
+    {
+      "title": "Safer file uploads",
+      "description": "File uploads look simple, but they are one of the easiest places for security mistakes and dirty data.",
+      "bullets": [
+        "Check file size, extension, and when needed the MIME type.",
+        "Do not fully trust the original client file name; normalize it or generate your own storage name.",
+        "Tip: separate file validation from file storage so debugging and future storage changes stay manageable."
+      ]
+    },
+    {
+      "title": "Pagination, filtering, and sorting",
+      "description": "Once data grows, you cannot keep returning or rendering everything in one response forever.",
+      "bullets": [
+        "Pagination splits data into smaller pages so both backend and UI stay lighter.",
+        "Filtering and sorting should use a whitelist of allowed fields instead of blindly accepting anything from the query string.",
+        "Tip: validate `page`, `limit`, and `sort` early because these are inputs users can alter very freely."
+      ]
+    },
+    {
+      "title": "Password reset and basic mail flow",
+      "description": "Right after basic auth, one very practical flow is forgot-password and reset-by-email behavior.",
+      "bullets": [
+        "The common flow creates a token, stores or signs it, sends an email, receives the link, and then allows a password change.",
+        "This is where mail services, input validation, and expiration windows start becoming very concrete.",
+        "Tip: even before building the full feature, understand the data flow through each step."
+      ]
+    }
+  ],
+  "examplesTitle": "Intermediate Examples",
+  "examples": [
+    {
+      "title": "Variables and Condition",
+      "description": "A small script that checks age and prints a message.",
+      "code": "<?php\n$age = 20;\n\nif ($age >= 18) {\n    echo \"Adult\";\n} else {\n    echo \"Under 18\";\n}\n"
+    },
+    {
+      "title": "Loop and Function",
+      "description": "Use a function with a `foreach` loop.",
+      "code": "<?php\nfunction greet(string $name): string\n{\n    return \"Hello, {$name}\";\n}\n\n$names = [\"Lan\", \"Minh\", \"Alex\"];\n\nforeach ($names as $name) {\n    echo greet($name) . PHP_EOL;\n}\n"
+    },
+    {
+      "title": "Associative array and `foreach`",
+      "description": "A beginner-friendly way to walk through named data.",
+      "code": "<?php\n$user = [\n    'name' => 'Lan',\n    'role' => 'admin',\n    'active' => true,\n];\n\nforeach ($user as $key => $value) {\n    echo $key . ': ' . var_export($value, true) . PHP_EOL;\n}\n"
+    },
+    {
+      "title": "`require_once` for a helper file",
+      "description": "A small example showing how shared helpers are loaded safely once.",
+      "code": "<?php\nrequire_once __DIR__ . '/helpers.php';\n\necho formatCurrency(150000) . PHP_EOL;\n"
+    },
+    {
+      "title": "Reading and validating form input",
+      "description": "Read from `$_POST`, normalize the value, then validate before using it.",
+      "code": "<?php\n$email = trim($_POST['email'] ?? '');\n\nif ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {\n    echo \"Please enter a valid email address\";\n    return;\n}\n\necho \"Ready to continue with: \" . $email;\n"
+    },
+    {
+      "title": "A tiny login session example",
+      "description": "A small sample showing how user state can be kept after a successful check.",
+      "code": "<?php\nsession_start();\n\nif ($email === 'lan@example.com') {\n    $_SESSION['user_email'] = $email;\n    echo \"Logged in\";\n}\n"
+    },
+    {
+      "title": "Set a small cookie",
+      "description": "A beginner example showing that cookies usually carry small client-side preferences.",
+      "code": "<?php\nsetcookie('preferred_language', 'en', [\n    'expires' => time() + 86400 * 30,\n    'path' => '/',\n    'httponly' => true,\n    'samesite' => 'Lax',\n]);\n\necho 'Cookie has been queued';\n"
+    },
+    {
+      "title": "Check a file before reading it",
+      "description": "A practical guard before reading a config file or export file.",
+      "code": "<?php\n$path = __DIR__ . '/data.txt';\n\nif (!file_exists($path)) {\n    echo \"File not found\";\n    return;\n}\n\n$content = file_get_contents($path);\necho $content;\n"
+    },
+    {
+      "title": "Calling an external API over HTTP",
+      "description": "A simple example to show that PHP can call another service, not only process local logic.",
+      "code": "<?php\n$context = stream_context_create([\n    'http' => [\n        'method' => 'GET',\n        'timeout' => 5,\n    ],\n]);\n\n$response = file_get_contents('https://api.example.com/status', false, $context);\necho $response;\n"
+    },
+    {
+      "title": "Read structured data from JSON",
+      "description": "A small example showing how backend code loads structured file data into PHP arrays.",
+      "code": "<?php\n$content = file_get_contents(__DIR__ . '/users.json');\n$users = json_decode($content, true);\n\nif (!is_array($users)) {\n    echo 'Invalid JSON';\n    return;\n}\n\nprint_r($users);\n"
+    },
+    {
+      "title": "Write a simple log line",
+      "description": "A small example showing how backend code leaves a trace for later debugging.",
+      "code": "<?php\n$message = '[' . date('Y-m-d H:i:s') . '] user import started' . PHP_EOL;\nfile_put_contents(__DIR__ . '/app.log', $message, FILE_APPEND);\n"
+    },
+    {
+      "title": "Read a CSV file row by row",
+      "description": "A small example for importing tabular data before introducing database logic.",
+      "code": "<?php\n$handle = fopen(__DIR__ . '/users.csv', 'r');\n\nif ($handle === false) {\n    echo 'Cannot open csv file';\n    return;\n}\n\nwhile (($row = fgetcsv($handle)) !== false) {\n    print_r($row);\n}\n\nfclose($handle);\n"
+    },
+    {
+      "title": "Group external service calls into one function",
+      "description": "A small example showing that even a simple HTTP call deserves one clear home.",
+      "code": "<?php\nfunction fetchCustomerProfile(string $url): string\n{\n    $response = file_get_contents($url);\n\n    if ($response === false) {\n        throw new RuntimeException('Unable to reach customer service');\n    }\n\n    return $response;\n}\n"
+    },
+    {
+      "title": "Pagination from query parameters",
+      "description": "A small example showing how to normalize `page` and `limit` before using them.",
+      "code": "<?php\n$page = max(1, (int) ($_GET['page'] ?? 1));\n$limit = min(100, max(1, (int) ($_GET['limit'] ?? 20)));\n$offset = ($page - 1) * $limit;\n\necho \"page={$page}, limit={$limit}, offset={$offset}\";\n"
+    },
+    {
+      "title": "A beginner upload validation check",
+      "description": "A short example showing that upload errors and file size should be checked before later steps.",
+      "code": "<?php\n$file = $_FILES['avatar'] ?? null;\n\nif ($file === null || $file['error'] !== UPLOAD_ERR_OK) {\n    echo 'Upload failed';\n    return;\n}\n\nif ($file['size'] > 2 * 1024 * 1024) {\n    echo 'File is too large';\n    return;\n}\n\necho 'Upload looks valid';\n"
+    },
+    {
+      "title": "`require_once` for mandatory config",
+      "description": "A small example showing that a mandatory config file is often safest when loaded exactly once.",
+      "code": "<?php\nrequire_once __DIR__ . '/config/app.php';\n\necho APP_NAME;\n"
+    },
+    {
+      "title": "Hash data and verify a password",
+      "description": "A short example separating a general hash from a password hash flow.",
+      "code": "<?php\n$fingerprint = hash('sha256', 'order-123');\n$passwordHash = password_hash('secret-123', PASSWORD_DEFAULT);\n\nif (password_verify('secret-123', $passwordHash)) {\n    echo $fingerprint;\n}\n"
+    },
+    {
+      "title": "Use `array_map` to reshape data",
+      "description": "A short example showing when an array can be transformed more cleanly with a helper.",
+      "code": "<?php\n$prices = [100, 200, 300];\n$formatted = array_map(function (int $price): string {\n    return number_format($price) . ' VND';\n}, $prices);\n\nprint_r($formatted);\n"
+    },
+    {
+      "title": "Basic redirect and response code",
+      "description": "A short example showing that backend code can control the response instead of only echoing text.",
+      "code": "<?php\nif ($user === null) {\n    http_response_code(404);\n    echo 'User not found';\n    return;\n}\n\nheader('Location: /dashboard.php');\nexit;\n"
+    },
+    {
+      "title": "Check JSON errors after decoding",
+      "description": "A short example showing that `json_decode` should not always be assumed to succeed.",
+      "code": "<?php\n$data = json_decode($payload, true);\n\nif (json_last_error() !== JSON_ERROR_NONE) {\n    echo 'Invalid JSON payload';\n    return;\n}\n\nprint_r($data);\n"
+    },
+    {
+      "title": "A basic match expression",
+      "description": "A short example showing how `match` can return a value in a compact way.",
+      "code": "<?php\n$status = 'paid';\n$label = match ($status) {\n    'draft' => 'Draft order',\n    'paid' => 'Paid order',\n    default => 'Unknown status',\n};\n\necho $label;\n"
+    },
+    {
+      "title": "A tiny password-reset flow idea",
+      "description": "An idea-level example showing that reset tokens are usually created and then delivered outward.",
+      "code": "<?php\n$email = trim($_POST['email'] ?? '');\n$token = bin2hex(random_bytes(16));\n\n// save token with expiration in database or storage\n// send token by mail service\n\necho 'Password reset token created for ' . $email;\n"
+    },
+    {
+      "title": "Use `array_filter` to keep only valid items",
+      "description": "A short example showing how to remove weak values before deeper processing.",
+      "code": "<?php\n$emails = ['lan@example.com', '', 'minh@example.com'];\n$validEmails = array_filter($emails, function (string $email): bool {\n    return $email !== '';\n});\n\nprint_r($validEmails);\n"
+    },
+    {
+      "title": "Use `array_reduce` for a total",
+      "description": "A short example showing one way to accumulate values from a list.",
+      "code": "<?php\n$items = [100, 200, 300];\n$total = array_reduce($items, function (int $carry, int $price): int {\n    return $carry + $price;\n}, 0);\n\necho $total;\n"
+    },
+    {
+      "title": "Read a file with `try/catch`",
+      "description": "A short example showing how to group the reaction when a data-loading step fails.",
+      "code": "<?php\ntry {\n    $content = file_get_contents(__DIR__ . '/config.json');\n\n    if ($content === false) {\n        throw new RuntimeException('Cannot read config file');\n    }\n\n    echo $content;\n} catch (RuntimeException $exception) {\n    echo 'Please check the config file';\n}\n"
+    }
+  ],
+  "questionsTitle": "Intermediate Questions and Answers",
+  "questions": [
+    {
+      "tag": "Tip",
+      "question": "What should you do when a long `if / elseif` chain starts becoming hard to read?",
+      "answer": "First check whether some repeated checks can be moved into named booleans such as `isAdmin`, `hasVerifiedEmail`, or `canPublish`. If the branches still feel heavy, the next move is to extract smaller functions so each branch expresses one decision clearly instead of mixing many concerns in one place."
+    },
+    {
+      "tag": "Tip",
+      "question": "How can you avoid getting lost inside a `for` loop?",
+      "answer": "Read the loop in four passes: the initial value, the stop condition, the update step, and only then the loop body. If the loop still feels unclear, print the counter on each iteration and confirm that it moves exactly the way you expect."
+    },
+    {
+      "tag": "Trap",
+      "question": "What is a common intermediate mistake with helper functions?",
+      "answer": "A very common mistake is turning a helper into a dumping ground that reads globals, touches the database, formats output, and performs business rules all at once. A helper stays useful when it has one narrow purpose and receives the data it needs through parameters."
+    },
+    {
+      "tag": "Practice",
+      "question": "When should you prefer `foreach` over `for`?",
+      "answer": "Prefer `foreach` when you are iterating through an array and you care about the items more than the numeric index. Use `for` when the counter itself matters, when you need precise index math, or when you are iterating over a numeric range."
+    },
+    {
+      "tag": "Tip",
+      "question": "What is a good habit when reading data from `$_POST` or `$_GET`?",
+      "answer": "Do not let superglobals flow straight into the middle of your business logic. Read the values at the request edge, `trim` or normalize them, validate them, and only then pass the clean values into deeper logic. This makes the code easier to test and far easier to debug."
+    },
+    {
+      "tag": "Trap",
+      "question": "What is a common intermediate mistake when handling file uploads?",
+      "answer": "A common mistake is trusting the original file name or file type sent by the client. A safer habit is to validate size, extension, and MIME type as needed, and to decide your own storage path instead of blindly reusing everything from the request."
+    },
+    {
+      "tag": "Backend",
+      "question": "What is a major habit to build when learning backend PHP?",
+      "answer": "Train yourself to see the code as one complete flow instead of isolated lines. You should know where the request enters, where input is validated, when the database is called, and where the response is produced. Once that flow becomes clear, frameworks like Laravel become much easier to read."
+    },
+    {
+      "tag": "Service",
+      "question": "Why should database calls or external service calls not be scattered everywhere?",
+      "answer": "Because scattered integration code makes the flow harder to follow, harder to test, and harder to change. When database, mail, cache, or HTTP API calls are grouped into a clear place, you gain better error handling, easier debugging, and more flexible design."
+    },
+    {
+      "tag": "Logging",
+      "question": "Why does logging become important once backend code gets more complex?",
+      "answer": "Because at that point you are no longer debugging only by reading a few tiny scripts. Logs let you reconstruct the request, the input, the current step, and the failure state, especially when the problem happens only on the server or appears inconsistently."
+    },
+    {
+      "tag": "Refactor",
+      "question": "When should you split one large function into smaller functions?",
+      "answer": "When a single function starts doing several different jobs such as reading input, validating, calling the database, formatting output, and sending mail in one flow. Split by responsibility so each function answers one clear question: what is being checked, transformed, or sent across a boundary."
+    },
+    {
+      "tag": "Service",
+      "question": "What is one practical rule when connecting mail, storage, or external APIs?",
+      "answer": "Do not assume the external service is always fast and correct. Plan for timeouts, missing fields, temporary request failures, and controlled retries. Strong backend work is not just about one successful call. It is about how the system behaves when the outside world is messy."
+    },
+    {
+      "tag": "Debug",
+      "question": "If a backend bug looks like logic trouble but shows no red error, where should you begin?",
+      "answer": "Trace the data in small steps: what entered with the request, what remained after `trim` or validation, which function changed its shape, and what value existed right before the response. Many backend bugs are not broken statements. They are broken assumptions about input or current state."
+    },
+    {
+      "tag": "Auth",
+      "question": "What is one important lesson when learning login flow with sessions?",
+      "answer": "Separate three things clearly: credential checking, storing authenticated state, and reading that state on later requests. Many beginners get lost because all three concerns end up mixed into one long file and it becomes unclear whether the bug is in verification or in session state."
+    },
+    {
+      "tag": "Cookie",
+      "question": "What is one core rule when working with cookies?",
+      "answer": "Treat cookies as browser-traveling data, not as a secret vault. Store only data that really belongs on the client, give it a clear lifetime, and get comfortable early with `HttpOnly`, `Secure`, and `SameSite` instead of knowing only the bare `setcookie` call."
+    },
+    {
+      "tag": "Response",
+      "question": "Why should you learn `header()` and `http_response_code()` early?",
+      "answer": "Because backend code does not only return success text. It also redirects, returns meaningful error codes, and communicates clearly with browsers or API clients. Understanding responses early makes controllers and API endpoints much easier to read."
+    },
+    {
+      "tag": "Security",
+      "question": "What is a short way to remember XSS, SQL injection, and CSRF?",
+      "answer": "XSS is dirty data going out to the interface, SQL injection is dirty data going straight into a query, and CSRF is a state-changing request without strong proof that it came from the right user session. Different names, same lesson: control input, output, and sensitive actions deliberately."
+    },
+    {
+      "tag": "Arrays",
+      "question": "When should you use `array_map`, `array_filter`, or `array_reduce`?",
+      "answer": "Use `array_map` when you want to transform each item into a new shape, `array_filter` when you want to keep only the items that pass a condition, and `array_reduce` when you want to collapse a list into one result such as a total or summary."
+    },
+    {
+      "tag": "Pagination",
+      "question": "Why should pagination and filters be validated early?",
+      "answer": "Because these are inputs users can change very freely through the query string. If you do not normalize them early, you can create heavy queries, invalid parameters, or sorting bugs against fields that should never be allowed."
+    },
+    {
+      "tag": "Require",
+      "question": "When should you lean toward `require_once` instead of `include`?",
+      "answer": "When the file is foundational for normal execution such as config, core helpers, or a small bootstrap file, and you also want to avoid duplicate loading. `include` fits better for something truly optional or something whose absence should not break the whole flow."
+    },
+    {
+      "tag": "Hash",
+      "question": "Why should `password_hash` be preferred over writing `hash('sha256', $password)` for passwords?",
+      "answer": "Because `password_hash` is designed specifically for password storage, including a safer lifecycle for password checking. A naive self-made password hash flow often misses important safety details that you then have to own yourself."
+    },
+    {
+      "tag": "Mail Flow",
+      "question": "When studying password reset or email flows, what should you focus on first?",
+      "answer": "Look at the data flow before the framework helper. Where is the token created, where is it stored, how long does it live, through which channel is it sent, and how is it checked during the reset step? Once that flow is clear, framework-specific tooling becomes much easier to understand."
+    }
+  ]
+}

@@ -1,0 +1,681 @@
+{
+  "anchor": "laravel-maintenance-upgrade",
+  "type": "list",
+  "heading": "Framework upgrades and long-term maintenance: keeping a Laravel app healthy for years",
+  "intro": "This topic goes deep into a very real part of Laravel work that is often under-taught: upgrading Laravel, upgrading PHP, handling package drift, refactoring safely, performing controlled migrations, planning rollbacks, keeping test safety strong, observing production, and preventing project knowledge from decaying over time. The goal is not only to 'finish one upgrade', but to build a long-term maintenance mindset so the app does not turn into a block of technical debt that nobody wants to touch.",
+  "breaks": [
+    {
+      "start": 1,
+      "title": "I. Long-Term Maintenance Mindset",
+      "description": "Start with what maintenance really is, why old apps degrade, and why upgrades are much more than version numbers.",
+      "tone": "amber"
+    },
+    {
+      "start": 17,
+      "title": "II. Upgrading Laravel, PHP, And Runtime",
+      "description": "Framework upgrades, reading upgrade guides, upgrading PHP, extensions, server runtime, and the dependency between all version layers.",
+      "tone": "copper"
+    },
+    {
+      "start": 37,
+      "title": "III. Packages, Dependency Drift, And Composer Strategy",
+      "description": "Package compatibility, composer lock, abandoned packages, internal wrappers, auditing, and a healthy dependency strategy.",
+      "tone": "sand"
+    },
+    {
+      "start": 57,
+      "title": "IV. Safe Refactoring, Deprecated APIs, And Legacy Architecture",
+      "description": "Refactoring under tests, paying down technical debt, handling deprecated usage, strangler thinking, and changing old systems without breaking real flows.",
+      "tone": "amber"
+    },
+    {
+      "start": 77,
+      "title": "V. Database, Migrations, Data Fixes, And Stateful Upgrades",
+      "description": "Schema changes, production migrations, backfills, dirty data, data rollback, and the most dangerous database-related upgrade problems.",
+      "tone": "copper"
+    },
+    {
+      "start": 97,
+      "title": "VI. Deployment, Rollback, CI, And Risk Control",
+      "description": "Deployment workflows, smoke tests, rollback planning, feature flags, canary thinking, worker restarts, and environment risk.",
+      "tone": "sand"
+    },
+    {
+      "start": 117,
+      "title": "VII. Project Knowledge, Observability, And Long-Term Operations",
+      "description": "Living documentation, runbooks, dashboards, ownership, alerts, dependency maps, and how to keep the team from going blind when original maintainers leave.",
+      "tone": "amber"
+    },
+    {
+      "start": 137,
+      "title": "VIII. Real Cases, Anti-Patterns, And Final Assessment",
+      "description": "Classic production failures during upgrades, maintenance anti-patterns, and the criteria for deciding whether a Laravel app is still healthy.",
+      "tone": "copper"
+    }
+  ],
+  "items": [
+    {
+      "title": "1. What is long-term maintenance in a Laravel app?",
+      "body": "It is the ongoing work that keeps the application stable, changeable, upgradeable, and safe as business needs evolve.",
+      "code": "php artisan test\ncomposer outdated\nphp artisan queue:monitor redis:default --max=100",
+      "note": "Maintenance is not only bug-fixing after a fire. It is the regular rhythm of checking whether the app is still healthy or quietly decaying."
+    },
+    {
+      "title": "2. Why are old apps always harder than new apps?",
+      "body": "Because older apps accumulate packages, workarounds, side flows, dirty data, lost knowledge, and environment assumptions that nobody fully remembers."
+    },
+    {
+      "title": "3. Is maintenance only bug fixing?",
+      "body": "No. It also includes version upgrades, package replacement, architecture cleanup, test health, data repair, observability improvements, and technical-debt reduction."
+    },
+    {
+      "title": "4. Why should version upgrades not be treated as something to do 'when there is spare time'?",
+      "body": "Because delaying them increases version distance, dependency drift, and future risk, making later upgrades far more expensive."
+    },
+    {
+      "title": "5. What are signs that an app is degrading from a maintenance point of view?",
+      "body": "Nobody dares to upgrade, tests are weak, deploys feel risky, stale packages remain unpatched, workers fail unexpectedly, knowledge is concentrated in one person, and the same failures repeat."
+    },
+    {
+      "title": "6. What is the right mindset about maintenance?",
+      "body": "Do not wait for the app to become painful. Keep the technical distance inside a manageable range continuously."
+    },
+    {
+      "title": "7. How does technical debt affect a long-lived Laravel app?",
+      "body": "Technical debt makes every later change slower, riskier, and more regression-prone. Laravel does not shield you from that reality."
+    },
+    {
+      "title": "8. If an app has run for years, does that mean its architecture is healthy?",
+      "body": "Not necessarily. Some systems survive only because nobody touches them, not because they are well maintained."
+    },
+    {
+      "title": "9. Why is maintenance a product concern, not only a technical concern?",
+      "body": "Because poor maintainability slows feature delivery, prolongs bugs, increases downtime, and reduces the business's ability to change direction."
+    },
+    {
+      "title": "10. Should upgrades be treated as big projects or regular habits?",
+      "body": "Ideally as regular habits. Small steady upgrades are much cheaper than rescue missions after years of neglect."
+    },
+    {
+      "title": "11. What does an app that is easy to maintain usually look like?",
+      "body": "It has trustworthy tests, clear critical flows, deliberate dependency choices, good observability, incremental refactorability, and predictable deployment behavior."
+    },
+    {
+      "title": "12. What does an app that is hard to maintain usually look like?",
+      "body": "Bloated controllers, ownerless helpers, overlapping packages, invisible queue problems, scary migrations, hidden config, and crucial knowledge locked in a few heads."
+    },
+    {
+      "title": "13. Does maintenance cost increase over time?",
+      "body": "Yes if the system is not continuously cleaned. The longer it lives without care, the more every new change pays historical tax."
+    },
+    {
+      "title": "14. Why does system knowledge itself need maintenance?",
+      "body": "Because code alone does not fully explain deployment flows, critical queues, required environment values, or why an old workaround exists."
+    },
+    {
+      "title": "15. What is a senior maintenance mindset tip?",
+      "body": "Do not only ask whether the app runs. Ask whether the team would still control it tomorrow if maintainers changed, environments changed, or versions changed."
+    },
+    {
+      "title": "16. What is the most important foundation of long-term maintenance?",
+      "body": "Reducing surprise. The more predictable dependencies, migrations, queues, deploys, and rollbacks are, the healthier the app becomes."
+    },
+    {
+      "title": "17. Where should a Laravel upgrade begin?",
+      "body": "With the official upgrade guide, changelogs, the current installed version, package compatibility, and an honest look at test coverage.",
+      "code": "php artisan about\ncomposer show laravel/framework\ncomposer outdated\nphp artisan test",
+      "bullets": [
+        "Know exactly where the project stands before thinking about the target version.",
+        "Do not upgrade blindly without understanding tests, packages, and runtime state first."
+      ]
+    },
+    {
+      "title": "18. Why read the upgrade guide instead of only bumping versions in Composer?",
+      "body": "Because breaking changes are not only about dependency resolution. They may affect APIs, middleware, config, auth behavior, filesystem logic, queue behavior, or validation."
+    },
+    {
+      "title": "19. Does upgrading Laravel often require upgrading PHP too?",
+      "body": "Very often yes. Newer Laravel versions usually raise the minimum PHP version, so framework and runtime must be considered together."
+    },
+    {
+      "title": "20. Why is PHP runtime part of maintenance strategy?",
+      "body": "Because framework compatibility, package health, performance, and security all depend on PHP version and installed extensions."
+    },
+    {
+      "title": "21. Should multiple major versions be skipped in one jump?",
+      "body": "Only when necessary and carefully prepared. Moving step by step through major versions is usually safer and easier to debug."
+    },
+    {
+      "title": "22. What is the benefit of smaller upgrade steps?",
+      "body": "They reduce the blast radius, make the source of bugs easier to identify, and provide clearer pause and rollback points."
+    },
+    {
+      "title": "23. How do Composer constraints affect upgrades?",
+      "body": "Constraints can lock you into old package versions or create conflicts when Laravel or PHP versions move. This is why you must inspect the full dependency graph, not only the framework package."
+    },
+    {
+      "title": "24. Should upgrades happen directly on the production branch?",
+      "body": "No. Upgrades need their own branch, their own verification path, and at least one environment close to production for rehearsal."
+    },
+    {
+      "title": "25. How is `composer why-not` useful during upgrades?",
+      "body": "It helps identify exactly which package blocks the target version, making dependency bottlenecks much easier to locate.",
+      "code": "composer why-not laravel/framework 12.0\ncomposer why-not php 8.3",
+      "note": "When Composer reports conflicts during an upgrade, `why-not` is often the fastest way to see which package is locking you in place."
+    },
+    {
+      "title": "26. How do PHP extensions affect upgrades?",
+      "body": "Packages or Laravel features may require new extensions, and production may not match local. Missing extensions are a very common upgrade failure."
+    },
+    {
+      "title": "27. How do web server, FPM, or container images relate to upgrades?",
+      "body": "Upgrading Laravel or PHP without checking image, FPM config, base OS, or web-server compatibility can create very confusing environment drift."
+    },
+    {
+      "title": "28. Should published config files be reviewed during upgrades?",
+      "body": "Yes. Important new config defaults or behaviors may not appear automatically in projects that published config files long ago."
+    },
+    {
+      "title": "29. Can middleware or auth behavior change during upgrades?",
+      "body": "Yes. These are subtle but dangerous breaking changes because requests still run while permission, session, or redirect behavior may quietly shift."
+    },
+    {
+      "title": "30. Why should routes, validation, and exception handling be smoke-tested after upgrades?",
+      "body": "Because many framework-level breaking changes reveal themselves first in the app's main interface layers."
+    },
+    {
+      "title": "31. Can major Laravel upgrades affect queues and the scheduler?",
+      "body": "Yes. Worker behavior, serialization, Horizon compatibility, and scheduler APIs can all change."
+    },
+    {
+      "title": "32. Should PHP be upgraded before Laravel or the other way around?",
+      "body": "It depends on the compatibility matrix. The goal is to keep framework, packages, and runtime inside a valid overlap zone."
+    },
+    {
+      "title": "33. What is a practical version-upgrade tip?",
+      "body": "List the most important product flows before changing anything. After the upgrade, verify those flows first."
+    },
+    {
+      "title": "34. If the upgrade works locally, are staging and production safe?",
+      "body": "No. Real environments add queues, cron, providers, CDN, volume mounts, and larger data that local development does not reflect."
+    },
+    {
+      "title": "35. Should framework upgrades be combined with large refactors?",
+      "body": "Usually not if you want lower risk. The more variables you change together, the harder it is to isolate regressions."
+    },
+    {
+      "title": "36. What is a classic production bug during version upgrades?",
+      "body": "The app boots successfully, but a low-traffic flow such as export, an auth edge case, or queue serialization breaks only after deployment."
+    },
+    {
+      "title": "37. What is package drift?",
+      "body": "It is when the app's dependencies move far away from a healthy zone: old versions, abandoned packages, weak compatibility, or layered patches."
+    },
+    {
+      "title": "38. Why are packages a long-term source of risk?",
+      "body": "Each package brings its own lifecycle, dependency tree, security profile, and potential to block future upgrades."
+    },
+    {
+      "title": "39. What does an abandoned package mean for maintainability?",
+      "body": "It signals that the package may no longer be actively maintained. Keeping it too long can trap the app in future upgrades or security risk."
+    },
+    {
+      "title": "40. Should abandoned packages always be replaced immediately?",
+      "body": "Not always immediately, but they should be treated as debt with a real plan, not forgotten forever."
+    },
+    {
+      "title": "41. Why are wrappers around packages useful for long-term maintenance?",
+      "body": "If the app calls package APIs directly everywhere, swapping the package later means touching the whole codebase. A wrapper keeps the blast radius smaller.",
+      "code": "interface CurrencyRateProvider\n{\n    public function latest(string $base, string $quote): float;\n}\n\nclass ExchangeApiRateProvider implements CurrencyRateProvider\n{\n    public function latest(string $base, string $quote): float\n    {\n        // call SDK or external package here\n    }\n}",
+      "note": "A wrapper is not for pointless abstraction. It is useful when a package sits in a long-lived or likely-to-change part of the application."
+    },
+    {
+      "title": "42. How does `composer.lock` help maintenance?",
+      "body": "It stabilizes the dependency tree across environments and tells the team exactly which package set is really running."
+    },
+    {
+      "title": "43. Should `composer.lock` be committed for Laravel applications?",
+      "body": "Almost always yes for applications. It keeps local, CI, and production aligned on the same dependency versions."
+    },
+    {
+      "title": "44. What can careless `composer update` do?",
+      "body": "It can pull in many unplanned dependency changes, make regressions harder to trace, and increase deploy risk."
+    },
+    {
+      "title": "45. When should package updates happen selectively?",
+      "body": "When you want tighter control over risk and an easier path to identify which dependency introduced a regression."
+    },
+    {
+      "title": "46. Does dependency security auditing matter?",
+      "body": "Absolutely. Ignoring dependency vulnerabilities means shipping risk simply because the vulnerable code is not hand-written.",
+      "code": "composer audit\ncomposer show --direct\ncomposer outdated",
+      "note": "An audit does not replace architectural review, but it is a cheap first pass for catching packages with CVEs or serious drift before they become incidents."
+    },
+    {
+      "title": "47. What is a transitive dependency?",
+      "body": "It is a package your app does not require directly but inherits through another dependency. Many compatibility problems live here."
+    },
+    {
+      "title": "48. Is it fine to add many packages for convenience?",
+      "body": "It requires balance. Good packages save time, but every package expands long-term maintenance surface area."
+    },
+    {
+      "title": "49. Is a package with very few maintainers a maintenance concern?",
+      "body": "Potentially yes, especially when it touches auth, payments, filesystem, or another critical part of the app."
+    },
+    {
+      "title": "50. Are internal packages always better than external ones?",
+      "body": "No. Internal packages also need maintainers, CI, versioning, and documentation. Extracting packages too early can create extra maintenance without real benefit."
+    },
+    {
+      "title": "51. When is forking a package justified?",
+      "body": "When a package is important, needs urgent fixes, or upstream cannot respond in time. But a fork is a long-term maintenance promise."
+    },
+    {
+      "title": "52. How is patching a package different from editing `vendor/` directly?",
+      "body": "A controlled patch can be reapplied and tracked, while editing `vendor/` directly creates invisible maintenance traps."
+    },
+    {
+      "title": "53. How do `minimum-stability` and `prefer-stable` affect maintainability?",
+      "body": "They influence how stable your dependency set is. Too much unstable code increases future maintenance risk."
+    },
+    {
+      "title": "54. What is a practical dependency-strategy tip?",
+      "body": "Every package should have a clear reason to exist. If the team cannot explain why it is there, it may be debt rather than value."
+    },
+    {
+      "title": "55. Should dependency reviews happen regularly?",
+      "body": "Yes. Review unused packages, abandoned packages, duplicated functionality, and dependencies that block upgrades."
+    },
+    {
+      "title": "56. What is a bad smell in dependency structure?",
+      "body": "A project relies on many tiny overlapping packages, each touching business-critical paths, while nobody knows which dependencies matter most."
+    },
+    {
+      "title": "57. What does safe refactoring mean?",
+      "body": "It means changing structure or implementation while preserving intended behavior under enough verification.",
+      "code": "it('keeps invoice total calculation unchanged', function () {\n    $invoice = Invoice::factory()->hasItems(3)->create();\n\n    expect(app(InvoiceTotalService::class)->calculate($invoice))\n        ->toBe(150000);\n});",
+      "note": "To refactor safely, you first need to pin down which behavior is not allowed to change."
+    },
+    {
+      "title": "58. How is refactoring different from rewriting?",
+      "body": "Refactoring preserves the core intent and behavior, while rewriting usually changes larger structures and increases uncertainty quickly."
+    },
+    {
+      "title": "59. What is a deprecated API?",
+      "body": "It is an API or usage pattern that has been marked as discouraged because it may be removed or changed later."
+    },
+    {
+      "title": "60. Should deprecated warnings be ignored long-term?",
+      "body": "No. Deferred deprecations become future upgrade debt."
+    },
+    {
+      "title": "61. What does safe refactoring usually require first?",
+      "body": "At minimum you need to know which flows are important, what tests or smoke coverage protect them, and what failure modes the area has."
+    },
+    {
+      "title": "62. Can you refactor if tests are weak?",
+      "body": "Yes, but you should add safety nets step by step, such as minimal tests, logging, feature flags, or shadow execution."
+    },
+    {
+      "title": "63. How do feature flags help maintenance?",
+      "body": "They allow controlled rollout of new behavior and fast deactivation without rolling back the entire system."
+    },
+    {
+      "title": "64. What is strangler thinking?",
+      "body": "It means replacing old parts gradually and safely instead of rewriting everything at once."
+    },
+    {
+      "title": "65. Should multiple aging technical areas be cleaned in one giant PR?",
+      "body": "Usually not. Huge maintenance PRs are hard to review, hard to test, and difficult to debug when they fail."
+    },
+    {
+      "title": "66. Can temporary logging make refactoring safer?",
+      "body": "Very much so. It lets you compare old and new behavior in staging or production instead of relying on intuition.",
+      "code": "logger()->info('billing-flow-compare', [\n    'order_id' => $order->id,\n    'legacy_total' => $legacyTotal,\n    'new_total' => $newTotal,\n    'matched' => $legacyTotal === $newTotal,\n]);",
+      "note": "This kind of temporary logging is especially useful during shadow mode or while gradually moving business rules from an old flow into a new one."
+    },
+    {
+      "title": "67. What is shadow mode?",
+      "body": "It means running new logic in observation mode next to the old logic so outputs or effects can be compared before switching over."
+    },
+    {
+      "title": "68. Should old but working code be left alone forever?",
+      "body": "Not always. If it slows development, causes repeated bugs, or blocks upgrades, it should be addressed earlier rather than later."
+    },
+    {
+      "title": "69. What is a major anti-pattern in refactoring?",
+      "body": "Refactoring, changing business behavior, and upgrading the framework all at once, so regressions become impossible to attribute."
+    },
+    {
+      "title": "70. Why should rollback paths sometimes remain available for a while after new logic ships?",
+      "body": "Because production may reveal edge cases you did not anticipate. A short-term path back can save a lot of time."
+    },
+    {
+      "title": "71. Should old code be deleted immediately after the new version is enabled?",
+      "body": "Not always. Sometimes it is healthier to observe stability first and clean up later with confidence."
+    },
+    {
+      "title": "72. Why do auth, payment, and queue refactors need extra caution?",
+      "body": "Because those layers often form the operational spine of the application and failures there have significant business impact."
+    },
+    {
+      "title": "73. What is a senior refactoring tip?",
+      "body": "Do not try to beautify the entire legacy area at once. Solve the debt that blocks the next meaningful step."
+    },
+    {
+      "title": "74. What is a bad smell in maintenance refactoring?",
+      "body": "Everyone knows the area is scary, nobody wants to touch it, and even a small change explodes into a week of unrelated edits."
+    },
+    {
+      "title": "75. Does long-term maintenance relate to architectural ownership?",
+      "body": "Yes. Critical areas without clear owners decay much faster."
+    },
+    {
+      "title": "76. Why should technical-debt backlog items be described concretely?",
+      "body": "If all you say is 'needs refactor', it will be delayed forever. Good debt items explain the risk, cost, and next practical step."
+    },
+    {
+      "title": "77. What makes schema changes dangerous in maintenance work?",
+      "body": "They touch live data, may lock tables, fail migrations, break compatibility with old code, or create inconsistent states when rolled out in the wrong order."
+    },
+    {
+      "title": "78. Why should production migrations not be thought of like local migrations?",
+      "body": "Production adds large data volume, traffic, concurrent writes, lock contention, and much harder rollback conditions."
+    },
+    {
+      "title": "79. What is a backfill?",
+      "body": "It is the process of filling or repairing old data so it matches a new schema or a new logic expectation. It is often better separated from pure schema migrations."
+    },
+    {
+      "title": "80. Why is dirty data such a hidden upgrade killer?",
+      "body": "New code and schema may look correct on ideal data but fail badly on production data containing nulls, duplicates, legacy enum values, or inconsistent formats."
+    },
+    {
+      "title": "81. Should strong constraints be added immediately to a dirty large table?",
+      "body": "Usually not. Audit and clean the data first, then tighten the constraints.",
+      "code": "// Step 1: add nullable column or preparatory index\nSchema::table('orders', function (Blueprint $table) {\n    $table->string('external_id')->nullable()->index();\n});\n\n// Step 2: backfill data\n// Step 3: only after cleanup enforce unique/not-null",
+      "note": "A common mistake is adding `unique` or `not null` directly on dirty production data and letting the migration explode halfway through."
+    },
+    {
+      "title": "82. What is a safe multi-step migration?",
+      "body": "For example: add a nullable column first, deploy code that writes both shapes if needed, backfill, verify, then enforce not-null or remove the old column."
+    },
+    {
+      "title": "83. Is database rollback harder than code rollback?",
+      "body": "Very often yes. Code can revert quickly, but changed or lost data cannot always be restored instantly."
+    },
+    {
+      "title": "84. Should large data fixes and schema changes live in one migration file?",
+      "body": "Usually not. Keeping them separate makes rollback, monitoring, and retries safer."
+    },
+    {
+      "title": "85. How do queues, schedulers, and migrations interact during upgrades?",
+      "body": "Old workers or scheduled tasks may still expect the old schema while the database has already changed. Rollout order and process restarts matter greatly."
+    },
+    {
+      "title": "86. Should workers be paused before a breaking schema migration?",
+      "body": "Often yes. Otherwise old jobs may continue running against new schema assumptions."
+    },
+    {
+      "title": "87. What is a read-write compatibility window?",
+      "body": "It is the period around deployment where old code and new code must coexist. Good schema evolution accounts for that temporary overlap."
+    },
+    {
+      "title": "88. Is zero-downtime migration always possible?",
+      "body": "Not perfectly in every case, but many changes can move closer to it if rollout order and schema evolution are designed correctly."
+    },
+    {
+      "title": "89. What is a practical data-maintenance tip?",
+      "body": "Before changing schema to clean the world, measure what is actually dirty in production first."
+    },
+    {
+      "title": "90. What is a bad smell in database maintenance?",
+      "body": "Every migration is written as if production were a local demo, nobody trusts running it on real data, and rollback exists only as theory."
+    },
+    {
+      "title": "91. How does deployment safety relate to maintenance?",
+      "body": "A technically good change can still take production down if rollout is poor. Maintenance quality includes rollout quality."
+    },
+    {
+      "title": "92. How does CI help long-term maintenance?",
+      "body": "CI provides automated safety for tests, linting, static analysis, builds, and sometimes even upgrade rehearsals."
+    },
+    {
+      "title": "93. Are post-deploy smoke tests worth having?",
+      "body": "Yes. Fast smoke checks on life-critical flows catch problems early before users do."
+    },
+    {
+      "title": "94. When should rollback plans be prepared?",
+      "body": "Before deployment. Rollback is not something to invent once the incident has already started."
+    },
+    {
+      "title": "95. How do code rollback and data rollback differ?",
+      "body": "Code rollback is usually simpler. Data rollback may require backups, compensation logic, or accepting the new state and repairing forward."
+    },
+    {
+      "title": "96. How do feature flags make maintenance deploys safer?",
+      "body": "They let you deploy code before enabling the new behavior, watch the impact, and disable it quickly if signals turn bad."
+    },
+    {
+      "title": "97. Does canary thinking apply to Laravel apps?",
+      "body": "Yes in many forms. You can roll out to a subset of traffic, a tenant group, or a narrow behavior before a full switch.",
+      "code": "if (Feature::enabled('new-billing-flow', $tenant)) {\n    return app(NewBillingFlow::class)->handle($order);\n}\n\nreturn app(LegacyBillingFlow::class)->handle($order);",
+      "note": "Canary does not have to mean giant infrastructure. Many Laravel apps can apply it at the tenant, role, or feature-flag level."
+    },
+    {
+      "title": "98. Why are worker restarts a mandatory post-deploy check?",
+      "body": "Because background processes running old code are one of the most frustrating sources of maintenance regressions."
+    },
+    {
+      "title": "99. How do config, route, and view caches relate to upgrades?",
+      "body": "Stale caches or build artifacts can make the app behave like a mix of old and new versions after deployment."
+    },
+    {
+      "title": "100. What does a maintenance-related deploy failure often look like?",
+      "body": "The web app appears fine, but queues fail, the scheduler stops, signed URLs break, auth behaves strangely, or a low-traffic flow dies quietly."
+    },
+    {
+      "title": "101. What is the value of staging in upgrade work?",
+      "body": "It is the closest rehearsal environment to production and can reveal environment drift, workers, queues, cron, provider integration, and modest data-scale issues."
+    },
+    {
+      "title": "102. Do passing local tests replace staging rehearsal?",
+      "body": "No. Local cannot reproduce the full infrastructure and runtime reality of production."
+    },
+    {
+      "title": "103. What is a practical deploy-risk tip?",
+      "body": "If the change touches framework, database, and queues together, keep the rollout as small as possible and make the fallback path explicit."
+    },
+    {
+      "title": "104. What is a bad operational smell?",
+      "body": "Deployments rely on personal memory, there is no checklist, there are no smoke tests, and rollback means 'hope a fast git revert saves us'."
+    },
+    {
+      "title": "105. Should maintenance incidents produce postmortems?",
+      "body": "Definitely. Many deployment and upgrade failures repeat only because teams never convert past incidents into shared knowledge."
+    },
+    {
+      "title": "106. Do internal release notes help maintenance?",
+      "body": "Yes. They help support, QA, and developers understand what changed and which areas deserve extra attention."
+    },
+    {
+      "title": "107. How do SLOs or SLAs relate to maintenance?",
+      "body": "They provide a way to measure whether technical changes are making reliability better or worse."
+    },
+    {
+      "title": "108. Why do critical areas need clear ownership for maintenance?",
+      "body": "Without ownership, bugs are passed around, stale packages are ignored, and nobody proactively keeps the area healthy."
+    },
+    {
+      "title": "109. Should there be runbooks for queues, mail, storage, and deploys?",
+      "body": "Yes. Runbooks help new engineers and on-call responders react quickly when something breaks.",
+      "code": "# docs/runbooks/queue.md\n- check queue lag\n- inspect failed jobs\n- confirm worker version after deploy\n- queue:restart if needed\n- retry selectively\n- escalate if backlog crosses threshold",
+      "note": "A good runbook does not try to explain everything. It gives the on-call engineer a fast path so they do not freeze while the system is already burning."
+    },
+    {
+      "title": "110. What should a minimum operations dashboard show?",
+      "body": "Queue lag, failed jobs, error rate, database health, deployed version, scheduler last run, storage growth, and critical integrations."
+    },
+    {
+      "title": "111. What is a dependency map and why is it useful?",
+      "body": "It describes what services, queues, packages, and workflows the app depends on. During upgrades it helps reveal impact zones."
+    },
+    {
+      "title": "112. Which project documents are worth keeping alive in a Laravel app?",
+      "body": "Deploy checklists, critical environment values, important queues, scheduled jobs, critical packages, main business flows, and known operational traps."
+    },
+    {
+      "title": "113. What is a knowledge silo?",
+      "body": "It is when only one or two people really know how the system works. That is a major maintenance risk.",
+      "code": "# docs/upgrade-checklist.md\n- critical packages\n- queues that must restart after deploy\n- env values that often drift\n- migrations that have caused incidents\n- rollback path for sensitive flows",
+      "note": "If knowledge lives only in one person's head, the real maintenance cost of the app is much higher than the code alone suggests."
+    },
+    {
+      "title": "114. Why is deploy and rollback knowledge the easiest to lose?",
+      "body": "Because many teams write very little down and depend on memory. The gap becomes obvious only after people leave or incidents happen."
+    },
+    {
+      "title": "115. What is a senior tip about knowledge maintenance?",
+      "body": "If a critical flow exists only in one person's head, it is not being maintained properly."
+    },
+    {
+      "title": "116. How does observability improve upgrade safety?",
+      "body": "After an upgrade, you need immediate insight into error rate, latency, queue lag, and failed jobs. Without that, rollback becomes guesswork."
+    },
+    {
+      "title": "117. What should be watched in logging after an upgrade?",
+      "body": "Pay extra attention to sensitive flows and new error patterns, while still avoiding over-logging of private data."
+    },
+    {
+      "title": "118. How does alert fatigue harm maintenance?",
+      "body": "If alerts are too noisy and meaningless, the team will ignore them and miss the real signal when a serious upgrade or deploy problem happens."
+    },
+    {
+      "title": "119. Is onboarding a new developer part of maintenance?",
+      "body": "Yes. A system that is painful to onboard is a system whose knowledge is already decaying."
+    },
+    {
+      "title": "120. What does a healthy long-term documentation setup feel like?",
+      "body": "Not excessively bureaucratic, but with enough traces around critical areas that another person can take over without being blind."
+    },
+    {
+      "title": "121. What is a classic real-world Laravel upgrade case?",
+      "body": "The framework upgrade succeeds, but an auth-related package or admin panel is incompatible and login or back-office features break after deployment.",
+      "code": "composer update laravel/framework --with-all-dependencies\nphp artisan test\nphp artisan route:list\nphp artisan queue:restart",
+      "note": "A green local upgrade is not enough. Auth, admin packages, queues, and backoffice flows are common late-breaking failure zones."
+    },
+    {
+      "title": "122. What is another very real case?",
+      "body": "Everything works locally and on staging, but production fails because workers still run old code, caches are stale, or PHP extensions differ."
+    },
+    {
+      "title": "123. Why do older apps often contain maintenance landmines?",
+      "body": "Because historical workarounds were never documented, temporary package choices became permanent, and low-traffic flows were forgotten for too long."
+    },
+    {
+      "title": "124. What is the biggest upgrade anti-pattern?",
+      "body": "Waiting too long, lacking tests, lacking rehearsal, lacking rollback planning, and hoping production will somehow be fine."
+    },
+    {
+      "title": "125. What is a refactoring anti-pattern in maintenance work?",
+      "body": "Making broad cleanup changes 'while we are here' without strong safety nets or a clear product reason."
+    },
+    {
+      "title": "126. What is a dependency-management anti-pattern?",
+      "body": "Adding packages by habit, never auditing them, not tracking abandoned dependencies, and having no ownership around Composer strategy."
+    },
+    {
+      "title": "127. What is a database-maintenance anti-pattern?",
+      "body": "Treating production data like local demo data, running large migrations without rehearsal, and believing rollback will magically work."
+    },
+    {
+      "title": "128. What is a deploy-safety anti-pattern?",
+      "body": "No smoke testing, no worker restart, no dashboard review after deployment, and only learning about failure from customers."
+    },
+    {
+      "title": "129. What is a senior-level question before a maintenance change?",
+      "body": "If this change fails halfway through, how will we know, who will it affect, and how exactly do we back out?"
+    },
+    {
+      "title": "130. When should an upgrade be paused instead of forced through?",
+      "body": "When the dependency graph is too dirty, tests are too weak, or critical flows are not clearly enough defined to judge success."
+    },
+    {
+      "title": "131. What does a Laravel app that is still healthy long-term feel like?",
+      "body": "Not perfect, but changeable in small steps, observable, reversible, and not terrifying every time the team deploys."
+    },
+    {
+      "title": "132. What does a tired Laravel app feel like?",
+      "body": "Every small change feels like a gamble, upgrades are delayed year after year, and support lives with constant surprise."
+    },
+    {
+      "title": "133. How should maintenance maturity be evaluated?",
+      "body": "Look at test safety, dependency health, deployment discipline, rollback readiness, observability, documentation, and onboarding ability."
+    },
+    {
+      "title": "134. What is a final long-term upgrade tip?",
+      "body": "Regular smaller upgrades are the cheapest way to avoid a very expensive rescue operation later."
+    },
+    {
+      "title": "135. Final review: what major areas should a maintenance-upgrade topic include?",
+      "body": "At minimum it should cover maintenance mindset, framework and PHP upgrades, package strategy, safe refactoring, database and data migrations, deploy/rollback/CI, project knowledge and observability, and real production cases."
+    },
+    {
+      "title": "136. Does semver always protect you from breaking changes?",
+      "body": "Not completely. Semver is helpful, but real applications can still be affected by subtle behavior changes, transitive dependencies, or old assumptions living inside the codebase."
+    },
+    {
+      "title": "137. Why does support-window or LTS thinking matter?",
+      "body": "It helps the team understand how long the framework, PHP version, or critical packages remain inside a supported security and community window.",
+      "code": "// Example planning note\n// Q2: upgrade PHP 8.2 -> 8.3\n// Q3: remove deprecated usage and packages blocking Laravel 12\n// Q4: rehearsal branch for the major upgrade",
+      "note": "Without support-window thinking, teams often let everything slide out of supported territory and then face an expensive rescue project."
+    },
+    {
+      "title": "138. What is an upgrade budget?",
+      "body": "It means explicitly reserving ongoing time for upgrades and debt reduction as part of normal planning instead of treating them as nobody's side job."
+    },
+    {
+      "title": "139. Is a rehearsal branch or dry-run upgrade worth doing?",
+      "body": "Very much so for important systems. It lets the team estimate the real problem surface before committing to the full upgrade effort."
+    },
+    {
+      "title": "140. How does release freeze relate to major upgrades?",
+      "body": "When a large technical change ships, reducing surrounding feature churn makes regressions much easier to investigate."
+    },
+    {
+      "title": "141. Are blue-green deployment or maintenance windows always necessary?",
+      "body": "Not always, but for certain sensitive upgrades or difficult migrations they can be very valuable risk-reduction tools."
+    },
+    {
+      "title": "142. Why is decommissioning old code or packages after an upgrade important?",
+      "body": "If the old path stays around too long, the system ends up carrying two worlds in parallel and maintenance complexity grows back again."
+    },
+    {
+      "title": "143. Example of how a relatively safe upgrade branch can begin",
+      "body": "Newer developers often update directly on the main branch and let warnings, conflicts, and regressions explode together.",
+      "code": "git checkout -b upgrade/laravel-12\ncomposer update laravel/framework --with-all-dependencies\nphp artisan test\nphp artisan route:list\nphp artisan about",
+      "bullets": [
+        "Use a dedicated branch so the upgrade scope stays visible.",
+        "`--with-all-dependencies` is often needed when the framework pulls related package changes.",
+        "Running tests, route listing, and introspection commands helps surface breakage earlier."
+      ]
+    },
+    {
+      "title": "144. Example of a small adapter that reduces direct coupling to an outside package before an upgrade",
+      "body": "If the app calls a package directly from many places, every version upgrade hurts more.",
+      "code": "interface SmsGateway\n{\n    public function send(string $to, string $message): void;\n}\n\nclass TwilioSmsGateway implements SmsGateway\n{\n    public function send(string $to, string $message): void\n    {\n        // call package or SDK here\n    }\n}",
+      "note": "Not every project needs abstraction everywhere, but a small wrapper like this can make package swaps and version upgrades much less invasive."
+    },
+    {
+      "title": "145. Example of a few commands for surveying dependencies before an upgrade",
+      "body": "Do not upgrade blindly. First inspect which packages are old and which ones are blocking the path.",
+      "code": "composer outdated\ncomposer why-not laravel/framework 12.0\nphp artisan about",
+      "note": "`outdated` shows your dependency surface, while `why-not` is very useful when one package is blocking a specific upgrade target."
+    },
+    {
+      "title": "146. Final assessment after review: is the maintenance-upgrade topic detailed enough?",
+      "body": "For a learning portal, this is now fairly complete: maintenance mindset, upgrade paths, dependency strategy, refactor safety, database rollout, deploy risk, observability, knowledge maintenance, and production cases are all covered. If you want to go deeper later, the strongest next split would be one dedicated site for deploy strategy, one for dependency governance, and one for legacy refactor playbooks."
+    }
+  ]
+}

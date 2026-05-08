@@ -1,0 +1,642 @@
+{
+  "anchor": "laravel-blade-ui",
+  "type": "list",
+  "heading": "Blade, components, and the server-rendered UI layer: a deep map for serious Laravel learning",
+  "intro": "This topic is intentionally dense. The goal is not only to know what Blade is, but to understand variables, loops, includes, components, forms, CSRF, old input, escaping, PHP inside views, tips, anti-patterns, and how to maintain a server-rendered UI in real Laravel projects.",
+  "breaks": [
+    {
+      "start": 1,
+      "title": "Blade Foundations",
+      "description": "Concepts, output, escaping, and how Blade sits on top of PHP.",
+      "tone": "amber"
+    },
+    {
+      "start": 22,
+      "title": "Conditionals, Loops, and Render Flow",
+      "description": "Display-control directives such as `@if`, `@foreach`, `@forelse`, `$loop`, and basic inclusion.",
+      "tone": "copper"
+    },
+    {
+      "start": 46,
+      "title": "Layouts, Stacks, and View Reuse",
+      "description": "How to organize UI shells, sections, style/script stacks, and larger reusable view structure.",
+      "tone": "olive"
+    },
+    {
+      "start": 55,
+      "title": "Forms, Validation, and Input UX",
+      "description": "Where Blade shines in real apps: CSRF, old input, error bags, method spoofing, and form experience.",
+      "tone": "ocean"
+    },
+    {
+      "start": 66,
+      "title": "Components, Slots, and UI Architecture",
+      "description": "Anonymous/class components, slots, props, naming, view folders, and UI standardization.",
+      "tone": "indigo"
+    },
+    {
+      "start": 82,
+      "title": "Advanced Directives and JS Bridging",
+      "description": "Helpers and directives such as `@class`, `@props`, `@json`, view cache, and where Blade meets the frontend layer.",
+      "tone": "rose"
+    },
+    {
+      "start": 113,
+      "title": "Anti-patterns, Tips, and Review Mindset",
+      "description": "The mistakes, habits, and review checklist that keep a server-rendered UI maintainable over time.",
+      "tone": "slate"
+    }
+  ],
+  "items": [
+    {
+      "title": "1. What is Blade?",
+      "body": "Blade is Laravel's templating engine. It lets you write server-rendered HTML with cleaner syntax than raw PHP while still allowing fallback to PHP when needed."
+    },
+    {
+      "title": "2. Does Blade completely replace PHP?",
+      "body": "No. Blade is a convenience layer on top of PHP. In the end, Blade views are compiled into PHP for rendering."
+    },
+    {
+      "title": "3. What is a server-rendered UI?",
+      "body": "It means most HTML is built on the server and sent directly to the browser. In traditional Laravel apps, Blade is central to this approach."
+    },
+    {
+      "title": "4. Why is Blade still worth learning in the SPA era?",
+      "body": "Because many business systems, admin panels, CRUD dashboards, CMS flows, and form-heavy products do not need a heavy SPA. Blade is often faster to build and easier to maintain."
+    },
+    {
+      "title": "5. Where do Blade files usually live?",
+      "body": "By default they live under `resources/views`. Their filenames usually end with `.blade.php`."
+    },
+    {
+      "title": "6. Why is the extension `.blade.php`?",
+      "body": "Because the file is still ultimately a PHP view, with Blade syntax layered in. Laravel uses the extension to compile it correctly."
+    },
+    {
+      "title": "7. Where is a Blade view returned from?",
+      "body": "Most often from controllers through `return view(...)`, but also from route closures, mail views, notifications, and component classes."
+    },
+    {
+      "title": "8. Returning a simple Blade view",
+      "body": "You commonly use `return view('users.index');` in a controller to render `resources/views/users/index.blade.php`.",
+      "code": "return view('users.index');"
+    },
+    {
+      "title": "9. How do you pass data from a controller into Blade?",
+      "body": "Usually through a key-value array passed to `view()`, or with `compact()`. Blade receives those values as variables.",
+      "code": "return view('users.index', ['users' => $users]);\nreturn view('users.index', compact('users'));"
+    },
+    {
+      "title": "10. Where do Blade variable names come from?",
+      "body": "They come from the keys you pass into the view. If you pass `users`, Blade receives `$users`."
+    },
+    {
+      "title": "11. What is `{{ }}`?",
+      "body": "It is Blade's safe echo syntax. It escapes HTML before rendering to reduce XSS risk.",
+      "code": "{{ $user->name }}"
+    },
+    {
+      "title": "12. What is `{!! !!}`?",
+      "body": "It is raw echo syntax. It does not escape HTML, so it should only be used when the content is trusted or sanitized.",
+      "code": "{!! $post->content !!}"
+    },
+    {
+      "title": "13. What is the difference between `{{ }}` and `{!! !!}`?",
+      "body": "`{{ }}` escapes output and is safer. `{!! !!}` renders raw HTML and is therefore more dangerous."
+    },
+    {
+      "title": "14. When should you be extremely careful with `{!! !!}`?",
+      "body": "Whenever data comes from users, editors, comments, descriptions, or any untrusted source. It can easily become an XSS problem."
+    },
+    {
+      "title": "15. Can Blade call Laravel helpers?",
+      "body": "Yes. Helpers such as `route()`, `asset()`, `old()`, `auth()`, and `csrf_token()` are commonly used inside views."
+    },
+    {
+      "title": "16. Rendering static text in Blade",
+      "body": "You can just write plain HTML, or use `{{ 'text' }}` when necessary. Plain HTML is usually enough."
+    },
+    {
+      "title": "17. Using the null-coalescing operator in Blade",
+      "body": "It helps provide a fallback when data may be null so the UI stays stable.",
+      "code": "{{ $user->nickname ?? $user->name }}"
+    },
+    {
+      "title": "18. Using ternary expressions in Blade",
+      "body": "This is useful for small conditional text or class output, but should not become your main home for complex logic.",
+      "code": "{{ $user->is_admin ? 'Admin' : 'Member' }}"
+    },
+    {
+      "title": "19. Should you write long expressions inside `{{ }}`?",
+      "body": "Usually no. If an expression gets long or contains too much decision-making, the view becomes hard to read."
+    },
+    {
+      "title": "20. Does Blade support its own comment syntax?",
+      "body": "Yes. Use `{{-- --}}` for comments that should not appear in rendered HTML output.",
+      "code": "{{-- This is a Blade comment --}}"
+    },
+    {
+      "title": "21. HTML comments versus Blade comments",
+      "body": "HTML comments still appear in page source. Blade comments are removed during compilation."
+    },
+    {
+      "title": "22. What is `@if` used for?",
+      "body": "It conditionally renders a block when a condition is true.",
+      "code": "@if($user)\n  <p>{{ $user->name }}</p>\n@endif"
+    },
+    {
+      "title": "23. `@elseif` and `@else`",
+      "body": "Use them when the UI has multiple states such as loading, empty, success, or error."
+    },
+    {
+      "title": "24. What is `@unless`?",
+      "body": "It is the inverse form of `@if`. It reads well when you want to say 'unless this condition is true'.",
+      "code": "@unless($users->count())\n  <p>No data.</p>\n@endunless"
+    },
+    {
+      "title": "25. What does `@isset` do?",
+      "body": "It checks whether a variable exists and is not null before rendering something.",
+      "code": "@isset($profile)\n  <p>{{ $profile->bio }}</p>\n@endisset"
+    },
+    {
+      "title": "26. What is `@empty`?",
+      "body": "It renders content when a variable is empty. It can be useful, though a lot of data logic still belongs before the view."
+    },
+    {
+      "title": "27. `@auth` and `@guest`",
+      "body": "These are shortcuts for showing UI to authenticated users or guests.",
+      "code": "@auth\n  <a href=\"{{ route('dashboard') }}\">Dashboard</a>\n@endauth"
+    },
+    {
+      "title": "28. `@can` and `@cannot`",
+      "body": "These directives show or hide UI based on authorization rules or policies.",
+      "code": "@can('update', $post)\n  <a href=\"#\">Edit</a>\n@endcan"
+    },
+    {
+      "title": "29. Why does `@can` matter?",
+      "body": "Because the UI should not casually expose actions the current user cannot perform. It improves interface correctness, though backend authorization must still exist."
+    },
+    {
+      "title": "30. What is `@foreach`?",
+      "body": "It loops through a collection or array. It is one of the most common Blade directives.",
+      "code": "@foreach($users as $user)\n  <li>{{ $user->name }}</li>\n@endforeach"
+    },
+    {
+      "title": "31. When do you use `@for`?",
+      "body": "Use it when you need index-based iteration or a fixed number of loops. It is less common than `@foreach`."
+    },
+    {
+      "title": "32. Can `@while` be used?",
+      "body": "Yes, but it is rarely the most elegant choice in Blade. Heavy loop logic usually belongs elsewhere."
+    },
+    {
+      "title": "33. What is `@forelse`?",
+      "body": "It is an excellent directive for lists that may be empty. It combines the loop and the empty-state branch in one place.",
+      "code": "@forelse($users as $user)\n  <li>{{ $user->name }}</li>\n@empty\n  <li>No users</li>\n@endforelse"
+    },
+    {
+      "title": "34. When is `@forelse` nicer than `@if + @foreach`?",
+      "body": "When you are rendering a list with a clear empty state. It is shorter and usually easier to read."
+    },
+    {
+      "title": "35. What is `$loop` inside `@foreach`?",
+      "body": "Blade provides a `$loop` variable so you can inspect loop position and state.",
+      "code": "{{ $loop->index }}\n{{ $loop->iteration }}"
+    },
+    {
+      "title": "36. `$loop->first` and `$loop->last`",
+      "body": "These are useful for styling the first or last item, adding separators, or rendering special labels."
+    },
+    {
+      "title": "37. `$loop->even` and `$loop->odd`",
+      "body": "These are handy for zebra-striping table rows or alternating visual patterns."
+    },
+    {
+      "title": "38. Should you run queries inside `@foreach`?",
+      "body": "No. This is a classic path into N+1 query problems and slow pages."
+    },
+    {
+      "title": "39. Can you write raw PHP in Blade?",
+      "body": "Yes, through `@php ... @endphp` or plain PHP tags. But it should be used carefully because views become messy quickly.",
+      "code": "@php\n  $total = $items->sum('amount');\n@endphp"
+    },
+    {
+      "title": "40. When is `@php` acceptable?",
+      "body": "For very small presentation-level calculations or glue logic. Not for real business or data-access work."
+    },
+    {
+      "title": "41. When should you avoid `@php`?",
+      "body": "When you are querying, calling services, encoding business rules, or writing long conditional branches."
+    },
+    {
+      "title": "42. `@switch`, `@case`, and `@default`",
+      "body": "These are useful when the UI has multiple enum-like states such as draft, published, or archived.",
+      "code": "@switch($post->status)\n  @case('draft')\n    <span>Draft</span>\n    @break\n  @default\n    <span>Other</span>\n@endswitch"
+    },
+    {
+      "title": "43. What is `@include`?",
+      "body": "It includes a smaller partial view into the current view. It is the simple reuse step before components become necessary."
+    },
+    {
+      "title": "44. `@includeWhen`, `@includeIf`, `@includeUnless`",
+      "body": "These variants conditionally include a partial or only include it if the file exists."
+    },
+    {
+      "title": "45. When would you use `@each`?",
+      "body": "It renders a partial for each item in a collection. Some teams use it, though many prefer the clarity of `@foreach`."
+    },
+    {
+      "title": "46. What is a layout?",
+      "body": "A layout is the shared shell of many pages, such as headers, sidebars, footers, and the main application frame."
+    },
+    {
+      "title": "47. How does `@extends` work?",
+      "body": "A child view uses `@extends` to inherit a parent layout, then fills sections inside that layout."
+    },
+    {
+      "title": "48. `@section` and `@yield`",
+      "body": "`@section` defines content in the child view. `@yield` is the placeholder in the parent layout."
+    },
+    {
+      "title": "49. What is `@show`?",
+      "body": "It is less common than `@yield`, but it both defines and renders the section immediately."
+    },
+    {
+      "title": "50. What is `@parent` for?",
+      "body": "It lets a child section keep the parent's section content and append more to it."
+    },
+    {
+      "title": "51. What are `@push` and `@stack`?",
+      "body": "These are very useful for pushing page-specific CSS or JS from child views up into a layout stack.",
+      "code": "@push('scripts')\n  <script>console.log('hello')</script>\n@endpush"
+    },
+    {
+      "title": "52. What is `@prepend`?",
+      "body": "It works like `@push`, but adds content to the beginning of the stack instead of the end."
+    },
+    {
+      "title": "53. Why are stacks useful in larger projects?",
+      "body": "Because layouts can expose shared slots such as `styles` or `scripts`, and individual screens can push exactly what they need there."
+    },
+    {
+      "title": "54. What is `@verbatim` used for?",
+      "body": "It tells Blade to ignore a block, which is useful when frontend syntax such as Vue expressions would otherwise conflict with Blade syntax.",
+      "code": "@verbatim\n  <div>{{ vueVariable }}</div>\n@endverbatim"
+    },
+    {
+      "title": "55. What is `@csrf`?",
+      "body": "It renders the hidden CSRF token field for forms. Nearly every non-GET Blade form should use it."
+    },
+    {
+      "title": "56. What happens if you forget `@csrf`?",
+      "body": "Laravel will often reject the request with a token mismatch error. This is one of the most common beginner mistakes."
+    },
+    {
+      "title": "57. What does `@method('PUT')` do?",
+      "body": "HTML forms only support GET and POST directly. Blade uses method spoofing to target PUT, PATCH, and DELETE routes correctly."
+    },
+    {
+      "title": "58. What is `old()`?",
+      "body": "It retrieves the user's previous input after validation fails and redirects back. It makes form UX dramatically better."
+    },
+    {
+      "title": "59. What is `@error('field')`?",
+      "body": "It is a concise directive for showing a validation error message for a specific field."
+    },
+    {
+      "title": "60. What is `$errors`?",
+      "body": "It is the error bag Laravel injects into the view after validation fails."
+    },
+    {
+      "title": "61. What does a good Blade form need?",
+      "body": "Clear labels, `@csrf`, proper `old()` behavior, helpful error messages, and sensible loading or disabled states."
+    },
+    {
+      "title": "62. What is special about checkboxes and radios with `old()`?",
+      "body": "You usually need to compare the old value manually to set `checked` correctly."
+    },
+    {
+      "title": "63. Select options with `old()`",
+      "body": "You compare each option against `old()` or model data to mark the correct option as `selected`."
+    },
+    {
+      "title": "64. Textareas with `old()`",
+      "body": "A textarea does not use a `value` attribute, so `old()` must appear between the opening and closing tags."
+    },
+    {
+      "title": "65. Should heavy formatting logic live inside form views?",
+      "body": "Usually not. If the transformation is meaningful, prepare it in the controller or another view-support layer."
+    },
+    {
+      "title": "66. What is a Blade component?",
+      "body": "A component is a reusable UI unit with props, slots, and sometimes a backing PHP class."
+    },
+    {
+      "title": "67. What is an anonymous component?",
+      "body": "It is a component implemented only as a Blade file, often ideal for simple UI pieces such as alerts or buttons."
+    },
+    {
+      "title": "68. What is a class component?",
+      "body": "It is a component with a dedicated PHP class, useful when a UI unit needs structured input handling or light presentation logic."
+    },
+    {
+      "title": "69. What is a slot?",
+      "body": "A slot is dynamic inner content passed into a component. It makes components more flexible than plain includes."
+    },
+    {
+      "title": "70. What is a named slot?",
+      "body": "It is a slot with a name, such as `title`, `footer`, or `actions`, allowing a component to expose multiple content regions."
+    },
+    {
+      "title": "71. What are props in components?",
+      "body": "Props are inputs such as `variant`, `size`, `label`, `error`, `hint`, or `href` that let one component render many states."
+    },
+    {
+      "title": "72. When should you use a component instead of `@include`?",
+      "body": "When the UI fragment has a clear API, multiple states, strong reuse value, or needs stable conventions."
+    },
+    {
+      "title": "73. When is `@include` still enough?",
+      "body": "When the fragment is small, has few variations, and is not yet worth formalizing as a component."
+    },
+    {
+      "title": "74. How should component names stay consistent?",
+      "body": "Use names that reflect the UI or feature meaning, such as `x-button`, `x-form.input`, or `x-admin.table`, instead of vague labels."
+    },
+    {
+      "title": "75. Should everything become a component?",
+      "body": "No. Over-componentizing every tiny `<div>` increases mental overhead and can make the view layer harder to navigate."
+    },
+    {
+      "title": "76. How should `resources/views` be organized?",
+      "body": "Common groupings include `layouts/`, `components/`, `shared/`, `auth/`, `dashboard/`, `admin/`, or feature-based folders."
+    },
+    {
+      "title": "77. What does feature-oriented view thinking mean?",
+      "body": "Organizing views around business features such as `orders`, `billing`, or `profile` so readers keep business context in mind."
+    },
+    {
+      "title": "78. Should Blade query the database?",
+      "body": "No. It makes views harder to test, increases coupling, and often creates N+1 query issues."
+    },
+    {
+      "title": "79. Should Blade call services directly?",
+      "body": "Best avoided. If the view needs that much intelligence, another layer is likely missing responsibility."
+    },
+    {
+      "title": "80. What logic is acceptable in Blade?",
+      "body": "Light presentation logic: display conditions, loops, simple visual states, and small formatting choices."
+    },
+    {
+      "title": "81. What logic does not belong in Blade?",
+      "body": "Heavy business rules, database access, API calls, complex permission decisions, or large calculations."
+    },
+    {
+      "title": "82. What is `@class`?",
+      "body": "It helps build conditional class lists more clearly than manual string concatenation.",
+      "code": "<div @class(['p-4', 'bg-red-500' => $hasError])></div>"
+    },
+    {
+      "title": "83. What is `@style`?",
+      "body": "It works similarly to `@class`, but for conditional inline styles. It should be used carefully."
+    },
+    {
+      "title": "84. `@checked`, `@selected`, `@disabled`, `@readonly`, `@required`",
+      "body": "These directives make conditional form attributes much cleaner in Blade.",
+      "code": "<option value=\"admin\" @selected(old('role') === 'admin')>Admin</option>"
+    },
+    {
+      "title": "85. What is `@once` used for?",
+      "body": "It ensures a block renders only once, even if a view or component appears multiple times."
+    },
+    {
+      "title": "86. What is `@aware` in components?",
+      "body": "It lets child components access certain parent component props in more advanced component patterns."
+    },
+    {
+      "title": "87. What is `@props`?",
+      "body": "In anonymous components, `@props` declares the props the component expects and can define defaults.",
+      "code": "@props(['variant' => 'primary'])"
+    },
+    {
+      "title": "88. Where is `@slot` used?",
+      "body": "It is used when passing named slot content into a component."
+    },
+    {
+      "title": "89. Does `@csrf` matter for JavaScript?",
+      "body": "It can matter for AJAX or JS-driven requests too, but in classic Blade forms it mostly appears as a hidden input."
+    },
+    {
+      "title": "90. Why use `route()` inside Blade?",
+      "body": "It builds links and form actions from route names instead of hardcoding URLs, making the view more resilient."
+    },
+    {
+      "title": "91. Why use `asset()`?",
+      "body": "It builds URLs to public assets such as images, icons, or static files that are not necessarily handled by the build pipeline."
+    },
+    {
+      "title": "92. Using `url()` or `request()` in Blade",
+      "body": "These can help with active navigation, current-path checks, or dynamic links, but should not dominate the view."
+    },
+    {
+      "title": "93. How do you keep active-menu code clean in Blade?",
+      "body": "Usually through route names, request-path checks, or small helpers rather than messy repeated conditions."
+    },
+    {
+      "title": "94. Why do empty states matter in Blade?",
+      "body": "A list without a clear empty state leads to confusing UX. `@forelse` is especially useful here."
+    },
+    {
+      "title": "95. What do loading states look like in server-rendered UI?",
+      "body": "Buttons can become disabled, text can change, and spinners can appear. Server-rendered does not mean loading state is unimportant."
+    },
+    {
+      "title": "96. Flash messages in Blade",
+      "body": "These are commonly powered by session flash data to show success, error, or warning messages after redirects."
+    },
+    {
+      "title": "97. What usually powers modals, dropdowns, and tabs in Blade?",
+      "body": "Very often Alpine, because it adds lightweight interactivity without forcing a larger SPA stack."
+    },
+    {
+      "title": "98. Where does Blade pair best with Alpine?",
+      "body": "In small interactions such as toggles, tabs, dropdowns, accordions, and light client-side state."
+    },
+    {
+      "title": "99. Where does Blade pair best with Livewire?",
+      "body": "In wizards, interactive tables, filtered dashboards, and richer server-backed interfaces."
+    },
+    {
+      "title": "100. When is plain Blade enough?",
+      "body": "When the screen mostly displays data, opens forms, submits forms, and responds through validation or redirects."
+    },
+    {
+      "title": "101. When should Alpine be added?",
+      "body": "When the UI needs some client-side interaction but not a heavy SPA framework."
+    },
+    {
+      "title": "102. When should you start thinking about Livewire?",
+      "body": "When plain server-rendered UI starts to feel too static, but the team still wants to stay close to Laravel instead of building a separate SPA."
+    },
+    {
+      "title": "103. When does Blade start feeling overloaded?",
+      "body": "When client-side state becomes large, interactions become dense, and the interface starts behaving like a real application shell."
+    },
+    {
+      "title": "104. What are `@json` or `Js::from()` used for?",
+      "body": "They help safely bridge server data into JavaScript when Blade needs to hand state into the frontend layer.",
+      "code": "<script>\n  const user = @json($user);\n</script>"
+    },
+    {
+      "title": "105. Should you dump large JSON blocks into Blade?",
+      "body": "Be careful. Very large data payloads make HTML heavy and hard to maintain. Pass only what the client really needs."
+    },
+    {
+      "title": "106. Escaping and XSS in Blade",
+      "body": "Understanding `{{ }}` versus `{!! !!}` is only the start. The real habit is to assume user-generated content can be dangerous."
+    },
+    {
+      "title": "107. How should rich-text HTML from editors be rendered more safely?",
+      "body": "If you must render user HTML, sanitize it on the backend before considering raw output."
+    },
+    {
+      "title": "108. What is Blade compile cache?",
+      "body": "Blade views are compiled into PHP and cached. That is part of why Blade is not as slow as some people assume."
+    },
+    {
+      "title": "109. Why do view edits sometimes seem not to apply?",
+      "body": "Often because of cache, built assets, or simply editing the wrong file or component."
+    },
+    {
+      "title": "110. What does `view:clear` have to do with Blade?",
+      "body": "It clears compiled Blade view cache, which can help when you suspect stale compiled output."
+    },
+    {
+      "title": "111. What affects Blade performance?",
+      "body": "Prepared data quality, eager loading, component/include depth, view logic weight, and the surrounding asset layer."
+    },
+    {
+      "title": "112. What is N+1 in the view layer?",
+      "body": "It happens when loops in Blade trigger repeated lazy-loaded queries because related data was not eager loaded properly."
+    },
+    {
+      "title": "113. Accessibility in Blade",
+      "body": "Blade developers still shape labels, headings, focus order, form feedback, and keyboard usability every day."
+    },
+    {
+      "title": "114. Why should labels not be neglected?",
+      "body": "Poor labels make forms harder to use and worse for accessibility. This is common in rushed admin interfaces."
+    },
+    {
+      "title": "115. Component and prop naming should reflect UI meaning",
+      "body": "Names like `variant`, `size`, `label`, `error`, and `hint` are easier to understand than vague names like `modeX`."
+    },
+    {
+      "title": "116. Anti-pattern: extremely long views",
+      "body": "A Blade file with hundreds of lines is not automatically wrong, but if everything is dumped there, maintenance becomes painful."
+    },
+    {
+      "title": "117. Anti-pattern: too much UI copy-paste",
+      "body": "When buttons, inputs, alerts, and cards are repeated everywhere without reuse conventions, visual consistency collapses quickly."
+    },
+    {
+      "title": "118. Anti-pattern: pushing business logic into views",
+      "body": "This is one of the fastest ways to make a Laravel project age badly. Views should present, not govern core business behavior."
+    },
+    {
+      "title": "119. Anti-pattern: excessive componentization",
+      "body": "Turning every tiny fragment into a component can be as harmful as never creating components at all."
+    },
+    {
+      "title": "120. Anti-pattern: unstable component naming",
+      "body": "Without conventions, the more components a team has, the harder they become to discover and reuse correctly."
+    },
+    {
+      "title": "121. Tip: standardize input components early",
+      "body": "Text inputs, selects, textareas, and checkboxes are often worth standardizing early in projects with many forms."
+    },
+    {
+      "title": "122. Tip: alerts and buttons are especially worth componentizing",
+      "body": "They repeat constantly and are common sources of style drift if no convention exists."
+    },
+    {
+      "title": "123. Tip: use `@forelse` for business lists",
+      "body": "It keeps empty states explicit and reduces the chance of forgetting them."
+    },
+    {
+      "title": "124. Tip: do not fear Blade, fear disorganized views",
+      "body": "Blade itself is not the problem. Lack of layout, component, partial, form, and data-preparation discipline is the problem."
+    },
+    {
+      "title": "125. Tip: review Blade UI like real code",
+      "body": "Check naming, reuse, accessibility, validation, empty states, and action states, not only whether the screen renders."
+    },
+    {
+      "title": "126. A review checklist for a Blade screen",
+      "body": "Ask whether `@csrf` exists, old input is correct, errors show properly, components should be extracted, and logic is still in the right layer."
+    },
+    {
+      "title": "127. A checklist before creating a new component",
+      "body": "Ask whether the UI is truly reused, props are clear, slots are needed, and the naming fits the existing system."
+    },
+    {
+      "title": "128. A checklist before rendering raw HTML",
+      "body": "Ask where the data comes from, whether it was sanitized, whether scripts could be injected, and whether safe echo would work instead."
+    },
+    {
+      "title": "129. How should a beginner study Blade?",
+      "body": "Start with variable output, conditionals, loops, layouts, partials, forms, validation, components, and only then Alpine or Livewire."
+    },
+    {
+      "title": "130. Final practical truth: good server-rendered UI is not outdated",
+      "body": "A well-organized Blade application with solid forms, sensible componentization, clean data preparation, and carefully added interactivity can be powerful, fast, and durable."
+    },
+    {
+      "title": "131. What is a view composer, and when is it worth knowing?",
+      "body": "When many views need a shared piece of data such as menus, unread counts, tenant info, or global settings, a view composer can supply it centrally. But if overused, it makes views receive data from invisible places that later developers cannot easily trace."
+    },
+    {
+      "title": "132. Real case: Blade feels slow not because of Blade itself, but because the view touches too much hidden data",
+      "body": "A view may render slowly because it calls relationships inside loops, includes too many heavy partials, or depends on data computed right at render time. Many people blame the template layer when the real problem is bad data flow."
+    },
+    {
+      "title": "133. When has a Blade component become too smart?",
+      "body": "When it queries data, decides permissions, handles business state, and renders UI all at once. That kind of component feels convenient early on but becomes a hard-to-predict mini-controller over time."
+    },
+    {
+      "title": "134. Real case: why does changing one partial suddenly break many screens?",
+      "body": "Because a partial or component has been reused too widely without a clear contract for props, slots, or expected data context. Heavy reuse without explicit rules is a very common UI bug source."
+    },
+    {
+      "title": "135. Extra tip: Blade becomes easiest to maintain when the data arrives already prepared for rendering",
+      "body": "The view should receive data that is almost ready to display instead of having to infer too much itself. When controllers, actions, or view models prepare data well, Blade stays cleaner, more readable, and much less fragile."
+    },
+    {
+      "title": "136. Basic example: pass data from a controller to Blade and render it with `{{ }}`",
+      "body": "This is a basic step, but it is crucial for understanding how data moves from the backend into a server-rendered UI.",
+      "code": "class DashboardController extends Controller\n{\n    public function index()\n    {\n        return view('dashboard', [\n            'user' => auth()->user(),\n            'stats' => ['orders' => 12],\n        ]);\n    }\n}\n\n<h1>Hello {{ $user->name }}</h1>\n<p>You have {{ $stats['orders'] }} orders.</p>",
+      "note": "`{{ }}` escapes output by default, which helps reduce XSS risk. It should be your safe default."
+    },
+    {
+      "title": "137. Example of conditions, loops, and empty states in Blade",
+      "body": "Many CRUD screens become much easier once you understand this block well.",
+      "code": "@forelse ($orders as $order)\n    <li>#{{ $order->id }} - {{ $order->status }}</li>\n@empty\n    <li>No orders yet.</li>\n@endforelse\n\n@if ($errors->any())\n    <div class=\"alert\">The form currently has validation errors.</div>\n@endif",
+      "bullets": [
+        "`@forelse` is a great fit for screens that need both a list and an empty state.",
+        "`$errors` is the validation error data Laravel injects into traditional web views.",
+        "If conditional logic becomes too dense, review data preparation in the controller or service."
+      ]
+    },
+    {
+      "title": "138. Example of a Blade component and the difference between `{{ }}` and `{!! !!}`",
+      "body": "These are two concepts learners hit early and often only partially understand at first.",
+      "code": "<x-alert type=\"success\">\n    Data saved successfully.\n</x-alert>\n\n<p>{{ $post->title }}</p>\n<div>{!! $trustedHtml !!}</div>",
+      "bullets": [
+        "Components help you turn reusable markup into a clearer UI contract.",
+        "`{{ }}` escapes data before rendering.",
+        "`{!! !!}` renders raw HTML and should only be used when the data is truly trusted or carefully sanitized."
+      ],
+      "note": "If you are not fully confident the data is safe, prefer `{{ }}`."
+    }
+  ]
+}

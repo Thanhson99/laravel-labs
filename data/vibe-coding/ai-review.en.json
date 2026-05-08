@@ -1,0 +1,207 @@
+{
+  "heading": "Vibe Coding AI Review",
+  "intro": "This branch covers the most important side of Vibe Coding: reviewing AI output, tracing defects that AI created or disguised, and refactoring the result back into code that can survive over time.",
+  "type": "list",
+  "breaks": [
+    {
+      "start": 1,
+      "title": "Useful Debug Cases",
+      "description": "Pick bugs that feel real, have a visible root cause, and leave a clear lesson behind.",
+      "tone": "amber"
+    },
+    {
+      "start": 5,
+      "title": "Trace And Fix Flow",
+      "description": "A strong debug workflow shows the reasoning process, not just the final patch.",
+      "tone": "coral"
+    },
+    {
+      "start": 9,
+      "title": "When Refactor Work Matters",
+      "description": "A refactor is worth doing when it clarifies responsibility or reduces repeated bugs, not when it just changes style.",
+      "tone": "amber"
+    }
+  ],
+  "items": [
+    {
+      "title": "What kinds of bugs often show up in AI-generated code?",
+      "body": "Bugs such as `419 form submit`, broken uploads, `N+1`, workers running old code, stale config, or routes receiving the wrong data show up often when AI moves too fast without enough context."
+    },
+    {
+      "title": "What should the opening of an AI-output review workflow show?",
+      "body": "Show the real symptom first: what the AI-generated output is doing wrong, where the behavior drifts, and why the result is not acceptable to the user or the team."
+    },
+    {
+      "title": "What flow should the bug trace follow?",
+      "body": "Follow `reproduce -> read the error -> narrow the layer -> add logs or inspect -> confirm the hypothesis -> fix -> retest`.",
+      "code": "1. Reproduce\n2. Read the first useful error\n3. Narrow the layer\n4. Add log or inspect state\n5. Confirm the hypothesis\n6. Fix\n7. Retest",
+      "tip": "Viewers often learn the most from how you reject wrong hypotheses."
+    },
+    {
+      "title": "Should real logs be shown during debug?",
+      "body": "Yes, as long as they are clean enough and carry useful context. Real logs teach people how to read request ids, exception messages, file paths, and traces."
+    },
+    {
+      "title": "What should a 419-focused case explain?",
+      "body": "It should cover `@csrf`, session, cookies, expired forms, the difference between web routes and API routes, and why something can work locally but fail in production."
+    },
+    {
+      "title": "How should a fat-controller refactor of AI output be shown?",
+      "body": "Show the controller doing too much first, then peel off validation, action/service work, events, or view preparation.",
+      "code": "public function store(StoreOrderRequest $request, CreateOrderAction $action)\n{\n    $order = $action->handle($request->validated(), $request->user());\n\n    return redirect()->route('orders.show', $order);\n}\n",
+      "note": "A good refactor clarifies ownership, not just file count."
+    },
+    {
+      "title": "When should debug stay a small fix, and when should it grow into refactor?",
+      "body": "If the bug reveals a repeating structural weakness, carry it into refactor. If it is just a one-off typo or config slip, fix it cleanly and close with the lesson."
+    },
+    {
+      "title": "Should failed demo attempts be kept?",
+      "body": "You can keep a short slice if it helps the realism, but do not let the workflow drift into side-problems that do not serve the main lesson."
+    },
+    {
+      "title": "Which refactors work well as a series?",
+      "body": "Good candidates include `fat controllers`, `logic-heavy Blade views`, `ownerless services`, `slow queries`, `messy upload flow`, and `config read from the wrong place`."
+    },
+    {
+      "title": "What is the biggest mistake when reviewing or refactoring AI-generated code?",
+      "body": "Fixing only the surface symptom while leaving the pattern that caused it untouched. If the prompt, the boundary, or the checklist does not change, the model will likely repeat the same class of mistake later."
+    },
+    {
+      "title": "When should AI be asked to review its own output?",
+      "body": "It can be useful as a secondary pass, for example asking it to identify security risks, boundary smells, or missing tests. But it should never be treated as the final review authority."
+    },
+    {
+      "title": "What does a useful review prompt look like?",
+      "body": "Force the model to review against a checklist instead of asking a vague `do you see any bug here` question.",
+      "code": "Review this Laravel change for:\n- validation gaps\n- auth / policy gaps\n- file handling risks\n- query inefficiency\n- unrelated file edits\n- missing tests\n"
+    },
+    {
+      "title": "Which zones most often need to be sliced smaller during refactor?",
+      "body": "Usually controllers, heavy queries, logic-heavy Blade views, ownerless helpers, and deeply nested conditionals. These are the places where AI often produces syntactically valid but unhealthy code."
+    },
+    {
+      "title": "Should AI refactor many files at once?",
+      "body": "Only when the boundary is very tightly pinned. Otherwise it tends to spill into distant files and create diffs that are much harder to review."
+    },
+    {
+      "title": "When should an AI-suggested refactor be rejected?",
+      "body": "When it only changes style or adds layers without reducing bugs, clarifying responsibility, or making the system easier for the next person to read."
+    },
+    {
+      "title": "What is a hard review case for AI-generated output?",
+      "body": "A difficult case is code that looks clean, layered, and polished while still carrying the wrong boundary or business flow. That is when the reviewer must return to the real business behavior instead of trusting aesthetics."
+    },
+    {
+      "title": "Should AI compare the old diff and the new diff for you?",
+      "body": "Yes, that can be useful for spotting regression risk or scope creep. But risky zones such as auth, files, migrations, queries, and runtime still need direct human confirmation."
+    },
+    {
+      "title": "What is a strong workflow for fixing an AI-generated bug?",
+      "body": "Reproduce the bug first, isolate the wrong layer, ask AI to explain why the current code causes the bug, and only then ask for a patch. That works much better than throwing the error at the model and hoping for a blind fix.",
+      "code": "1. Reproduce\n2. Identify wrong layer\n3. Ask AI to explain root cause\n4. Ask AI for minimal patch\n5. Retest\n6. Decide whether refactor is needed\n"
+    },
+    {
+      "title": "When should AI output be abandoned and rewritten by hand?",
+      "body": "When the diff is too noisy, the patch touches far too many files outside scope, or you realize the whole flow is being pulled by a wrong underlying assumption."
+    },
+    {
+      "title": "What is a major red flag in AI code review?",
+      "body": "The model only repeats the concerns you already suspected and fails to reveal any new failure mode. If the review sounds generic, tighten the checklist or switch to deeper manual inspection."
+    },
+    {
+      "title": "What is a strong checklist for reviewing AI diffs?",
+      "body": "Inspect `scope`, `boundary`, `auth`, `validation`, `queries`, `out-of-zone file edits`, `runtime risk`, and `test impact`.",
+      "code": "Check:\n- is the bug actually reproduced?\n- which layer is wrong?\n- did AI change unrelated files?\n- does patch add new hidden side effects?\n- do tests cover the real failure?\n"
+    },
+    {
+      "title": "What if AI gives a very convincing root-cause explanation?",
+      "body": "You still verify it against the real symptom and flow. A plausible root-cause story is not proof. AI is very good at telling clean explanations, including incorrect ones."
+    },
+    {
+      "title": "What is a strong review-and-refactor workflow?",
+      "body": "Reproduce, isolate the layer, ask AI to explain, compare that to your own hypothesis, request a minimal patch, retest, and only then decide whether a larger refactor is justified.",
+      "tip": "Do not jump from a symptom straight into a big refactor if the root cause is still uncertain."
+    },
+    {
+      "title": "When should manual review fully replace AI review?",
+      "body": "When the bug touches auth, session behavior, cache invalidation, transactions, queue side effects, private files, or deploy/runtime concerns. AI can assist there, but should not be the final gatekeeper."
+    },
+    {
+      "title": "What is a sign that an AI patch is treating symptoms instead of the cause?",
+      "body": "The patch adds more if-statements, more cache clears, more null checks, or more retries without a clear explanation of why the original flow was wrong. That usually treats pain, not cause."
+    },
+    {
+      "title": "What if AI suggests a beautiful refactor but the diff is too large?",
+      "body": "Usually stop, split the refactor down, and ask for the smallest safe patch first. Large diffs destroy true review quality and easily mix old bugs with new ones."
+    },
+    {
+      "title": "What is a strong prompt for root-cause analysis?",
+      "body": "Do not ask for the fix immediately. Force the trace first.",
+      "code": "Do not patch yet.\nExplain the most likely root cause.\nList 3 competing hypotheses.\nSay what evidence would confirm each one.\n"
+    },
+    {
+      "title": "When should AI be asked for a minimal patch only?",
+      "body": "When the root cause is already known and you need a safe, fast, low-impact fix. Minimal patches are especially useful for hot bugs or production repairs."
+    },
+    {
+      "title": "What is the biggest red flag in AI Review?",
+      "body": "It gives you the feeling that review has happened, while in reality you only read a polished explanation. Real review still has to pass through symptom, code, flow, and verification."
+    }
+  ,
+    {
+      "title": "What is a strong tip for AI code review?",
+      "body": "Do not just ask `do you see any bug here`. Force the model to review through lenses: auth lens, validation lens, query lens, file-upload lens, runtime lens. Each lens exposes different failure modes."
+    },
+    {
+      "title": "When should AI be asked to rewrite the explanation instead of patching?",
+      "body": "When the first explanation is too vague or when it jumps too quickly into a solution. Rewriting the explanation forces the causal chain to become clearer before code changes begin."
+    },
+    {
+      "title": "What is an anti-pattern in AI Review?",
+      "body": "Seeing a patch that looks clean, includes tests, and extracts classes, then assuming it must be better. Clean form often hides boundary drift, side effects, or missing edge cases."
+    },
+    {
+      "title": "What should a strong root-cause prompt look like?",
+      "body": "Do not ask for the fix immediately. Force the trace first and ask for competing hypotheses.",
+      "code": "Do not patch yet.\nExplain the most likely root cause.\nList 3 competing hypotheses.\nSay what evidence would confirm each one.\n"
+    },
+    {
+      "title": "When should you take a snapshot before refactoring AI output?",
+      "body": "When the diff is larger than you can comfortably review, or when you suspect the next patch will blur the old symptom. A snapshot gives you a stable behavior reference before the cleanup starts."
+    },
+    {
+      "title": "What is one easy regression trap in AI Review work?",
+      "body": "The main bug gets fixed, but the patch quietly breaks log shape, queue dispatch, file cleanup, or policy checks because review stayed too focused on the visible path only."
+    },
+    {
+      "title": "When should AI only list the needed tests instead of writing them immediately?",
+      "body": "When you are not yet sure which behavior should be locked. A strong test list helps you choose the important cases before the model floods you with shallow test code."
+    },
+    {
+      "title": "What is a strong workflow for reviewing AI-generated diffs?",
+      "body": "Read the symptom first, read the diff second, map the symptom to the correct layer, and only then pull the model back in. If you read the diff first, clean structure can distract you from the real bug."
+    },
+    {
+      "title": "Why should you not trust a diff just because it looks clean?",
+      "body": "Because AI can produce a very polished-looking diff while the boundary is still wrong, dependencies are still being dragged in the wrong direction, or the data flow still violates the business shape. Clean does not mean correct."
+    },
+    {
+      "title": "When are green tests still not enough to merge AI output?",
+      "body": "When the original bug involves old data, race conditions, access control, side effects outside the test scope, or behavior that only appears in real runtime conditions. Green tests are just one signal, not final proof."
+    },
+    {
+      "title": "What is a subtle AI-review trap?",
+      "body": "The patch uses an API, helper, package method, or framework behavior from a different version than the repo actually runs. The diff looks plausible, but the current app does not have that primitive.",
+      "code": "Review version drift:\n- package really installed?\n- helper exists in this Laravel version?\n- config key exists?\n- facade method available?\n"
+    },
+    {
+      "title": "Should dependency and version checks be part of AI output review?",
+      "body": "Yes. Reviewers often get pulled into the feature logic and forget this layer, but version mismatch or package assumptions can kill the patch the moment it runs for real."
+    },
+    {
+      "title": "What should a strong AI diff-review prompt ask beyond business logic?",
+      "body": "Beyond logic, it should ask for `framework/version mismatch`, `dependency assumptions`, `runtime risk`, and `test illusion`. Those layers often expose failures that surface-level review misses."
+    }
+  ]
+}

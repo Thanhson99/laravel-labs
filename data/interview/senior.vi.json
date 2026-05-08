@@ -1,0 +1,507 @@
+{
+  "heading": "Senior",
+  "intro": "Bộ câu hỏi `senior` nghiêng về cách bạn nhìn hệ thống khi app đã lớn, nhiều người cùng sửa, nhiều rủi ro production hơn, và quyết định kỹ thuật không còn chỉ ảnh hưởng một feature. Ở level này, nhà tuyển dụng muốn thấy bạn có tư duy boundary, reliability, ownership, tradeoff, mentoring và khả năng giữ hệ thống sống khỏe lâu dài.",
+  "questionNumbered": true,
+  "questionStyle": "interview",
+  "breaks": [
+    {
+      "start": 1,
+      "title": "Kiến Trúc, Boundary Và Health Của Codebase",
+      "description": "Đánh giá cách bạn đọc một codebase lớn, nhìn mùi kiến trúc, và ra quyết định abstraction có lý do.",
+      "tone": "amber"
+    },
+    {
+      "start": 12,
+      "title": "Data, Consistency Và Reliability",
+      "description": "Tập trung vào transaction boundary, eventual consistency, dirty data, migration production và side effect khó rollback.",
+      "tone": "coral"
+    },
+    {
+      "start": 22,
+      "title": "Performance, Queue, Cache Và Scale",
+      "description": "Kiểm tra cách bạn nhìn bottleneck thật, scale queue, invalidation, backpressure và vận hành dưới tải.",
+      "tone": "amber"
+    },
+    {
+      "start": 32,
+      "title": "API, Security, DevOps Và Production Incident",
+      "description": "Nhóm này đào sâu integration, contract, deploy risk, incident response và cách senior nhìn production.",
+      "tone": "coral"
+    },
+    {
+      "start": 42,
+      "title": "Leadership Kỹ Thuật, Review Và Team Influence",
+      "description": "Phần cuối tập trung vào ownership, review, mentoring, xử lý bất đồng kỹ thuật và nâng mặt bằng team.",
+      "tone": "amber"
+    }
+  ],
+  "items": [
+    {
+      "title": "Bạn đánh giá một codebase Laravel đang khỏe hay đang mệt bằng gì?",
+      "body": "Một codebase khỏe thường cho phép người mới đoán tương đối đúng nơi cần mở, flow request dễ lần, side effect không bị rải bừa, test đáng tin, và deploy hoặc rollback có kỷ luật. Codebase mệt thường không chết vì một file xấu, mà vì chi phí thay đổi ngày càng khó đoán.",
+      "bullets": [
+        "Senior nên nói bằng tín hiệu quan sát được thay vì slogan.",
+        "Đây là câu mở đầu rất tốt để thể hiện góc nhìn hệ thống."
+      ],
+      "tip": "Một câu mạnh là: `em nhìn vào độ dễ lần flow, độ rõ boundary, độ tin cậy của test và chi phí thay đổi sau mỗi feature`."
+    },
+    {
+      "title": "Khi nào abstraction thực sự giúp team, và khi nào nó chỉ tạo thêm ceremony?",
+      "body": "Abstraction giúp khi nó làm boundary rõ hơn, giảm coupling, tăng khả năng test hoặc thay đổi có kiểm soát. Nó trở thành ceremony khi team phải đi qua thêm nhiều lớp nhưng không có thêm sự rõ ràng hoặc lợi ích thực dụng nào.",
+      "bullets": [
+        "Senior không nên mê abstraction chỉ vì nhìn đẹp trên sơ đồ.",
+        "Câu này đo khả năng chống overengineering."
+      ],
+      "note": "Câu trả lời tốt thường nhấn `abstraction có chi phí đọc, cost onboarding và cost debug`."
+    },
+    {
+      "title": "Nếu một app bắt đầu lớn, bạn chọn ưu tiên tách boundary nào trước?",
+      "body": "Nên tách nơi rủi ro thay đổi cao hoặc nơi business flow đang rối nhất trước, ví dụ payment, auth, order orchestration, integration với service ngoài. Tách sớm đúng điểm đau giúp team có lợi ngay hơn là chia đều cả repo theo một pattern mới.",
+      "bullets": [
+        "Senior thường ưu tiên theo risk và frequency of change.",
+        "Đây là tư duy rất khác với việc tách toàn bộ codebase cho đẹp."
+      ]
+    },
+    {
+      "title": "Bạn nhìn thế nào về `modular monolith` trong Laravel?",
+      "body": "Đây thường là bước trưởng thành hợp lý hơn microservice đối với nhiều team. Nó cho phép giữ deploy đơn giản hơn nhưng vẫn tạo boundary, ownership và isolation tốt hơn monolith hỗn tạp.",
+      "bullets": [
+        "Không phải project nào cũng cần microservice để giải quyết complexity.",
+        "Senior nên nói được vì sao monolith vẫn là lựa chọn đúng trong nhiều bối cảnh."
+      ]
+    },
+    {
+      "title": "Dấu hiệu nào cho thấy một boundary đang đặt sai?",
+      "body": "Nhiều module phải gọi chéo lộn xộn, một thay đổi nhỏ làm vỡ nhiều vùng, data contract bị xuyên thủng, hoặc phải dùng quá nhiều helper hoặc static shortcut để né boundary. Khi đó boundary nhìn có vẻ tồn tại nhưng không thật sự giữ được trách nhiệm.",
+      "bullets": [
+        "Boundary sai thường lộ ra ở dependency và tần suất thay đổi chéo.",
+        "Senior nên nhìn được `violation pattern` chứ không chỉ nhìn tên thư mục."
+      ]
+    },
+    {
+      "title": "Bạn xử lý thế nào khi controller, service, model đều đã quá tải nhưng không thể rewrite lớn?",
+      "body": "Senior thường chọn hướng bóc tách dần theo use case hoặc pain point thay vì rewrite toàn bộ. Cần tìm một seam an toàn, khóa behavior bằng test, rồi dần chuyển logic sang lớp có boundary rõ hơn.",
+      "bullets": [
+        "Đây là chỗ `strangler mindset` có giá trị.",
+        "Kinh nghiệm senior nằm ở việc cải thiện khi ràng buộc thực tế vẫn còn."
+      ],
+      "code": "public function store(StoreOrderRequest $request, LegacyOrderService $legacy)\n{\n    if (config('features.new_checkout_flow')) {\n        return app(CreateOrderAction::class)->handle($request->validated());\n    }\n\n    return $legacy->store($request->validated());\n}"
+    },
+    {
+      "title": "Bạn đọc một feature phức tạp mới trong repo như thế nào để hiểu nhanh mà không lạc?",
+      "body": "Senior thường lần theo một use case thật: route, request, authorize, controller, action hoặc service, model or query layer, event or job, rồi test liên quan. Cách đọc theo luồng này ít bị lạc hơn nhiều so với mở từng folder từ trên xuống.",
+      "bullets": [
+        "Đây cũng là cách mentor người mới hiệu quả.",
+        "Một senior tốt biến việc đọc repo thành quy trình lặp lại được."
+      ]
+    },
+    {
+      "title": "Bạn đánh giá thế nào về việc đẩy nhiều business logic vào Eloquent model?",
+      "body": "Model nên giữ logic gần dữ liệu khi nó thật sự thuộc domain của model đó, nhưng nếu orchestration, permission, external side effect và nhiều context khác nhau đều chui vào model thì model sẽ thành god-object. Senior cần cân bằng giữa tiện và đúng boundary.",
+      "bullets": [
+        "Senior không anti-model method, nhưng cũng không romanticize fat model.",
+        "Điểm chính là ownership của logic."
+      ]
+    },
+    {
+      "title": "Bạn nhìn giá trị của naming ở level senior như thế nào?",
+      "body": "Naming không chỉ là đẹp chữ. Tên lớp, method, event, job, command, cache key và metric name ảnh hưởng trực tiếp đến khả năng đoán flow, debug incident và phối hợp team. Naming tệ làm kiến trúc tệ nhanh hơn nhiều người tưởng.",
+      "bullets": [
+        "Senior nên nói được `naming is operational clarity`, không chỉ style.",
+        "Tên sai làm review, observability và handoff đều khó hơn."
+      ]
+    },
+    {
+      "title": "Nếu một team đã dùng nhiều pattern khác nhau lẫn lộn, bạn xử lý hướng thống nhất ra sao?",
+      "body": "Không nên ép rewrite rộng ngay. Hãy chọn vài quy ước rõ cho phần code mới, nêu tiêu chí chọn pattern, review theo cùng tiêu chí, và chỉ refactor dần ở vùng có giá trị cao. Senior influence nhiều khi đến từ consistency chậm mà chắc.",
+      "bullets": [
+        "Đây là câu về change management, không chỉ code.",
+        "Senior tốt tạo xu hướng tốt thay vì chỉ phê bình code cũ."
+      ],
+      "tip": "Một câu mạnh là: `em chuẩn hóa từ code mới trước, rồi kéo dần code cũ theo điểm đau thực tế`."
+    },
+    {
+      "title": "Khi nào bạn quyết định không tối ưu kiến trúc thêm nữa?",
+      "body": "Khi độ phức tạp hiện tại chưa đủ để justify thêm layer, hoặc khi chi phí onboarding, debug, và độ khó giao tiếp tăng nhanh hơn lợi ích maintainability. Senior nên biết dừng ở mức đủ tốt thay vì tối ưu hình thái code vô hạn.",
+      "bullets": [
+        "Đây là biểu hiện của phán đoán trưởng thành.",
+        "Không phải quyết định đúng nào cũng là quyết định nhiều lớp hơn."
+      ]
+    },
+    {
+      "title": "Bạn nghĩ transaction boundary nên được quyết định ở mức nào?",
+      "body": "Ở level senior, transaction nên được nghĩ theo business use case boundary chứ không chỉ theo một query hay một repository call. Điều quan trọng là xác định đâu là phần phải cùng thành công, đâu là side effect chấp nhận eventual consistency.",
+      "bullets": [
+        "Câu này đo góc nhìn consistency theo nghiệp vụ.",
+        "Senior nên nói được cả phần không nằm trong transaction."
+      ],
+      "code": "DB::transaction(function () use ($order, $paymentData) {\n    $order->markAsPaid();\n\n    Payment::create([\n        'order_id' => $order->id,\n        'provider_ref' => $paymentData['reference'],\n        'amount' => $paymentData['amount'],\n    ]);\n\n    OutboxMessage::create([\n        'type' => 'order.paid',\n        'payload' => ['order_id' => $order->id],\n    ]);\n});"
+    },
+    {
+      "title": "Bạn xử lý thế nào với flow vừa ghi DB vừa gọi external service mà business đòi 'phải đồng bộ tuyệt đối'?",
+      "body": "Senior nên giải thích rõ giới hạn thực tế: DB transaction không bảo đảm rollback thế giới bên ngoài. Khi business đòi tuyệt đối, cần chuyển cuộc nói chuyện sang semantics, reconciliation, retry, compensating action và mức chấp nhận inconsistency tạm thời.",
+      "bullets": [
+        "Đây là câu đánh giá khả năng giáo dục stakeholder bằng kỹ thuật dễ hiểu.",
+        "Senior mạnh là người không hứa sai bản chất hệ thống."
+      ],
+      "note": "Một câu rất trưởng thành là: `mình cần thống nhất định nghĩa 'thành công' và 'đồng bộ tuyệt đối' trước khi chốt design`."
+    },
+    {
+      "title": "Dirty data ảnh hưởng đến quyết định kỹ thuật của bạn như thế nào?",
+      "body": "Dirty data khiến migration, constraint, dedup, analytics và automation trở nên rủi ro hơn nhiều. Senior không giả định dữ liệu production sạch chỉ vì schema local đẹp; họ kiểm tra thực trạng dữ liệu trước khi khóa ràng buộc mới.",
+      "bullets": [
+        "Nhiều quyết định data fail vì tin model hơn tin data thật.",
+        "Senior nên nhắc đến cleanup, audit query hoặc backfill an toàn."
+      ]
+    },
+    {
+      "title": "Khi thêm constraint mới vào bảng production lớn, bạn cân nhắc gì?",
+      "body": "Cần nhìn data hiện tại, locking risk, thời gian chạy migration, rollback strategy, thứ tự rollout code và schema, và có cần backfill trước không. Ở level senior, migration production là một thay đổi vận hành chứ không chỉ thay đổi code.",
+      "bullets": [
+        "Schema change lớn cần nhìn như rollout plan.",
+        "Senior nên nói được nhiều bước thay vì một migration duy nhất."
+      ]
+    },
+    {
+      "title": "Bạn xử lý thế nào khi business rule đổi nhưng historical data không còn khớp rule mới?",
+      "body": "Cần phân biệt rule mới áp dụng cho data tương lai hay phải hồi tố toàn bộ. Nếu phải hồi tố, senior cần nghĩ tới backfill, audit, user communication, and reporting impact thay vì chỉ sửa validation hiện tại.",
+      "bullets": [
+        "Không phải rule mới nào cũng nên ép rewrite lịch sử.",
+        "Senior nhìn cả nghiệp vụ lẫn operational cost."
+      ]
+    },
+    {
+      "title": "Bạn nghĩ gì về soft delete ở level senior?",
+      "body": "Soft delete tiện cho recovery và audit bề mặt, nhưng nó cũng làm query phức tạp hơn, unique constraint rắc rối hơn, và dễ tạo cảm giác record đã mất trong khi thật ra chưa. Senior nên dùng nó có chủ đích, không mặc định mọi bảng đều soft delete.",
+      "bullets": [
+        "Soft delete là tradeoff, không phải best practice tuyệt đối.",
+        "Câu này tốt để đánh giá hiểu biết về data lifecycle."
+      ]
+    },
+    {
+      "title": "Khi nào bạn chọn eventual consistency một cách chủ động thay vì miễn cưỡng?",
+      "body": "Khi side effect nặng, integration ngoài, throughput cao hoặc latency thấp quan trọng hơn việc hoàn tất mọi thứ trong request chính. Senior chủ động chọn eventual consistency khi có cách quan sát, retry và reconcile tốt.",
+      "bullets": [
+        "Không phải eventual consistency chỉ là bất đắc dĩ.",
+        "Điểm chính là hệ thống phải giải thích được trạng thái trung gian."
+      ]
+    },
+    {
+      "title": "Bạn nghĩ gì về outbox pattern trong Laravel app?",
+      "body": "Đây là một cách tốt để nối DB write với side effect gửi event hoặc call downstream service đáng tin hơn. Senior không cần áp dụng mọi nơi, nhưng nên hiểu lúc nào chi phí của nó đáng trả, nhất là ở payment, order, billing hoặc audit-sensitive flow.",
+      "bullets": [
+        "Outbox tăng độ tin cậy nhưng cũng tăng complexity vận hành.",
+        "Đây là ví dụ rất đúng level senior."
+      ]
+    },
+    {
+      "title": "Nếu một reconciliation job liên tục phát hiện lệch trạng thái, điều đó gợi gì cho bạn?",
+      "body": "Đó thường là tín hiệu boundary hoặc event flow đang sai ở đâu đó: retry thiếu idempotency, queue worker chậm, webhook không tin cậy, hoặc source of truth chưa rõ. Senior nên nhìn reconciliation như detector của design smell chứ không chỉ là tool sửa data.",
+      "bullets": [
+        "Nếu reconcile phải cứu hệ thống quá thường xuyên, system design đáng bị hỏi lại.",
+        "Đây là góc nhìn production rất senior."
+      ]
+    },
+    {
+      "title": "Bạn nhìn bottleneck theo quy trình nào trước khi tối ưu?",
+      "body": "Senior thường hỏi request nào đang đau, metric nào xấu, P95 hay P99 nào vượt chịu đựng, bottleneck nằm ở DB, app CPU, queue lag, external API hay frontend perception. Tối ưu đúng bắt đầu từ câu hỏi đúng, không phải từ niềm tin cá nhân.",
+      "bullets": [
+        "Performance phải gắn với measurement.",
+        "Senior không tối ưu mù."
+      ],
+      "tip": "Một câu rất mạnh là: `em cần metric trước khi cần giải pháp`."
+    },
+    {
+      "title": "Khi nào cache là một thắng lợi, và khi nào cache chỉ là món nợ mới?",
+      "body": "Cache là thắng lợi khi dữ liệu đắt để tạo lại nhưng khá ổn định và ownership invalidation rõ. Nó là món nợ khi dữ liệu đổi liên tục, nhiều luồng ghi, key design mù mờ, hoặc khi team thiếu observability để biết cache đang đúng hay sai.",
+      "bullets": [
+        "Senior nên nói cả hit rate lẫn invalidation pain.",
+        "Cache tốt là vấn đề architecture và vận hành, không chỉ code."
+      ]
+    },
+    {
+      "title": "Nếu cache invalidation quá khó, bạn sẽ phản ứng thế nào?",
+      "body": "Thay vì cố cache mọi thứ, senior có thể giảm phạm vi cache, đổi shape dữ liệu, cache ở mức khác, chấp nhận TTL ngắn, hoặc quay lại tối ưu nguồn gốc bottleneck. Cache khó invalidation là tín hiệu design cần xem lại.",
+      "bullets": [
+        "Không phải cứ đã viết cache là phải giữ bằng mọi giá.",
+        "Senior chọn đơn giản lại nếu complexity vượt lợi ích."
+      ]
+    },
+    {
+      "title": "Bạn nhìn queue lag như thế nào trong production?",
+      "body": "Queue lag không chỉ là vấn đề worker ít. Nó có thể nói rằng downstream chậm, job quá nặng, retry storm, priority queue thiết kế sai, hoặc business đang đẩy workload vào async mà không quản capacity. Senior nên nhìn lag như một tín hiệu hệ thống.",
+      "bullets": [
+        "Queue health liên quan cả code, infra và product behavior.",
+        "Đây là câu tốt để thể hiện operational thinking."
+      ]
+    },
+    {
+      "title": "Nếu queue bị backlog sau deploy, bạn nghĩ tới những nguyên nhân nào trước?",
+      "body": "Hãy nghĩ tới code mới làm job nặng hơn, schema chưa rollout đủ, worker chưa restart, config lệch giữa web và worker, downstream timeout, hoặc retry tăng do bug logic mới.",
+      "bullets": [
+        "Senior tốt có checklist sự cố thay vì đoán mò.",
+        "Đây là bug rất thực chiến."
+      ],
+      "code": "php artisan horizon:pause\nphp artisan queue:restart\nphp artisan config:clear\nphp artisan horizon:continue"
+    },
+    {
+      "title": "Scale queue worker nên được nghĩ theo cách nào?",
+      "body": "Không chỉ tăng số worker. Cần nhìn job type, concurrency safety, rate limit của downstream, memory leak, timeout, retry policy, queue priority và chi phí vận hành. Senior scale hệ thống theo profile workload chứ không chỉ theo CPU.",
+      "bullets": [
+        "Scale mù có thể làm duplicate side effect hoặc bão retry nặng hơn.",
+        "Senior phải nghĩ cả capacity và correctness."
+      ]
+    },
+    {
+      "title": "Bạn đánh giá search relevance như thế nào ngoài chuyện 'có kết quả'?",
+      "body": "Senior nên nhìn thứ tự kết quả, synonym, typo tolerance, faceting, permission-aware search, zero-result analytics và tác động đến behavior thật của user. Search là một bài toán sản phẩm chứ không chỉ technical query.",
+      "bullets": [
+        "Câu này phân biệt người chỉ tích hợp search engine với người nhìn search như một capability.",
+        "Search quality phải gắn với outcome sử dụng."
+      ]
+    },
+    {
+      "title": "Nếu một endpoint chậm nhưng business muốn thêm field nữa vào response, bạn xử lý sao?",
+      "body": "Senior nên kéo cuộc thảo luận về cost: field đó lấy từ đâu, có relation mới không, có làm query nặng hơn không, có thể lazy load ở client hay split endpoint không. Không nên nhận mọi yêu cầu payload như chuyện nhỏ.",
+      "bullets": [
+        "Đây là ví dụ rất tốt của boundary giữa product và performance.",
+        "Senior mạnh là người nói được cái giá kỹ thuật dễ hiểu."
+      ]
+    },
+    {
+      "title": "Bạn nhìn scale database thế nào trước khi nói tới sharding?",
+      "body": "Thường nên tối ưu query, index, data access pattern, archive strategy, read-heavy path, batching và caching trước. Sharding là lựa chọn rất đắt và hiếm khi là bước đầu tiên đúng cho nhiều team Laravel.",
+      "bullets": [
+        "Senior không nhảy đến giải pháp nổi tiếng quá sớm.",
+        "Scale phải theo bottleneck thật và năng lực vận hành của team."
+      ]
+    },
+    {
+      "title": "Nếu integration với đối tác ngoài hay thay đổi contract, bạn thiết kế app thế nào để đỡ đau?",
+      "body": "Nên có adapter hoặc gateway rõ, normalize payload vào model nội bộ, log contract mismatch, có contract test hoặc smoke test, và tránh để shape của đối tác lan khắp codebase. Senior giảm blast radius của external change.",
+      "bullets": [
+        "Đây là bài toán boundary điển hình.",
+        "Integration sống lâu cần isolation tốt."
+      ],
+      "code": "class PartnerInvoiceGateway\n{\n    public function createInvoice(array $payload): PartnerInvoiceResult\n    {\n        $response = Http::timeout(10)->retry(2, 300)->post(config('services.partner.base_url').'/invoices', [\n            'customer_code' => $payload['customer_code'],\n            'amount_cents' => $payload['amount'],\n        ])->throw();\n\n        return new PartnerInvoiceResult(\n            externalId: $response['id'],\n            status: $response['status'],\n        );\n    }\n}"
+    },
+    {
+      "title": "Bạn nghĩ gì về API versioning trong Laravel app?",
+      "body": "Versioning không chỉ là thêm `/v1` cho đẹp. Nó là cam kết contract, migration plan cho client, deprecation strategy và support cost. Senior nên hiểu khi nào versioning đáng tách thật, khi nào chỉ cần evolve payload có kỷ luật.",
+      "bullets": [
+        "Versioning làm giảm bất ngờ nhưng tăng cost maintain.",
+        "Đây là tradeoff dài hạn chứ không phải mẹo route."
+      ]
+    },
+    {
+      "title": "Bạn nhìn security ở level senior khác level junior ra sao?",
+      "body": "Ngoài việc nhớ CSRF, XSS hay auth basics, senior nhìn security qua trust boundary, secret handling, auditability, permission drift, supply-chain risk, deploy surface và cách ứng phó khi compromise xảy ra.",
+      "bullets": [
+        "Senior không chỉ nghĩ về prevention mà còn detection và response.",
+        "Security trưởng thành luôn gắn với vận hành."
+      ]
+    },
+    {
+      "title": "Nếu production incident xảy ra giữa deploy, bạn ưu tiên rollback hay fix-forward?",
+      "body": "Senior không có câu trả lời máy móc. Cần nhìn blast radius, rollback safety, data migration state, queue jobs đang chạy, và thời gian khôi phục nhanh nhất. Mục tiêu đầu tiên là giảm tác động người dùng, sau đó mới đẹp về mặt quy trình.",
+      "bullets": [
+        "Đây là câu đo bản lĩnh operational judgment.",
+        "Rollback không phải lúc nào cũng an toàn hơn fix-forward."
+      ]
+    },
+    {
+      "title": "Runbook tốt theo góc nhìn senior nên có gì?",
+      "body": "Nó nên có symptom, metric hoặc log cần nhìn, bước cô lập, cách giảm blast radius, lệnh hoặc thao tác an toàn, điều kiện rollback, và owner rõ. Runbook tốt là tài sản giảm phụ thuộc vào trí nhớ anh hùng cá nhân.",
+      "bullets": [
+        "Senior nên nghĩ bằng hệ thống lặp lại được.",
+        "Runbook tốt là dấu hiệu của team trưởng thành."
+      ],
+      "code": "1. Check deploy marker and release time.\n2. Compare web error rate vs queue lag.\n3. Validate config drift between web and worker.\n4. Pause risky consumers if duplicate side effects are happening.\n5. Decide rollback or fix-forward with explicit owner."
+    },
+    {
+      "title": "Bạn đánh giá observability của một Laravel app bằng gì?",
+      "body": "Hãy nhìn log có context không, trace hoặc correlation có đủ không, metric nào thực sự bám business flow, queue lag có dashboard không, failed job có owner không, deploy có marker không, và incident xong có rút được nguyên nhân gốc không.",
+      "bullets": [
+        "Observability không chỉ là cài Telescope hay log nhiều.",
+        "Senior cần quan tâm khả năng trả lời câu hỏi production."
+      ]
+    },
+    {
+      "title": "Khi nào bạn thấy một team đang dựa quá nhiều vào người hùng production?",
+      "body": "Khi chỉ một vài người biết phải nhìn log nào, restart gì, clear cache gì, rollback thế nào, hoặc nhiều fix chỉ tồn tại trong trí nhớ cá nhân. Senior tốt sẽ biến tri thức cá nhân thành tri thức vận hành của team.",
+      "bullets": [
+        "Đây là câu leadership kỹ thuật hơn là framework.",
+        "Bus factor thấp là một rủi ro hệ thống."
+      ]
+    },
+    {
+      "title": "Bạn nghĩ thế nào về việc chạy `optimize:clear` như phản xạ sau mọi sự cố?",
+      "body": "Senior nên phản đối kiểu phản xạ mù đó. Clear-all có thể hữu ích khi reset local môi trường rối, nhưng trong production cần hiểu rõ lớp nào có vấn đề để tránh che nguyên nhân và tạo noise vận hành.",
+      "bullets": [
+        "Đây là chỗ thể hiện kinh nghiệm production thật.",
+        "Tool mạnh dùng sai ngữ cảnh làm hệ thống khó hiểu hơn."
+      ],
+      "note": "Câu trả lời tốt thường nhấn `debug đúng lớp trước, clear đúng lớp sau`."
+    },
+    {
+      "title": "Nếu một teammate đề xuất pattern rất phức tạp cho bài toán nhỏ, bạn phản hồi thế nào?",
+      "body": "Senior tốt không dập ý tưởng bằng authority. Họ kéo cuộc nói chuyện về problem size, change frequency, testing need, onboarding cost và operational risk, rồi cùng so sánh giải pháp với tiêu chí rõ hơn.",
+      "bullets": [
+        "Đây là bài test influence và phản biện trưởng thành.",
+        "Cách nói quan trọng không kém nội dung nói."
+      ]
+    },
+    {
+      "title": "Bạn review code ở level senior khác junior thế nào?",
+      "body": "Ngoài correctness, senior nhìn boundary, maintainability, observability, rollback safety, security assumptions, test strategy, naming, risk under concurrency và ảnh hưởng đến codebase lâu dài.",
+      "bullets": [
+        "Review senior là review cho tương lai của hệ thống, không chỉ cho PR hiện tại.",
+        "Đây là điểm phân biệt rất rõ về độ sâu."
+      ]
+    },
+    {
+      "title": "Bạn làm gì khi thấy một teammate lặp lỗi cùng kiểu nhiều lần?",
+      "body": "Thay vì chỉ fix từng PR, senior nên tìm nguyên nhân hệ thống: guideline thiếu, naming rối, boundary chưa rõ, review checklist kém hay onboarding chưa đủ. Mục tiêu là giảm lỗi lặp lại ở cả team.",
+      "bullets": [
+        "Leadership kỹ thuật bắt đầu từ chỗ nhìn lỗi như tín hiệu hệ thống.",
+        "Đây là câu rất hay để đánh giá mentoring mindset."
+      ]
+    },
+    {
+      "title": "Bạn đánh giá ownership của một senior developer bằng gì?",
+      "body": "Ownership không chỉ là nhận task khó. Nó là khả năng nhìn risk trước khi vỡ, nói rõ tradeoff, giữ communication minh bạch, follow-through sau deploy, và để hệ thống hoặc team tốt lên chứ không chỉ feature hoàn tất.",
+      "bullets": [
+        "Senior ownership gắn với outcome dài hạn.",
+        "Câu này rất thường dùng để phân biệt senior thật với người code nhanh."
+      ]
+    },
+    {
+      "title": "Nếu bạn không đồng ý với quyết định kỹ thuật của người khác nhưng vẫn phải làm cùng, bạn xử lý sao?",
+      "body": "Senior nên đưa vấn đề về tiêu chí cụ thể: risk, maintainability, scale, delivery pressure, cost of change. Nếu team vẫn chốt hướng khác, cần commit vào hướng đó có trách nhiệm trừ khi nó thật sự gây nguy hiểm nghiêm trọng.",
+      "bullets": [
+        "Đây là câu đo độ trưởng thành làm việc nhóm.",
+        "Phản biện tốt không đồng nghĩa với thắng tranh luận."
+      ]
+    },
+    {
+      "title": "Bạn mentor một junior hoặc intermediate như thế nào để họ lớn lên thật chứ không chỉ làm xong task?",
+      "body": "Hãy cho họ context, tiêu chí ra quyết định, cách tự debug, cách đọc flow, và review theo reasoning thay vì chỉ sửa cú pháp. Senior tốt dạy cách nghĩ, không chỉ sửa code thay.",
+      "bullets": [
+        "Mentoring tốt làm team tăng mặt bằng lâu dài.",
+        "Đây là câu rất hợp để nói về influence."
+      ],
+      "tip": "Một câu đẹp là: `em cố gắng để người sau lần sau tự xử lý được bài toán tương tự mà không cần em ngồi cạnh`."
+    },
+    {
+      "title": "Bạn nhìn thành công của một quyết định kỹ thuật sau 6 tháng bằng gì?",
+      "body": "Bằng chi phí thay đổi có giảm không, số bug cùng vùng có giảm không, onboarding có dễ hơn không, incident có ít hơn không, metrics có rõ hơn không và team có phải né khu vực đó nữa không.",
+      "bullets": [
+        "Senior đánh giá kiến trúc bằng hậu quả thực chứ không bằng cảm giác ban đầu.",
+        "Đây là một câu rất hay để thể hiện long-term thinking."
+      ]
+    },
+    {
+      "title": "Điều gì thường phân biệt senior thật với intermediate mạnh trong mắt nhà tuyển dụng?",
+      "body": "Senior thật không chỉ hiểu tradeoff của một feature hay một module, mà hiểu cách quyết định đó lan sang reliability, deploy, team velocity, observability và maintenance trong nhiều tháng hoặc nhiều người cùng chạm vào hệ thống. Họ vừa nhìn sâu vừa nhìn xa hơn.",
+      "bullets": [
+        "Khác biệt lớn nằm ở phạm vi tác động mà họ nhìn thấy và gánh được.",
+        "Senior không cần biết mọi thứ, nhưng phải biết hỏi và quyết định ở mức hệ thống hơn."
+      ],
+      "note": "Đây cũng là câu tự soi rất tốt nếu muốn đánh giá mình đã ở senior chưa."
+    },
+    {
+      "title": "Nếu người dùng nói 'thỉnh thoảng mới lỗi', bạn tiếp cận incident kiểu intermittent thế nào?",
+      "body": "Senior nên nghĩ tới correlation hơn là chỉ đọc từng log rời. Cần tìm pattern theo thời điểm deploy, tenant, node, queue lag, external dependency, traffic spike, payload shape, retry storm hoặc race condition. Intermittent bug thường không lộ bằng một stack trace đẹp.",
+      "bullets": [
+        "Đây là bài test rất rõ về tư duy incident thực chiến.",
+        "Senior mạnh thường tìm pattern, không chỉ chờ tái hiện bằng tay."
+      ],
+      "tip": "Một câu rất tốt là: `em sẽ cố tìm điều kiện chung của các lần lỗi trước khi cố sửa ngay một giả thuyết`."
+    },
+    {
+      "title": "Nếu request đi qua CDN, load balancer, reverse proxy, web server, PHP-FPM rồi mới vào Laravel, tại sao senior nên quan tâm chuỗi này?",
+      "body": "Vì lỗi có thể nằm ở nhiều lớp ngoài code app: header bị mất, IP thật không còn đúng, HTTPS termination lệch, body size bị chặn, timeout ở proxy ngắn hơn timeout ở app, hoặc cache layer trả dữ liệu cũ. Senior nên biết app không phải lớp duy nhất cần nghi ngờ.",
+      "bullets": [
+        "Đây là chỗ network và app bắt đầu nối nhau rõ rệt.",
+        "Một senior Laravel tốt không cần là network engineer, nhưng phải biết hỏi đúng lớp."
+      ]
+    },
+    {
+      "title": "Nếu người dùng gõ một URL file private và đôi khi tải được, đôi khi không, bạn sẽ nghĩ tới những lớp rủi ro nào?",
+      "body": "Hãy nghĩ tới signed URL expire, permission drift, cache header, CDN cache nhầm, proxy bypass, storage ACL, race condition khi đổi quyền, hoặc logic authorize chỉ nằm ở một entry point nhưng bị bỏ qua ở entry point khác.",
+      "bullets": [
+        "Đây là câu rất tốt để đánh giá boundary về file security.",
+        "Senior nên nghĩ được cả app logic và hạ tầng phân phối file."
+      ]
+    },
+    {
+      "title": "Nếu một API bị duplicate request từ client, proxy retry hoặc user refresh, senior thường thiết kế điểm tựa nào?",
+      "body": "Họ thường nghĩ tới `idempotency key`, unique business key, dedup window, trạng thái trung gian rõ ràng, và cách log hoặc reconcile request trùng. Mục tiêu là hệ thống chịu được duplicate thay vì giả định duplicate sẽ không xảy ra.",
+      "bullets": [
+        "Đây là tư duy reliability rất quan trọng ở payment, order, webhook và import flow.",
+        "Senior không chỉ xử lý duplicate như bug lẻ, mà như tính chất của hệ thống phân tán."
+      ],
+      "code": "IdempotencyRequest::firstOrCreate(\n    ['key' => $request->header('Idempotency-Key')],\n    ['status' => 'processing']\n);"
+    },
+    {
+      "title": "Nếu cần đánh giá năng lực tư duy của ứng viên bằng bài toán như tìm số bị thiếu hay tìm nguyên nhân request sai, senior interviewer thường nhìn gì ngoài đáp án?",
+      "body": "Họ nhìn cách ứng viên chốt giả định, chia bài toán, nhận ra constraint như memory hay concurrency, và cách ứng viên nói ra suy nghĩ để cộng tác giải quyết vấn đề. Với level senior, cách nghĩ dưới mơ hồ thường quan trọng hơn việc thuộc một mẹo thuật toán.",
+      "bullets": [
+        "Đây cũng là gợi ý tốt nếu bạn là người đi phỏng vấn ở level cao.",
+        "Senior không chỉ trả lời, mà còn thể hiện cách họ dẫn dắt bài toán."
+      ],
+      "note": "Một senior mạnh thường biến bài toán mơ hồ thành bài toán có cấu trúc trước khi giải."
+    },
+    {
+      "title": "Nếu business, product và hạ tầng kéo theo ba ưu tiên khác nhau, senior cân bằng ra sao?",
+      "body": "Senior nên làm rõ mục tiêu thật: cái gì là không thể vỡ, cái gì có thể trade, chi phí trì hoãn là gì, chi phí complexity là gì. Mục tiêu không phải làm mọi bên vui tuyệt đối, mà là đưa quyết định có lý do và ai cũng hiểu mình đang đánh đổi điều gì.",
+      "bullets": [
+        "Đây là câu rất đúng chất decision-making.",
+        "Senior tốt biến tranh luận cảm tính thành tradeoff rõ ràng."
+      ],
+      "tip": "Một khung rất mạnh là: `goal -> constraints -> options -> tradeoff -> decision -> risk owner`."
+    },
+    {
+      "title": "Nếu hệ thống bắt đầu chậm nhưng mỗi team đều đổ lỗi cho team khác, senior nên làm gì trước?",
+      "body": "Trước hết phải kéo mọi người về cùng một tập dữ liệu: metric nào đang xấu, request nào đau, queue lag ra sao, dependency ngoài thế nào, và timeline từ khi nào xấu lên. Không có shared evidence thì mọi tranh luận chỉ là niềm tin cá nhân.",
+      "bullets": [
+        "Đây là kỹ năng dẫn dắt kỹ thuật chứ không chỉ debug.",
+        "Senior mạnh thường giỏi tạo ngôn ngữ chung cho nhiều team."
+      ]
+    },
+    {
+      "title": "Nếu có incident lớn nhưng chưa rõ root cause, senior nên truyền đạt với stakeholder thế nào?",
+      "body": "Hãy tách rõ `điều đã biết`, `điều chưa biết`, `ảnh hưởng hiện tại`, `hành động đang làm` và `khi nào cập nhật tiếp`. Truyền đạt tốt giúp giảm hoảng loạn và tránh hứa quá mức khi root cause còn chưa chắc.",
+      "bullets": [
+        "Đây là câu leadership rất thực tế.",
+        "Incident communication tốt không chỉ dành cho manager."
+      ],
+      "note": "Senior tốt không dùng sự tự tin để che sự chưa chắc chắn; họ nói rõ mức độ chắc chắn của thông tin."
+    },
+    {
+      "title": "Nếu cần ra quyết định kỹ thuật mà dữ liệu đo đạc chưa đủ, senior nên làm gì?",
+      "body": "Có thể ra quyết định tạm thời dựa trên best current evidence, nhưng nên nói rõ đây là decision tạm, đặt thời điểm kiểm chứng lại, và nếu cần thì tạo experiment nhỏ hoặc logging bổ sung để lấy dữ liệu tốt hơn. Không phải lúc nào cũng chờ đủ data mới hành động được.",
+      "bullets": [
+        "Đây là chỗ phân biệt quyết đoán với liều lĩnh.",
+        "Senior tốt biết hành động trong bất định nhưng vẫn giữ khả năng đảo chiều."
+      ]
+    },
+    {
+      "title": "Ở level senior, `defense in depth` nên được hiểu thế nào trong một web system?",
+      "body": "Không trông cậy vào một lớp duy nhất như auth hay firewall. Cần nhiều lớp giảm rủi ro: validate input, authorize đúng boundary, rate limit, secure secret, log audit, network segmentation, safe defaults, review dependency và chuẩn bị response plan nếu một lớp bị xuyên thủng.",
+      "bullets": [
+        "Đây là câu rất tốt để phân biệt security awareness trưởng thành.",
+        "Senior không cần là security specialist, nhưng phải nhìn được rủi ro nhiều lớp."
+      ],
+      "note": "Một hệ thống mạnh không giả định 'một lớp chặn là đủ mãi mãi'."
+    },
+    {
+      "title": "Nếu một team muốn mở truy cập tạm cho dễ debug production, senior nên phản ứng ra sao?",
+      "body": "Senior nên hỏi rõ blast radius, data sensitivity, thời gian mở, audit trail, rollback access, và liệu có cách debug an toàn hơn không. 'Mở tạm' là cụm từ rất nguy hiểm nếu không có kiểm soát, vì nhiều cửa tạm trở thành cửa vĩnh viễn.",
+      "bullets": [
+        "Đây là câu rất thực chiến và hay dính tới quyền truy cập production.",
+        "Security tradeoff tốt không chỉ hỏi tiện hay không, mà hỏi ai trả giá nếu lộ dữ liệu."
+      ]
+    }
+  ]
+}

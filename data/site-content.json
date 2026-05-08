@@ -1,0 +1,953 @@
+{
+  "defaultLanguage": "en",
+  "languages": ["en", "vi"],
+  "common": {
+    "backToHome": {
+      "en": "Back to Portal",
+      "vi": "Quay lại cổng học tập"
+    },
+    "navigation": {
+      "home": {
+        "en": "Home",
+        "vi": "Trang chủ"
+      },
+      "roadmap": {
+        "en": "Roadmap",
+        "vi": "Cây trí tuệ"
+      },
+      "php": {
+        "en": "PHP",
+        "vi": "PHP"
+      },
+      "laravel": {
+        "en": "Laravel",
+        "vi": "Laravel"
+      },
+      "practice": {
+        "en": "Practice",
+        "vi": "Thực hành"
+      },
+      "interview": {
+        "en": "Interview",
+        "vi": "Phỏng vấn"
+      },
+      "vibeCoding": {
+        "en": "Vibe Coding",
+        "vi": "Vibe Coding"
+      }
+    },
+    "theme": {
+      "light": {
+        "en": "Light",
+        "vi": "Sáng"
+      },
+      "dark": {
+        "en": "Dark",
+        "vi": "Tối"
+      }
+    }
+  },
+  "pages": {
+    "landing": {
+      "metaTitle": {
+        "en": "Laravel Labs Learning Portal",
+        "vi": "Cổng học Laravel Labs"
+      },
+      "eyebrow": {
+        "en": "Laravel Labs",
+        "vi": "Laravel Labs"
+      },
+      "title": {
+        "en": "Laravel Learning Portal",
+        "vi": "Cổng học Laravel"
+      },
+      "subtitle": {
+        "en": "A static GitHub Pages portal for everything I am learning about PHP, Laravel, practice work, interview prep, and useful video references.",
+        "vi": "Một cổng học tập tĩnh cho GitHub Pages, tổng hợp mọi thứ tôi đang học về PHP, Laravel, bài thực hành, phỏng vấn và video tham khảo."
+      },
+      "sectionTitle": {
+        "en": "Choose a Learning Site",
+        "vi": "Chọn một site học tập"
+      },
+      "cards": [
+        {
+          "href": "sites/roadmap/index.html",
+          "title": {
+            "en": "Programming Roadmap",
+            "vi": "Cây trí tuệ lập trình"
+          },
+          "summary": {
+            "en": "Start here first: core technology map, learning order, and the path from zero to PHP and Laravel.",
+            "vi": "Xem trang này trước: bản đồ công nghệ cốt lõi, thứ tự học và con đường đi từ số 0 tới PHP rồi Laravel."
+          },
+          "button": {
+            "en": "Open Roadmap",
+            "vi": "Mở cây trí tuệ"
+          }
+        },
+        {
+          "href": "sites/php/index.html",
+          "title": {
+            "en": "PHP Fundamentals",
+            "vi": "Nền tảng PHP"
+          },
+          "summary": {
+            "en": "Concept notes for syntax, OOP, requests, sessions, and how PHP powers Laravel.",
+            "vi": "Ghi chú về cú pháp, OOP, request, session và cách PHP vận hành Laravel."
+          },
+          "button": {
+            "en": "Open PHP Site",
+            "vi": "Mở site PHP"
+          }
+        },
+        {
+          "href": "sites/laravel/index.html",
+          "title": {
+            "en": "Laravel Roadmap",
+            "vi": "Lộ trình Laravel"
+          },
+          "summary": {
+            "en": "From routing and Blade to queues, APIs, testing, teams, and production thinking.",
+            "vi": "Từ routing, Blade đến queue, API, testing, team feature và tư duy production."
+          },
+          "button": {
+            "en": "Open Laravel Site",
+            "vi": "Mở site Laravel"
+          }
+        },
+        {
+          "href": "sites/practice/index.html",
+          "title": {
+            "en": "Practice Projects",
+            "vi": "Bài thực hành"
+          },
+          "summary": {
+            "en": "Structured drills and mini-project ideas based on your current Laravel lab folders.",
+            "vi": "Bài tập có cấu trúc và ý tưởng mini-project dựa trên các lab Laravel hiện có."
+          },
+          "button": {
+            "en": "Open Practice Site",
+            "vi": "Mở site thực hành"
+          }
+        },
+        {
+          "href": "sites/interview/index.html",
+          "title": {
+            "en": "Interview Prep",
+            "vi": "Luyện phỏng vấn"
+          },
+          "summary": {
+            "en": "Common Laravel and PHP interview themes, answer outlines, and review checkpoints.",
+            "vi": "Các chủ đề phỏng vấn Laravel và PHP phổ biến, khung trả lời và điểm cần ôn."
+          },
+          "button": {
+            "en": "Open Interview Site",
+            "vi": "Mở site phỏng vấn"
+          }
+        },
+        {
+          "href": "sites/vibe-coding/index.html",
+          "title": {
+            "en": "Vibe Coding",
+            "vi": "Vibe Coding"
+          },
+          "summary": {
+            "en": "A dedicated area for AI-assisted coding workflows: prompting features, reviewing generated code, refactoring outputs, and applying runtime guardrails.",
+            "vi": "Một khu riêng cho cách lập trình cùng AI: prompt ra feature, để AI viết code, rồi review, sửa và giữ chất lượng output."
+          },
+          "button": {
+            "en": "Open Vibe Coding Site",
+            "vi": "Mở site Vibe Coding"
+          }
+        }
+      ],
+      "repoSectionTitle": {
+        "en": "Current Laravel Labs in This Repository",
+        "vi": "Các lab Laravel hiện có trong repository"
+      },
+      "repoSectionSubtitle": {
+        "en": "These cards reflect the four standalone Laravel projects already stored in the repo.",
+        "vi": "Các thẻ này phản ánh 4 project Laravel độc lập đang có sẵn trong repo."
+      },
+      "repoCards": [
+        {
+          "name": "breeze",
+          "summary": {
+            "en": "Basic authentication starter for understanding the default Laravel auth flow.",
+            "vi": "Starter auth cơ bản để hiểu luồng xác thực mặc định của Laravel."
+          },
+          "focusLabel": {
+            "en": "Focus:",
+            "vi": "Trọng tâm:"
+          },
+          "focus": {
+            "en": "routes, controllers, views, auth scaffolding",
+            "vi": "routes, controllers, views, auth scaffolding"
+          }
+        },
+        {
+          "name": "chirper",
+          "summary": {
+            "en": "Tutorial-style app for CRUD, posting flow, and practical app structure.",
+            "vi": "Ứng dụng kiểu tutorial để luyện CRUD, luồng đăng bài và cấu trúc app thực tế."
+          },
+          "focusLabel": {
+            "en": "Focus:",
+            "vi": "Trọng tâm:"
+          },
+          "focus": {
+            "en": "models, migrations, Blade/UI flow, feature habits",
+            "vi": "models, migrations, Blade/UI flow, thói quen xây dựng feature"
+          }
+        },
+        {
+          "name": "jetstream",
+          "summary": {
+            "en": "Advanced authentication and team-oriented features for larger app thinking.",
+            "vi": "Tính năng xác thực nâng cao và quản lý team để tiếp cận app quy mô lớn hơn."
+          },
+          "focusLabel": {
+            "en": "Focus:",
+            "vi": "Trọng tâm:"
+          },
+          "focus": {
+            "en": "teams, profile security, sessions, advanced auth flow",
+            "vi": "teams, profile security, sessions, auth flow nâng cao"
+          }
+        },
+        {
+          "name": "sail",
+          "summary": {
+            "en": "Docker-oriented Laravel setup for environment parity and workflow practice.",
+            "vi": "Thiết lập Laravel theo hướng Docker để luyện workflow và môi trường đồng nhất."
+          },
+          "focusLabel": {
+            "en": "Focus:",
+            "vi": "Trọng tâm:"
+          },
+          "focus": {
+            "en": "containers, services, local stack, reproducible setup",
+            "vi": "containers, services, local stack, tái tạo môi trường"
+          }
+        }
+      ]
+    },
+    "roadmap": {
+      "metaTitle": {
+        "en": "Programming Roadmap | Laravel Labs",
+        "vi": "Cây trí tuệ lập trình | Laravel Labs"
+      },
+      "eyebrow": {
+        "en": "Start Here",
+        "vi": "Bắt đầu từ đây"
+      },
+      "title": {
+        "en": "Programming Roadmap From Zero",
+        "vi": "Cây trí tuệ học lập trình từ số 0"
+      },
+      "subtitle": {
+        "en": "A study map to see the full path first: mindset, tools, web basics, PHP, Laravel, databases, and project habits.",
+        "vi": "Một bản đồ học để nhìn toàn cảnh trước khi lao vào code: tư duy, công cụ, nền tảng web, PHP, Laravel, database và thói quen làm project."
+      },
+      "sections": [
+        {
+          "type": "cards",
+          "heading": {
+            "en": "Main learning stages",
+            "vi": "Các chặng học chính"
+          },
+          "intro": {
+            "en": "Do not jump straight into framework topics. Build a stable base, then move upward in order.",
+            "vi": "Không nên nhảy ngay vào framework. Hãy dựng nền ổn định trước rồi đi lên theo thứ tự."
+          },
+          "items": [
+            {
+              "title": {
+                "en": "Stage 1: Computer and coding mindset",
+                "vi": "Chặng 1: Tư duy máy tính và lập trình"
+              },
+              "body": {
+                "en": "Understand files, folders, input-output, variables, conditions, loops, functions, and how programs run step by step.",
+                "vi": "Hiểu file, thư mục, input-output, biến, điều kiện, vòng lặp, hàm và cách chương trình chạy từng bước."
+              }
+            },
+            {
+              "title": {
+                "en": "Stage 2: Web foundation",
+                "vi": "Chặng 2: Nền tảng web"
+              },
+              "body": {
+                "en": "Learn HTML, CSS, basic JavaScript, browser-devtools, HTTP request-response, forms, and how a page talks to a server.",
+                "vi": "Học HTML, CSS, JavaScript cơ bản, devtools, HTTP request-response, form và cách một trang web nói chuyện với server."
+              }
+            },
+            {
+              "title": {
+                "en": "Stage 3: Backend entry with PHP",
+                "vi": "Chặng 3: Bước vào backend với PHP"
+              },
+              "body": {
+                "en": "Start PHP after the web base is clear: syntax, arrays, files, forms, sessions, JSON, and database basics.",
+                "vi": "Chỉ vào PHP khi nền web đã rõ: cú pháp, mảng, file, form, session, JSON và database cơ bản."
+              }
+            },
+            {
+              "title": {
+                "en": "Stage 4: Laravel and real app flow",
+                "vi": "Chặng 4: Laravel và luồng app thực tế"
+              },
+              "body": {
+                "en": "Move into routing, Blade, validation, auth, Eloquent, queue, testing, and production thinking once PHP feels natural.",
+                "vi": "Khi PHP đã đủ tự nhiên thì chuyển sang routing, Blade, validation, auth, Eloquent, queue, testing và tư duy production."
+              }
+            }
+          ]
+        },
+        {
+          "type": "cards",
+          "heading": {
+            "en": "Technology tree",
+            "vi": "Cây công nghệ cần nhìn trước"
+          },
+          "intro": {
+            "en": "These topics connect to each other. Treat them as a map, not as isolated lessons.",
+            "vi": "Các phần này nối với nhau. Hãy xem chúng như một bản đồ, không phải các bài rời rạc."
+          },
+          "items": [
+            {
+              "title": {
+                "en": "Core tools",
+                "vi": "Công cụ cốt lõi"
+              },
+              "body": {
+                "en": "VS Code, terminal, file system, Git, GitHub, package managers, and basic debugging habits.",
+                "vi": "VS Code, terminal, hệ thống file, Git, GitHub, package manager và thói quen debug cơ bản."
+              }
+            },
+            {
+              "title": {
+                "en": "Frontend basics",
+                "vi": "Frontend nền tảng"
+              },
+              "body": {
+                "en": "HTML structure, CSS layout, responsive design, JavaScript syntax, events, DOM, and fetch.",
+                "vi": "Cấu trúc HTML, layout CSS, responsive, cú pháp JavaScript, event, DOM và fetch."
+              }
+            },
+            {
+              "title": {
+                "en": "Backend basics",
+                "vi": "Backend nền tảng"
+              },
+              "body": {
+                "en": "PHP syntax, request lifecycle, sessions, cookies, validation, files, JSON, APIs, and services.",
+                "vi": "Cú pháp PHP, request lifecycle, session, cookie, validation, file, JSON, API và service."
+              }
+            },
+            {
+              "title": {
+                "en": "Data and deployment",
+                "vi": "Dữ liệu và triển khai"
+              },
+              "body": {
+                "en": "SQL, MySQL, table design, relationships, migrations, Docker, environment files, logging, and deployment basics.",
+                "vi": "SQL, MySQL, thiết kế bảng, quan hệ dữ liệu, migration, Docker, file môi trường, logging và nền tảng deploy."
+              }
+            }
+          ]
+        },
+        {
+          "type": "list",
+          "heading": {
+            "en": "Recommended study order",
+            "vi": "Thứ tự học khuyến nghị"
+          },
+          "intro": {
+            "en": "This order is optimized to reduce confusion and make each next topic feel justified.",
+            "vi": "Thứ tự này giúp giảm rối và khiến mỗi bước tiếp theo có lý do rõ ràng."
+          },
+          "items": [
+            {
+              "title": {
+                "en": "Step 1",
+                "vi": "Bước 1"
+              },
+              "body": {
+                "en": "Learn typing discipline, file structure, terminal basics, and Git before worrying about frameworks.",
+                "vi": "Học kỷ luật gõ code, cấu trúc file, terminal cơ bản và Git trước khi lo về framework."
+              }
+            },
+            {
+              "title": {
+                "en": "Step 2",
+                "vi": "Bước 2"
+              },
+              "body": {
+                "en": "Build a few static pages with HTML and CSS, then add simple JavaScript interactions.",
+                "vi": "Tự làm vài trang tĩnh bằng HTML và CSS, sau đó thêm tương tác JavaScript đơn giản."
+              }
+            },
+            {
+              "title": {
+                "en": "Step 3",
+                "vi": "Bước 3"
+              },
+              "body": {
+                "en": "Study how the web works: URL, request, response, status code, form submit, JSON, and browser network tab.",
+                "vi": "Học cách web vận hành: URL, request, response, status code, form submit, JSON và tab network của trình duyệt."
+              }
+            },
+            {
+              "title": {
+                "en": "Step 4",
+                "vi": "Bước 4"
+              },
+              "body": {
+                "en": "Start the PHP section next and practice variables, conditions, loops, forms, sessions, and file handling.",
+                "vi": "Sau đó mới sang phần PHP để luyện biến, điều kiện, vòng lặp, form, session và xử lý file."
+              }
+            },
+            {
+              "title": {
+                "en": "Step 5",
+                "vi": "Bước 5"
+              },
+              "body": {
+                "en": "Move to SQL and MySQL so your PHP code can read and write real application data.",
+                "vi": "Tiếp tục với SQL và MySQL để code PHP có thể đọc ghi dữ liệu ứng dụng thật."
+              }
+            },
+            {
+              "title": {
+                "en": "Step 6",
+                "vi": "Bước 6"
+              },
+              "body": {
+                "en": "Enter Laravel only after plain PHP no longer feels mysterious.",
+                "vi": "Chỉ vào Laravel khi PHP thuần không còn là thứ mơ hồ nữa."
+              }
+            }
+          ]
+        },
+        {
+          "type": "list",
+          "heading": {
+            "en": "What to build before and after PHP",
+            "vi": "Nên làm gì trước và sau PHP"
+          },
+          "intro": {
+            "en": "Use small projects to verify understanding instead of only reading notes.",
+            "vi": "Dùng project nhỏ để kiểm tra mức hiểu thay vì chỉ đọc ghi chú."
+          },
+          "items": [
+            {
+              "title": {
+                "en": "Before PHP",
+                "vi": "Trước PHP"
+              },
+              "body": {
+                "en": "Portfolio page, landing page, responsive card layout, simple JavaScript tabs, and a form UI without backend.",
+                "vi": "Trang portfolio, landing page, layout card responsive, tab JavaScript đơn giản và một form UI chưa cần backend."
+              }
+            },
+            {
+              "title": {
+                "en": "During PHP",
+                "vi": "Trong lúc học PHP"
+              },
+              "body": {
+                "en": "Login form mock, file upload sandbox, JSON read-write script, calculator, simple CRUD without framework.",
+                "vi": "Mock login form, sandbox upload file, script đọc ghi JSON, calculator và CRUD đơn giản chưa dùng framework."
+              }
+            },
+            {
+              "title": {
+                "en": "After PHP",
+                "vi": "Sau PHP"
+              },
+              "body": {
+                "en": "Task manager, blog, authentication flow, admin dashboard, and then a cleaner Laravel app based on the same ideas.",
+                "vi": "Task manager, blog, auth flow, admin dashboard rồi mới dựng app Laravel sạch hơn từ chính các ý tưởng đó."
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "php": {
+      "metaTitle": {
+        "en": "PHP Fundamentals | Laravel Labs",
+        "vi": "Nền tảng PHP | Laravel Labs"
+      },
+      "eyebrow": {
+        "en": "PHP Basics",
+        "vi": "Nền tảng PHP"
+      },
+      "title": {
+        "en": "PHP Before Laravel",
+        "vi": "PHP trước khi học Laravel"
+      },
+      "subtitle": {
+        "en": "A three-stage PHP study site that starts from language identity and command basics, then moves to coding patterns and hard practice questions.",
+        "vi": "Một site học PHP theo 3 giai đoạn, bắt đầu từ bản chất ngôn ngữ và lệnh cơ bản, rồi đi lên code thực hành và câu hỏi khó."
+      },
+      "journeyTitle": {
+        "en": "Three Learning Levels",
+        "vi": "Ba cấp độ học tập"
+      },
+      "journeySubtitle": {
+        "en": "Each level uses separate English and Vietnamese JSON files so language switching stays predictable.",
+        "vi": "Mỗi cấp độ dùng file JSON tiếng Anh và tiếng Việt riêng để việc chuyển ngôn ngữ ổn định và rõ ràng."
+      }
+    },
+    "laravel": {
+      "metaTitle": {
+        "en": "Laravel Roadmap | Laravel Labs",
+        "vi": "Lộ trình Laravel | Laravel Labs"
+      },
+      "eyebrow": {
+        "en": "Laravel Path",
+        "vi": "Lộ trình Laravel"
+      },
+      "title": {
+        "en": "Laravel From Basic to Advanced",
+        "vi": "Laravel từ cơ bản đến nâng cao"
+      },
+      "subtitle": {
+        "en": "Organize what you know into a path that can keep growing without rebuilding the site structure.",
+        "vi": "Tổ chức kiến thức bạn biết thành một lộ trình có thể mở rộng mà không cần xây lại cấu trúc site."
+      },
+      "sections": [
+        {
+          "type": "cards",
+          "heading": {
+            "en": "Learning Stages",
+            "vi": "Các giai đoạn học"
+          },
+          "intro": {
+            "en": "This stage map mirrors the way many Laravel projects grow in the real world.",
+            "vi": "Sơ đồ giai đoạn này phản ánh cách nhiều project Laravel phát triển trong thực tế."
+          },
+          "items": [
+            {
+              "title": {
+                "en": "Stage 1: Foundations",
+                "vi": "Giai đoạn 1: Nền tảng"
+              },
+              "body": {
+                "en": "Routing, controllers, Blade, forms, validation, migrations, Eloquent basics, and auth starter kits.",
+                "vi": "Routing, controller, Blade, form, validation, migration, Eloquent cơ bản và auth starter kit."
+              }
+            },
+            {
+              "title": {
+                "en": "Stage 2: Application Design",
+                "vi": "Giai đoạn 2: Thiết kế ứng dụng"
+              },
+              "body": {
+                "en": "Policies, service classes, custom requests, notifications, mail, queues, and test structure.",
+                "vi": "Policy, service class, custom request, notification, mail, queue và cấu trúc test."
+              }
+            },
+            {
+              "title": {
+                "en": "Stage 3: Production Thinking",
+                "vi": "Giai đoạn 3: Tư duy production"
+              },
+              "body": {
+                "en": "Caching, Horizon, jobs, API security, Docker, deployment, observability, and team workflows.",
+                "vi": "Caching, Horizon, job, bảo mật API, Docker, deploy, quan sát hệ thống và workflow theo team."
+              }
+            }
+          ]
+        },
+        {
+          "type": "list",
+          "heading": {
+            "en": "How the Current Repo Fits In",
+            "vi": "Repo hiện tại khớp vào lộ trình ra sao"
+          },
+          "intro": {
+            "en": "Each Laravel folder becomes one proof point in the roadmap instead of an isolated sandbox.",
+            "vi": "Mỗi thư mục Laravel trở thành một bằng chứng trong lộ trình thay vì chỉ là sandbox tách rời."
+          },
+          "items": [
+            {
+              "title": {
+                "en": "breeze",
+                "vi": "breeze"
+              },
+              "body": {
+                "en": "Use it for auth flow, middleware, route groups, and starter Blade views.",
+                "vi": "Dùng để học auth flow, middleware, route group và các view Blade khởi đầu."
+              }
+            },
+            {
+              "title": {
+                "en": "chirper",
+                "vi": "chirper"
+              },
+              "body": {
+                "en": "Use it for CRUD, relationships, validation, and user-facing feature flow.",
+                "vi": "Dùng để học CRUD, quan hệ dữ liệu, validation và luồng tính năng hướng người dùng."
+              }
+            },
+            {
+              "title": {
+                "en": "jetstream",
+                "vi": "jetstream"
+              },
+              "body": {
+                "en": "Use it for advanced auth, profile security, teams, and account management.",
+                "vi": "Dùng để học auth nâng cao, bảo mật hồ sơ, team và quản lý tài khoản."
+              }
+            },
+            {
+              "title": {
+                "en": "sail",
+                "vi": "sail"
+              },
+              "body": {
+                "en": "Use it for containerized local development and environment reproducibility.",
+                "vi": "Dùng để học local development theo container và khả năng tái tạo môi trường."
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "practice": {
+      "metaTitle": {
+        "en": "Practice Projects | Laravel Labs",
+        "vi": "Bài thực hành | Laravel Labs"
+      },
+      "eyebrow": {
+        "en": "Hands-on Work",
+        "vi": "Thực hành"
+      },
+      "title": {
+        "en": "Practice Plans and Mini Projects",
+        "vi": "Kế hoạch luyện tập và mini project"
+      },
+      "subtitle": {
+        "en": "Turn static notes into repeatable drills that map back to the labs in this repository.",
+        "vi": "Biến ghi chú tĩnh thành các bài luyện có thể lặp lại và liên kết lại với các lab trong repository."
+      },
+      "sections": [
+        {
+          "type": "cards",
+          "heading": {
+            "en": "Mini Project Ideas",
+            "vi": "Ý tưởng mini project"
+          },
+          "intro": {
+            "en": "Keep these projects intentionally small so each one reinforces a specific Laravel skill.",
+            "vi": "Giữ các project này nhỏ gọn để mỗi project củng cố một kỹ năng Laravel cụ thể."
+          },
+          "items": [
+            {
+              "title": {
+                "en": "Task Tracker",
+                "vi": "Task Tracker"
+              },
+              "body": {
+                "en": "Practice CRUD, policies, filters, seeders, and pagination.",
+                "vi": "Luyện CRUD, policy, filter, seeder và phân trang."
+              }
+            },
+            {
+              "title": {
+                "en": "Simple Blog",
+                "vi": "Blog đơn giản"
+              },
+              "body": {
+                "en": "Practice slugs, categories, comments, image uploads, and route model binding.",
+                "vi": "Luyện slug, category, comment, upload ảnh và route model binding."
+              }
+            },
+            {
+              "title": {
+                "en": "Team Dashboard",
+                "vi": "Team Dashboard"
+              },
+              "body": {
+                "en": "Practice roles, invitations, metrics cards, and user profile flows.",
+                "vi": "Luyện role, lời mời, thẻ chỉ số và luồng hồ sơ người dùng."
+              }
+            }
+          ]
+        },
+        {
+          "type": "list",
+          "heading": {
+            "en": "Weekly Practice Rhythm",
+            "vi": "Nhịp luyện tập hàng tuần"
+          },
+          "intro": {
+            "en": "A repeatable pattern keeps you learning even when you do not have time for a full project.",
+            "vi": "Một nhịp lặp lại giúp bạn vẫn tiến bộ ngay cả khi không có thời gian làm project lớn."
+          },
+          "items": [
+            {
+              "title": {
+                "en": "Day 1",
+                "vi": "Ngày 1"
+              },
+              "body": {
+                "en": "Read one concept, then rewrite it in your own English and Vietnamese notes.",
+                "vi": "Đọc một khái niệm rồi viết lại bằng ghi chú tiếng Anh và tiếng Việt của riêng bạn."
+              }
+            },
+            {
+              "title": {
+                "en": "Day 2",
+                "vi": "Ngày 2"
+              },
+              "body": {
+                "en": "Build the smallest possible working feature that uses that concept.",
+                "vi": "Xây dựng tính năng nhỏ nhất có thể nhưng vẫn dùng được khái niệm đó."
+              }
+            },
+            {
+              "title": {
+                "en": "Day 3",
+                "vi": "Ngày 3"
+              },
+              "body": {
+                "en": "Review what failed, what confused you, and what should move into the static notes site.",
+                "vi": "Xem lại phần nào lỗi, phần nào gây nhầm lẫn và phần nào nên đưa vào static notes site."
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "interview": {
+      "metaTitle": {
+        "en": "Interview Prep | Laravel Labs",
+        "vi": "Luyện phỏng vấn | Laravel Labs"
+      },
+      "eyebrow": {
+        "en": "Interview Bank",
+        "vi": "Ngân hàng phỏng vấn"
+      },
+      "title": {
+        "en": "Laravel and PHP Interview Practice",
+        "vi": "Luyện phỏng vấn Laravel và PHP"
+      },
+      "subtitle": {
+        "en": "Organize questions into reusable categories so this page can later grow into a JSON question bank.",
+        "vi": "Tổ chức câu hỏi thành các nhóm có thể tái sử dụng để sau này phát triển thành question bank bằng JSON."
+      },
+      "sections": [
+        {
+          "type": "cards",
+          "heading": {
+            "en": "Question Categories",
+            "vi": "Nhóm câu hỏi"
+          },
+          "intro": {
+            "en": "Cover fundamentals first, then move toward debugging, architecture, and delivery tradeoffs.",
+            "vi": "Đi từ nền tảng trước, sau đó chuyển sang debug, kiến trúc và tradeoff khi triển khai."
+          },
+          "items": [
+            {
+              "title": {
+                "en": "PHP Language Questions",
+                "vi": "Câu hỏi về ngôn ngữ PHP"
+              },
+              "body": {
+                "en": "Variables, OOP, traits, interfaces, references, Composer, and autoloading.",
+                "vi": "Biến, OOP, trait, interface, reference, Composer và autoloading."
+              }
+            },
+            {
+              "title": {
+                "en": "Laravel Core Questions",
+                "vi": "Câu hỏi Laravel cốt lõi"
+              },
+              "body": {
+                "en": "Service container, lifecycle, middleware, Eloquent, queues, events, and caching.",
+                "vi": "Service container, lifecycle, middleware, Eloquent, queue, event và caching."
+              }
+            },
+            {
+              "title": {
+                "en": "Project Experience Questions",
+                "vi": "Câu hỏi về trải nghiệm project"
+              },
+              "body": {
+                "en": "What you built, what broke, how you debugged it, and what you would improve next.",
+                "vi": "Bạn đã xây gì, phần nào hỏng, cách bạn debug và điều bạn sẽ cải tiến tiếp theo."
+              }
+            }
+          ]
+        },
+        {
+          "type": "list",
+          "heading": {
+            "en": "Answer Checklist",
+            "vi": "Checklist khi trả lời"
+          },
+          "intro": {
+            "en": "Use a simple structure so your answers sound grounded instead of memorized.",
+            "vi": "Dùng một cấu trúc đơn giản để câu trả lời nghe vững vàng thay vì học thuộc."
+          },
+          "items": [
+            {
+              "title": {
+                "en": "Define the concept",
+                "vi": "Định nghĩa khái niệm"
+              },
+              "body": {
+                "en": "Start with a short explanation in one or two sentences.",
+                "vi": "Bắt đầu bằng một giải thích ngắn trong một hoặc hai câu."
+              }
+            },
+            {
+              "title": {
+                "en": "Give a practical example",
+                "vi": "Đưa ví dụ thực tế"
+              },
+              "body": {
+                "en": "Tie the answer back to one of your labs such as Breeze or Jetstream.",
+                "vi": "Liên hệ câu trả lời với một lab của bạn như Breeze hoặc Jetstream."
+              }
+            },
+            {
+              "title": {
+                "en": "Mention tradeoffs",
+                "vi": "Nêu tradeoff"
+              },
+              "body": {
+                "en": "Show where the approach is useful and where it becomes limiting.",
+                "vi": "Chỉ ra khi nào cách làm đó hữu ích và khi nào nó bắt đầu hạn chế."
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "vibeCoding": {
+      "metaTitle": {
+        "en": "Vibe Coding | Laravel Labs",
+        "vi": "Vibe Coding | Laravel Labs"
+      },
+      "eyebrow": {
+        "en": "Vibe Coding",
+        "vi": "Vibe Coding"
+      },
+      "title": {
+        "en": "Vibe Coding and AI-assisted build hub",
+        "vi": "Hub Vibe Coding và AI-assisted build flow"
+      },
+      "subtitle": {
+        "en": "A separate area for the new way of working with AI: describe intent in natural language, let the model generate code, then review, test, and tighten the output.",
+        "vi": "Tách riêng một khu để gom cách làm việc mới cùng AI: mô tả bằng ngôn ngữ tự nhiên, để AI sinh code, rồi review, test và siết chất lượng đầu ra."
+      },
+      "sections": [
+        {
+          "type": "links",
+          "heading": {
+            "en": "Suggested Resource Slots",
+            "vi": "Các nhóm tài nguyên gợi ý"
+          },
+          "intro": {
+            "en": "Replace these placeholders with your preferred YouTube playlists, courses, or documentation pages.",
+            "vi": "Thay các mục mẫu này bằng playlist YouTube, khóa học hoặc trang tài liệu mà bạn ưu tiên."
+          },
+          "items": [
+            {
+              "href": "https://laravel.com/docs",
+              "label": {
+                "en": "Laravel Official Docs",
+                "vi": "Tài liệu chính thức Laravel"
+              },
+              "description": {
+                "en": "Use for first-party explanations of framework features and release-level behavior.",
+                "vi": "Dùng để đọc giải thích chính thức về tính năng framework và hành vi theo từng bản phát hành."
+              },
+              "action": {
+                "en": "Open resource",
+                "vi": "Mở tài nguyên"
+              }
+            },
+            {
+              "href": "https://www.php.net/docs.php",
+              "label": {
+                "en": "PHP Manual",
+                "vi": "PHP Manual"
+              },
+              "description": {
+                "en": "Use for exact language behavior, built-in functions, and edge-case verification.",
+                "vi": "Dùng để kiểm tra hành vi ngôn ngữ, hàm dựng sẵn và các trường hợp biên."
+              },
+              "action": {
+                "en": "Open resource",
+                "vi": "Mở tài nguyên"
+              }
+            },
+            {
+              "href": "https://github.com/laravel/laravel",
+              "label": {
+                "en": "Laravel App Skeleton",
+                "vi": "Bộ khung ứng dụng Laravel"
+              },
+              "description": {
+                "en": "Use for comparing your own project structure with the default upstream app layout.",
+                "vi": "Dùng để so sánh cấu trúc project của bạn với bộ khung mặc định upstream."
+              },
+              "action": {
+                "en": "Open resource",
+                "vi": "Mở tài nguyên"
+              }
+            }
+          ]
+        },
+        {
+          "type": "list",
+          "heading": {
+            "en": "How to Use This Page",
+            "vi": "Cách dùng trang này"
+          },
+          "intro": {
+            "en": "Keep the curation quality high so the page stays useful instead of becoming a random bookmark dump.",
+            "vi": "Giữ chất lượng chọn lọc cao để trang vẫn hữu ích thay vì biến thành nơi nhét bookmark ngẫu nhiên."
+          },
+          "items": [
+            {
+              "title": {
+                "en": "Group by outcome",
+                "vi": "Nhóm theo kết quả"
+              },
+              "body": {
+                "en": "Separate beginner tutorials, architecture talks, debugging walk-throughs, and interview materials.",
+                "vi": "Tách riêng tutorial cho người mới, talk về kiến trúc, walkthrough debug và tài liệu phỏng vấn."
+              }
+            },
+            {
+              "title": {
+                "en": "Keep both languages aligned",
+                "vi": "Giữ hai ngôn ngữ đồng bộ"
+              },
+              "body": {
+                "en": "Every new JSON entry should include both English and Vietnamese content from the start.",
+                "vi": "Mỗi mục JSON mới nên có luôn nội dung tiếng Anh và tiếng Việt ngay từ đầu."
+              }
+            },
+            {
+              "title": {
+                "en": "Review quarterly",
+                "vi": "Rà soát theo quý"
+              },
+              "body": {
+                "en": "Archive weak resources and keep only the channels or playlists that still teach clearly.",
+                "vi": "Loại bỏ tài nguyên yếu và chỉ giữ các kênh hoặc playlist vẫn dạy rõ ràng."
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

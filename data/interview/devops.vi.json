@@ -1,0 +1,597 @@
+{
+  "heading": "DevOps",
+  "intro": "Bộ câu hỏi `devops` dành cho phần phỏng vấn nghiêng về runtime, deploy, môi trường, queue worker, proxy, health check, incident và cost. Ở nhóm này, người ta không chỉ hỏi bạn biết lệnh gì, mà hỏi bạn hiểu hệ thống chạy ra sao khi có lỗi, khi scale, khi deploy, khi rollback và khi production không còn 'ngoan' như local nữa.",
+  "questionNumbered": true,
+  "questionStyle": "interview",
+  "breaks": [
+    {
+      "start": 1,
+      "title": "Môi Trường Chạy, Config Và Runtime",
+      "description": "Nhóm câu hỏi về môi trường local, staging, production, config, secret, container và process runtime.",
+      "tone": "amber"
+    },
+    {
+      "start": 11,
+      "title": "Deploy, Rollback Và Release Safety",
+      "description": "Tập trung vào cách ship an toàn, migration impact, release checklist, rollback và cách giảm blast radius.",
+      "tone": "coral"
+    },
+    {
+      "start": 21,
+      "title": "Queue, Scheduler, Worker Và Async Operations",
+      "description": "Đào sâu vào worker lifecycle, queue lag, scheduler, retry storm, concurrency và operational correctness.",
+      "tone": "amber"
+    },
+    {
+      "start": 31,
+      "title": "Proxy, Network, TLS, Storage Và Dependency",
+      "description": "Nhóm này hỏi về Nginx, load balancer, trusted proxy, TLS, file permission, S3/CDN và các lỗi mạng hay gặp.",
+      "tone": "coral"
+    },
+    {
+      "start": 41,
+      "title": "Incident, Cost, Monitoring Và On-Call Thinking",
+      "description": "Phần cuối tập trung vào incident response, health check, alert, post-deploy verification, cloud cost và tư duy trực production.",
+      "tone": "amber"
+    }
+  ],
+  "items": [
+    {
+      "title": "Khác nhau thực tế giữa local, staging và production là gì ngoài chuyện 'server khác nhau'?",
+      "body": "Khác ở config, traffic shape, data volume, secret, queue worker, cron, proxy, log path, cache path, file permission, dependency ngoài và mức độ blast radius. Càng làm thật nhiều, bạn càng thấy `same code` nhưng môi trường khác có thể tạo ra hành vi rất khác.",
+      "bullets": [
+        "Đây là câu nền để xem bạn có nhìn runtime như một hệ thống không.",
+        "Rất nhiều bug production đến từ khác biệt môi trường chứ không phải từ logic mới."
+      ],
+      "tip": "Một câu mạnh là: `production khác local không chỉ ở server, mà ở dữ liệu, traffic, secret và cách process sống`."
+    },
+    {
+      "title": "Tại sao `.env` và `config:cache` thường hay gây ra lỗi khó chịu sau deploy?",
+      "body": "Vì app có thể đang đọc config đã cache thay vì giá trị `.env` mới nhất. Nếu đổi biến môi trường mà không hiểu config cache đang hoạt động thế nào, bạn sẽ có cảm giác app 'không nghe lời' dù file `.env` đã đổi đúng.",
+      "bullets": [
+        "Đây là lỗi cực phổ biến ở Laravel production.",
+        "Người phỏng vấn rất hay dùng câu này để xem bạn đã từng vướng production thật chưa."
+      ],
+      "code": "php artisan config:clear\nphp artisan config:cache"
+    },
+    {
+      "title": "Nếu interviewer hỏi 'em cấu hình `nginx` cho Laravel ở mức cơ bản ra sao?', bạn nên nói gì?",
+      "body": "Bạn nên nói được `root` phải trỏ vào `public/`, request tĩnh thì serve thẳng, request không trúng file thì đẩy vào `index.php`, và PHP thường chạy qua `php-fpm`. Đó là bộ khung rất cơ bản của Laravel trên Nginx.",
+      "bullets": [
+        "Điểm quan trọng là `public/` là web root, không phải root project.",
+        "Nếu trả lời được vì sao phải `try_files` thì câu sẽ chắc hơn."
+      ],
+      "code": "server {\n    listen 80;\n    server_name example.com;\n    root /var/www/app/public;\n\n    index index.php;\n\n    location / {\n        try_files $uri $uri/ /index.php?$query_string;\n    }\n\n    location ~ \\.php$ {\n        include fastcgi_params;\n        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;\n        fastcgi_pass php:9000;\n    }\n}"
+    },
+    {
+      "title": "Khi nào nên dùng `config:cache`, và khi nào cần cẩn thận với nó?",
+      "body": "Nó hữu ích cho production vì giúp app load config nhanh và ổn định hơn, nhưng phải chắc rằng mọi config đều lấy từ file config chuẩn, không có thói quen gọi `env()` bừa trong business code. Nếu team chưa kỷ luật phần này, `config:cache` rất dễ tạo bug khó hiểu.",
+      "bullets": [
+        "Đây là câu nối giữa coding practice và runtime behavior.",
+        "DevOps tốt phải nhìn được mối quan hệ giữa convention code và safety deploy."
+      ]
+    },
+    {
+      "title": "Bạn nhìn secret management ở mức thực dụng thế nào?",
+      "body": "Secret không nên nằm rải rác trong code, chat, file local vô tổ chức hoặc commit nhầm lên repo. Điều quan trọng là secret có vòng đời rõ, ai sở hữu, ai được xem, rotate ra sao và rollback secret thế nào nếu có sự cố.",
+      "bullets": [
+        "Đây là câu rất dễ để phân biệt biết công cụ với hiểu trách nhiệm vận hành.",
+        "Ở nhiều nơi, sai lầm về secret gây hậu quả còn lớn hơn bug code."
+      ]
+    },
+    {
+      "title": "Nếu app chạy trong Docker hoặc container, điều gì thay đổi trong cách nghĩ của bạn?",
+      "body": "Bạn cần nghĩ rõ process nào chạy trong container, dữ liệu nào ephemeral, log đi đâu, file upload lưu ở đâu, env được inject thế nào, health check ai gọi, và khi restart container thì thứ gì mất, thứ gì còn.",
+      "bullets": [
+        "Container không tự động làm app 'chuẩn production'.",
+        "DevOps maturity nằm ở chỗ hiểu cái gì stateful, cái gì stateless."
+      ]
+    },
+    {
+      "title": "Tại sao `localhost` và tên service trong Docker hay gây lỗi khó hiểu?",
+      "body": "Vì `localhost` bên trong container thường là chính container đó, không phải host machine hay container khác. Nếu không hiểu network namespace cơ bản, rất dễ cấu hình DB, Redis hoặc service khác sai địa chỉ.",
+      "bullets": [
+        "Đây là lỗi local setup rất thực chiến.",
+        "Không ít bạn nghĩ app hỏng trong khi chỉ sai host name."
+      ],
+      "code": "DB_HOST=mysql\nREDIS_HOST=redis"
+    },
+    {
+      "title": "Bạn nghĩ gì về `chmod 777` như cách chữa cháy?",
+      "body": "Đó thường là dấu hiệu bạn chưa hiểu owner, group, user chạy process và permission path thật sự cần gì. Có lúc nó làm app chạy được tạm, nhưng nó che nguyên nhân gốc và mở ra rủi ro bảo mật không đáng có.",
+      "bullets": [
+        "Đây là câu rất hay để xem người trả lời có maturity vận hành không.",
+        "Fix permission đúng hướng tốt hơn nhiều so với mở toang permission."
+      ],
+      "note": "Một câu trưởng thành là: `em muốn biết process nào đang chạy bằng user nào và thư mục nào thật sự cần write trước khi đổi permission`."
+    },
+    {
+      "title": "Nếu local chạy được mà staging fail khi connect DB hoặc Redis, bạn bắt đầu từ đâu?",
+      "body": "Kiểm tra host, port, credential, network reachability, security group hoặc firewall nếu có, DNS name, env đúng server chưa, config cache, và service đích có thực sự chạy không.",
+      "bullets": [
+        "Đây là bug rất thật trong môi trường nhiều lớp.",
+        "Điều quan trọng là biết thu hẹp từng lớp thay vì đổi config ngẫu nhiên."
+      ]
+    },
+    {
+      "title": "Reverse proxy là gì và vì sao app Laravel phía sau proxy cần cấu hình đúng?",
+      "body": "Reverse proxy đứng trước app để nhận request rồi chuyển tiếp vào app hoặc upstream khác. Nếu không cấu hình đúng header chuyển tiếp, app có thể hiểu sai `scheme`, IP thật, host hoặc path và dẫn tới lỗi redirect, log sai IP hoặc generate URL sai.",
+      "bullets": [
+        "Đây là câu rất nền để hiểu `trusted proxy` sau này.",
+        "Proxy không chỉ để route traffic, mà còn ảnh hưởng behavior của ứng dụng."
+      ]
+    },
+    {
+      "title": "Nếu interviewer hỏi `proxy_pass` trong `nginx` để làm gì, bạn nên trả lời sao?",
+      "body": "`proxy_pass` dùng để chuyển request từ Nginx sang upstream khác, ví dụ app Node, app Laravel phía sau HTTP server khác, hoặc service nội bộ. Khi dùng nó, bạn cũng phải nghĩ tới header chuyển tiếp, timeout, body size và cách app phía sau hiểu request gốc.",
+      "bullets": [
+        "Đây là câu cấu hình rất hay gặp ở level DevOps.",
+        "Không chỉ nhớ keyword, mà phải hiểu request đang đi sang đâu và mất gì trên đường."
+      ],
+      "code": "location /api/ {\n    proxy_set_header Host $host;\n    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;\n    proxy_set_header X-Forwarded-Proto $scheme;\n    proxy_pass http://api-upstream;\n}"
+    },
+    {
+      "title": "Nếu deploy xong mà web lên nhưng asset vỡ hoặc giao diện cũ, bạn nghĩ tới điều gì?",
+      "body": "Có thể build chưa chạy, manifest asset không khớp, browser cache hoặc CDN cache giữ bản cũ, symlink release chưa trỏ đúng, hoặc app đang serve nhầm build path. Đây là dạng lỗi release rất hay gặp với Vite hoặc asset pipeline.",
+      "bullets": [
+        "Không phải mọi lỗi 'frontend' đều do frontend code.",
+        "Release artifact và cache behavior là phần quan trọng của deploy."
+      ]
+    },
+    {
+      "title": "Nếu một app cần vừa an toàn vừa ship nhanh, bạn chuẩn hóa môi trường release thế nào?",
+      "body": "Bằng artifact rõ, checklist ít nhưng đủ, config rõ nơi inject, health check tốt, rollback path thật, smoke test ngắn sau release, và ownership rõ ai theo dõi sau deploy. DevOps tốt làm release thành hành vi lặp được, không phải màn trình diễn cá nhân.",
+      "bullets": [
+        "Đây là tư duy systematize release.",
+        "Ship nhanh bền vững đến từ chuẩn hóa tốt hơn chứ không phải thao tác nhanh tay hơn."
+      ]
+    },
+    {
+      "title": "Nếu dùng Docker Compose cho Laravel app, những service nào thường xuất hiện và vì sao?",
+      "body": "Thường có `app` hoặc `php`, `nginx`, `mysql/postgres`, `redis`, có thể thêm `queue worker`, `scheduler` hoặc `mailhog`. Mỗi service tách vai trò để dễ quản lý lifecycle, log, scale và debug hơn thay vì nhét mọi thứ vào một container.",
+      "bullets": [
+        "Đây là câu rất thực tế vì nhiều project Laravel hiện đại học bằng Docker.",
+        "Một câu trả lời tốt nên nhấn rõ `1 container không nên ôm quá nhiều concern nếu muốn vận hành sạch hơn`."
+      ],
+      "code": "services:\n  app:\n    build: .\n  nginx:\n    image: nginx:alpine\n  mysql:\n    image: mysql:8\n  redis:\n    image: redis:7"
+    },
+    {
+      "title": "Nếu interviewer hỏi `volume` trong Docker để làm gì, bạn trả lời thế nào?",
+      "body": "`Volume` giúp dữ liệu không mất khi container bị recreate, hoặc giúp mount source code/config vào container. Với Laravel, volume thường liên quan code local dev, dữ liệu DB, storage hoặc cache path tùy cách triển khai.",
+      "bullets": [
+        "Đây là câu nền nhưng rất hay bị trả lời quá hời hợt.",
+        "Quan trọng là phân biệt data nên persistent với data có thể ephemeral."
+      ]
+    },
+    {
+      "title": "Nếu queue worker, scheduler và web app cùng dùng một image Docker, tại sao vẫn hay tách thành nhiều container khác nhau?",
+      "body": "Vì dù cùng một image, chúng là các process lifecycle khác nhau: web cần readiness khác, worker cần restart policy khác, scheduler cần nhịp chạy khác, log và scale cũng khác. Tách container giúp vận hành từng vai trò rõ hơn.",
+      "bullets": [
+        "Đây là câu rất hay để xem bạn có phân biệt image với container không.",
+        "Nhiều người mới học Docker hay nhầm rằng cùng image thì nên chạy chung hết."
+      ]
+    },
+    {
+      "title": "Một release an toàn nên có checklist gì?",
+      "body": "Tối thiểu nên có env change, migration impact, dependency ảnh hưởng, cache clear hoặc cache rebuild nào cần, queue restart cần không, smoke test cần gì, rollback path là gì và ai đang theo dõi sau release.",
+      "bullets": [
+        "Checklist tốt ngắn gọn nhưng bám rủi ro thật.",
+        "Checklist quá dài mà không dùng được cũng vô nghĩa."
+      ],
+      "code": "1. Confirm artifact/version\n2. Check env/config change\n3. Review migration risk\n4. Deploy\n5. Restart long-lived workers if needed\n6. Smoke test\n7. Watch errors and queue lag"
+    },
+    {
+      "title": "Rollback tốt là gì, và vì sao không phải lúc nào rollback cũng đơn giản?",
+      "body": "Rollback tốt là có đường quay về rõ, ít phá thêm trạng thái, và được nghĩ trước chứ không ứng biến. Nó không đơn giản khi có schema change không backward-compatible, job đang chạy, data đã bị ghi theo format mới hoặc external side effect đã bắn ra ngoài.",
+      "bullets": [
+        "Đây là câu nối deploy với data và async system.",
+        "Người có kinh nghiệm thật thường rất thận trọng khi nói `rollback là xong`."
+      ]
+    },
+    {
+      "title": "Khi nào nên dùng canary, phased rollout hoặc feature flag thay vì deploy toàn bộ một lúc?",
+      "body": "Khi blast radius lớn, traffic lớn, hoặc change risk cao. Những kỹ thuật này giúp thu hẹp bán kính lỗi trước khi toàn bộ người dùng chịu tác động, đồng thời tạo cửa quan sát tốt hơn.",
+      "bullets": [
+        "Đây là dấu hiệu bạn đang nghĩ release như một chiến lược, không chỉ thao tác kỹ thuật.",
+        "Không phải hệ thống nào cũng cần canary mọi lúc, nhưng phải biết khi nào nó đáng giá."
+      ]
+    },
+    {
+      "title": "Nếu migration có thể chạy rất lâu trên bảng lớn, bạn xử lý release sao cho an toàn hơn?",
+      "body": "Cần nghĩ nhiều bước: rollout code tương thích trước, backfill riêng, migration non-blocking nếu có thể, maintenance strategy, và cách giảm lock hoặc giảm surprise cho traffic thật.",
+      "bullets": [
+        "Đây là câu DevOps nhưng chạm rất sâu vào data strategy.",
+        "Không nên gộp mọi thay đổi vào một migration rồi cầu may."
+      ]
+    },
+    {
+      "title": "Nếu release fail giữa chừng, làm sao tránh vừa rollback vừa làm hệ thống tệ hơn?",
+      "body": "Cần phân biệt rõ phần nào đã đổi, phần nào chưa đổi, phần nào có thể rollback an toàn, và phần nào cần fix-forward. Nếu panic mà làm nhiều bước không kiểm soát, bạn rất dễ biến sự cố thành mớ hỗn loạn lớn hơn.",
+      "bullets": [
+        "Đây là câu về calm operational judgment.",
+        "Runbook và release marker tốt giúp cực nhiều ở chỗ này."
+      ]
+    },
+    {
+      "title": "Tại sao deploy kiểu `git pull` trực tiếp trên production thường bị xem là mong manh?",
+      "body": "Vì nó khó tái hiện, dễ lệch trạng thái, phụ thuộc môi trường máy đang đứng, và khó biết đúng artifact nào đang chạy. Artifact-based deploy hoặc image-based deploy cho traceability và repeatability tốt hơn.",
+      "bullets": [
+        "Đây là câu kinh điển để xem người trả lời có nghĩ tới repeatability không.",
+        "Không phải lúc nào `git pull` cũng sai tuyệt đối, nhưng nó yếu khi hệ thống lớn dần."
+      ]
+    },
+    {
+      "title": "Sau deploy vì sao queue vẫn chạy code cũ?",
+      "body": "Vì worker queue là process sống lâu. Nếu bạn đổi code nhưng không restart hoặc recycle worker, chúng có thể vẫn giữ bộ code hoặc config cũ trong memory.",
+      "bullets": [
+        "Đây là một trong những lỗi Laravel production hay gặp nhất.",
+        "Ai từng deploy thực sự thường đã dính câu này ít nhất một lần."
+      ],
+      "code": "php artisan queue:restart"
+    },
+    {
+      "title": "Nếu queue backlog tăng nhanh sau release, bạn kiểm tra gì trước?",
+      "body": "Nhìn worker có restart đúng không, job mới có nặng hơn không, downstream có chậm hơn không, retry có tăng không, queue priority có sai không, schema có lệch với code không và error log nói gì.",
+      "bullets": [
+        "Đây là bug vừa kỹ thuật vừa vận hành.",
+        "Không phải cứ tăng thêm worker là đúng hướng."
+      ]
+    },
+    {
+      "title": "Nếu dùng `supervisor` hoặc `systemd` để giữ worker sống, bạn nên hiểu gì ở mức phỏng vấn?",
+      "body": "Bạn nên hiểu đây là process manager: nó giúp start lại process khi chết, giữ số lượng process mong muốn, và cung cấp nơi cấu hình command, autostart, autorestart, log file hoặc resource limit. Điều quan trọng không phải thuộc syntax 100%, mà hiểu vai trò vận hành của nó.",
+      "bullets": [
+        "Đây là câu phổ biến vì queue worker rất ít khi được chạy tay ở production tử tế.",
+        "Process manager là phần nối giữa app code và runtime stability."
+      ],
+      "code": "[program:laravel-worker]\ncommand=php /var/www/app/artisan queue:work --sleep=3 --tries=3\nnumprocs=2\nautostart=true\nautorestart=true"
+    },
+    {
+      "title": "Scheduler và cron thường gây ra những loại lỗi gì?",
+      "body": "Hay gặp nhất là job không chạy, chạy trùng, timezone lệch, overlap lâu, chạy ở sai node, hoặc môi trường shell của cron không giống shell tương tác. Những lỗi này rất khó thấy nếu không có log hoặc metric đủ tốt.",
+      "bullets": [
+        "Đây là phần rất hay bị xem nhẹ ở app vừa và nhỏ.",
+        "Nhiều tác vụ quan trọng chết âm thầm chỉ vì scheduler không được quan sát."
+      ]
+    },
+    {
+      "title": "Bạn nhìn retry policy ở queue hay HTTP call như thế nào?",
+      "body": "Retry hữu ích nhưng cũng có thể tạo bão retry, duplicate side effect, và làm downstream chết nhanh hơn. DevOps tốt không chỉ hỏi `có retry không`, mà hỏi `retry bao nhiêu`, `cách nhau bao lâu`, `idempotent chưa` và `ai chịu tải đó`.",
+      "bullets": [
+        "Retry không đúng chính là amplifier của incident.",
+        "Đây là câu rất thực chiến."
+      ]
+    },
+    {
+      "title": "Khi nào `withoutOverlapping()` hoặc lock job trở nên quan trọng?",
+      "body": "Khi cùng một tác vụ không nên chạy song song, ví dụ đồng bộ billing, import dữ liệu, reconcile trạng thái hoặc đụng chung tài nguyên dễ conflict. Nếu không khóa đúng chỗ, scheduler hoặc queue có thể tạo race condition rất khó debug.",
+      "bullets": [
+        "Đây là intersection giữa app logic và runtime scheduling.",
+        "Người có kinh nghiệm thật thường cảnh giác với overlap hơn người chỉ chạy local."
+      ]
+    },
+    {
+      "title": "Nếu job `failed` tăng nhưng web vẫn ổn, bạn có coi đó là incident không?",
+      "body": "Có thể có. Nhiều hệ thống nhìn bề ngoài web vẫn xanh nhưng side effect quan trọng như mail, sync, billing hoặc notification đã chết phía sau. DevOps maturity là nhìn cả hệ thống async, không chỉ nhìn web response.",
+      "bullets": [
+        "Đây là câu đánh giá observability toàn cảnh.",
+        "Business impact nhiều khi nằm ở queue chứ không nằm ở request web."
+      ]
+    },
+    {
+      "title": "Bạn xử lý long-running worker như thế nào để tránh memory leak hoặc stale state?",
+      "body": "Cần có recycle strategy, memory limit phù hợp, restart policy, và quan sát memory growth. Với Laravel worker, stale state hoặc memory leak tích lũy theo thời gian là chuyện rất thật.",
+      "bullets": [
+        "Không phải process chạy lâu là process khỏe.",
+        "Đây là câu giúp phân biệt người biết command với người hiểu process behavior."
+      ]
+    },
+    {
+      "title": "Trusted proxy là gì và vì sao đôi khi app Laravel hiểu sai IP hoặc HTTPS?",
+      "body": "Khi app đứng sau reverse proxy hoặc load balancer, request thật có thể đi qua nhiều lớp và header như `X-Forwarded-For` hoặc `X-Forwarded-Proto` quyết định app nhìn thấy IP hay scheme gì. Nếu trusted proxy cấu hình sai, app có thể nghĩ request là HTTP thay vì HTTPS hoặc ghi nhận sai client IP.",
+      "bullets": [
+        "Đây là bug rất khó hiểu nếu chỉ nhìn code app.",
+        "Câu này đánh giá khả năng nối network layer với application behavior."
+      ]
+    },
+    {
+      "title": "Nếu `nginx` trả `502 Bad Gateway`, bạn nghĩ tới điều gì đầu tiên?",
+      "body": "Thường nghĩ tới upstream chết, PHP-FPM chưa chạy, socket hoặc port sai, timeout, permission trên socket, hoặc upstream trả lỗi mà Nginx không nói rõ hơn. `502` là dấu hiệu Nginx không nói chuyện được bình thường với backend của nó.",
+      "bullets": [
+        "Đây là lỗi cấu hình/runtime rất hay gặp.",
+        "Một câu trả lời tốt nên nhấn kiểm tra cả `nginx error log` lẫn log của upstream."
+      ]
+    },
+    {
+      "title": "Tại sao upload file lớn có thể fail trước cả khi vào Laravel controller?",
+      "body": "Vì request có thể bị chặn ở Nginx, Apache, load balancer, PHP upload limit hoặc timeout trước khi app kịp nhận. Nếu không biết chuỗi này, rất dễ debug nhầm ở controller trong khi controller chưa từng chạy.",
+      "bullets": [
+        "Đây là ví dụ tuyệt vời cho việc lỗi có thể nằm trước app layer.",
+        "DevOps tốt phải biết hỏi request chết ở lớp nào."
+      ],
+      "code": "client_max_body_size 50m;\npost_max_size=50M\nupload_max_filesize=50M"
+    },
+    {
+      "title": "Nếu website thỉnh thoảng redirect loop hoặc mixed-content sau khi bật HTTPS, bạn nghĩ tới gì?",
+      "body": "Nghĩ tới trusted proxy, `APP_URL`, URL generate sai scheme, asset cứng `http`, reverse proxy header, hoặc config cache chưa đồng bộ. Những lỗi này rất hay xảy ra khi mới có TLS termination qua proxy.",
+      "bullets": [
+        "Đây là bug môi trường rất thật.",
+        "Không ít người chữa ở Blade trong khi gốc lỗi nằm ở proxy hoặc config."
+      ]
+    },
+    {
+      "title": "S3, local disk và CDN khác nhau thế nào trong cách vận hành file?",
+      "body": "Local disk đơn giản nhưng gắn với máy đang chạy; S3 tách storage khỏi compute và thuận cho scale hơn; CDN tăng tốc phân phối file nhưng lại thêm một lớp cache và invalidation cần hiểu. File path, URL, permission và cache behavior thay đổi theo từng lớp này.",
+      "bullets": [
+        "Đây là câu rất thực tế với app có upload hoặc media.",
+        "Không thể nhìn storage chỉ như một `disk` abstraction trong code."
+      ]
+    },
+    {
+      "title": "Nếu dùng AWS S3 cho upload thật, những rủi ro vận hành nào bạn phải nghĩ tới ngoài chuyện 'lưu được file'?",
+      "body": "Bạn phải nghĩ tới bucket policy, object ACL hoặc IAM, naming strategy, public hay private object, signed URL expiration, lifecycle rule, region, egress cost, retry khi upload lỗi, và chuyện metadata hoặc DB record có thể lệch với file thật trên S3.",
+      "bullets": [
+        "Đây là chỗ nhiều người biết code upload nhưng chưa nghĩ hết runtime risk.",
+        "S3 không chỉ là chỗ lưu file; nó là một hệ thống có permission, cost và consistency riêng."
+      ],
+      "tip": "Một câu mạnh là: `em xem file storage như một subsystem riêng, không chỉ là một path để put object`."
+    },
+    {
+      "title": "Khi nào nên upload thẳng lên S3 từ client thay vì đi qua server app?",
+      "body": "Khi file lớn, traffic upload cao, hoặc app server không nên gánh toàn bộ băng thông và thời gian chờ upload. Nhưng đổi lại bạn phải xử lý presigned URL, bước finalize, verify object, và đảm bảo DB chỉ ghi nhận file khi upload thực sự hoàn tất.",
+      "bullets": [
+        "Direct-to-S3 giảm tải app nhưng tăng complexity flow.",
+        "Đây là câu rất đúng chất DevOps level cao vì nó đụng cả cost, scale và correctness."
+      ],
+      "code": "1. App cấp presigned URL\n2. Client upload trực tiếp lên S3\n3. Client gọi callback/finalize\n4. App verify object rồi mới ghi DB"
+    },
+    {
+      "title": "Nếu DNS, TLS hoặc certificate có vấn đề, ứng dụng thường biểu hiện ra sao?",
+      "body": "Có thể là timeout, SSL error, hostname mismatch, webhook fail, callback fail, browser cảnh báo, hoặc service nội bộ không gọi được nhau. Những lỗi này dễ bị hiểu nhầm là app bug nếu người debug không nhìn lên lớp mạng.",
+      "bullets": [
+        "Đây là câu để xem bạn có nghĩ tới dependency ngoài app không.",
+        "Nhiều incident production nằm ở certificate hết hạn hoặc DNS drift."
+      ]
+    },
+    {
+      "title": "Health check nên kiểm tra gì?",
+      "body": "Phải phân biệt `liveness` và `readiness`. `Liveness` hỏi process còn sống không; `readiness` hỏi app đã sẵn sàng phục vụ traffic an toàn chưa. Tùy hệ thống mà readiness có thể cần chạm DB, Redis hoặc dependency tối quan trọng.",
+      "bullets": [
+        "Đây là câu cơ bản nhưng rất hay bị trả lời hời hợt.",
+        "Health check tốt giúp orchestration và incident handling rất nhiều."
+      ],
+      "code": "Route::get('/health/live', fn () => response()->json(['ok' => true]));\nRoute::get('/health/ready', fn () => Cache::store()->get('ping') !== null\n    ? response()->json(['ok' => true])\n    : response()->json(['ok' => false], 503));"
+    },
+    {
+      "title": "Nếu health check xanh nhưng user vẫn kêu lỗi, điều đó nói gì?",
+      "body": "Nó nói rằng health check có thể đang quá nông, hoặc issue nằm ở một dependency, path, tenant, permission, cache state hoặc flow cụ thể mà health check không chạm tới. Health xanh không đồng nghĩa trải nghiệm người dùng đang khỏe.",
+      "bullets": [
+        "Đây là câu rất quan trọng để tránh niềm tin giả từ monitoring.",
+        "DevOps maturity là hiểu giới hạn của tín hiệu mình đang nhìn."
+      ]
+    },
+    {
+      "title": "Alert tốt nên như thế nào để không tạo mù cảnh báo?",
+      "body": "Alert nên gắn với symptom đủ quan trọng, có owner, có action rõ và không spam vì tín hiệu vô nghĩa. Nếu alert nhiều nhưng không dẫn tới hành động, on-call sẽ dần bỏ qua mọi thứ.",
+      "bullets": [
+        "Tín hiệu ít nhưng chất lượng tốt hơn rất nhiều alert vô nghĩa.",
+        "Đây là câu về human factors trong vận hành."
+      ]
+    },
+    {
+      "title": "Sau release, bạn theo dõi gì đầu tiên?",
+      "body": "Thường là error rate, queue lag, latency, health endpoint, smoke test flow, log lỗi mới, metric business rất gần thay đổi vừa ship và một vài dependency nhạy cảm nhất. Mục tiêu là bắt blast radius sớm nhất có thể.",
+      "bullets": [
+        "Đây là câu thực chiến để xem bạn có post-deploy discipline không.",
+        "Không phải cứ deploy thành công là xong."
+      ]
+    },
+    {
+      "title": "Nếu chỉ một tenant hoặc một nhóm khách hàng bị lỗi, bạn tổ chức debug thế nào?",
+      "body": "Hãy hỏi điều gì khác biệt ở nhóm đó: config riêng, data shape riêng, plan riêng, traffic pattern riêng, permission riêng, region riêng hay integration riêng. Multi-tenant incident rất hiếm khi giải được nếu chỉ nhìn global average metric.",
+      "bullets": [
+        "Đây là câu rất hay ở các SaaS app.",
+        "DevOps tốt biết phân đoạn signal chứ không chỉ nhìn số trung bình."
+      ]
+    },
+    {
+      "title": "Nếu cloud bill tăng bất thường sau một thay đổi nhỏ, bạn nghĩ tới điều gì?",
+      "body": "Nghĩ tới traffic tăng, cache miss tăng, query hoặc job nặng hơn, log volume bùng, egress tăng, retry storm, hoặc feature mới kéo thêm downstream call. Cost spike đôi khi là symptom của reliability bug chứ không chỉ bài toán tối ưu tiền.",
+      "bullets": [
+        "Đây là câu rất thực tế ở môi trường cloud.",
+        "Cost và reliability nhiều khi liên quan rất chặt."
+      ]
+    },
+    {
+      "title": "Nếu đang on-call và chưa biết gì nhiều về hệ thống, bạn cần nhất điều gì để không làm hỏng thêm?",
+      "body": "Cần runbook đủ thật, metric đủ nói chuyện, owner đủ rõ, lịch sử release, recent change context và khả năng giảm blast radius trước khi chạm sâu. Người on-call mới không cần biết mọi thứ, nhưng cần môi trường giúp họ hành động an toàn.",
+      "bullets": [
+        "Đây là câu đánh giá organizational readiness.",
+        "On-call tốt là sản phẩm của hệ thống hỗ trợ, không chỉ của cá nhân giỏi."
+      ],
+      "note": "Một hệ thống khó cứu mà vẫn thiếu runbook, thiếu metric, thiếu owner là dấu hiệu DevOps còn non."
+    },
+    {
+      "title": "Nếu hệ thống đang chạy thật và bạn phải chuyển sang database mới mà gần như không được downtime, bạn nghĩ rollout theo hướng nào?",
+      "body": "Đừng nghĩ theo một bước cutover duy nhất. Thường cần nhiều pha: chuẩn bị schema tương thích, replication hoặc backfill, dual-read hoặc dual-write ở mức phù hợp, verify consistency, chọn cutover window, và có kế hoạch rollback rõ. Bài toán này là dữ liệu + ứng dụng + vận hành cùng lúc.",
+      "bullets": [
+        "Đây là câu rất hóc búa đúng level cao.",
+        "Người có kinh nghiệm thật thường nói theo phase chứ không nói `backup rồi import rồi đổi config`."
+      ],
+      "code": "Phase 1: create new DB + schema\nPhase 2: backfill historical data\nPhase 3: keep old and new DB in sync\nPhase 4: verify reads and metrics\nPhase 5: cut over traffic\nPhase 6: monitor and keep rollback window"
+    },
+    {
+      "title": "Khi chuyển database không downtime, `dual-write` có lợi và hại gì?",
+      "body": "Nó giúp hệ thống tiếp tục phục vụ trong lúc dữ liệu được ghi vào cả nơi cũ lẫn nơi mới, nhưng đổi lại tăng complexity rất mạnh: partial failure, write order, idempotency, reconciliation và observability đều khó hơn. Dual-write không phải mẹo miễn phí.",
+      "bullets": [
+        "Đây là câu phân biệt người hiểu pattern với người chỉ biết tên pattern.",
+        "Nếu không có reconciliation tốt, dual-write rất dễ tạo niềm tin giả rằng hai bên đang giống nhau."
+      ]
+    },
+    {
+      "title": "Nếu cutover sang DB mới xong rồi mới phát hiện lệch data, bạn xử lý thế nào để tránh mất dữ liệu?",
+      "body": "Cần biết rõ source of truth tạm thời là đâu, có thể đóng băng write ở phần nào, có replay log hay CDC không, có audit trail hay outbox để rebuild không, và rollback sẽ rollback code thôi hay rollback cả read/write path. Không có câu thần chú chung; cần runbook rõ từ trước.",
+      "bullets": [
+        "Đây là câu đánh giá khả năng nghĩ về failure mode trước khi migration diễn ra.",
+        "Càng hệ thống lớn, rollback dữ liệu càng không giống rollback code."
+      ],
+      "note": "Một câu trưởng thành là: `rollback application path và rollback data state là hai bài toán khác nhau`."
+    },
+    {
+      "title": "Điều gì phân biệt người 'biết vài lệnh DevOps' với người có tư duy DevOps thật?",
+      "body": "Người có tư duy DevOps thật nhìn được vòng đời của thay đổi: build, config, deploy, worker, dependency, health, rollback, log, incident và học sau sự cố. Họ không chỉ nhớ lệnh, mà hiểu lệnh đó tác động vào lớp nào và rủi ro gì đi kèm.",
+      "bullets": [
+        "Đây là câu chốt rất đúng cho site này.",
+        "DevOps maturity là system judgment, không phải command memorization."
+      ],
+      "tip": "Một câu đẹp là: `em muốn hiểu hệ thống đang sống ra sao trước khi em đụng lệnh vào nó`."
+    },
+    {
+      "title": "Nếu replica DB bị stale nhưng app vẫn đọc từ replica, bạn nghĩ tới hậu quả gì?",
+      "body": "User có thể vừa update xong nhưng đọc lại vẫn thấy dữ liệu cũ, permission hoặc trạng thái mới chưa phản ánh, job reconcile chạy sai quyết định, hoặc dashboard và business flow nhìn hai sự thật khác nhau. DevOps tốt phải biết replica lag không chỉ là vấn đề metric, mà là vấn đề semantic của ứng dụng.",
+      "bullets": [
+        "Đây là câu rất hay để kiểm tra hiểu biết về read/write split.",
+        "Stale replica thường tạo bug 'thỉnh thoảng mới sai' rất khó chịu."
+      ]
+    },
+    {
+      "title": "Nếu failover sang DB hoặc node khác xong nhưng hệ thống có dấu hiệu `split-brain`, bạn nghĩ gì?",
+      "body": "Bạn phải nghĩ tới khả năng có hai nơi cùng tin mình là source of truth, write path chưa khóa đúng, replication chưa hội tụ, cache chưa flush, hoặc service discovery chưa cập nhật đồng nhất. Đây là loại sự cố rất nguy hiểm vì trông như hệ thống vẫn sống nhưng sự thật dữ liệu đã tách đôi.",
+      "bullets": [
+        "Đây là một trong các câu hóc búa đúng chất production cấp cao.",
+        "Người trả lời tốt thường nhấn mạnh containment trước, rồi mới nói repair."
+      ],
+      "note": "Khi có dấu hiệu split-brain, ưu tiên đầu tiên thường là chặn tiếp write sai chứ không phải tối ưu trải nghiệm ngay."
+    },
+    {
+      "title": "Nếu event hoặc webhook bị replay và hệ thống charge tiền hai lần, bạn nghĩ tới lớp phòng thủ nào?",
+      "body": "Cần nghĩ tới idempotency key, unique business key, dedup log, trạng thái xử lý, outbox/inbox table hoặc reconcile job. Ở level này, bạn không thể giả định event bus hay webhook provider sẽ chỉ gửi đúng một lần.",
+      "bullets": [
+        "Đây là bài toán reliability và tài chính rất thực chiến.",
+        "Chống duplicate phải ở business boundary, không chỉ ở transport."
+      ]
+    },
+    {
+      "title": "Nếu CDN cache nhầm file private thành public, bạn xử lý khẩn cấp ra sao?",
+      "body": "Trước hết phải chặn phát tán tiếp: revoke URL pattern, purge cache, khóa route hoặc bucket policy liên quan, đổi signed URL secret nếu cần, rồi mới đánh giá blast radius và audit access. Đây là incident có thể vừa là security vừa là legal issue.",
+      "bullets": [
+        "Đây là câu rất mạnh để xem bạn có tư duy containment không.",
+        "Không phải incident nào cũng bắt đầu từ root cause; nhiều incident phải chặn lan trước."
+      ],
+      "tip": "Một thứ tự tốt là: `contain -> verify exposure -> communicate -> root cause -> harden`."
+    },
+    {
+      "title": "Nếu secret hoặc access key bị lộ, bạn phản ứng thế nào ở mức vận hành?",
+      "body": "Không dừng ở việc xóa file hay đổi biến local. Cần rotate secret, đánh giá blast radius, kiểm log truy cập, xem secret đó dùng ở đâu, invalidate token hoặc session liên quan nếu cần, và sửa quy trình khiến secret có thể lộ. Secret leak là incident toàn vòng đời, không phải chỉ là incident cấu hình.",
+      "bullets": [
+        "Đây là câu rất thật ở môi trường cloud và CI/CD.",
+        "Người trả lời tốt thường nói `rotate` và `audit`, không chỉ nói `ẩn lại`."
+      ]
+    },
+    {
+      "title": "Nếu migration dữ liệu xong mà analytics hoặc BI báo số liệu sai hàng loạt, bạn nhìn vấn đề đó ở lớp nào?",
+      "body": "Nó có thể là semantic drift ở field, timezone, duplication, missing backfill, join key đổi, enum mapping lệch hoặc event pipeline không tương thích. Đây không còn là bug app đơn giản mà là incident data contract giữa app và analytics consumer.",
+      "bullets": [
+        "Đây là câu rất hợp cho hệ thống có downstream reporting mạnh.",
+        "Không ít tổ chức chỉ phát hiện migration lỗi qua dashboard business chứ không qua API error."
+      ]
+    },
+    {
+      "title": "Vai trò khác nhau giữa `nginx` và `php-fpm` trong stack Laravel là gì?",
+      "body": "`nginx` nhận HTTP request, serve file tĩnh, route request và chuyển PHP request đi tiếp. `php-fpm` là process manager chạy PHP worker để xử lý đoạn mã PHP. Nếu không tách rõ hai vai trò này, rất khó debug lỗi gateway, timeout hoặc file serving.",
+      "bullets": [
+        "Đây là câu nền nhưng rất quan trọng.",
+        "Rất nhiều người dùng stack này hằng ngày nhưng không phân biệt rõ hai lớp."
+      ]
+    },
+    {
+      "title": "Nếu `php-fpm` quá ít worker hoặc cấu hình process manager không phù hợp, app sẽ có biểu hiện gì?",
+      "body": "Có thể request đợi lâu, timeout, `502/504`, latency tăng đột ngột khi traffic tăng, hoặc CPU và memory dùng không cân đối. Đây là chỗ runtime tuning bắt đầu liên quan tới app behavior thật.",
+      "bullets": [
+        "Không phải mọi bottleneck HTTP đều do code chậm.",
+        "Process capacity của `php-fpm` ảnh hưởng trực tiếp khả năng chịu tải."
+      ]
+    },
+    {
+      "title": "Nếu interviewer hỏi `Dockerfile` dùng để làm gì, bạn nên trả lời sâu hơn mức cơ bản thế nào?",
+      "body": "`Dockerfile` định nghĩa cách build image: base image là gì, cài dependency gì, copy file gì, command khởi động là gì. Ở mức sâu hơn, bạn nên hiểu nó quyết định artifact runtime lặp lại được, ảnh hưởng size image, security surface, cache build và startup behavior.",
+      "bullets": [
+        "Đây không chỉ là file 'để chạy Docker'.",
+        "Một image tốt giúp deploy ổn định và debug dễ hơn."
+      ],
+      "code": "FROM php:8.3-fpm\nWORKDIR /var/www/app\nCOPY composer.json composer.lock ./\nRUN composer install --no-dev --prefer-dist --no-interaction\nCOPY . ."
+    },
+    {
+      "title": "Tại sao multi-stage build trong Docker thường được khuyên dùng?",
+      "body": "Vì nó giúp tách giai đoạn build và runtime, giảm size image cuối, giảm tool thừa trong image production và thường làm surface bảo mật gọn hơn. Đây là tối ưu rất thực tế cho app có composer, npm hoặc binary build step.",
+      "bullets": [
+        "Không phải project nào cũng bắt buộc phải multi-stage, nhưng biết giá trị của nó là điểm cộng mạnh.",
+        "Image nhỏ hơn thường kéo theo pull nhanh hơn và blast radius nhỏ hơn."
+      ]
+    },
+    {
+      "title": "Nếu dùng Docker Compose, `depends_on` có nghĩa gì và nó không giải quyết điều gì?",
+      "body": "`depends_on` giúp thứ tự start ở mức cơ bản, nhưng không bảo đảm service phụ thuộc đã thực sự sẵn sàng phục vụ. DB có thể đã start container nhưng chưa accept connection, nên vẫn cần retry logic hoặc health check riêng.",
+      "bullets": [
+        "Đây là lỗi setup local/staging rất hay gặp.",
+        "Biết giới hạn của tooling thường quan trọng hơn chỉ biết option của tooling."
+      ]
+    },
+    {
+      "title": "Nếu hỏi `ENTRYPOINT` và `CMD` khác nhau thế nào trong Docker, bạn trả lời ra sao?",
+      "body": "`ENTRYPOINT` thường định nghĩa executable chính của container, còn `CMD` thường là tham số mặc định hoặc command mặc định có thể bị thay thế dễ hơn. Không cần thuộc lòng toàn bộ cú pháp, nhưng nên hiểu chúng ảnh hưởng startup behavior ra sao.",
+      "bullets": [
+        "Đây là câu giúp phân biệt người dùng Docker theo copy-paste với người hiểu runtime entry.",
+        "Ở deploy thật, startup command rất quan trọng với worker, scheduler và web process."
+      ]
+    },
+    {
+      "title": "Redis trong hệ Laravel thường được dùng cho những việc gì ngoài cache?",
+      "body": "Ngoài cache, Redis hay được dùng cho queue, session, rate limit, lock, throttle, pub/sub hoặc presence data tùy hệ thống. Vì vậy khi Redis có vấn đề, blast radius có thể lan sang nhiều lớp chứ không chỉ làm cache miss.",
+      "bullets": [
+        "Đây là câu rất hay vì nhiều người chỉ nghĩ Redis = cache.",
+        "Hiểu đúng vai trò giúp debug nhanh hơn khi Redis chậm hoặc mất kết nối."
+      ]
+    },
+    {
+      "title": "Nếu Redis đầy memory hoặc eviction xảy ra sai chỗ, app có thể biểu hiện ra sao?",
+      "body": "Cache có thể mất đột ngột, session rơi, queue behavior bất thường nếu cấu hình sai, rate limit mất tác dụng hoặc lock biến mất sớm. Tùy Redis đang gánh vai trò gì mà impact sẽ khác nhau.",
+      "bullets": [
+        "Đây là câu rất thực chiến ở app dùng Redis cho nhiều thứ.",
+        "Một Redis outage hoặc misconfig không hề 'nhẹ' như nhiều người tưởng."
+      ]
+    },
+    {
+      "title": "Load balancer đứng trước nhiều app node giúp gì và tạo thêm bài toán gì?",
+      "body": "Nó giúp phân phối traffic, tăng availability và scale ngang, nhưng cũng kéo theo health check, sticky session nếu còn phụ thuộc session local, trusted proxy, header forwarding, TLS termination và phân phối traffic không đồng đều nếu cấu hình kém.",
+      "bullets": [
+        "Đây là câu rất hay để nối hạ tầng với app behavior.",
+        "Scale ngang không chỉ là thêm máy; còn là xử lý state và request semantics."
+      ]
+    },
+    {
+      "title": "Nếu DNS đổi mà traffic vẫn đi về nơi cũ một lúc, điều đó nói gì?",
+      "body": "DNS change không có hiệu lực tức thì ở mọi nơi vì còn TTL và cache ở nhiều lớp. Đây là lý do cutover dựa trên DNS cần được tính kỹ về thời gian lan truyền và rollback strategy, không nên nghĩ đổi record là đổi xong ngay.",
+      "bullets": [
+        "Đây là câu cấu hình mạng rất hay ở migration/cutover.",
+        "Nhiều sự cố đến từ việc đánh giá sai tốc độ lan truyền DNS."
+      ]
+    },
+    {
+      "title": "TLS termination là gì và vì sao nó ảnh hưởng tới app phía sau?",
+      "body": "TLS termination là lúc proxy hoặc load balancer giải mã HTTPS trước rồi mới chuyển tiếp request vào app backend. Nếu lớp đó không chuyển đúng `X-Forwarded-Proto` hoặc trusted proxy không chuẩn, app phía sau có thể nghĩ request là HTTP thường và tạo redirect hoặc URL sai.",
+      "bullets": [
+        "Đây là một bug nguồn gốc hạ tầng nhưng biểu hiện ở app.",
+        "Câu này rất đáng giá để phân biệt người hiểu production flow với người chỉ nhìn code."
+      ]
+    },
+    {
+      "title": "Nếu `nginx` trả `502 Bad Gateway`, bạn nghĩ tới điều gì đầu tiên?",
+      "body": "Thường nghĩ tới upstream chết, PHP-FPM chưa chạy, socket hoặc port sai, timeout, permission trên socket, hoặc upstream trả lỗi mà Nginx không nói rõ hơn. `502` là dấu hiệu Nginx không nói chuyện được bình thường với backend của nó.",
+      "bullets": [
+        "Đây là lỗi cấu hình/runtime rất hay gặp.",
+        "Một câu trả lời tốt nên nhấn kiểm tra cả `nginx error log` lẫn log của upstream."
+      ]
+    }
+  ]
+}

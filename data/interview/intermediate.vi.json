@@ -1,0 +1,438 @@
+{
+  "heading": "Intermediate",
+  "intro": "Bộ câu hỏi `intermediate` dành cho người đã đi qua vài project Laravel đủ thật để không chỉ nói về CRUD nữa. Ở level này, nhà tuyển dụng muốn thấy bạn biết tradeoff, biết chia lớp, biết nhìn bottleneck, biết xử lý data flow, và bắt đầu có tư duy production hơn là chỉ làm code chạy được.",
+  "questionNumbered": true,
+  "questionStyle": "interview",
+  "breaks": [
+    {
+      "start": 1,
+      "title": "Kiến Trúc Ứng Dụng Và Tách Lớp",
+      "description": "Nhóm câu hỏi về cách bạn chia code, service, action, repository và giữ codebase sống được lâu hơn.",
+      "tone": "amber"
+    },
+    {
+      "start": 12,
+      "title": "Data Flow, Query Và Transaction",
+      "description": "Tập trung vào Eloquent, query builder, raw SQL, consistency và cách tránh lỗi dữ liệu ở app thật.",
+      "tone": "coral"
+    },
+    {
+      "start": 22,
+      "title": "Queue, Cache Và Hiệu Năng",
+      "description": "Intermediate thường bắt đầu bị hỏi vì sao request chậm, khi nào nên queue, khi nào nên cache và cách nghĩ đúng về bottleneck.",
+      "tone": "amber"
+    },
+    {
+      "start": 33,
+      "title": "API, Tích Hợp Và Testing",
+      "description": "Nhóm này kiểm tra cách bạn nghĩ về contract, webhook, third-party API và độ tin cậy của test.",
+      "tone": "coral"
+    },
+    {
+      "start": 43,
+      "title": "Production Thinking, Teamwork Và Tradeoff",
+      "description": "Phần cuối đánh giá khả năng xử lý project lớn hơn, quyết định kỹ thuật, giao tiếp kỹ thuật và suy nghĩ dài hạn hơn.",
+      "tone": "amber"
+    }
+  ],
+  "items": [
+    {
+      "title": "Khi nào controller bắt đầu nên bị coi là quá tải?",
+      "body": "Khi controller không còn chỉ điều phối request nữa mà bắt đầu ôm validation phức tạp, business flow dài, query dài, side effect và response formatting trong cùng một chỗ.",
+      "bullets": [
+        "Controller dài không tự động là sai, nhưng controller gánh quá nhiều trách nhiệm thì sẽ khó maintain.",
+        "Điểm intermediate là biết nhìn code smell chứ không chỉ biết code chạy."
+      ],
+      "tip": "Một câu trả lời tốt nên nhắc `controller nên điều phối, không nên ôm toàn bộ business logic`."
+    },
+    {
+      "title": "Khi nào bạn tách `service class`, `action class` hoặc use-case class?",
+      "body": "Khi một flow có nhiều bước phối hợp, có thể được gọi từ nhiều entry khác nhau, hoặc đã đủ lớn để tách thành đơn vị đọc được và test được rõ hơn.",
+      "bullets": [
+        "Không tách chỉ để khoe kiến trúc.",
+        "Tách hợp lý là tách khi nó giúp codebase rõ hơn, không phải nhiều file hơn."
+      ],
+      "tip": "Điểm mạnh là nói `tách theo use case, độ phức tạp và mức reuse`.",
+      "code": "class CreateOrderAction\n{\n    public function handle(User $user, array $payload): Order\n    {\n        return DB::transaction(function () use ($user, $payload) {\n            $order = Order::create([\n                'user_id' => $user->id,\n                'status' => 'pending',\n                'total' => $payload['total'],\n            ]);\n\n            OrderItem::insert($this->mapItems($order, $payload['items']));\n\n            return $order;\n        });\n    }\n}"
+    },
+    {
+      "title": "Khác nhau giữa `service class` và `repository pattern` theo góc nhìn thực tế là gì?",
+      "body": "Service thường thiên về business flow hoặc orchestration; repository thiên về trừu tượng hóa data access. Không phải project nào cũng cần repository, nhưng nhiều project sẽ cần service khi business flow phình ra.",
+      "bullets": [
+        "Repository không nên được dùng chỉ vì đó là pattern nổi tiếng.",
+        "Service class thường xuất hiện tự nhiên hơn trong app vừa và lớn."
+      ],
+      "note": "Đây là câu tradeoff rất hay để phân biệt người hiểu bài toán với người chỉ nhớ pattern."
+    },
+    {
+      "title": "Khi nào `Form Request`, `Policy`, `Service`, `Model method` nên tách ra riêng thay vì gom vào controller?",
+      "body": "Validation nên đi về `Form Request`, permission về `Policy`, business orchestration về `Service` hoặc `Action`, còn logic dữ liệu nhỏ liên quan trực tiếp model có thể nằm ở model method hoặc query scope phù hợp.",
+      "bullets": [
+        "Intermediate nên nói được vì sao từng loại logic nên nằm ở từng lớp khác nhau.",
+        "Điều này cho thấy bạn không chỉ biết tên file mà còn hiểu trách nhiệm của file."
+      ],
+      "code": "public function update(UpdatePostRequest $request, Post $post, UpdatePostAction $action)\n{\n    $this->authorize('update', $post);\n\n    $post = $action->handle($post, $request->validated());\n\n    return redirect()->route('posts.show', $post);\n}"
+    },
+    {
+      "title": "Nếu project có nhiều feature, bạn thích tổ chức theo technical layer hay feature-based structure hơn?",
+      "body": "Cả hai đều có tradeoff. Technical layer dễ quen ở project nhỏ; feature-based structure thường dễ đọc flow hơn khi project lớn và nhiều team cùng chạm vào.",
+      "bullets": [
+        "Câu trả lời tốt không cực đoan nói chỉ có một cách đúng.",
+        "Nên gắn với quy mô project và thói quen đọc code của team."
+      ],
+      "tip": "Nếu muốn trả lời an toàn: `project nhỏ có thể theo layer mặc định, project lớn hơn có thể tách dần theo feature để người sau lần flow dễ hơn`."
+    },
+    {
+      "title": "Khi nào một helper hoặc trait bắt đầu trở thành code smell?",
+      "body": "Khi mọi thứ không biết để đâu đều bị quăng vào đó, khiến tên gọi nghe gọn nhưng trách nhiệm ngày càng mơ hồ.",
+      "bullets": [
+        "Helper và trait không sai, nhưng rất dễ thành bãi rác nếu không có kỷ luật.",
+        "Intermediate nên biết nhận ra mùi này."
+      ]
+    },
+    {
+      "title": "Bạn nhìn thế nào về nguyên tắc `fat model, skinny controller`?",
+      "body": "Ý tưởng gốc là tránh controller quá to, nhưng nếu đẩy hết mọi logic vào model thì model cũng có thể thành god-object. Điều quan trọng là phân trách nhiệm đúng, không phải chuyển gánh nặng từ controller sang model.",
+      "bullets": [
+        "Đây là câu rất hay để thấy bạn có tư duy cân bằng không.",
+        "Intermediate tốt không lặp lại slogan một cách máy móc."
+      ]
+    },
+    {
+      "title": "Trong app có cả web route và API route, làm sao tránh lặp business logic ở hai bên?",
+      "body": "Bạn nên tách phần xử lý chính ra lớp dùng chung như service hoặc action, để web controller và API controller chỉ khác nhau chủ yếu ở request/response shape.",
+      "bullets": [
+        "Nếu không tách, rất dễ có hai flow giống nhau nhưng một bên fix bug, một bên quên.",
+        "Đây là câu thể hiện bạn đã từng đụng nhiều entry point cho cùng một use case."
+      ]
+    },
+    {
+      "title": "Nếu một app lớn dần lên, dấu hiệu đầu tiên cho thấy bạn cần nghĩ nhiều hơn về kiến trúc là gì?",
+      "body": "Khi feature mới chạm nhiều file không liên quan, bug sửa một chỗ lại vỡ chỗ khác, controller hoặc model phình to bất thường, và người mới rất khó đoán đúng nơi cần mở.",
+      "bullets": [
+        "Đây là cách trả lời thiên về maintainability thay vì chỉ nói pattern.",
+        "Nhà tuyển dụng ở level này thường thích ứng viên nói được `dấu hiệu` hơn là lý thuyết chung."
+      ]
+    },
+    {
+      "title": "Nếu được hỏi 'em đánh giá kiến trúc hiện tại của project ra sao?', nên bắt đầu từ đâu?",
+      "body": "Nên nhìn flow thực: request đi qua đâu, business logic nằm ở đâu, data access có rõ không, permission có rải bừa không, test có bám use case không, rồi mới đưa nhận xét.",
+      "bullets": [
+        "Tránh chém pattern nếu chưa nhìn flow thật.",
+        "Câu này đo khả năng review và quan sát hệ thống."
+      ]
+    },
+    {
+      "title": "Bạn chọn Eloquent, Query Builder hay raw SQL như thế nào?",
+      "body": "Eloquent phù hợp cho phần lớn CRUD và flow business dễ đọc; Query Builder hợp khi query custom hơn; raw SQL phù hợp cho reporting nặng, query quá đặc thù, hoặc nơi cần kiểm soát sát hơn.",
+      "bullets": [
+        "Không nên cực đoan chỉ dùng một loại cho mọi bài toán.",
+        "Intermediate tốt sẽ trả lời theo `bài toán` thay vì `sở thích`."
+      ],
+      "tip": "Một câu mạnh là: `em ưu tiên sự rõ ràng trước, sau đó mới tối ưu bằng Query Builder hoặc SQL khi cần`."
+    },
+    {
+      "title": "Khi query đang chậm, vì sao không nên nhảy ngay vào cache?",
+      "body": "Vì cache có thể che lỗi nhưng không cho bạn biết bottleneck thật. Trước hết nên hiểu query chậm do N+1, thiếu index, eager load sai, lọc sai, hoặc load quá nhiều data.",
+      "bullets": [
+        "Cache là công cụ, không phải thuốc chữa mọi thứ.",
+        "Intermediate cần có thói quen đo và hiểu trước khi tối ưu."
+      ]
+    },
+    {
+      "title": "Khi nào bạn nghĩ tới `select(...)` thay vì lấy cả model field mặc định?",
+      "body": "Khi list lớn hoặc response chỉ cần một phần field, việc chọn đúng field có thể giúp nhẹ query và giảm dữ liệu không cần thiết.",
+      "bullets": [
+        "Đây là tối ưu nhỏ nhưng đúng hướng.",
+        "Không phải lúc nào cũng bắt buộc, nhưng biết nghĩ tới là một dấu hiệu tốt."
+      ]
+    },
+    {
+      "title": "N+1 query ở level intermediate nên trả lời sâu hơn level junior ra sao?",
+      "body": "Ngoài việc biết `with()`, bạn nên nói được cách nó xuất hiện ở list, nested relation, Blade loop, API resource, và vì sao local ít data có thể không lộ vấn đề nhưng production thì lộ.",
+      "bullets": [
+        "Điểm intermediate là hiểu bối cảnh phát sinh chứ không chỉ nhớ một lệnh chữa."
+      ]
+    },
+    {
+      "title": "Khi nào `lazy loading` vẫn chấp nhận được, và khi nào `eager loading` nên được ưu tiên?",
+      "body": "Lazy loading có thể chấp nhận được cho case nhỏ hoặc nơi quan hệ ít khi bị chạm; eager loading nên ưu tiên khi bạn biết chắc sẽ render hoặc xử lý relation cho nhiều record.",
+      "bullets": [
+        "Đây là câu tradeoff, không phải câu một đáp án tuyệt đối.",
+        "Intermediate nên nói được theo ngữ cảnh use case."
+      ]
+    },
+    {
+      "title": "Khi nào bạn nghĩ tới transaction boundary, và ai nên sở hữu boundary đó?",
+      "body": "Transaction boundary nên đặt ở nơi orchestration của một use case nhiều bước ghi dữ liệu, thường là service hoặc action chịu trách nhiệm chính, thay vì rải transaction vụn vặt ở nhiều method con.",
+      "bullets": [
+        "Điểm intermediate là bắt đầu nghĩ transaction theo `use case boundary`.",
+        "Nếu transaction nằm sai chỗ, bug consistency rất dễ xảy ra."
+      ],
+      "code": "DB::transaction(function () use ($order, $payload) {\n    $order->update(['status' => 'paid']);\n\n    Payment::create([\n        'order_id' => $order->id,\n        'reference' => $payload['reference'],\n        'amount' => $payload['amount'],\n    ]);\n\n    event(new OrderPaid($order->fresh()));\n});"
+    },
+    {
+      "title": "Nếu có cả DB write và call external API trong cùng flow, bạn nghĩ thế nào về consistency?",
+      "body": "Đây là chỗ bắt đầu xuất hiện eventual consistency và tradeoff khó hơn. Bạn không thể rollback external side effect giống hệt rollback DB, nên phải nghĩ kỹ thứ tự xử lý, retry, log hoặc reconcile.",
+      "bullets": [
+        "Không cần trả lời như system design expert, nhưng phải thấy vấn đề không còn đơn giản.",
+        "Đây là ranh giới rất tốt để đánh giá tư duy intermediate."
+      ],
+      "note": "Một câu trả lời trưởng thành thường không hứa `em rollback được tất cả mọi thứ`."
+    },
+    {
+      "title": "Khác nhau giữa `chunk()`, `cursor()` và `get()` nên hiểu thế nào?",
+      "body": "`get()` lấy toàn bộ dữ liệu một lần; `chunk()` xử lý theo lô; `cursor()` giúp duyệt dần dữ liệu nhẹ bộ nhớ hơn trong một số case.",
+      "bullets": [
+        "Đây là câu đúng level intermediate vì nó đụng quy mô dữ liệu hơn bình thường.",
+        "Không cần mô tả internals quá sâu, chỉ cần hiểu mục đích dùng."
+      ]
+    },
+    {
+      "title": "Nếu một migration thêm unique index fail trên production, bạn nghĩ tới điều gì?",
+      "body": "Nghĩ tới dữ liệu cũ đang bị trùng, migration áp quá nhanh mà không dọn dữ liệu trước, hoặc thiếu bước backfill hoặc cleanup trước khi thêm constraint.",
+      "bullets": [
+        "Đây là ví dụ rất hay để đánh giá kinh nghiệm data thật.",
+        "Local sạch không có nghĩa production sạch."
+      ]
+    },
+    {
+      "title": "Khi nào queue trở nên cần thiết thật sự?",
+      "body": "Khi request chính đang bị chậm do side effect nặng như gửi mail, xử lý ảnh, call third-party API, export file hoặc việc không cần trả kết quả ngay cho user.",
+      "bullets": [
+        "Không phải cứ biết queue là phải đưa queue vào mọi nơi.",
+        "Intermediate nên trả lời theo bài toán trải nghiệm người dùng và tải hệ thống."
+      ]
+    },
+    {
+      "title": "Khi nào không nên queue một việc dù technically vẫn queue được?",
+      "body": "Khi user cần kết quả ngay, khi use case nhỏ đến mức queue chỉ tăng complexity, hoặc khi eventual consistency làm trải nghiệm khó hiểu hơn lợi ích mà nó mang lại.",
+      "bullets": [
+        "Đây là câu tradeoff rất đúng level.",
+        "Intermediate tốt biết nói `không phải cái gì async cũng tốt hơn`."
+      ]
+    },
+    {
+      "title": "Nếu một job bị chạy lại nhiều lần, bạn sẽ nghĩ tới rủi ro gì?",
+      "body": "Hãy nghĩ tới duplicate side effect như gửi mail nhiều lần, tạo record trùng, charge trùng, hoặc cập nhật trạng thái sai nếu job không idempotent.",
+      "bullets": [
+        "Đây là câu rất mạnh để đánh giá việc bạn có thật sự hiểu retry hay không.",
+        "Intermediate nên biết từ `idempotent` trong ngữ cảnh này."
+      ],
+      "code": "class SendInvoiceEmail implements ShouldQueue\n{\n    public function handle(): void\n    {\n        if ($this->invoice->sent_at) {\n            return;\n        }\n\n        Mail::to($this->invoice->customer_email)->send(new InvoiceReadyMail($this->invoice));\n\n        $this->invoice->forceFill(['sent_at' => now()])->save();\n    }\n}"
+    },
+    {
+      "title": "Cache nên được nghĩ như thế nào ở level intermediate?",
+      "body": "Cache là công cụ giảm chi phí cho những dữ liệu tốn công tạo lại, nhưng đổi lại bạn phải nghĩ tới invalidation, stale data, cache key và nơi chịu trách nhiệm cập nhật cache.",
+      "bullets": [
+        "Nhiều ứng viên chỉ nói `cache để nhanh hơn`; câu đó đúng nhưng chưa đủ.",
+        "Intermediate nên nói được cái giá phải trả của cache."
+      ],
+      "tip": "Một câu rất đẹp: `cache giúp tăng tốc, nhưng đổi lại mình phải gánh tính đúng của dữ liệu cache`."
+    },
+    {
+      "title": "Khi nào cache dễ gây bug hơn là giúp ích?",
+      "body": "Khi dữ liệu đổi thường xuyên, invalidation không rõ, nhiều luồng cập nhật cùng đụng một key, hoặc team chưa kiểm soát được ownership của cache.",
+      "bullets": [
+        "Cache sai có thể làm user thấy dữ liệu cũ mà tưởng hệ thống hỏng.",
+        "Đây là lý do intermediate không nên tung cache quá sớm."
+      ]
+    },
+    {
+      "title": "Bạn sẽ nghĩ gì nếu một page chậm dù query DB không tệ lắm?",
+      "body": "Có thể bottleneck nằm ở Blade render nặng, call service ngoài, file I/O, loop xử lý dữ liệu bằng PHP quá nhiều, hoặc response payload quá lớn.",
+      "bullets": [
+        "Đây là câu tốt để cho thấy bạn không chỉ nhìn database.",
+        "Performance là bài toán end-to-end, không chỉ là query."
+      ]
+    },
+    {
+      "title": "Nếu muốn tối ưu list page, bạn sẽ nhìn theo checklist nào?",
+      "body": "Nhìn query count, eager loading, field selection, pagination, filter logic, payload size, view rendering và có service ngoài nào chặn request không.",
+      "bullets": [
+        "Checklist có hệ thống là điểm rất mạnh ở level này.",
+        "Không cần tối ưu ngay, nhưng phải biết nhìn đúng chỗ."
+      ],
+      "code": "$orders = Order::query()\n    ->with(['customer:id,name', 'items:id,order_id,sku'])\n    ->select(['id', 'customer_id', 'status', 'created_at'])\n    ->latest()\n    ->paginate(20);"
+    },
+    {
+      "title": "Khi nào một third-party API call nên được bọc qua adapter hoặc gateway riêng?",
+      "body": "Khi integration không còn là một call nhỏ, khi response cần normalize, khi nhiều nơi cùng gọi, hoặc khi bạn muốn giảm coupling trực tiếp vào SDK hoặc HTTP shape của bên ngoài.",
+      "bullets": [
+        "Intermediate không cần thiết kế quá lớn, nhưng nên bắt đầu nghĩ về boundary với hệ ngoài.",
+        "Điều này giúp test và đổi nhà cung cấp dễ hơn."
+      ]
+    },
+    {
+      "title": "Webhook khác request chủ động đi gọi API ra sao?",
+      "body": "Webhook là bên ngoài chủ động gọi vào hệ thống của bạn khi có event; còn client call là hệ thống của bạn chủ động request sang bên ngoài.",
+      "bullets": [
+        "Webhook thường kéo theo thêm chuyện verify, retry, duplicate event và logging.",
+        "Đây là khác biệt quan trọng trong integration."
+      ]
+    },
+    {
+      "title": "Khi nhận webhook, vì sao không nên xử lý quá nặng trực tiếp trong request?",
+      "body": "Vì webhook nên phản hồi đủ nhanh để bên gửi không timeout hoặc retry quá sớm. Phần nặng thường nên đẩy nền hoặc ghi nhận rồi xử lý tiếp.",
+      "bullets": [
+        "Đây là chỗ intermediate bắt đầu chạm queue và eventual consistency.",
+        "Không phải mọi webhook đều phải xử lý đồng bộ tới cuối ngay trong request."
+      ],
+      "code": "Route::post('/webhooks/payment', PaymentWebhookController::class);\n\nclass PaymentWebhookController\n{\n    public function __invoke(Request $request)\n    {\n        WebhookCall::create([\n            'provider' => 'payment-gateway',\n            'payload' => $request->json()->all(),\n        ]);\n\n        ProcessPaymentWebhook::dispatch($request->json()->all());\n\n        return response()->json(['received' => true]);\n    }\n}"
+    },
+    {
+      "title": "Testing ở level intermediate nên nói gì khác junior?",
+      "body": "Ngoài feature test cơ bản, bạn nên nói được fake mail, fake queue, test contract API, test side effect và tradeoff giữa tốc độ, độ ổn định và độ tin cậy của test suite.",
+      "bullets": [
+        "Intermediate không cần chỉ nói `em có viết test`; nên nói được `loại test nào để kiểm tra điều gì`.",
+        "Điểm hay là biết khi nào mock, khi nào fake, khi nào test thật đến DB."
+      ]
+    },
+    {
+      "title": "Khi nào nên dùng `Queue::fake()` hoặc `Http::fake()` trong test?",
+      "body": "Khi bạn muốn kiểm tra rằng app đã dispatch job hoặc gọi HTTP đúng cách mà không thực sự chạy side effect thật trong test.",
+      "bullets": [
+        "Điều này giúp test nhanh hơn và ít flaky hơn.",
+        "Intermediate nên hiểu fake để test contract và intent."
+      ],
+      "code": "Http::fake([\n    'https://partner.example.com/*' => Http::response(['ok' => true], 200),\n]);\n\n$response = $this->postJson('/api/sync-order', ['order_id' => 12]);\n\n$response->assertOk();\nHttp::assertSent(fn ($request) => $request['order_id'] === 12);"
+    },
+    {
+      "title": "Nếu một test rất chậm nhưng lại không cho thêm nhiều confidence, bạn nghĩ sao?",
+      "body": "Có thể test đang ở level quá nặng, lặp setup không cần thiết, hoặc đang kiểm cả thứ không đáng kiểm ở layer đó. Intermediate nên biết nói về cost của test chứ không chỉ quantity.",
+      "bullets": [
+        "Nhiều test không đồng nghĩa bộ test tốt.",
+        "Đây là câu đánh giá tư duy chất lượng rất hay."
+      ]
+    },
+    {
+      "title": "Nếu API integration lúc được lúc không, bạn sẽ debug theo hướng nào?",
+      "body": "Hãy nhìn timeout, retry, payload gửi đi, response thực tế, auth token, log request/response, và xem lỗi nằm ở mạng, contract hay business condition.",
+      "bullets": [
+        "Đây là kiểu bug rất thực chiến để đánh giá năng lực đọc log và cô lập vấn đề.",
+        "Intermediate nên có checklist chứ không đoán mò."
+      ]
+    },
+    {
+      "title": "Nếu một feature có nhiều tradeoff, bạn truyền đạt quyết định kỹ thuật thế nào với team?",
+      "body": "Hãy nói theo bài toán, lựa chọn, ưu điểm, nhược điểm, ảnh hưởng maintainability, rủi ro và lý do vì sao team chọn phương án hiện tại.",
+      "bullets": [
+        "Không nên chỉ nói `em thấy cách này hay hơn`.",
+        "Truyền đạt tốt là một phần của technical maturity."
+      ],
+      "tip": "Khung rất mạnh là: `problem -> options -> tradeoff -> chosen path`."
+    },
+    {
+      "title": "Nếu product muốn nhanh, còn codebase đang nợ kỹ thuật, bạn nghĩ sao?",
+      "body": "Intermediate tốt thường không cực đoan. Có lúc chấp nhận nợ kỹ thuật nhỏ để đi nhanh, nhưng phải biết mình đang nợ gì, rủi ro ở đâu và khi nào cần quay lại trả.",
+      "bullets": [
+        "Đây là câu đánh giá maturity chứ không phải chỉ kiến thức framework.",
+        "Không phải mọi nợ kỹ thuật đều xấu nếu được thấy rõ và quản lý được."
+      ]
+    },
+    {
+      "title": "Nếu một quyết định kỹ thuật hôm nay giúp nhanh nhưng làm team sau khó hơn, bạn sẽ cân nhắc thế nào?",
+      "body": "Hãy cân nhắc tốc độ hiện tại, tần suất feature tương lai, chi phí maintain, độ rõ của boundary và khả năng onboarding người mới. Quyết định tốt thường không chỉ tối ưu cho hôm nay.",
+      "bullets": [
+        "Đây là câu tradeoff đúng chất intermediate.",
+        "Nó kiểm tra bạn có nhìn được chi phí dài hạn hay không."
+      ]
+    },
+    {
+      "title": "Nếu interviewer hỏi 'Một bug production dạy bạn điều gì?', bạn nên nhấn vào đâu?",
+      "body": "Hãy nhấn vào cách bạn khoanh vùng, xử lý an toàn, học được gì về monitoring, logging, validation, transaction hoặc deployment sau sự cố đó.",
+      "bullets": [
+        "Câu này không phải để kể drama, mà để kể sự trưởng thành kỹ thuật.",
+        "Một bug production đáng giá khi nó làm cách bạn làm việc tốt hơn."
+      ]
+    },
+    {
+      "title": "Điều gì thường phân biệt intermediate với junior trong mắt nhà tuyển dụng?",
+      "body": "Intermediate thường biết nhìn hệ thống qua tradeoff, biết chọn abstraction có lý do, biết nghĩ theo boundary và consistency, và biết giải thích quyết định kỹ thuật bằng bài toán thực thay vì buzzword.",
+      "bullets": [
+        "Không còn chỉ là `làm được feature`, mà là `làm feature có chủ đích hơn`.",
+        "Điểm khác lớn nằm ở cách suy nghĩ chứ không chỉ số lượng lệnh framework nhớ được."
+      ],
+      "note": "Đây cũng là cách tự kiểm tra xem mình đã lên intermediate thật chưa."
+    },
+    {
+      "title": "Nếu user double-click nút submit và tạo trùng đơn hàng hoặc record, bạn nghĩ tới cách xử lý nào?",
+      "body": "Hãy nghĩ tới cả phía UI lẫn phía server. UI có thể disable nút hoặc show loading, nhưng phía server vẫn nên có cơ chế chống duplicate như unique rule phù hợp, transaction, check trạng thái, hoặc `idempotency key` nếu flow nhạy cảm.",
+      "bullets": [
+        "Đây là câu rất thực tế vì bug duplicate không hiếm ở app thật.",
+        "Intermediate tốt sẽ không chỉ nói `disable button` rồi dừng lại."
+      ],
+      "tip": "Một câu mạnh là: `client có thể hỗ trợ giảm lặp, nhưng server mới là nơi phải chịu trách nhiệm cuối cùng cho tính đúng`."
+    },
+    {
+      "title": "Nếu một API call tới service ngoài hay bị timeout, bạn sẽ phân tích theo hướng nào?",
+      "body": "Cần nhìn timeout config, retry policy, độ ổn định mạng, payload có quá lớn không, service ngoài chậm thật hay DNS hoặc TLS handshake có vấn đề, và request đó có nhất thiết phải chặn flow chính không.",
+      "bullets": [
+        "Đừng chỉ tăng timeout một cách mù quáng.",
+        "Nhiều khi đúng hướng hơn là chuyển sang queue, degrade nhẹ, hoặc tách bước đồng bộ khỏi bước nặng."
+      ],
+      "code": "Http::timeout(5)\n    ->retry(2, 300)\n    ->connectTimeout(2)\n    ->post($url, $payload);"
+    },
+    {
+      "title": "Nếu chỉ production bị lỗi `works on local`, bạn sẽ bắt đầu thu hẹp khác biệt từ đâu?",
+      "body": "Hãy so config, env, cache config, queue worker, DB data, file permission, service ngoài, version PHP hoặc extension, và traffic shape. Nhiều bug production không đến từ code khác, mà từ môi trường, dữ liệu hoặc workload khác.",
+      "bullets": [
+        "Intermediate nên quen với câu `same code, different environment`.",
+        "Đây là câu đánh giá khả năng cô lập biến số."
+      ],
+      "tip": "Một flow tốt là: `xác định thứ gì chỉ production mới có`, rồi khoanh dần từ đó."
+    },
+    {
+      "title": "Nếu một request đi qua nhiều lớp rồi mới hỏng, làm sao bạn trace để không bị lạc?",
+      "body": "Nên bám theo một `request id` hoặc ít nhất là một flow cụ thể: route nào, user nào, payload nào, log ở đâu, query nào, event hay job nào được bắn ra. Mục tiêu là giữ được một đường chỉ đỏ xuyên suốt thay vì debug từng file rời rạc.",
+      "bullets": [
+        "Đây là chỗ log có context bắt đầu rất quan trọng.",
+        "Intermediate tốt thường biết thêm log đúng điểm thay vì log mọi nơi."
+      ],
+      "code": "Log::info('sync-order:start', [\n    'request_id' => $request->header('X-Request-Id'),\n    'order_id' => $order->id,\n    'user_id' => $request->user()?->id,\n]);"
+    },
+    {
+      "title": "Nếu team tranh luận giữa tối ưu hiệu năng và giữ code dễ hiểu, bạn cân bằng thế nào?",
+      "body": "Intermediate tốt nên bắt đầu từ bottleneck thật và business need. Nếu chưa có số đo, thường nên giữ code rõ trước. Khi bottleneck đã rõ, tối ưu có mục tiêu và kèm guard như test, metric hoặc comment ngắn để người sau hiểu vì sao đoạn code đó không còn 'đẹp' như bình thường.",
+      "bullets": [
+        "Không nên tối ưu sớm chỉ vì cảm giác.",
+        "Cũng không nên giữ code đẹp một cách giáo điều nếu production đang đau thật."
+      ]
+    },
+    {
+      "title": "Nếu một feature cần phối hợp backend, frontend và bên thứ ba, intermediate nên chủ động điều gì?",
+      "body": "Bạn nên làm rõ contract, trạng thái chờ, lỗi trả về, retry hay duplicate có thể xảy ra không, và ai sở hữu bước nào. Khi nhiều bên cùng tham gia, hiểu nhầm contract thường gây lỗi nhiều hơn code syntax.",
+      "bullets": [
+        "Đây là nơi communication bắt đầu gắn chặt với kỹ thuật.",
+        "Intermediate mạnh không chỉ code phần mình, mà còn làm rõ điểm nối giữa các phần."
+      ],
+      "tip": "Một câu mạnh là: `em cố làm rõ boundary và contract trước khi optimize implementation`."
+    },
+    {
+      "title": "Nếu cần estimate một task có rủi ro kỹ thuật trung bình, intermediate nên nói khác junior ở điểm nào?",
+      "body": "Ngoài phạm vi code, intermediate nên nói thêm dependency nào có thể làm trễ, data migration có dính không, integration risk ở đâu, cần test hay rollout đặc biệt gì không. Estimate ở level này bắt đầu có rủi ro hệ thống chứ không chỉ thời gian gõ code.",
+      "bullets": [
+        "Đây là dấu hiệu bạn bắt đầu nhìn task theo nhiều lớp hơn.",
+        "Một estimate trưởng thành thường đi kèm assumption và risk."
+      ],
+      "note": "Câu này rất hay để đánh giá ứng viên có hiểu công việc thật ngoài IDE không."
+    },
+    {
+      "title": "Ở level intermediate, bạn nhìn `rate limiting`, `throttling` và abuse protection như thế nào?",
+      "body": "Không chỉ như middleware mặc định để bật cho có. Bạn nên nghĩ endpoint nào dễ bị spam, hành vi nào làm cạn tài nguyên, tenant nào có thể làm noisy neighbor, và khi throttle thì response nên giúp client hiểu cách retry ra sao.",
+      "bullets": [
+        "Đây là bước nhìn security và reliability cùng lúc.",
+        "Bảo vệ hệ thống không chỉ là chặn hacker; còn là giữ tài nguyên ổn khi có hành vi xấu hoặc quá nhiều traffic."
+      ]
+    },
+    {
+      "title": "Nếu một internal API chỉ dùng trong nội bộ nhưng vẫn bị lạm dụng hoặc gọi sai, bạn nghĩ guardrail nào còn cần?",
+      "body": "Internal không có nghĩa là an toàn tuyệt đối. Vẫn nên có auth phù hợp, audit log, timeout, retry policy, rate limit hoặc least-privilege network path. Nhiều sự cố nội bộ nguy hiểm vì ai cũng chủ quan rằng 'không public thì không sao'.",
+      "bullets": [
+        "Đây là câu rất tốt để kiểm tra boundary thinking.",
+        "Hệ thống nội bộ cũng có thể trở thành nguồn sự cố lớn nếu guardrail quá yếu."
+      ],
+      "tip": "Một câu mạnh là: `internal traffic vẫn là traffic cần trust boundary, chỉ là boundary khác với public internet`."
+    }
+  ]
+}

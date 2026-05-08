@@ -1,0 +1,204 @@
+{
+  "anchor": "laravel-structure",
+  "type": "list",
+  "heading": "Cấu trúc app Laravel: đọc theo dòng chảy, không chỉ theo tên thư mục",
+  "intro": "Nhiều người mới nhìn repo Laravel theo kiểu nhớ tên folder. Cách đó chưa đủ. Thân thiện hơn là đọc app theo dòng chảy: request đi vào đâu, logic nằm ở đâu, dữ liệu đi qua lớp nào, view được dựng ở đâu, và khi app lớn lên thì code nên được tách như thế nào.",
+  "items": [
+    {
+      "title": "Khung tư duy đầu tiên: Laravel thường bắt đầu như MVC, nhưng không nên dừng ở MVC",
+      "body": "Giai đoạn đầu bạn có thể hiểu Laravel theo `Model - View - Controller`: model giữ dữ liệu, Blade hoặc component lo phần hiển thị, controller nhận request và điều hướng flow. Nhưng khi project lớn hơn, business logic không nên nhồi hết vào controller hay model. Lúc đó bạn sẽ cần thêm service class, action, policy, form request, event, job và các lớp hỗ trợ khác.",
+      "code": "Route::post('/posts', [PostController::class, 'store']);\n\nclass PostController extends Controller\n{\n    public function store(StorePostRequest $request)\n    {\n        $post = Post::create($request->validated());\n\n        return redirect()->route('posts.show', $post);\n    }\n}",
+      "note": "Đây là kiểu flow MVC rất cơ bản. Khi bài toán lớn hơn, phần authorize, business logic hoặc side effect thường sẽ được tách khỏi controller."
+    },
+    {
+      "title": "Nhìn repo theo request lifecycle",
+      "body": "Cách đọc dễ nhất là bắt đầu từ `public/index.php`, rồi tới bootstrap, route, middleware, controller, service hoặc action, model hoặc query, sau đó trả về view Blade hay JSON response. Nếu hiểu dòng chảy này, bạn sẽ ít bị lạc hơn rất nhiều khi mở repo lạ.",
+      "code": "public/index.php\n-> bootstrap/app.php\n-> routes/web.php\n-> middleware\n-> controller\n-> service/action\n-> model/query\n-> view/json response",
+      "note": "Sai lầm thường gặp: mở repo từ `Models` hoặc `views` rồi đoán ngược mọi thứ. Cách đọc dễ học hơn là bám theo request lifecycle từ điểm vào."
+    },
+    {
+      "title": "`app/`: trái tim của application layer",
+      "body": "Đây là nơi thường chứa `Http/Controllers`, `Models`, `Providers`, `Console`, đôi khi có thêm `Services`, `Actions`, `Repositories`, `Policies` hoặc các module theo feature. Khi app còn nhỏ, `app/` nhìn rất gọn. Khi app lớn dần, bạn nên tổ chức lại để business logic không nằm lẫn lộn giữa controller và model."
+    },
+    {
+      "title": "Đi sâu hơn vào `app/Http`: controller, middleware, request",
+      "body": "Đây thường là vùng đầu tiên bạn chạm vào khi làm feature. `Controllers` điều phối flow. `Middleware` chặn hoặc bọc request. `Requests` giữ validation và authorize logic. Nếu ba khu này bị dùng lẫn vai trò, code sẽ nhanh chóng khó đọc.",
+      "code": "app/Http/\n  Controllers/\n    OrderController.php\n  Middleware/\n    EnsureUserIsSubscribed.php\n  Requests/\n    StoreOrderRequest.php",
+      "bullets": [
+        "Controller điều phối flow, không nên thành nơi chứa toàn bộ business logic.",
+        "Middleware chặn hoặc bổ sung điều kiện trước khi vào controller.",
+        "FormRequest giữ validation và đôi khi cả authorize logic."
+      ]
+    },
+    {
+      "title": "`app/Models` không nên trở thành bãi chứa mọi logic nghiệp vụ",
+      "body": "Model nên giữ phần gần với dữ liệu: relationship, cast, accessor, mutator, scope, một phần domain behavior hợp lý. Nhưng nếu model chứa cả query phức tạp, side effect, gọi service ngoài, gửi mail và permission check thì repo sẽ rất nhanh thành khó bảo trì."
+    },
+    {
+      "title": "`app/Providers` là nơi nhiều hành vi quan trọng được 'cắm vào' hệ thống",
+      "body": "Nhiều người mới học bỏ qua thư mục này, nhưng provider lại là nơi đăng ký binding, boot observer, policy, macro hoặc custom package integration. Nếu một hành vi của app xuất hiện mà bạn không biết vì sao, rất nhiều khả năng dấu vết nằm trong provider.",
+      "code": "class AppServiceProvider extends ServiceProvider\n{\n    public function register(): void\n    {\n        $this->app->bind(PaymentGateway::class, StripeGateway::class);\n    }\n\n    public function boot(): void\n    {\n        Gate::policy(Order::class, OrderPolicy::class);\n    }\n}",
+      "note": "Khi app có hành vi 'tự nhiên hoạt động', provider là một trong những nơi nên mở sớm nhất để xem thứ gì đang được cắm vào runtime."
+    },
+    {
+      "title": "`app/Console`, `Jobs`, `Events`, `Listeners`, `Notifications` cho thấy app có sống ngoài request hay không",
+      "body": "Một app Laravel thật thường không chỉ có web request. Nó có command chạy tay, queue job, event-driven flow, mail, notification hoặc schedule. Nhìn các khu này bạn sẽ biết app đang dừng ở mức CRUD đơn giản hay đã bắt đầu có vòng đời backend phong phú hơn."
+    },
+    {
+      "title": "`routes/`: định nghĩa cửa vào của hệ thống",
+      "body": "Các file như `web.php`, `api.php`, `console.php`, `channels.php` cho biết ứng dụng đang mở những luồng nào. `web.php` thường gắn với session và Blade. `api.php` thường gắn với token và JSON. Nhìn vào `routes/` là cách nhanh nhất để hiểu app đang phục vụ ai và phục vụ theo kiểu nào.",
+      "code": "// routes/web.php\nRoute::get('/dashboard', [DashboardController::class, 'index']);\n\n// routes/api.php\nRoute::middleware('auth:sanctum')->get('/me', function (Request $request) {\n    return $request->user();\n});",
+      "note": "Chỉ cần phân biệt rõ `web.php` với `api.php` là bạn đã đỡ lẫn rất nhiều khi đọc flow và auth."
+    },
+    {
+      "title": "`resources/`: nơi giao diện được dựng lên",
+      "body": "Ở đây bạn sẽ gặp `views/` cho Blade, có thể có `js/`, `css/` hoặc asset frontend khác. Nếu project dùng Blade nhiều, đây là lớp view theo đúng nghĩa MVC. Nếu có Livewire, Inertia, Vue hoặc React, thư mục này còn phản ánh cách Laravel kết hợp với frontend hiện đại."
+    },
+    {
+      "title": "`resources/views` khác `resources/js` hoặc `resources/css` như thế nào?",
+      "body": "`views` thường chứa Blade template phía server. `js` và `css` là lớp asset hoặc frontend source để build qua Vite. Nhìn cách project chia ba vùng này, bạn sẽ biết app đang thiên về Blade truyền thống, Livewire, hay có xu hướng SPA hơn.",
+      "code": "resources/\n  views/\n    posts/\n      index.blade.php\n  js/\n    app.js\n  css/\n    app.css",
+      "note": "Nhìn cây này là đủ để đoán phần nào render phía server và phần nào đi qua pipeline asset/frontend."
+    },
+    {
+      "title": "`database/`: sơ đồ dữ liệu và dữ liệu mẫu của project",
+      "body": "Migrations mô tả cấu trúc bảng. Seeders tạo dữ liệu khởi đầu. Factories phục vụ test hoặc fake data. Muốn hiểu app lưu gì, quan hệ gì và tăng trưởng dữ liệu ra sao thì đọc `database/` gần như luôn đáng giá hơn việc chỉ nhìn giao diện."
+    },
+    {
+      "title": "Đừng chỉ đọc migration, hãy để ý cả seeders và factories",
+      "body": "Migration cho bạn schema. Nhưng seeders cho bạn biết app cần dữ liệu khởi động nào, còn factories cho bạn biết team đang hình dung dữ liệu test ra sao. Ba lớp này ghép lại mới cho thấy bức tranh dữ liệu đầy đủ."
+    },
+    {
+      "title": "`config/` và `.env`: phần quyết định app cư xử ra sao",
+      "body": "Nhiều hành vi quan trọng của Laravel không nằm trong controller mà nằm ở config: database, mail, queue, cache, filesystem, services, auth, session. `config/` cho bạn thấy các khả năng của app, còn `.env` cho bạn biết app đang chạy trong bối cảnh môi trường nào.",
+      "code": "// config/queue.php\n'default' => env('QUEUE_CONNECTION', 'database'),\n\n# .env\nQUEUE_CONNECTION=redis",
+      "note": "Sai lầm thường gặp: sửa `.env` rồi quên mất config cache hoặc quên nhìn lại environment thật. Cách sửa là luôn đọc `config/` và `.env` cùng nhau."
+    },
+    {
+      "title": "Phân biệt cái gì nên nằm ở `config/` và cái gì nên nằm ở `.env`",
+      "body": "`config/` là nơi mô tả cấu trúc cấu hình của app. `.env` là nơi đổ giá trị môi trường cụ thể như host, key, password, driver đang dùng. Đừng viết logic nghiệp vụ vào `.env`, và cũng đừng hardcode secret vào `config/`."
+    },
+    {
+      "title": "`public/`, `storage/`, `bootstrap/`: lớp vận hành nền",
+      "body": "`public/` là entry point cho web server. `storage/` chứa log, cache, session, file upload hoặc generated file. `bootstrap/` lo khởi tạo framework và cache bootstrap. Ba khu này ít được chú ý khi mới học nhưng cực quan trọng khi debug môi trường chạy thật."
+    },
+    {
+      "title": "`storage/logs`, `storage/framework`, `bootstrap/cache` là các khu debug rất thực dụng",
+      "body": "Nhiều bug production hoặc local không nằm ở code business mà nằm ở cache config, stale route cache, file session hoặc log lỗi. Khi hiểu ba khu này, bạn sẽ debug môi trường thật nhanh hơn rất nhiều."
+    },
+    {
+      "title": "`tests/`: bản đồ an toàn khi sửa code",
+      "body": "Một repo Laravel có test tốt thường cho thấy team đủ kỷ luật để nâng cấp và refactor lâu dài. Hãy xem project chia test theo `Feature`, `Unit`, database test hay fake service ra sao. Nó phản ánh chất lượng kỹ thuật rất rõ.",
+      "code": "tests/\n  Feature/\n    Auth/\n    Orders/\n  Unit/\n    Services/\n    Support/",
+      "note": "Nếu repo có test nhưng mọi thứ dồn vào một thư mục lẫn lộn, tín hiệu bảo trì vẫn kém hơn một repo chia test theo flow hoặc theo feature rõ ràng."
+    },
+    {
+      "title": "`vendor/` và `composer.*`: phần cơ thể của hệ sinh thái PHP",
+      "body": "Laravel chạy trên rất nhiều package. `vendor/` là nơi code package được kéo về, còn `composer.json` và `composer.lock` cho bạn biết project phụ thuộc vào những gì. Khi đọc một app Laravel thật, hiểu package nào đang kiểm soát auth, debug, permission, Excel hay queue là cực kỳ quan trọng."
+    },
+    {
+      "title": "Khi app lớn lên: từ MVC sang feature-based structure",
+      "body": "MVC giúp bắt đầu nhanh, nhưng với app lớn bạn nên nghĩ theo feature như `Auth`, `Billing`, `Posts`, `Teams`, `Admin`, `Notifications`. Mỗi feature có thể có controller, request, service, policy, job, view và test riêng. Cách này thân thiện hơn cho bảo trì lâu dài vì người đọc không phải nhảy qua quá nhiều layer rời rạc."
+    },
+    {
+      "title": "Cách đọc repo Laravel cho người mới đi làm thực tế",
+      "body": "Nếu mở một repo lạ, hãy đọc theo thứ tự: `composer.json`, `routes/`, `config/`, `app/Http`, `app/Models`, `database/migrations`, `resources/views` hoặc frontend, rồi mới tới các service đặc thù. Cách này giúp bạn nắm được cấu trúc app nhanh hơn nhiều so với việc mở file ngẫu nhiên."
+    },
+    {
+      "title": "Một repo Laravel 'dễ sống' thường có dấu hiệu gì?",
+      "body": "Bạn sẽ thấy route dễ lần, controller không quá dài, request tách riêng, policy rõ, model không phình quá mức, config có tổ chức, migrations có ý nghĩa, test bám flow thật và ít chỗ khiến bạn phải dừng lại hỏi 'sao file này lại nằm ở đây'. Đó là dấu hiệu cấu trúc repo đang giúp người đọc thay vì chống lại họ."
+    },
+    {
+      "title": "Một repo Laravel 'khó sống' thường có mùi gì?",
+      "body": "Bạn sẽ thấy controller dài bất thường, model ôm đủ thứ trách nhiệm, route file phình to, tên thư mục khó đoán, helper rải rác không có quy ước, service đặt lung tung, logic nghiệp vụ trôi dạt giữa nhiều layer và rất khó đoán dòng chảy request. Đây là những mùi mà người làm lâu năm thường ngửi ra rất nhanh."
+    },
+    {
+      "title": "Tip từ người làm lâu năm: đừng đọc repo theo cây thư mục từ trên xuống dưới một cách mù quáng",
+      "body": "Người mới hay mở lần lượt từng folder rồi nhanh lạc. Người có kinh nghiệm thường đọc theo use case hoặc request flow: route nào vào màn này, controller nào xử lý, request nào validate, service nào làm việc, model nào đụng dữ liệu, view nào trả ra. Cách này giúp repo lớn bớt đáng sợ hơn hẳn."
+    },
+    {
+      "title": "Tip từ người làm lâu năm: nhìn chỗ nào 'phình' trước, đừng nhìn chỗ nào 'đẹp' trước",
+      "body": "Một repo tốt thường có nhiều file nhìn khá sạch. Nhưng chỗ đáng học thật lại thường là các file phình bất thường: controller 500 dòng, model quá thông minh, route quá dài, service god-class, observer hoặc provider quá nhiều việc. Đó là nơi tiết lộ vấn đề thật của cấu trúc app."
+    },
+    {
+      "title": "Anti-pattern rất hay gặp: tách quá sớm vì thích kiến trúc đẹp",
+      "body": "Nhiều dev mới học xong service, repository, action, DTO là muốn tách mọi thứ ngay. Nhưng nếu project chưa đủ lớn, việc tách quá sớm chỉ làm tăng số file, tăng số lần nhảy context và làm repo khó đọc hơn. Kiến trúc tốt không phải là nhiều layer, mà là layer đủ cho bài toán hiện tại."
+    },
+    {
+      "title": "Anti-pattern ngược lại: để mọi thứ nằm lì trong controller và model",
+      "body": "Một số team thì ngược lại: vì muốn đi nhanh nên cứ để logic ở controller hoặc model mãi. Giai đoạn đầu có thể chịu được, nhưng nếu không tách dần khi app lớn lên, repo sẽ đến điểm rất khó cứu. Dấu hiệu là chỉ cần mở một feature là bạn phải kéo hàng trăm dòng mới hiểu nó đang làm gì."
+    },
+    {
+      "title": "Checklist rất thực dụng khi vừa vào một repo Laravel lạ",
+      "body": "Hãy tự hỏi nhanh: app này thiên web hay API, auth nằm đâu, package lớn nào đang điều phối hành vi, route file có gọn không, controller có dài không, validation nằm đâu, query phức tạp nằm đâu, frontend đang là Blade hay Inertia hay Livewire, và test có bám flow thật không. Trả lời được các câu này là bạn đã nắm xương sống của repo."
+    },
+    {
+      "title": "Kinh nghiệm cuối: cấu trúc tốt là cấu trúc giúp người sau đoán đúng nơi cần mở",
+      "body": "Đó là tiêu chí rất thực tế. Một repo tốt không chỉ đẹp trên sơ đồ kiến trúc, mà còn khiến người mới mở vào đoán tương đối đúng: route ở đâu, validation ở đâu, business logic ở đâu, quyền ở đâu, UI ở đâu. Nếu repo làm được điều đó, nó đang phục vụ team rất tốt."
+    },
+    {
+      "title": "Câu hỏi thực chiến: thêm code mới thì nên đặt vào đâu để sau 6 tháng không tự ghét mình?",
+      "body": "Hãy đặt theo nơi phát sinh trách nhiệm thật, không đặt theo cảm hứng. Validation vào request, rule quyền vào policy hoặc lớp phù hợp, orchestration vào controller hoặc action, business flow vào service hoặc feature class, data shape vào model hoặc query layer. Nếu đặt sai từ đầu, repo lớn lên sẽ rất nhanh có mùi.",
+      "code": "class StoreOrderRequest extends FormRequest {}\nclass OrderPolicy {}\nclass OrderController extends Controller {}\nclass CreateOrderAction {}\nclass Order extends Model {}",
+      "bullets": [
+        "Validation thường nên bắt đầu ở `FormRequest`.",
+        "Rule quyền đừng nhét thẳng trong Blade hoặc controller nếu có thể tách sang `Policy`.",
+        "Flow tạo đơn hoặc thanh toán thường hợp với `Action` hoặc `Service` hơn là model thuần."
+      ],
+      "note": "Sai lầm thường gặp: thấy file nào đang mở thì nhét tiếp vào đó. Cách sửa là tự hỏi trách nhiệm thật của đoạn code trước khi đặt nó."
+    },
+    {
+      "title": "`app/Support`, `app/Helpers`, `app/Traits` có nên mọc vô hạn không?",
+      "body": "Đây là ba chỗ rất dễ biến thành ngăn kéo hỗn tạp. Nếu mọi thứ không biết để đâu đều bị quăng vào `Support` hoặc `Traits`, cấu trúc repo sẽ nhìn gọn giả tạo nhưng thực ra khó đọc hơn từng ngày.",
+      "code": "app/\n  Support/\n    SlugHelper.php\n  Helpers/\n    price.php\n  Traits/\n    LogsActivity.php",
+      "note": "Sai lầm thường gặp: mỗi khi bí chỗ đặt code là tạo thêm helper hoặc trait. Cách sửa là tìm xem đoạn code đó thuộc feature, policy, query hay service nào trước đã."
+    },
+    {
+      "title": "Một repo Laravel dễ maintain thường có ranh giới feature khá rõ",
+      "body": "Ví dụ mở feature `orders` ra là lần được route, request, policy, service, query, view hoặc API resource liên quan mà không phải nhảy quá nhiều vùng không liên quan. Người làm lâu năm rất thích cảm giác 'đụng feature nào thì thấy feature đó' này.",
+      "code": "app/\n  Orders/\n    Actions/\n    Policies/\n    Queries/\n    Requests/\nresources/views/orders/\nroutes/web.php",
+      "note": "Nếu một feature bị rơi rớt khắp 12 thư mục không có quy luật, người mới sẽ rất khó lần theo flow thật."
+    },
+    {
+      "title": "Case thật: repo không tệ vì thiếu kiến trúc, mà vì ai cũng thêm code ở chỗ quen tay",
+      "body": "Một dev thích nhét vào controller, người khác thích nhét vào model, người khác lại thêm helper toàn cục. Sau vài tháng, code vẫn chạy nhưng không còn quy luật đủ mạnh để người mới đoán được đường đi.",
+      "code": "// controller quá tải\npublic function store(Request $request)\n{\n    // validate\n    // authorize\n    // query DB\n    // call payment API\n    // send mail\n    // return view\n}",
+      "note": "Sai lầm thường gặp: flow nào cũng kết thúc bằng controller 300 dòng. Cách sửa là tách dần theo trách nhiệm, không đợi tới lúc repo quá khó cứu."
+    },
+    {
+      "title": "Tip bổ sung: đọc cấu trúc repo theo luồng thay đổi gần nhất, không chỉ theo cây thư mục",
+      "body": "Khi nhận task thật, hãy mở route liên quan, request liên quan, controller hoặc action liên quan, query hoặc model liên quan, rồi test hoặc view liên quan. Cách này giúp bạn học cấu trúc đang sống thực tế hơn là cấu trúc lý tưởng trên slide.",
+      "code": "1. mở route\n2. mở request hoặc middleware\n3. mở controller / action\n4. mở query hoặc model\n5. mở view / resource\n6. mở test liên quan",
+      "note": "Sai lầm thường gặp: đọc từng folder từ trên xuống dưới và rất nhanh lạc. Cách sửa là luôn bám theo một flow thật đang cần sửa hoặc cần học."
+    },
+    {
+      "title": "Ví dụ một cây thư mục Laravel tối thiểu để người mới tự định vị",
+      "body": "Không cần học thuộc toàn bộ repo ngay. Chỉ cần nắm được các điểm vào chính là bạn đã đọc dự án đỡ lạc hơn rất nhiều.",
+      "code": "app/\n  Http/\n    Controllers/\n    Requests/\n  Models/\n  Providers/\nroutes/\nresources/\n  views/\ndatabase/\n  migrations/\ntests/\npublic/\nstorage/\nconfig/",
+      "bullets": [
+        "`routes/` là nơi nhìn đầu tiên khi muốn biết request đi đâu.",
+        "`app/Http/Controllers` thường là nơi orchestration web hoặc API bắt đầu.",
+        "`resources/views` là nơi kiểm tra UI server-rendered.",
+        "`database/migrations` cho bạn biết dữ liệu được định hình thế nào."
+      ],
+      "note": "Nếu repo lớn hơn, hãy tiếp tục map feature thật vào cây này thay vì cố nhớ toàn bộ folder chỉ trong một lần."
+    },
+    {
+      "title": "Ví dụ cách lần một feature từ route sang request, controller, service và view",
+      "body": "Đây là kiểu đọc repo thực dụng nhất khi bạn vừa nhận task mới.",
+      "code": "Route::post('/orders', [OrderController::class, 'store']);\n\nclass OrderController extends Controller\n{\n    public function store(StoreOrderRequest $request, OrderService $service)\n    {\n        $order = $service->create($request->validated());\n\n        return redirect()->route('orders.show', $order);\n    }\n}",
+      "bullets": [
+        "Từ route, bạn biết controller action nào đang chịu trách nhiệm.",
+        "Từ `StoreOrderRequest`, bạn biết validation nằm ở đâu.",
+        "Từ `OrderService`, bạn biết business flow có bị tách ra hay chưa.",
+        "Từ `redirect()->route(...)`, bạn lần tiếp sang màn kế tiếp hoặc test liên quan."
+      ]
+    },
+    {
+      "title": "Một lệnh shell nhỏ rất hữu ích khi mới mở repo Laravel lạ",
+      "body": "Thay vì mở cây thư mục mù, hãy quét nhanh các điểm vào chính trước.",
+      "code": "rg --files routes app/Http app/Models resources/views database/migrations tests",
+      "note": "Lệnh này không thay thế việc đọc code, nhưng nó cho bạn bản đồ khởi đầu để không phải click ngẫu nhiên quá nhiều."
+    }
+  ]
+}

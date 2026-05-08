@@ -1,0 +1,681 @@
+{
+  "anchor": "laravel-maintenance-upgrade",
+  "type": "list",
+  "heading": "Nâng cấp version và bảo trì dài hạn: giữ app Laravel sống khỏe qua nhiều năm",
+  "intro": "Site này đi sâu vào phần rất thật nhưng thường bị học thiếu: nâng cấp Laravel, nâng PHP, xử lý package drift, refactor an toàn, migration có kiểm soát, rollback, test safety, quan sát production và giữ tri thức hệ thống không mục theo thời gian. Mục tiêu không chỉ là 'upgrade thành công một lần', mà là xây được tư duy bảo trì dài hạn để app không trở thành khối nợ kỹ thuật khó đụng.",
+  "breaks": [
+    {
+      "start": 1,
+      "title": "I. Tư Duy Bảo Trì Dài Hạn",
+      "description": "Bắt đầu từ maintenance là gì, vì sao app lâu năm xuống cấp, và vì sao nâng cấp không chỉ là đổi version.",
+      "tone": "amber"
+    },
+    {
+      "start": 17,
+      "title": "II. Nâng Cấp Laravel, PHP Và Runtime",
+      "description": "Upgrade framework, đọc upgrade guide, nâng PHP, extension, server runtime và sự phụ thuộc giữa các tầng phiên bản.",
+      "tone": "copper"
+    },
+    {
+      "start": 37,
+      "title": "III. Package, Dependency Drift Và Composer Strategy",
+      "description": "Package compatibility, composer lock, abandoned package, internal wrapper, audit và chiến lược giữ dependency lành mạnh.",
+      "tone": "sand"
+    },
+    {
+      "start": 57,
+      "title": "IV. Refactor An Toàn, Deprecated API Và Kiến Trúc Cũ",
+      "description": "Refactor dưới test, bóc tech debt, deprecated usage, strangler mindset và cách sửa hệ thống cũ mà không phá flow thật.",
+      "tone": "amber"
+    },
+    {
+      "start": 77,
+      "title": "V. Database, Migration, Data Fix Và Nâng Cấp Có Trạng Thái",
+      "description": "Schema change, production migration, backfill, dirty data, rollback data và những điểm nguy hiểm khi nâng cấp đụng DB.",
+      "tone": "copper"
+    },
+    {
+      "start": 97,
+      "title": "VI. Deploy, Rollback, CI Và Kiểm Soát Rủi Ro",
+      "description": "Quy trình deploy, smoke test, rollback, feature flag, canary mindset, worker restart và rủi ro môi trường.",
+      "tone": "sand"
+    },
+    {
+      "start": 117,
+      "title": "VII. Tri Thức Dự Án, Observability Và Vận Hành Lâu Dài",
+      "description": "Tài liệu sống, runbook, dashboard, owner, alert, dependency map và cách giữ team không mù khi người cũ rời đi.",
+      "tone": "amber"
+    },
+    {
+      "start": 137,
+      "title": "VIII. Case Thực Chiến, Anti-Pattern Và Đánh Giá Cuối",
+      "description": "Những lỗi production điển hình khi upgrade, mùi code maintenance tệ và tiêu chí đánh giá một app Laravel còn sống khỏe hay không.",
+      "tone": "copper"
+    }
+  ],
+  "items": [
+    {
+      "title": "1. Bảo trì dài hạn trong một app Laravel là gì?",
+      "body": "Là toàn bộ công việc giúp ứng dụng tiếp tục chạy ổn, dễ sửa, dễ nâng cấp và an toàn khi business thay đổi qua thời gian.",
+      "code": "php artisan test\ncomposer outdated\nphp artisan queue:monitor redis:default --max=100",
+      "note": "Maintenance không chỉ là sửa bug khi cháy nhà. Nó là nhịp kiểm tra đều đặn để biết app còn khỏe hay đang âm thầm xuống cấp."
+    },
+    {
+      "title": "2. Vì sao app lâu năm luôn khó hơn app mới?",
+      "body": "Vì app cũ tích lũy package, workaround, flow phụ, dữ liệu bẩn, tri thức thất lạc và giả định môi trường mà không còn ai nhớ rõ."
+    },
+    {
+      "title": "3. Maintenance có phải chỉ là sửa bug không?",
+      "body": "Không. Nó còn là nâng version, thay package, dọn kiến trúc, giữ test khỏe, dọn dữ liệu, cải thiện observability và giảm nợ kỹ thuật."
+    },
+    {
+      "title": "4. Vì sao nâng cấp version không nên bị xem như việc 'rảnh thì làm'?",
+      "body": "Vì để quá lâu sẽ làm khoảng cách version ngày càng lớn, package càng lệch, rủi ro càng cao và chi phí upgrade về sau tăng mạnh."
+    },
+    {
+      "title": "5. Dấu hiệu app đang xuống cấp về maintenance là gì?",
+      "body": "Không ai dám upgrade, test yếu, deploy sợ hãi, package cũ không vá, worker hay lỗi, tri thức phụ thuộc một người và bug lặp lại ở cùng khu vực."
+    },
+    {
+      "title": "6. Tư duy đúng về maintenance là gì?",
+      "body": "Không chờ tới lúc app hỏng mới sửa, mà liên tục giữ khoảng cách kỹ thuật trong vùng kiểm soát được."
+    },
+    {
+      "title": "7. Nợ kỹ thuật liên quan gì tới Laravel app sống lâu?",
+      "body": "Nợ kỹ thuật làm mọi thay đổi sau này tốn hơn, nguy hiểm hơn và dễ tạo regressions hơn. Laravel không miễn nhiễm điều đó."
+    },
+    {
+      "title": "8. App chạy ổn nhiều năm có nghĩa là kiến trúc ổn không?",
+      "body": "Không hẳn. Có app vẫn chạy vì chưa ai chạm vào, chứ không phải vì nó lành mạnh."
+    },
+    {
+      "title": "9. Vì sao maintenance là vấn đề sản phẩm chứ không chỉ kỹ thuật?",
+      "body": "Vì app khó bảo trì sẽ làm tính năng mới ra chậm, bug kéo dài, downtime tăng và business mất khả năng đổi hướng nhanh."
+    },
+    {
+      "title": "10. Team nên nghĩ upgrade như một dự án lớn hay thói quen định kỳ?",
+      "body": "Tốt nhất là thói quen định kỳ. Upgrade nhỏ đều đặn rẻ hơn rất nhiều so với đại tu sau nhiều năm bỏ mặc."
+    },
+    {
+      "title": "11. Một app dễ bảo trì thường có đặc điểm gì?",
+      "body": "Test đủ tin cậy, flow chính rõ, package có chủ đích, observability tốt, refactor được từng bước và deploy có thể dự đoán."
+    },
+    {
+      "title": "12. Một app khó bảo trì thường có đặc điểm gì?",
+      "body": "Controller béo, helper vô chủ, package chồng chéo, queue không ai nhìn, migration đáng sợ, config bí mật và tri thức nằm trong đầu vài người."
+    },
+    {
+      "title": "13. Maintenance cost có tăng theo thời gian không?",
+      "body": "Có nếu không dọn đều. Hệ thống càng sống lâu mà không chăm, mỗi thay đổi càng phải trả thêm 'thuế lịch sử'."
+    },
+    {
+      "title": "14. Vì sao tri thức hệ thống cũng là thứ phải bảo trì?",
+      "body": "Vì code không tự giải thích hết deploy flow, queue quan trọng, dependency critical, env bắt buộc hay lý do một workaround từng được thêm vào."
+    },
+    {
+      "title": "15. Một tip senior về maintenance mindset là gì?",
+      "body": "Đừng hỏi chỉ app có chạy không. Hãy hỏi nếu đổi người maintain, đổi môi trường hoặc đổi version ngày mai thì đội có còn kiểm soát nổi không."
+    },
+    {
+      "title": "16. Nền tảng quan trọng nhất của bảo trì dài hạn là gì?",
+      "body": "Giảm bất ngờ. Mọi thứ từ dependency, migration, queue, deploy tới rollback càng dự đoán được thì app càng sống khỏe."
+    },
+    {
+      "title": "17. Upgrade Laravel nên bắt đầu từ đâu?",
+      "body": "Từ việc đọc upgrade guide chính thức, changelog, version currently installed, package compatibility và đánh giá test coverage hiện tại.",
+      "code": "php artisan about\ncomposer show laravel/framework\ncomposer outdated\nphp artisan test",
+      "bullets": [
+        "Biết mình đang đứng ở version nào trước khi nghĩ tới đích đến.",
+        "Đừng nâng mù khi chưa nhìn test, package và runtime đang ở trạng thái nào."
+      ]
+    },
+    {
+      "title": "18. Vì sao phải đọc upgrade guide thay vì chỉ bump version trong composer?",
+      "body": "Vì thay đổi breaking không chỉ nằm ở package resolution. Có thể có đổi API, middleware, config, auth behavior, filesystem, queue hoặc validation behavior."
+    },
+    {
+      "title": "19. Nâng Laravel có luôn phải nâng PHP không?",
+      "body": "Rất thường có liên quan. Laravel version mới thường yêu cầu PHP tối thiểu cao hơn, nên bạn phải nhìn cả framework và runtime cùng nhau."
+    },
+    {
+      "title": "20. Vì sao PHP runtime là một phần của maintenance strategy?",
+      "body": "Framework mới, package mới, hiệu năng và bảo mật đều chịu ảnh hưởng bởi version PHP và extension đang chạy."
+    },
+    {
+      "title": "21. Có nên nhảy nhiều major version một lúc không?",
+      "body": "Chỉ khi bắt buộc và đã chuẩn bị kỹ. Đi từng major version thường an toàn và dễ lần vấn đề hơn."
+    },
+    {
+      "title": "22. Upgrade theo step nhỏ có lợi gì?",
+      "body": "Nó giảm phạm vi thay đổi, dễ tìm nguyên nhân bug hơn và giúp rollback hoặc tạm dừng đúng chỗ."
+    },
+    {
+      "title": "23. Composer constraint ảnh hưởng upgrade ra sao?",
+      "body": "Constraint package có thể khóa bạn vào các version cũ hoặc tạo xung đột khi Laravel hoặc PHP đổi. Đây là lý do phải đọc toàn bộ dependency graph chứ không chỉ gói chính."
+    },
+    {
+      "title": "24. Có nên upgrade thẳng trên production branch không?",
+      "body": "Không nên. Upgrade cần branch riêng, test riêng, rollout plan và ít nhất một vòng xác nhận ở môi trường gần production."
+    },
+    {
+      "title": "25. `composer why-not` hữu ích thế nào khi upgrade?",
+      "body": "Nó giúp chỉ ra package nào đang chặn version bạn muốn nâng, rất hữu ích để tìm nút thắt dependency.",
+      "code": "composer why-not laravel/framework 12.0\ncomposer why-not php 8.3",
+      "note": "Khi nâng version mà Composer báo conflict, `why-not` thường là lối vào nhanh nhất để thấy package nào đang khóa bạn lại."
+    },
+    {
+      "title": "26. Extension PHP ảnh hưởng upgrade ra sao?",
+      "body": "Một số package hoặc Laravel feature yêu cầu extension mới, còn production có thể khác local. Thiếu extension là lỗi rất thường gặp khi nâng version."
+    },
+    {
+      "title": "27. Web server, FPM, container image có liên quan tới upgrade không?",
+      "body": "Có. Upgrade framework hoặc PHP mà bỏ quên image, config FPM, base OS hoặc web server có thể làm môi trường lệch nhau rất khó hiểu."
+    },
+    {
+      "title": "28. Config publish file có cần so lại khi upgrade không?",
+      "body": "Rất nên. Một số thay đổi ở config mới không tự xuất hiện nếu project đang giữ file config cũ đã publish từ lâu."
+    },
+    {
+      "title": "29. Middleware hoặc auth behavior có thể đổi khi upgrade không?",
+      "body": "Có. Đây là loại breaking change âm thầm rất nguy hiểm vì request vẫn chạy nhưng permission, session hoặc redirect behavior có thể khác."
+    },
+    {
+      "title": "30. Tại sao route, validation và exception handling nên được smoke test sau upgrade?",
+      "body": "Vì nhiều breaking change lộ ra ở lớp giao tiếp chính của app trước tiên."
+    },
+    {
+      "title": "31. Laravel major upgrade có thể ảnh hưởng queue và scheduler không?",
+      "body": "Có thể. Worker behavior, serialization, Horizon compatibility hoặc scheduler APIs có thể thay đổi."
+    },
+    {
+      "title": "32. Có nên nâng PHP trước hay Laravel trước?",
+      "body": "Tùy dependency matrix, nhưng thường cần chọn đường đi giữ cả app và package ở vùng tương thích. Không có một thứ tự đúng cho mọi dự án."
+    },
+    {
+      "title": "33. Một tip thực chiến khi nâng version là gì?",
+      "body": "Hãy lập danh sách flow quan trọng nhất của sản phẩm trước khi code gì cả. Khi upgrade xong, bạn test lại đúng các flow đó đầu tiên."
+    },
+    {
+      "title": "34. Nâng version local chạy rồi có nghĩa staging và production ổn chưa?",
+      "body": "Chưa. Môi trường thật có queue, cron, volume, CDN, provider, data lớn và config drift mà local không phản ánh hết."
+    },
+    {
+      "title": "35. Có nên gộp upgrade framework với refactor lớn cùng lúc không?",
+      "body": "Thường không nên nếu muốn giảm rủi ro. Càng nhiều biến đổi cùng lúc, càng khó biết lỗi đến từ đâu."
+    },
+    {
+      "title": "36. Một bug production điển hình khi nâng version là gì?",
+      "body": "App boot được nhưng một flow ít ai test như export, auth edge case hoặc queue serialization bị vỡ sau deploy."
+    },
+    {
+      "title": "37. Package drift là gì?",
+      "body": "Là khi dependency của app bị lệch xa khỏi vùng khỏe mạnh: version cũ, abandoned package, compatibility yếu hoặc patch chồng chéo."
+    },
+    {
+      "title": "38. Vì sao package là nguồn rủi ro dài hạn?",
+      "body": "Mỗi package mang theo dependency riêng, lifecycle riêng, bảo mật riêng và khả năng chặn upgrade riêng."
+    },
+    {
+      "title": "39. Package abandoned có nghĩa gì cho maintenance?",
+      "body": "Nó báo rằng package có thể không còn được duy trì. Giữ nó lâu làm app dễ kẹt trong future upgrades hoặc rủi ro bảo mật."
+    },
+    {
+      "title": "40. Có nên thay package abandoned ngay lập tức không?",
+      "body": "Không phải lúc nào cũng phải ngay, nhưng nên đánh dấu nó là khoản nợ có deadline, không nên quên vô thời hạn."
+    },
+    {
+      "title": "41. Vì sao wrapper quanh package quan trọng cho bảo trì dài hạn?",
+      "body": "Vì nếu app gọi trực tiếp API package ở khắp nơi, lúc thay package bạn sẽ phải sửa cả codebase. Wrapper làm vùng ảnh hưởng nhỏ hơn nhiều.",
+      "code": "interface CurrencyRateProvider\n{\n    public function latest(string $base, string $quote): float;\n}\n\nclass ExchangeApiRateProvider implements CurrencyRateProvider\n{\n    public function latest(string $base, string $quote): float\n    {\n        // call SDK or external package here\n    }\n}",
+      "note": "Wrapper không phải để over-engineer. Nó đáng khi package nằm ở vùng app có vòng đời dài hoặc dễ phải thay."
+    },
+    {
+      "title": "42. `composer.lock` giúp maintenance ra sao?",
+      "body": "Nó giữ dependency tree ổn định giữa các môi trường và giúp team biết chính xác đang chạy bộ package nào."
+    },
+    {
+      "title": "43. Có nên commit `composer.lock` cho app Laravel không?",
+      "body": "Gần như luôn nên với application. Điều đó giúp local, CI và production cài đúng cùng phiên bản dependency."
+    },
+    {
+      "title": "44. `composer update` bừa có thể hại gì?",
+      "body": "Nó có thể kéo theo hàng loạt thay đổi dependency ngoài dự kiến, làm bug khó truy nguyên và tăng rủi ro deploy."
+    },
+    {
+      "title": "45. Khi nào nên update chọn lọc từng package?",
+      "body": "Khi bạn muốn kiểm soát phạm vi rủi ro và dễ xác định package nào gây regression."
+    },
+    {
+      "title": "46. Security audit dependency có quan trọng không?",
+      "body": "Có. Bỏ qua dependency security nghĩa là để lỗ hổng đi cùng app chỉ vì nó không nằm trong code tự viết.",
+      "code": "composer audit\ncomposer show --direct\ncomposer outdated",
+      "note": "Audit không thay thế review kiến trúc, nhưng nó là vòng rà rất rẻ để bắt package có CVE hoặc drift quá xa trước khi mọi chuyện thành incident."
+    },
+    {
+      "title": "47. Package transitive dependency là gì?",
+      "body": "Là package mà app không require trực tiếp nhưng được kéo vào bởi package khác. Nhiều rủi ro compatibility nằm ở lớp này."
+    },
+    {
+      "title": "48. Có nên dùng quá nhiều package cho tiện không?",
+      "body": "Cần cân bằng. Package tốt giúp tiết kiệm thời gian, nhưng mỗi package thêm vào là thêm một bề mặt bảo trì dài hạn."
+    },
+    {
+      "title": "49. Một package có ít maintainer có đáng lo không?",
+      "body": "Có thể. Nhất là khi nó chạm auth, payments, filesystem hoặc một lớp cốt lõi của hệ thống."
+    },
+    {
+      "title": "50. Internal package có phải luôn tốt hơn package ngoài không?",
+      "body": "Không. Internal package cũng cần người duy trì, CI, versioning và documentation. Tạo package riêng quá sớm chỉ để 'đẹp' là tự tăng gánh maintenance."
+    },
+    {
+      "title": "51. Khi nào nên fork package?",
+      "body": "Khi package quan trọng, cần sửa gấp hoặc upstream không phản hồi đủ nhanh. Nhưng fork cũng là lời hứa bảo trì dài hạn."
+    },
+    {
+      "title": "52. Patch package khác gì sửa thẳng `vendor/`?",
+      "body": "Patch có kiểm soát và có thể tái áp dụng, còn sửa thẳng `vendor/` gần như là tự tạo bẫy maintenance vô hình."
+    },
+    {
+      "title": "53. `minimum-stability` và `prefer-stable` có liên quan gì tới maintainability?",
+      "body": "Chúng ảnh hưởng mức độ ổn định của dependency. Dùng package chưa ổn định nhiều quá có thể làm maintenance rủi ro hơn đáng kể."
+    },
+    {
+      "title": "54. Một tip thực chiến về dependency strategy là gì?",
+      "body": "Mỗi package nên có lý do tồn tại rõ. Nếu không giải thích được vì sao nó cần thiết, có thể nó đang là nợ chứ không còn là lợi ích."
+    },
+    {
+      "title": "55. Có nên review dependency định kỳ không?",
+      "body": "Rất nên. Nhìn lại package không dùng, package abandoned, package duplicate chức năng và package chặn upgrade là việc nên làm theo nhịp."
+    },
+    {
+      "title": "56. Mùi code xấu ở lớp dependency là gì?",
+      "body": "Project dựa vào nhiều package nhỏ chồng chéo, package nào cũng chạm business core và không ai rõ package nào là critical."
+    },
+    {
+      "title": "57. Refactor an toàn nghĩa là gì?",
+      "body": "Là thay đổi cấu trúc hoặc implementation mà vẫn giữ behavior mong muốn dưới lớp kiểm chứng đủ mạnh.",
+      "code": "it('keeps invoice total calculation unchanged', function () {\n    $invoice = Invoice::factory()->hasItems(3)->create();\n\n    expect(app(InvoiceTotalService::class)->calculate($invoice))\n        ->toBe(150000);\n});",
+      "note": "Muốn refactor an toàn, trước hết phải đóng đinh được behavior nào không được phép đổi."
+    },
+    {
+      "title": "58. Vì sao refactor và rewrite là hai chuyện khác nhau?",
+      "body": "Refactor giữ intent và behavior cốt lõi, còn rewrite thường thay cấu trúc lớn hơn và rủi ro vượt khỏi phạm vi kiểm soát nhanh hơn."
+    },
+    {
+      "title": "59. Deprecated API là gì?",
+      "body": "Là API hoặc cách dùng đã được đánh dấu không nên dùng tiếp vì tương lai có thể bị loại bỏ hoặc thay đổi."
+    },
+    {
+      "title": "60. Có nên bỏ qua warning deprecated lâu dài không?",
+      "body": "Không nên. Deprecated tồn đọng là khoản nợ báo trước cho future upgrade."
+    },
+    {
+      "title": "61. Refactor an toàn thường cần gì trước tiên?",
+      "body": "Ít nhất cần biết flow nào quan trọng, có test hay smoke test gì đang bảo vệ, và failure mode của khu vực đó là gì."
+    },
+    {
+      "title": "62. Nếu test yếu thì có refactor được không?",
+      "body": "Vẫn được nhưng nên bổ sung safety net từng bước như test tối thiểu, logging, feature flag hoặc shadow execution."
+    },
+    {
+      "title": "63. Feature flag giúp maintenance ra sao?",
+      "body": "Nó cho phép rollout behavior mới có kiểm soát và tắt nhanh nếu có sự cố mà không cần rollback toàn hệ thống."
+    },
+    {
+      "title": "64. Strangler mindset là gì?",
+      "body": "Là thay dần phần cũ bằng phần mới từng đoạn có kiểm soát, thay vì cố viết lại toàn bộ một lần."
+    },
+    {
+      "title": "65. Có nên dọn nhiều khu vực kỹ thuật cũ trong cùng một PR lớn không?",
+      "body": "Thường không nên. PR maintenance quá lớn khó review, khó test và khi lỗi cũng khó khoanh vùng."
+    },
+    {
+      "title": "66. Logging tạm thời có giúp refactor an toàn không?",
+      "body": "Rất có ích. Nó giúp bạn so sánh behavior cũ và mới trên production hoặc staging mà không đoán mò.",
+      "code": "logger()->info('billing-flow-compare', [\n    'order_id' => $order->id,\n    'legacy_total' => $legacyTotal,\n    'new_total' => $newTotal,\n    'matched' => $legacyTotal === $newTotal,\n]);",
+      "note": "Logging tạm kiểu này đặc biệt hữu ích khi bạn chạy shadow mode hoặc đang chuyển dần business rule cũ sang flow mới."
+    },
+    {
+      "title": "67. Shadow mode là gì?",
+      "body": "Là chạy logic mới ở chế độ quan sát song song với logic cũ để so output hoặc effect trước khi bật thật."
+    },
+    {
+      "title": "68. Cấu trúc cũ nhưng chạy được có nên động vào không?",
+      "body": "Tùy giá trị lâu dài. Nếu nó chặn tốc độ phát triển, gây bug lặp hoặc khiến upgrade ngày càng khó, thường phải động vào sớm hơn là muộn."
+    },
+    {
+      "title": "69. Một anti-pattern khi refactor là gì?",
+      "body": "Vừa refactor vừa đổi behavior nghiệp vụ vừa upgrade framework cùng lúc, rồi không còn biết regression đến từ đâu."
+    },
+    {
+      "title": "70. Tại sao rollback logic cũ đôi khi vẫn nên giữ một thời gian?",
+      "body": "Vì production có thể lộ ra case chưa lường tới. Đường lui ngắn hạn giúp đội phản ứng nhanh hơn."
+    },
+    {
+      "title": "71. Có nên xóa code cũ ngay sau khi bật code mới không?",
+      "body": "Không phải lúc nào cũng nên. Có giai đoạn giữ tạm để quan sát ổn định rồi mới dọn sạch là hợp lý hơn."
+    },
+    {
+      "title": "72. Refactor lớp auth, payment hoặc queue cần cẩn thận hơn vì sao?",
+      "body": "Vì những lớp này thường là trục xương sống của hệ thống và bug ở đây có hậu quả business lớn."
+    },
+    {
+      "title": "73. Một tip senior về refactor là gì?",
+      "body": "Đừng cố 'làm đẹp' toàn bộ khu vực cũ trong một lần chạm. Hãy giải quyết đúng phần nợ đang cản trở bước tiếp theo."
+    },
+    {
+      "title": "74. Mùi hệ thống xấu ở lớp maintenance-refactor là gì?",
+      "body": "Ai cũng thấy code cũ đáng sợ nhưng không ai dám chạm, hoặc chạm vào là phải sửa lan cả tuần."
+    },
+    {
+      "title": "75. Maintenance dài hạn có liên quan tới kiến trúc ownership không?",
+      "body": "Có. Khu vực quan trọng không có owner rõ ràng sẽ xuống cấp nhanh hơn nhiều."
+    },
+    {
+      "title": "76. Vì sao backlog tech debt nên được mô tả cụ thể?",
+      "body": "Nếu chỉ nói chung chung 'cần refactor', việc đó sẽ bị hoãn mãi. Debt item tốt phải nói rõ risk, cost và bước xử lý tiếp theo."
+    },
+    {
+      "title": "77. Schema change khi maintenance có gì nguy hiểm?",
+      "body": "Nó động vào dữ liệu sống, có thể khóa bảng, fail migration, làm app cũ không tương thích hoặc tạo inconsistency nếu rollout sai thứ tự."
+    },
+    {
+      "title": "78. Vì sao migration production không nên nghĩ như migration local?",
+      "body": "Production có dữ liệu lớn, traffic, concurrent write, lock contention và rollback phức tạp hơn rất nhiều."
+    },
+    {
+      "title": "79. Backfill là gì?",
+      "body": "Là điền hoặc sửa dữ liệu cũ để phù hợp schema hoặc logic mới. Nó thường nên tách riêng khỏi migration schema thuần."
+    },
+    {
+      "title": "80. Vì sao dirty data là kẻ phá upgrade thầm lặng?",
+      "body": "Code và schema mới có thể đúng trên dữ liệu lý tưởng, nhưng fail hoàn toàn khi production có null lạ, duplicate, enum cũ hoặc format không đồng nhất."
+    },
+    {
+      "title": "81. Có nên thêm constraint mạnh ngay trên bảng lớn đang bẩn không?",
+      "body": "Không nên lao vào ngay. Thường cần audit dữ liệu, dọn dữ liệu trước rồi mới siết constraint.",
+      "code": "// Bước 1: thêm cột nullable hoặc chuẩn bị index\nSchema::table('orders', function (Blueprint $table) {\n    $table->string('external_id')->nullable()->index();\n});\n\n// Bước 2: backfill dữ liệu\n// Bước 3: chỉ khi sạch mới siết unique/not-null",
+      "note": "Sai lầm thường gặp là thêm `unique` hoặc `not null` ngay trên bảng production bẩn rồi để migration nổ giữa đường."
+    },
+    {
+      "title": "82. Migration nhiều bước an toàn là gì?",
+      "body": "Ví dụ thêm cột nullable trước, deploy code mới ghi cả hai nơi nếu cần, backfill, kiểm tra đủ, rồi mới siết not-null hoặc bỏ cột cũ."
+    },
+    {
+      "title": "83. Rollback database có khó hơn rollback code không?",
+      "body": "Rất thường là vậy. Code có thể revert nhanh, còn dữ liệu đã biến đổi hoặc mất đi thì không phải lúc nào cũng khôi phục được ngay."
+    },
+    {
+      "title": "84. Có nên trộn migration schema và data fix lớn trong một migration không?",
+      "body": "Thường không nên. Tách ra giúp rollback, theo dõi và retry an toàn hơn."
+    },
+    {
+      "title": "85. Queue, scheduler và migration có liên quan gì khi upgrade?",
+      "body": "Worker cũ hoặc task cũ có thể vẫn đọc schema cũ trong khi DB đã đổi. Thứ tự deploy và restart rất quan trọng."
+    },
+    {
+      "title": "86. Có nên dừng worker trước migration phá vỡ compatibility không?",
+      "body": "Nhiều khi cần. Nếu job cũ tiếp tục chạy trên schema mới, bug sẽ rất khó lường."
+    },
+    {
+      "title": "87. Read/write compatibility window là gì?",
+      "body": "Là khoảng thời gian code cũ và code mới cùng phải sống với nhau quanh một lần deploy. Thiết kế migration tốt cần nghĩ tới giai đoạn này."
+    },
+    {
+      "title": "88. Zero-downtime migration có phải lúc nào cũng đạt được không?",
+      "body": "Không phải lúc nào cũng tuyệt đối, nhưng nhiều thay đổi có thể tiến gần điều đó nếu thiết kế rollout và schema evolution đúng."
+    },
+    {
+      "title": "89. Một tip thực chiến với data maintenance là gì?",
+      "body": "Trước khi đổi schema để làm sạch thế giới, hãy đo thực tế dữ liệu bẩn của production trước."
+    },
+    {
+      "title": "90. Mùi hệ thống xấu ở phần DB maintenance là gì?",
+      "body": "Mọi migration đều được viết như cho local demo, không ai dám chạy trên dữ liệu thật và rollback chỉ tồn tại trên giấy."
+    },
+    {
+      "title": "91. Deploy safety liên quan maintenance thế nào?",
+      "body": "Một thay đổi kỹ thuật tốt nhưng deploy tệ vẫn có thể làm production chết. Maintenance tốt phải đi cùng quy trình rollout tốt."
+    },
+    {
+      "title": "92. CI giúp maintenance dài hạn ra sao?",
+      "body": "CI tạo safety net tự động cho test, lint, static analysis, build và đôi khi cả upgrade rehearsal."
+    },
+    {
+      "title": "93. Có nên có smoke test sau deploy không?",
+      "body": "Rất nên. Smoke test nhanh cho flow sống còn giúp bắt sự cố sớm trước khi người dùng báo."
+    },
+    {
+      "title": "94. Rollback plan nên chuẩn bị khi nào?",
+      "body": "Trước deploy. Rollback không phải thứ nghĩ ra khi sự cố đã xảy ra."
+    },
+    {
+      "title": "95. Code rollback và data rollback khác nhau thế nào?",
+      "body": "Code rollback thường đơn giản hơn. Data rollback có thể cần backup, compensating action hoặc chấp nhận trạng thái mới rồi sửa tiếp."
+    },
+    {
+      "title": "96. Feature flag giúp deploy maintenance an toàn hơn ra sao?",
+      "body": "Bạn có thể deploy code trước, bật dần behavior mới, theo dõi tác động rồi tắt nhanh nếu có dấu hiệu xấu."
+    },
+    {
+      "title": "97. Canary mindset có áp dụng được với Laravel app không?",
+      "body": "Có ở nhiều mức. Có thể rollout cho một nhóm traffic, một tenant hoặc một hành vi trước thay vì bật toàn bộ cùng lúc.",
+      "code": "if (Feature::enabled('new-billing-flow', $tenant)) {\n    return app(NewBillingFlow::class)->handle($order);\n}\n\nreturn app(LegacyBillingFlow::class)->handle($order);",
+      "note": "Canary không nhất thiết phải là hạ tầng cực lớn. Nhiều app Laravel áp dụng được ngay ở mức tenant, role hoặc feature flag."
+    },
+    {
+      "title": "98. Worker restart sau deploy vì sao thuộc checklist bắt buộc?",
+      "body": "Vì background process chạy code cũ là một trong những nguồn bug maintenance khó chịu nhất."
+    },
+    {
+      "title": "99. Config cache, route cache, view cache có liên quan upgrade không?",
+      "body": "Có. Cache cũ hoặc build artifact cũ có thể làm app dùng behavior lẫn lộn sau deploy."
+    },
+    {
+      "title": "100. Một deploy thất bại do maintenance thường trông như thế nào?",
+      "body": "App web lên bình thường nhưng queue fail, scheduler không chạy, signed URL sai, auth lạ hoặc một flow ít traffic âm thầm chết."
+    },
+    {
+      "title": "101. Môi trường staging có giá trị gì cho upgrade?",
+      "body": "Nó là nơi rehearsal gần production nhất để lộ lỗi env, worker, queue, cron, provider integration và data volume nhỏ."
+    },
+    {
+      "title": "102. Local green test có thay được staging rehearsal không?",
+      "body": "Không. Local không tái hiện hết hạ tầng và trạng thái production."
+    },
+    {
+      "title": "103. Một tip thực chiến về deploy risk là gì?",
+      "body": "Nếu thay đổi đụng framework, DB và queue cùng lúc, hãy làm rollout nhỏ nhất có thể và chuẩn bị đường lui rất rõ."
+    },
+    {
+      "title": "104. Mùi vận hành xấu là gì?",
+      "body": "Deploy phụ thuộc trí nhớ cá nhân, không có checklist, không có smoke test và rollback chỉ là 'hy vọng git revert kịp'."
+    },
+    {
+      "title": "105. Có nên ghi chép postmortem cho maintenance incident không?",
+      "body": "Rất nên. Nhiều lỗi upgrade và deploy lặp lại chỉ vì đội không biến sự cố cũ thành tri thức."
+    },
+    {
+      "title": "106. Release note nội bộ có giúp bảo trì không?",
+      "body": "Có. Nó giúp team support, QA và dev biết lần deploy này có thay gì nhạy cảm và nên chú ý khu vực nào."
+    },
+    {
+      "title": "107. SLO hoặc SLA có liên quan gì tới maintenance?",
+      "body": "Có. Chúng cho bạn chuẩn đo xem thay đổi kỹ thuật có đang làm reliability tốt hơn hay tệ hơn."
+    },
+    {
+      "title": "108. Vì sao maintenance tốt cần owner rõ cho khu vực critical?",
+      "body": "Không có owner, bug bị chuyền tay, package cũ bị bỏ quên và không ai chủ động giữ hệ thống khỏe."
+    },
+    {
+      "title": "109. Có nên có runbook cho queue, mail, storage, deploy không?",
+      "body": "Rất nên. Runbook giúp người mới hoặc người on-call phản ứng nhanh khi sự cố xảy ra.",
+      "code": "# docs/runbooks/queue.md\n- kiểm tra queue lag\n- kiểm tra failed jobs\n- xác nhận worker version vừa deploy\n- queue:restart nếu cần\n- retry có chọn lọc\n- escalte nếu backlog vượt ngưỡng",
+      "note": "Runbook tốt không cố giải thích mọi thứ. Nó cho người on-call một đường đi đủ nhanh để không bị đứng hình lúc hệ thống đang cháy."
+    },
+    {
+      "title": "110. Dashboard vận hành tối thiểu nên có gì?",
+      "body": "Queue lag, failed jobs, error rate, DB health, deploy version, scheduler last run, storage growth và các integration critical."
+    },
+    {
+      "title": "111. Dependency map là gì và vì sao hữu ích?",
+      "body": "Nó mô tả app phụ thuộc vào những service, queue, package và flow nào. Khi nâng cấp, map này giúp biết vùng ảnh hưởng."
+    },
+    {
+      "title": "112. Tài liệu nào đáng giữ sống trong dự án Laravel?",
+      "body": "Deploy checklist, env critical, queue critical, scheduler jobs, package critical, flow nghiệp vụ chính và known operational traps."
+    },
+    {
+      "title": "113. Knowledge silo là gì?",
+      "body": "Là khi chỉ một vài người biết cách hệ thống thật hoạt động. Đây là rủi ro maintenance rất lớn.",
+      "code": "# docs/upgrade-checklist.md\n- package critical\n- queue cần restart sau deploy\n- env nào hay lệch\n- migration nào từng gây sự cố\n- rollback path cho flow nhạy cảm",
+      "note": "Nếu tri thức chỉ ở trong đầu một người, maintenance cost thực tế của app cao hơn rất nhiều so với nhìn vào code."
+    },
+    {
+      "title": "114. Vì sao tri thức deploy và rollback dễ mất nhất?",
+      "body": "Vì nhiều đội ghi rất ít hoặc dựa vào nhớ miệng. Chỉ khi người cũ nghỉ hoặc sự cố xảy ra mới thấy khoảng trống này."
+    },
+    {
+      "title": "115. Một tip senior về knowledge maintenance là gì?",
+      "body": "Nếu một luồng quan trọng chỉ tồn tại trong đầu một người, nó chưa được bảo trì đúng nghĩa."
+    },
+    {
+      "title": "116. Observability liên quan tới upgrade safety thế nào?",
+      "body": "Sau nâng cấp, bạn cần biết ngay error rate, latency, queue lag hay failed job có đổi bất thường không. Không có observability thì rollback chỉ dựa vào cảm giác."
+    },
+    {
+      "title": "117. Logging sau upgrade nên chú ý gì?",
+      "body": "Nên tăng chú ý ở flow nhạy cảm và lỗi mới xuất hiện, nhưng vẫn phải tránh log quá tay dữ liệu nhạy cảm."
+    },
+    {
+      "title": "118. Alert fatigue ảnh hưởng maintenance thế nào?",
+      "body": "Nếu alert quá ồn và không có ý nghĩa, đội sẽ bỏ qua tín hiệu thật khi upgrade hoặc deploy xảy ra sự cố."
+    },
+    {
+      "title": "119. Onboarding dev mới có phải là một phần maintenance không?",
+      "body": "Có. Một hệ thống khó onboarding là hệ thống tri thức đang xuống cấp."
+    },
+    {
+      "title": "120. Một hệ khỏe dài hạn nhìn từ tài liệu sẽ ra sao?",
+      "body": "Không cần quá nhiều giấy tờ, nhưng những chỗ sống còn đều có dấu vết đủ để người khác tiếp quản mà không mù."
+    },
+    {
+      "title": "121. Case thực chiến kinh điển khi upgrade Laravel là gì?",
+      "body": "Nâng framework thành công nhưng một package auth hoặc admin panel không tương thích, làm login hoặc backoffice chết sau deploy.",
+      "code": "composer update laravel/framework --with-all-dependencies\nphp artisan test\nphp artisan route:list\nphp artisan queue:restart",
+      "note": "Upgrade xanh ở local chưa đủ. Auth, admin panel, queue và flow backoffice là những chỗ rất hay vỡ muộn."
+    },
+    {
+      "title": "122. Một case khác rất thật là gì?",
+      "body": "App local và staging đều ổn nhưng production fail vì worker cũ, config cache cũ hoặc extension PHP khác."
+    },
+    {
+      "title": "123. Vì sao app cũ hay có 'mìn' ẩn cho maintenance?",
+      "body": "Vì workaround năm xưa không được ghi lại, package tạm thời trở thành vĩnh viễn và flow ít người chạm bị bỏ quên quá lâu."
+    },
+    {
+      "title": "124. Anti-pattern lớn nhất của upgrade là gì?",
+      "body": "Để quá lâu, thiếu test, thiếu rehearsal, thiếu rollback plan rồi hy vọng production sẽ tự ổn."
+    },
+    {
+      "title": "125. Anti-pattern của refactor maintenance là gì?",
+      "body": "Sửa thật rộng để 'nhân tiện làm cho đẹp' dù không có safety net hoặc nhu cầu business rõ ràng."
+    },
+    {
+      "title": "126. Anti-pattern của dependency management là gì?",
+      "body": "Thêm package theo thói quen, không audit lại, không biết package nào abandoned và không ai sở hữu chiến lược composer."
+    },
+    {
+      "title": "127. Anti-pattern của database maintenance là gì?",
+      "body": "Xem production data như local demo, migration lớn không rehearsal và rollback chỉ tồn tại trong niềm tin."
+    },
+    {
+      "title": "128. Anti-pattern của deploy safety là gì?",
+      "body": "Không smoke test, không restart worker, không nhìn dashboard sau deploy và chỉ biết có lỗi khi khách hàng báo."
+    },
+    {
+      "title": "129. Một câu hỏi senior hay đặt ra trước maintenance change là gì?",
+      "body": "Nếu thay đổi này fail giữa chừng, chúng ta sẽ biết bằng cách nào, ảnh hưởng tới ai và quay lui bằng con đường nào?"
+    },
+    {
+      "title": "130. Khi nào nên tạm dừng upgrade thay vì cố đẩy tiếp?",
+      "body": "Khi dependency graph quá bẩn, test quá yếu hoặc flow cốt lõi chưa được mô tả đủ để đo thành công. Lúc đó cần dọn đường trước."
+    },
+    {
+      "title": "131. Một app Laravel còn sống khỏe dài hạn thường cho cảm giác gì?",
+      "body": "Không phải hoàn hảo, nhưng có thể thay đổi từng bước, có cảnh báo rõ, có đường lui và không khiến team sợ mỗi lần deploy."
+    },
+    {
+      "title": "132. Một app Laravel đang mệt mỏi thường cho cảm giác gì?",
+      "body": "Mỗi lần đổi nhỏ cũng như đánh bạc, upgrade bị hoãn năm này qua năm khác và support luôn sống cùng bất ngờ."
+    },
+    {
+      "title": "133. Đánh giá maintenance maturity nên nhìn vào đâu?",
+      "body": "Test safety, dependency health, deploy discipline, rollback readiness, observability, documentation và khả năng onboarding."
+    },
+    {
+      "title": "134. Một tip cuối về upgrade lâu dài là gì?",
+      "body": "Nâng version đều đặn là cách rẻ nhất để không phải làm một cuộc giải cứu đắt đỏ sau này."
+    },
+    {
+      "title": "135. Rà soát cuối: site maintenance-upgrade nên có tối thiểu những mảng nào?",
+      "body": "Ít nhất phải có maintenance mindset, framework/PHP upgrade, package strategy, safe refactor, DB/data migration, deploy/rollback/CI, project knowledge/observability và case production."
+    },
+    {
+      "title": "136. Semver có phải lúc nào cũng cứu bạn khỏi breaking change không?",
+      "body": "Không hoàn toàn. Semver rất hữu ích, nhưng app thật vẫn có thể bị ảnh hưởng bởi thay đổi hành vi tinh vi, transitive dependency hoặc assumption cũ trong codebase."
+    },
+    {
+      "title": "137. Support window hay LTS mindset quan trọng ở đâu?",
+      "body": "Nó giúp team biết mình còn bao lâu trước khi framework, PHP hoặc package quan trọng rơi khỏi vùng hỗ trợ bảo mật và cộng đồng.",
+      "code": "// Ví dụ planning note\n// Q2: nâng PHP 8.2 -> 8.3\n// Q3: dọn deprecated và package chặn Laravel 12\n// Q4: rehearsal branch cho major upgrade",
+      "note": "Không có support-window mindset, team rất dễ để mọi thứ trượt khỏi vùng hỗ trợ rồi mới cuống cuồng làm đại tu."
+    },
+    {
+      "title": "138. Upgrade budget là gì?",
+      "body": "Là việc chấp nhận dành thời gian đều đặn cho nâng cấp và dọn nợ kỹ thuật như một phần kế hoạch, thay vì coi đó là việc ngoài lề không ai sở hữu."
+    },
+    {
+      "title": "139. Rehearsal branch hoặc dry-run upgrade có đáng làm không?",
+      "body": "Rất đáng với hệ quan trọng. Nó cho phép team ước lượng phạm vi vấn đề trước khi commit vào một đợt nâng cấp thật."
+    },
+    {
+      "title": "140. Release freeze có liên quan gì tới upgrade lớn?",
+      "body": "Khi thay đổi kỹ thuật lớn, giảm biến động tính năng mới quanh thời điểm deploy giúp việc điều tra regression dễ hơn nhiều."
+    },
+    {
+      "title": "141. Blue-green hoặc maintenance window có phải lúc nào cũng cần không?",
+      "body": "Không phải lúc nào cũng cần, nhưng với một số upgrade nhạy cảm hoặc migration khó tương thích, chúng có thể là công cụ giảm rủi ro rất đáng giá."
+    },
+    {
+      "title": "142. Decommission code hoặc package cũ sau upgrade quan trọng ra sao?",
+      "body": "Nếu bạn giữ đường cũ quá lâu mà không dọn, hệ thống sẽ mang hai thế giới song song và maintenance lại phình to trở lại."
+    },
+    {
+      "title": "143. Ví dụ một nhánh upgrade khá an toàn nên bắt đầu ra sao",
+      "body": "Người mới rất hay update thẳng trên branch chính rồi để conflict, warning và regression nổ tung cùng lúc.",
+      "code": "git checkout -b upgrade/laravel-12\ncomposer update laravel/framework --with-all-dependencies\nphp artisan test\nphp artisan route:list\nphp artisan about",
+      "bullets": [
+        "Tách branch riêng để phạm vi upgrade rõ hơn.",
+        "`--with-all-dependencies` hay cần khi framework kéo theo package liên quan.",
+        "Chạy test, route list và lệnh introspection giúp bạn bắt lỗi sớm hơn."
+      ]
+    },
+    {
+      "title": "144. Ví dụ một adapter nhỏ để giảm khóa chặt vào package ngoài trước khi upgrade",
+      "body": "Nếu app gọi package trực tiếp khắp nơi, mỗi lần nâng version sẽ đau hơn nhiều.",
+      "code": "interface SmsGateway\n{\n    public function send(string $to, string $message): void;\n}\n\nclass TwilioSmsGateway implements SmsGateway\n{\n    public function send(string $to, string $message): void\n    {\n        // call package or SDK here\n    }\n}",
+      "note": "Không phải lúc nào cũng cần abstraction, nhưng wrapper nhỏ kiểu này giúp đổi package hoặc nâng version đỡ lan sóng sửa hơn."
+    },
+    {
+      "title": "145. Ví dụ vài lệnh rà dependency trước một đợt nâng cấp",
+      "body": "Đừng nâng version mù. Hãy nhìn package nào đang cũ, package nào đang chặn bạn trước.",
+      "code": "composer outdated\ncomposer why-not laravel/framework 12.0\nphp artisan about",
+      "note": "`outdated` cho bạn thấy mặt bằng package, còn `why-not` rất hữu ích khi một package cụ thể đang chặn đường upgrade."
+    },
+    {
+      "title": "146. Đánh giá sau rà soát: phần maintenance-upgrade đã đủ chi tiết chưa?",
+      "body": "Ở mức portal học tập thì phần này đã khá đầy: có maintenance mindset, upgrade path, dependency strategy, refactor safety, DB rollout, deploy risk, observability, knowledge maintenance và case production. Nếu muốn đi sâu thêm nữa sau này, hướng tách riêng tốt nhất là một site con chuyên về deploy strategy, một site về dependency governance và một site về legacy refactor playbook."
+    }
+  ]
+}

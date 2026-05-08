@@ -1,0 +1,896 @@
+{
+  "heading": "Fresher",
+  "intro": "Bộ câu hỏi này gom những gì một fresher PHP hoặc Laravel hay bị hỏi nhất: nền tảng PHP, HTTP, MVC, Blade, form, validation, database, Artisan, cách chạy project và cách nói về chính project của mình. Mục tiêu không phải học thuộc từng câu chữ, mà là hiểu đúng để trả lời ngắn, chắc, có ví dụ thật.",
+  "questionNumbered": true,
+  "questionStyle": "interview",
+  "breaks": [
+    {
+      "start": 1,
+      "title": "Nền Tảng PHP",
+      "description": "Các câu hỏi vòng đầu về ngôn ngữ, request data, session, cookie và cú pháp cơ bản.",
+      "tone": "amber"
+    },
+    {
+      "start": 13,
+      "title": "OOP Và Tổ Chức Code",
+      "description": "Nhóm này kiểm tra việc bạn có hiểu class, object, trait, namespace và Composer hay không.",
+      "tone": "coral"
+    },
+    {
+      "start": 20,
+      "title": "Laravel Cơ Bản",
+      "description": "Đi từ việc Laravel là gì đến request lifecycle, MVC, route và middleware.",
+      "tone": "amber"
+    },
+    {
+      "start": 26,
+      "title": "Blade, Form Và Validation",
+      "description": "Đây là vùng cực hay hỏi vì nó bám sát feature CRUD đầu đời của đa số fresher Laravel.",
+      "tone": "coral"
+    },
+    {
+      "start": 32,
+      "title": "Database Và Eloquent",
+      "description": "Không cần đi sâu performance hay database design phức tạp, nhưng phải hiểu model, migration và quan hệ cơ bản.",
+      "tone": "amber"
+    },
+    {
+      "start": 39,
+      "title": "Artisan, Chạy Project Và HTTP Cơ Bản",
+      "description": "Nhóm này gần với lúc bạn clone project thật, sửa bug thật và giải thích command thật.",
+      "tone": "coral"
+    },
+    {
+      "start": 45,
+      "title": "Câu Hỏi Thực Tế Khi Đi Phỏng Vấn",
+      "description": "Các câu cuối giúp bạn nói về project, cách học và cách xử lý khi chưa biết câu trả lời.",
+      "tone": "amber"
+    },
+    {
+      "start": 74,
+      "title": "Web Nền Tảng, URL, Mạng Cơ Bản Và Tư Duy",
+      "description": "Bổ sung các câu rất hay bị hỏi ở vòng đầu như OOP là gì, URL gồm gì, DNS/IP/port là gì và cách nghĩ với bài toán logic cơ bản.",
+      "tone": "coral"
+    }
+  ],
+  "items": [
+    {
+      "title": "PHP là gì và thường chạy ở đâu?",
+      "body": "PHP là ngôn ngữ kịch bản phía server, thường được dùng để xử lý request, thao tác dữ liệu và tạo HTML hoặc JSON trả về cho client.",
+      "bullets": [
+        "PHP có thể chạy trong web server context hoặc CLI.",
+        "Trong web app, browser gửi request, server chạy PHP, rồi trả response về.",
+        "Trong Laravel, PHP là nền ngôn ngữ, còn Laravel là framework tổ chức app PHP đó."
+      ],
+      "tip": "Mở đầu bằng một câu rất ngắn, rồi mới thêm ví dụ. Ví dụ: `PHP là ngôn ngữ phía server, còn Laravel là framework PHP để tổ chức web app.`",
+      "note": "Một câu trả lời fresher tốt nên phân biệt rõ `ngôn ngữ` với `framework`."
+    },
+    {
+      "title": "Biến và hằng trong PHP khác nhau như thế nào?",
+      "body": "Biến có thể thay đổi giá trị trong quá trình chạy, còn hằng số thì được định nghĩa một lần và dùng như giá trị cố định.",
+      "bullets": [
+        "Biến bắt đầu bằng ký tự `$`.",
+        "Hằng thường được định nghĩa bằng `const` hoặc `define()`.",
+        "Dùng hằng cho giá trị mang ý nghĩa cấu hình hoặc nhãn cố định."
+      ]
+    },
+    {
+      "title": "Superglobal trong PHP là gì, và bạn nên nhớ những cái nào?",
+      "body": "Superglobal là các biến đặc biệt luôn có thể truy cập trong mọi scope để lấy dữ liệu từ request, session, cookie hoặc server environment.",
+      "bullets": [
+        "`$_GET`: dữ liệu query string.",
+        "`$_POST`: dữ liệu gửi lên bằng form POST.",
+        "`$_FILES`: dữ liệu file upload.",
+        "`$_SESSION`: dữ liệu session phía server.",
+        "`$_COOKIE`: dữ liệu cookie phía browser.",
+        "`$_SERVER`: thông tin request, host, method, path và môi trường chạy."
+      ]
+    },
+    {
+      "title": "Khác nhau giữa `GET` và `POST` là gì?",
+      "body": "`GET` thường dùng để lấy dữ liệu và biểu diễn trạng thái trên URL; `POST` thường dùng để gửi dữ liệu làm thay đổi trạng thái hệ thống như tạo mới, đăng nhập hoặc submit form.",
+      "bullets": [
+        "`GET` dễ bookmark, dễ share URL, nhưng không phù hợp cho dữ liệu nhạy cảm.",
+        "`POST` không hiện payload lên query string, phù hợp hơn cho form và thao tác ghi dữ liệu.",
+        "Không nên nói `POST` là an toàn tuyệt đối. Nó chỉ không lộ dữ liệu lên URL như `GET`."
+      ],
+      "tip": "Nếu bí, hãy trả lời theo 3 ý: `mục đích`, `dữ liệu nằm ở đâu`, `khi nào hay dùng`."
+    },
+    {
+      "title": "HTTP là `stateless` nghĩa là gì?",
+      "body": "Điều đó nghĩa là mỗi request về bản chất là độc lập; server không tự nhớ trạng thái của request trước nếu không có cơ chế như `session`, `cookie`, token hoặc một lớp lưu trạng thái khác.",
+      "bullets": [
+        "Đây là lý do session và cookie trở nên quan trọng trong web app.",
+        "Nếu không có lớp giữ trạng thái, request sau không tự biết user đã làm gì ở request trước."
+      ],
+      "tip": "Một câu trả lời rất gọn là: `HTTP mặc định không nhớ request trước, nên muốn giữ trạng thái phải có cơ chế bổ sung`."
+    },
+    {
+      "title": "Session và Cookie khác nhau thế nào?",
+      "body": "Cookie được lưu ở phía browser; session data thường được giữ ở phía server, còn browser chỉ giữ khóa nhận diện session.",
+      "code": "// ví dụ ý tưởng, không phải code Laravel hoàn chỉnh\n$_SESSION['user_id'] = 15;\nsetcookie('theme', 'dark', time() + 3600);",
+      "bullets": [
+        "Cookie phù hợp cho preference nhỏ như theme hoặc remember value không nhạy cảm.",
+        "Session phù hợp cho trạng thái đăng nhập hoặc dữ liệu tạm của user trong một phiên làm việc.",
+        "Trong Laravel, session thường được bọc qua API như `session()` thay vì thao tác superglobal trực tiếp."
+      ],
+      "tip": "Câu này rất dễ ghi điểm nếu bạn nói thêm: `browser thường chỉ giữ session id, còn dữ liệu chính nằm phía server`.",
+      "note": "Điểm dễ trả lời sai là nói session nằm ở browser. Thực tế browser thường chỉ giữ session id."
+    },
+    {
+      "title": "Khi upload file bằng form HTML, vì sao hay cần `enctype=\"multipart/form-data\"`?",
+      "body": "Vì khi form có file upload, trình duyệt cần gửi dữ liệu theo định dạng phù hợp để file tới được server thay vì chỉ gửi text field thông thường.",
+      "code": "<form method=\"POST\" action=\"/avatar\" enctype=\"multipart/form-data\">\n    @csrf\n    <input type=\"file\" name=\"avatar\">\n    <button type=\"submit\">Upload</button>\n</form>",
+      "bullets": [
+        "Nếu thiếu `multipart/form-data`, file có thể không lên đúng ở phía server.",
+        "Đây là một câu rất thực tế với các project CRUD có ảnh hoặc file đính kèm."
+      ]
+    },
+    {
+      "title": "`include`, `require`, `include_once`, `require_once` khác nhau thế nào?",
+      "body": "Chúng đều dùng để nạp file PHP khác, nhưng `require` nghiêm ngặt hơn khi file lỗi hoặc thiếu.",
+      "bullets": [
+        "`include`: lỗi sẽ cảnh báo, script có thể còn chạy tiếp tùy tình huống.",
+        "`require`: lỗi nghiêm trọng hơn, thường làm dừng việc thực thi.",
+        "`_once`: đảm bảo file chỉ được nạp một lần để tránh redeclare class hoặc function."
+      ],
+      "note": "Ở project hiện đại dùng Composer autoload nhiều hơn, nhưng câu này vẫn hay gặp để kiểm tra nền PHP."
+    },
+    {
+      "title": "Array trong PHP là gì, và thường có những dạng nào?",
+      "body": "Array là cấu trúc dữ liệu dùng để chứa nhiều giá trị trong một biến. Ở mức cơ bản, bạn nên nhớ array đánh chỉ số và array kết hợp theo key.",
+      "code": "$names = ['An', 'Binh'];\n$user = ['name' => 'An', 'role' => 'editor'];",
+      "bullets": [
+        "Indexed array: truy cập qua vị trí số.",
+        "Associative array: truy cập qua key có ý nghĩa.",
+        "Laravel cũng dùng array rất nhiều trong config, request data, validation rule và response."
+      ]
+    },
+    {
+      "title": "Indexed array và associative array khác nhau thế nào, và thường loop bằng gì?",
+      "body": "Indexed array dùng chỉ số số học; associative array dùng key có nghĩa. Với cả hai loại, `foreach` là cách loop dễ đọc nhất ở mức nền tảng.",
+      "bullets": [
+        "Với indexed array, bạn có thể chỉ cần `foreach ($items as $item)`.",
+        "Với associative array, bạn thường dùng `foreach ($user as $key => $value)`.",
+        "Fresher không cần khoe nhiều kiểu loop; `foreach` đúng và rõ là đủ."
+      ]
+    },
+    {
+      "title": "Khác nhau giữa `==` và `===` trong PHP là gì?",
+      "body": "`==` so sánh lỏng, còn `===` so sánh chặt cả giá trị lẫn kiểu dữ liệu.",
+      "code": "1 == '1'   // true\n1 === '1'  // false",
+      "bullets": [
+        "Khi muốn tránh ép kiểu ngầm gây hiểu nhầm, `===` thường an toàn hơn.",
+        "Đây là một câu rất nền nhưng lại cho thấy bạn có cẩn thận với kiểu dữ liệu hay không."
+      ]
+    },
+    {
+      "title": "`isset()` và `empty()` khác nhau ra sao?",
+      "body": "`isset()` thường dùng để kiểm tra biến hoặc key có tồn tại và không phải `null`; `empty()` kiểm tra một giá trị có đang rỗng theo nghĩa PHP hay không.",
+      "bullets": [
+        "`empty('')`, `empty(0)`, `empty('0')`, `empty([])` đều có thể trả về true.",
+        "Dùng sai hai hàm này rất dễ dẫn đến bug kiểm tra input.",
+        "Nếu trả lời phỏng vấn, hãy nhấn mạnh `isset` nghiêng về tồn tại, còn `empty` nghiêng về giá trị rỗng."
+      ],
+      "note": "Đây là câu PHP rất hay gặp ở vòng nền tảng vì nó liên quan trực tiếp đến form input."
+    },
+    {
+      "title": "Function trong PHP là gì, và vì sao nên tách function nhỏ?",
+      "body": "Function là khối lệnh có tên để tái sử dụng logic. Tách function nhỏ giúp code dễ đọc hơn, dễ test hơn và tránh lặp lại cùng một đoạn xử lý.",
+      "code": "function formatUserName(string $name): string\n{\n    return trim(mb_strtoupper($name));\n}",
+      "bullets": [
+        "Một function tốt thường chỉ làm một việc khá rõ.",
+        "Nếu cùng một logic lặp lại ở nhiều nơi, nên nghĩ tới function hoặc method dùng chung."
+      ],
+      "note": "Gợi ý trả lời tốt: nhấn mạnh `reuse`, `dễ đọc` và `dễ bảo trì`."
+    },
+    {
+      "title": "Toán tử `??` trong PHP dùng để làm gì?",
+      "body": "Đây là null coalescing operator, thường dùng để lấy giá trị fallback khi biến hoặc key bên trái không tồn tại hoặc là `null`.",
+      "code": "$name = $_GET['name'] ?? 'guest';",
+      "bullets": [
+        "Nó gọn hơn việc viết nhiều `isset()` cho các case đơn giản.",
+        "Câu này rất hay xuất hiện trong code thật, nhất là lúc đọc input hoặc config."
+      ]
+    },
+    {
+      "title": "Class và Object là gì trong PHP?",
+      "body": "Class là khuôn mẫu mô tả dữ liệu và hành vi; object là một instance cụ thể được tạo từ class đó.",
+      "bullets": [
+        "Thuộc tính lưu trạng thái, method mô tả hành vi.",
+        "Laravel dùng class rất nhiều: controller, request, model, middleware, job, command.",
+        "Khi nói ví dụ, nên gắn với một class thật như `PostController` hoặc `User` model."
+      ]
+    },
+    {
+      "title": "`public`, `private`, `protected` khác nhau ra sao?",
+      "body": "Đây là các access modifier kiểm soát phạm vi truy cập của thuộc tính và method trong OOP.",
+      "code": "class UserService\n{\n    public function createUser() {}\n\n    protected function normalizeEmail() {}\n\n    private function hashPassword() {}\n}",
+      "bullets": [
+        "`public`: gọi được từ bên ngoài class.",
+        "`protected`: dùng được trong chính class và class con.",
+        "`private`: chỉ dùng được trong chính class đó."
+      ],
+      "note": "Fresher không cần giải thích quá học thuật. Nói đúng phạm vi truy cập là đủ."
+    },
+    {
+      "title": "Interface và Abstract class khác nhau thế nào?",
+      "body": "Interface mô tả contract mà class phải tuân theo; abstract class là class nền có thể chứa cả method abstract lẫn phần cài đặt dùng chung.",
+      "bullets": [
+        "Interface phù hợp khi bạn muốn nhiều class khác nhau cùng hứa thực hiện một nhóm hành vi.",
+        "Abstract class phù hợp khi muốn chia sẻ code chung giữa các class cùng họ.",
+        "Ở mức fresher, chỉ cần nắm được `contract` và `shared base logic`."
+      ],
+      "tip": "Không cần cố đi sâu SOLID ở đây. Chỉ cần phân biệt được `contract` với `base implementation` là đủ."
+    },
+    {
+      "title": "Trait trong PHP là gì?",
+      "body": "Trait là cách tái sử dụng một nhóm method trong nhiều class mà không cần inheritance sâu.",
+      "bullets": [
+        "Trait không thay thế hoàn toàn class hay interface.",
+        "Nó phù hợp cho logic dùng lại ở nhiều nơi nhưng không đủ để tách thành service riêng.",
+        "Dùng trait quá bừa có thể khiến code khó lần trách nhiệm."
+      ]
+    },
+    {
+      "title": "Namespace trong PHP để làm gì?",
+      "body": "Namespace giúp tránh trùng tên class hoặc function và làm code có tổ chức rõ hơn theo thư mục và domain.",
+      "bullets": [
+        "Laravel dựa rất mạnh vào namespace và PSR-4 autoload.",
+        "Ví dụ `App\\Http\\Controllers\\PostController` cho biết class nằm trong vùng nào của app.",
+        "Nếu trả lời ngắn, bạn có thể nói namespace giúp project lớn không bị đụng tên class."
+      ]
+    },
+    {
+      "title": "Composer dùng để làm gì trong project PHP hoặc Laravel?",
+      "body": "Composer là công cụ quản lý dependency cho PHP. Nó đọc `composer.json`, cài package vào `vendor/` và sinh autoload để project dùng class tự động.",
+      "code": "composer install\ncomposer require laravel/sanctum\ncomposer dump-autoload",
+      "bullets": [
+        "`composer.json` mô tả dependency và cấu hình autoload.",
+        "`vendor/` là nơi package được cài về; thường không commit lên repo.",
+        "Sau khi clone project Laravel, việc không có `vendor/` là bình thường."
+      ],
+      "note": "Một câu trả lời khá tốt ở mức fresher là phân biệt được `composer install` với `composer require`."
+    },
+    {
+      "title": "Autoload là gì trong project PHP hoặc Laravel?",
+      "body": "Autoload là cơ chế giúp class được nạp tự động khi cần, thay vì bạn phải `require` thủ công từng file.",
+      "bullets": [
+        "Trong project hiện đại, Composer sinh autoload cho bạn.",
+        "Điều này làm cấu trúc class sạch hơn và giảm lỗi quên include file."
+      ],
+      "note": "Tip nhỏ: nếu phỏng vấn hỏi `vendor/autoload.php` để làm gì, hãy nối nó với `Composer autoload`."
+    },
+    {
+      "title": "Laravel là gì?",
+      "body": "Laravel là framework PHP mã nguồn mở giúp xây web app có cấu trúc rõ hơn, với routing, middleware, Blade, validation, Eloquent, Artisan và nhiều công cụ có sẵn.",
+      "bullets": [
+        "Laravel không phải ngôn ngữ mới; nó chạy trên PHP.",
+        "Điểm mạnh là tăng tốc làm app nhưng vẫn giữ cấu trúc dễ maintain hơn viết PHP thuần.",
+        "Một câu trả lời ổn nên nhắc tới MVC và hệ sinh thái tích hợp sẵn."
+      ],
+      "tip": "Đừng chỉ nói `Laravel là framework nổi tiếng`. Hãy thêm `nó cho sẵn route, middleware, Blade, validation, Eloquent`."
+    },
+    {
+      "title": "Vì sao nhiều team chọn Laravel thay vì viết PHP thuần?",
+      "body": "Vì Laravel cho sẵn nhiều lớp nền như route, validation, auth, migration, ORM và command-line tooling, giúp code có cấu trúc và bớt lặp lại.",
+      "bullets": [
+        "Viết PHP thuần không sai, nhưng app sẽ nhanh rối nếu mỗi feature đều tự dựng lại nền tảng.",
+        "Laravel giúp onboarding nhanh hơn vì nhiều khái niệm có convention rõ ràng.",
+        "Bạn có thể nhấn mạnh năng suất, cấu trúc và hệ sinh thái package."
+      ]
+    },
+    {
+      "title": "MVC trong Laravel nghĩa là gì?",
+      "body": "MVC là cách chia app thành model, view, controller để trách nhiệm rõ hơn: model lo dữ liệu, view lo hiển thị, controller điều phối request và response.",
+      "bullets": [
+        "Trong Laravel thực tế, app còn có request, middleware, policy, service, job, event chứ không chỉ có đúng ba lớp MVC.",
+        "Nhưng ở mức fresher, giải thích đúng vai trò cơ bản là đủ."
+      ]
+    },
+    {
+      "title": "Những thư mục nào trong project Laravel fresher nên nhớ đầu tiên?",
+      "body": "Không cần học thuộc toàn bộ cây thư mục ngay, nhưng nên nắm vài chỗ chính để tự định vị khi vào repo.",
+      "bullets": [
+        "`routes/`: định nghĩa route web và API.",
+        "`app/Http/Controllers`: controller.",
+        "`resources/views`: Blade view.",
+        "`app/Models`: model Eloquent.",
+        "`database/migrations`: cấu trúc bảng.",
+        "`public/`: entry công khai cho web server.",
+        "`storage/`: log, cache, file runtime."
+      ],
+      "code": "routes/\napp/\n  Http/Controllers/\n  Models/\nresources/views/\ndatabase/migrations/\npublic/\nstorage/"
+    },
+    {
+      "title": "HTTP request đi qua Laravel như thế nào ở mức cơ bản?",
+      "body": "Request đi vào `public/index.php`, Laravel bootstrap ứng dụng, nạp service provider, dispatch qua router, chạy middleware phù hợp, rồi vào controller hoặc closure để trả response.",
+      "code": "browser -> web server -> public/index.php -> bootstrap/app.php\n-> middleware -> route -> controller -> response",
+      "bullets": [
+        "Không cần mô tả quá sâu kernel internals nếu chỉ ở vòng fresher.",
+        "Điểm cộng là bạn nói được middleware chạy trước khi vào controller."
+      ],
+      "tip": "Nếu nhớ không hết, chỉ cần giữ flow ngắn: `public/index.php -> route -> middleware -> controller -> response`."
+    },
+    {
+      "title": "`routes/web.php` và `routes/api.php` khác nhau thế nào?",
+      "body": "`web.php` thường dành cho giao diện web có session, cookie và CSRF; `api.php` thường dành cho API stateless hơn.",
+      "bullets": [
+        "`web` middleware group hỗ trợ session và CSRF.",
+        "API thường trả JSON và không dùng flow Blade form như route web.",
+        "Không phải mọi API đều ở `api.php`, nhưng đó là điểm bắt đầu mặc định dễ nhớ."
+      ]
+    },
+    {
+      "title": "Route parameter là gì trong Laravel?",
+      "body": "Đó là phần biến trong URL để truyền dữ liệu như `id`, `slug` hoặc một khóa nhận diện khác vào route và controller.",
+      "code": "Route::get('/posts/{post}', [PostController::class, 'show']);",
+      "bullets": [
+        "Bạn có thể dùng nó để lấy đúng record cần xem hoặc sửa.",
+        "Fresher không cần đi sâu route model binding internals, chỉ cần hiểu `tham số động trong URL`."
+      ]
+    },
+    {
+      "title": "Middleware là gì trong Laravel?",
+      "body": "Middleware là lớp trung gian kiểm tra hoặc chỉnh request và response trong luồng xử lý.",
+      "bullets": [
+        "Ví dụ phổ biến: kiểm tra đăng nhập, kiểm tra CSRF, chặn app khi maintenance.",
+        "Middleware giúp rule chung không bị copy lặp vào từng controller.",
+        "Một câu trả lời tốt nên gắn với ví dụ `auth` hoặc `verified`."
+      ]
+    },
+    {
+      "title": "Blade là gì?",
+      "body": "Blade là template engine của Laravel. Nó giúp viết view HTML động gọn hơn với directive như `@if`, `@foreach`, `@csrf`, `@error`.",
+      "bullets": [
+        "File Blade thường có đuôi `.blade.php`.",
+        "Blade cuối cùng vẫn được compile thành PHP.",
+        "Nó giúp phần view dễ tổ chức hơn HTML trộn PHP thủ công."
+      ]
+    },
+    {
+      "title": "`{{ }}` và `{!! !!}` khác nhau ra sao?",
+      "body": "`{{ }}` sẽ escape output để an toàn hơn; `{!! !!}` render raw HTML nên chỉ dùng khi bạn chắc dữ liệu an toàn.",
+      "code": "<p>{{ $post->title }}</p>\n<div>{!! $trustedHtml !!}</div>",
+      "bullets": [
+        "Mặc định hãy ưu tiên `{{ }}`.",
+        "Dùng raw HTML bừa có thể mở cửa cho XSS nếu dữ liệu đến từ user."
+      ],
+      "tip": "Muốn trả lời chắc hơn, hãy thêm câu `em chỉ dùng raw HTML khi dữ liệu đã được kiểm soát hoặc trusted`.",
+      "note": "Đây là câu cực hay dùng để kiểm tra bạn có ý thức bảo mật đầu vào hay không."
+    },
+    {
+      "title": "XSS là gì ở mức rất cơ bản?",
+      "body": "XSS là kiểu lỗ hổng cho phép script độc hại chèn vào nội dung được render trên trình duyệt của người dùng, thường do hiển thị dữ liệu chưa được escape hoặc chưa kiểm soát đúng.",
+      "bullets": [
+        "Một ví dụ rất gần là render raw HTML từ dữ liệu người dùng không kiểm soát.",
+        "Blade mặc định với `{{ }}` giúp giảm rủi ro hơn so với render raw."
+      ],
+      "tip": "Không cần giải thích bảo mật quá sâu. Chỉ cần nối `XSS` với `render output không an toàn` là đúng hướng."
+    },
+    {
+      "title": "Controller trong Laravel giữ vai trò gì?",
+      "body": "Controller nhận request đã qua route và middleware, gọi lớp xử lý cần thiết, rồi trả về view hoặc JSON response.",
+      "bullets": [
+        "Controller không nên ôm hết mọi business logic.",
+        "Ở mức fresher, chỉ cần hiểu controller là nơi điều phối request là ổn.",
+        "Khi app lớn hơn, nhiều logic có thể chuyển dần sang request, policy, service hoặc action."
+      ]
+    },
+    {
+      "title": "CSRF là gì và vì sao form Laravel hay có `@csrf`?",
+      "body": "CSRF là kiểu tấn công lợi dụng browser đã đăng nhập để gửi request trái ý người dùng. `@csrf` thêm token để server kiểm tra request có hợp lệ từ app hay không.",
+      "code": "<form method=\"POST\" action=\"/posts\">\n    @csrf\n    <input name=\"title\">\n    <button type=\"submit\">Save</button>\n</form>",
+      "bullets": [
+        "Thiếu token này, các route web POST, PUT, PATCH, DELETE thường có thể bị từ chối.",
+        "Không nên giải thích CSRF kiểu 'đó là lỗi Laravel'; nó là cơ chế bảo vệ web form."
+      ]
+    },
+    {
+      "title": "Validation trong Laravel thường đặt ở đâu?",
+      "body": "Validation có thể viết ngay trong controller cho case nhỏ, nhưng thực tế thường nên đặt trong Form Request để code gọn và dễ reuse hơn.",
+      "bullets": [
+        "Rule validation giúp chặn dữ liệu sai trước khi save DB.",
+        "Validation không thay thế hoàn toàn constraint ở database như unique index.",
+        "Nếu phỏng vấn hỏi ngắn, bạn chỉ cần nói `controller` hoặc `Form Request`, và ưu tiên `Form Request` khi code lớn lên."
+      ],
+      "tip": "Một câu trả lời gọn mà đẹp là: `app nhỏ có thể validate ở controller, nhưng app nghiêm túc nên tách sang Form Request cho sạch hơn`."
+    },
+    {
+      "title": "`old()` và `$errors` dùng để làm gì trong Blade form?",
+      "body": "`old()` giúp đổ lại dữ liệu người dùng vừa nhập khi validation fail; `$errors` dùng để hiển thị lỗi cụ thể cho từng field.",
+      "code": "<input name=\"title\" value=\"{{ old('title') }}\">\n@error('title')\n    <p>{{ $message }}</p>\n@enderror",
+      "bullets": [
+        "Đây là điểm làm UX form tốt hơn hẳn so với việc submit fail rồi trắng form.",
+        "Nếu bạn từng làm CRUD, đây là ví dụ rất tốt để kể trong phỏng vấn."
+      ]
+    },
+    {
+      "title": "Migration là gì trong Laravel?",
+      "body": "Migration là cách mô tả thay đổi schema database bằng code, giúp team đồng bộ cấu trúc bảng theo version control thay vì chỉnh tay mỗi người một kiểu.",
+      "bullets": [
+        "Bạn có thể tạo bảng, sửa cột, thêm index, thêm foreign key bằng migration.",
+        "Điểm mạnh là thay đổi schema có lịch sử và có thể chạy lại trên môi trường khác.",
+        "Fresher nên trả lời được migration giúp team không chỉnh DB thủ công."
+      ]
+    },
+    {
+      "title": "Foreign key là gì trong database?",
+      "body": "Foreign key là khóa dùng để liên kết dữ liệu giữa hai bảng, giúp đảm bảo record con tham chiếu tới record cha hợp lệ.",
+      "bullets": [
+        "Ví dụ `posts.user_id` tham chiếu tới `users.id`.",
+        "Nó giúp ràng buộc dữ liệu chặt hơn thay vì để quan hệ chỉ tồn tại trong đầu lập trình viên.",
+        "Đây là nền rất quan trọng khi nói về relationship trong Laravel."
+      ],
+      "tip": "Một cách trả lời đơn giản là: `foreign key giúp nối và kiểm soát quan hệ giữa các bảng`."
+    },
+    {
+      "title": "Seeder là gì trong Laravel?",
+      "body": "Seeder là cách nạp dữ liệu mẫu hoặc dữ liệu khởi tạo vào database bằng code, thường dùng cho local, test hoặc dữ liệu hệ thống ban đầu.",
+      "code": "php artisan db:seed\nphp artisan migrate --seed",
+      "bullets": [
+        "Seeder khác migration: migration lo `schema`, seeder lo `data`.",
+        "Bạn có thể kể ví dụ như seed tài khoản admin mặc định hoặc dữ liệu demo."
+      ],
+      "note": "Recommend: khi bị hỏi migration và seeder khác gì, hãy trả lời ngắn gọn `schema` với `data`."
+    },
+    {
+      "title": "Eloquent là gì?",
+      "body": "Eloquent là ORM của Laravel. Nó cho phép làm việc với bảng database thông qua model PHP thay vì luôn tự viết SQL tay.",
+      "bullets": [
+        "Mỗi model thường đại diện cho một bảng.",
+        "Bạn có thể tạo, sửa, xóa, query và định nghĩa quan hệ dữ liệu từ model.",
+        "Eloquent tiện cho CRUD và logic app thông thường."
+      ],
+      "tip": "Câu này nên gắn ngay với ví dụ như `Post model`, `User model` để nghe bớt học thuộc."
+    },
+    {
+      "title": "Khác nhau giữa Eloquent và Query Builder là gì?",
+      "body": "Eloquent làm việc qua model và thiên về object-style hơn; Query Builder là lớp query linh hoạt hơn, gần SQL hơn nhưng vẫn nằm trong API của Laravel.",
+      "bullets": [
+        "Eloquent thường dễ đọc cho CRUD app.",
+        "Query Builder phù hợp khi query custom hơn hoặc không cần đầy đủ behavior của model.",
+        "Fresher không cần biến câu này thành cuộc chiến; chỉ cần hiểu `model style` và `query style`."
+      ]
+    },
+    {
+      "title": "`$fillable` dùng để làm gì?",
+      "body": "`$fillable` khai báo những field được phép mass assign, giúp giảm rủi ro gán nhầm hoặc gán vượt quyền khi nhận dữ liệu từ request.",
+      "code": "class Post extends Model\n{\n    protected $fillable = ['title', 'body'];\n}",
+      "bullets": [
+        "Nếu không kiểm soát mass assignment, bạn có thể vô tình cho phép set field nhạy cảm.",
+        "Khi trả lời, nên nhắc đây là lớp bảo vệ ở phía model."
+      ],
+      "note": "Một fresher biết nối `$fillable` với `request()->validated()` là đã khá ổn."
+    },
+    {
+      "title": "Soft delete là gì?",
+      "body": "Soft delete là cách đánh dấu record đã xóa mà không xóa cứng khỏi bảng, thường thông qua cột `deleted_at`.",
+      "bullets": [
+        "Nó hữu ích khi cần khôi phục dữ liệu hoặc giữ lịch sử.",
+        "Soft delete không có nghĩa là record biến mất hoàn toàn khỏi database.",
+        "Ở mức cơ bản chỉ cần nói đây là `xóa mềm`, trái với hard delete."
+      ]
+    },
+    {
+      "title": "Quan hệ một-nhiều trong Eloquent là gì?",
+      "body": "Đây là kiểu một record cha có nhiều record con, ví dụ một user có nhiều post, hoặc một post có nhiều comment.",
+      "code": "// User model\npublic function posts()\n{\n    return $this->hasMany(Post::class);\n}",
+      "bullets": [
+        "Phía ngược lại, model con thường có `belongsTo()`.",
+        "Đây là một trong các quan hệ fresher gần như chắc chắn sẽ được hỏi."
+      ]
+    },
+    {
+      "title": "Authentication và Authorization khác nhau thế nào?",
+      "body": "Authentication trả lời câu hỏi `bạn là ai`; Authorization trả lời câu hỏi `bạn có quyền làm việc này không`.",
+      "bullets": [
+        "Đăng nhập là authentication.",
+        "Kiểm tra user có được sửa bài viết này không là authorization.",
+        "Rất nhiều fresher bị nhầm hai khái niệm này."
+      ]
+    },
+    {
+      "title": "Artisan là gì trong Laravel?",
+      "body": "Artisan là command-line tool của Laravel, dùng để chạy các lệnh hỗ trợ phát triển, migrate, clear cache, tạo file mẫu và nhiều việc vận hành khác.",
+      "code": "php artisan list\nphp artisan make:controller PostController\nphp artisan migrate\nphp artisan route:list",
+      "bullets": [
+        "Fresher nên nhớ vài lệnh thật sự hay dùng thay vì thuộc cả danh sách dài.",
+        "Nếu từng clone project Laravel, bạn nên kể lại mình đã dùng các lệnh nào."
+      ],
+      "tip": "Nếu bị hỏi ngắn, hãy nêu 3 lệnh rất thật: `migrate`, `route:list`, `make:controller`."
+    },
+    {
+      "title": "Sau khi clone một project Laravel về máy, thường phải chạy gì?",
+      "body": "Flow cơ bản là cài dependency PHP, tạo file `.env`, sinh `APP_KEY`, cấu hình database, rồi migrate nếu project yêu cầu.",
+      "code": "composer install\ncp .env.example .env\nphp artisan key:generate\nphp artisan migrate\nnpm install\nnpm run dev",
+      "bullets": [
+        "Không có `vendor/` sau khi clone là bình thường.",
+        "Nếu project có frontend Vite, còn phải cài npm package.",
+        "Bạn không nên nói flow này là cố định 100%, vì mỗi repo có thể thêm bước seed hoặc storage link."
+      ]
+    },
+    {
+      "title": "Vì sao hay chạy `php artisan key:generate` sau khi tạo `.env`?",
+      "body": "Lệnh này sinh `APP_KEY`, là khóa mà Laravel dùng cho các cơ chế như encryption và một số xử lý bảo mật nội bộ.",
+      "bullets": [
+        "Thiếu `APP_KEY`, project có thể báo lỗi hoặc không vận hành đúng.",
+        "Bạn không cần giải thích quá sâu crypto internals ở mức fresher; chỉ cần biết đây là khóa ứng dụng cần thiết."
+      ]
+    },
+    {
+      "title": "`php artisan migrate` dùng để làm gì?",
+      "body": "Lệnh này chạy các migration chưa được áp dụng để đồng bộ schema database theo code hiện tại của project.",
+      "bullets": [
+        "Nó không tự sinh data business cho bạn, trừ khi có thêm bước seed.",
+        "Nếu database chưa cấu hình đúng trong `.env`, lệnh migrate có thể fail."
+      ]
+    },
+    {
+      "title": "`.env` trong Laravel dùng để làm gì?",
+      "body": "`.env` chứa giá trị cấu hình theo môi trường như app name, database connection, mail config, cache driver, queue driver và các secret.",
+      "bullets": [
+        "Không nên commit secret thật lên git.",
+        "Một repo thường có `.env.example` để người mới biết cần những biến gì.",
+        "Nếu sửa `.env` mà app không đổi hành vi, có thể phải nghĩ tới cache config."
+      ]
+    },
+    {
+      "title": "Ở mức cơ bản, bạn nên hiểu thế nào về `404`, `419`, `422` và `500`?",
+      "body": "Đây là những trạng thái rất hay gặp khi làm web app Laravel và hiểu được chúng giúp bạn debug đỡ mù hơn.",
+      "bullets": [
+        "`404`: không tìm thấy route hoặc resource.",
+        "`419`: thường liên quan session hoặc CSRF trên web form.",
+        "`422`: validation fail, dữ liệu gửi lên chưa hợp lệ.",
+        "`500`: lỗi phía server hoặc code runtime."
+      ],
+      "note": "Fresher không cần thuộc mọi status code, nhưng bốn mã này cực đáng nhớ."
+    },
+    {
+      "title": "Khác nhau cơ bản giữa `200` và `201` là gì?",
+      "body": "`200` thường nghĩa là request thành công nói chung; `201` thường dùng khi server đã tạo thành công một resource mới.",
+      "bullets": [
+        "Ví dụ tạo mới bằng API có thể hợp với `201` hơn `200`.",
+        "Fresher không cần thuộc hết status code, nhưng biết `201 = created` là điểm cộng."
+      ]
+    },
+    {
+      "title": "Khi được hỏi 'Em đã làm project gì rồi?', nên trả lời thế nào?",
+      "body": "Hãy chọn một project thật, nói bài toán, vai trò của bạn, flow chính bạn đã làm và một lỗi hoặc khó khăn bạn từng xử lý.",
+      "bullets": [
+        "Mở đầu bằng bối cảnh ngắn: app làm gì.",
+        "Nói rõ phần mình thật sự đụng tay, ví dụ auth, CRUD, upload, validation hoặc admin panel.",
+        "Nếu có bug hoặc bài học cụ thể, đó là điểm rất tốt."
+      ],
+      "tip": "Khung trả lời an toàn là: `project làm gì -> em làm phần nào -> em gặp khó gì -> em học được gì`."
+    },
+    {
+      "title": "Nếu gặp bug đơn giản, bạn nên mô tả cách debug ra sao?",
+      "body": "Mô tả quy trình theo thứ tự thay vì nói chung chung `em debug bằng cách search Google`.",
+      "code": "1. Tái hiện lỗi\n2. Đọc message lỗi hoặc log\n3. Kiểm tra route / request / input\n4. Kiểm tra controller / validation / query\n5. Sửa xong thì chạy lại flow cũ",
+      "bullets": [
+        "Nếu có test hoặc reproduction note thì còn tốt hơn.",
+        "Nhà tuyển dụng thường muốn thấy bạn có quy trình chứ không chỉ 'đoán'."
+      ]
+    },
+    {
+      "title": "Nếu submit form xong gặp lỗi `419`, bạn sẽ nghĩ tới điều gì trước?",
+      "body": "Ở mức cơ bản, hãy nghĩ ngay tới `CSRF token`, `session`, và việc request có đang đi qua đúng middleware web hay không.",
+      "bullets": [
+        "Kiểm tra form có `@csrf` chưa.",
+        "Kiểm tra request có phải route web bình thường hay không.",
+        "Kiểm tra session hoặc cookie có đang hoạt động đúng trên local không."
+      ],
+      "tip": "Một câu trả lời tốt không cần sửa lỗi ngay tại bàn, chỉ cần cho thấy bạn biết khoanh vùng hợp lý."
+    },
+    {
+      "title": "Nếu `composer install` fail sau khi clone project, bạn sẽ kiểm tra gì?",
+      "body": "Hãy nghĩ tới version PHP, extension thiếu, lỗi dependency conflict hoặc lock file không phù hợp với máy hiện tại.",
+      "bullets": [
+        "Xem message lỗi đầu tiên thay vì hoảng chạy nhiều lệnh ngẫu nhiên.",
+        "Kiểm tra version PHP hiện tại.",
+        "Kiểm tra extension như `mbstring`, `openssl`, `pdo` nếu project yêu cầu."
+      ],
+      "note": "Nhà tuyển dụng thích cách bạn đọc lỗi có thứ tự hơn là cố nói mình biết hết mọi package."
+    },
+    {
+      "title": "Nếu `php artisan migrate` fail, bạn sẽ nghĩ tới các nguyên nhân nào?",
+      "body": "Ở mức fresher, thường là do `.env` sai, database chưa chạy, user không đủ quyền, hoặc migration trước đó có vấn đề schema.",
+      "bullets": [
+        "Kiểm tra `DB_CONNECTION`, `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD`.",
+        "Kiểm tra database service có đang chạy hay không.",
+        "Đọc tên migration nào fail thay vì nói chung là `migrate lỗi`."
+      ],
+      "tip": "Nếu có thể nói thêm `em sẽ đọc migration đang fail rồi kiểm tra DB state hiện tại`, câu trả lời sẽ chắc hơn."
+    },
+    {
+      "title": "JSON là gì và vì sao nó xuất hiện nhiều trong web app hiện đại?",
+      "body": "JSON là định dạng dữ liệu dạng text, nhẹ, dễ đọc và rất tiện để client-server trao đổi dữ liệu với nhau.",
+      "code": "{\n  \"name\": \"An\",\n  \"role\": \"editor\"\n}",
+      "bullets": [
+        "API thường trả JSON thay vì HTML.",
+        "Frontend JavaScript xử lý JSON rất thuận tiện.",
+        "Laravel cũng thường trả JSON ở API route hoặc AJAX flow."
+      ]
+    },
+    {
+      "title": "REST API ở mức cơ bản nên hiểu thế nào?",
+      "body": "Ở mức fresher, chỉ cần hiểu đây là cách thiết kế API xoay quanh resource và HTTP method như `GET`, `POST`, `PUT`, `DELETE`.",
+      "bullets": [
+        "`GET /posts`: lấy danh sách.",
+        "`POST /posts`: tạo mới.",
+        "`GET /posts/1`: lấy chi tiết.",
+        "`PUT` hoặc `PATCH`: cập nhật.",
+        "`DELETE`: xóa."
+      ],
+      "tip": "Không cần cố giải thích triết lý REST quá sâu. Chỉ cần nói được `resource + HTTP method + JSON response`."
+    },
+    {
+      "title": "RESTful API là gì?",
+      "body": "RESTful API là API được thiết kế theo phong cách `REST`, nghĩa là xoay quanh `resource`, dùng `HTTP method` đúng vai trò, và thường trả dữ liệu theo format như `JSON` để các hệ thống giao tiếp với nhau dễ hơn.",
+      "bullets": [
+        "Nó không phải ngôn ngữ hay framework riêng.",
+        "Điểm quan trọng là cách tổ chức URL và method cho rõ nghĩa.",
+        "Ví dụ: `GET /posts`, `POST /posts`, `GET /posts/1`, `DELETE /posts/1`."
+      ],
+      "tip": "Nếu bị hỏi ngắn, bạn có thể trả lời một câu: `RESTful API là cách thiết kế API theo resource và HTTP method chuẩn để client-server giao tiếp rõ ràng hơn`.",
+      "note": "Nhiều ứng viên hay nói RESTful API chỉ là `API trả JSON`. JSON phổ biến, nhưng cốt lõi vẫn là `resource + HTTP semantics`."
+    },
+    {
+      "title": "`resource` trong API nghĩa là gì?",
+      "body": "Trong ngữ cảnh API, `resource` là đối tượng hoặc dữ liệu mà hệ thống đang quản lý, ví dụ như `post`, `user`, `comment`, `order`.",
+      "bullets": [
+        "RESTful API thường tổ chức URL xoay quanh resource.",
+        "Ví dụ `/posts` là collection resource, còn `/posts/1` là một resource cụ thể.",
+        "Nếu hiểu `resource` thì bạn sẽ hiểu vì sao route API thường được đặt theo danh từ thay vì động từ."
+      ],
+      "tip": "Một câu ngắn gọn: `resource là tài nguyên hoặc đối tượng dữ liệu mà API đang quản lý`."
+    },
+    {
+      "title": "API route khác gì web route trong Laravel?",
+      "body": "Web route thường phục vụ giao diện web, có `session`, `cookie`, `CSRF`; còn API route thường phục vụ client nhận `JSON`, thiên về `stateless` hơn.",
+      "code": "// web route\nRoute::get('/posts', [PostController::class, 'index']);\n\n// api route\nRoute::get('/api/posts', [ApiPostController::class, 'index']);",
+      "bullets": [
+        "Web route thường render Blade view.",
+        "API route thường trả JSON.",
+        "Khi phỏng vấn, chỉ cần nói được `view flow` khác với `JSON flow` là đã ổn."
+      ]
+    },
+    {
+      "title": "`PUT` và `PATCH` khác nhau thế nào ở mức cơ bản?",
+      "body": "Cả hai đều dùng để cập nhật dữ liệu, nhưng `PUT` thường được hiểu là cập nhật toàn bộ resource, còn `PATCH` thường dùng cho cập nhật một phần.",
+      "bullets": [
+        "Nhiều app thực tế vẫn dùng linh hoạt, nhưng hiểu khác biệt khái niệm là điểm cộng.",
+        "Ví dụ đổi toàn bộ thông tin user có thể nghĩ tới `PUT`, còn đổi riêng `avatar` hoặc `name` thì hay nghĩ tới `PATCH`."
+      ],
+      "note": "Ở level fresher, không cần tranh luận chuẩn RFC sâu. Chỉ cần nắm `full update` với `partial update`."
+    },
+    {
+      "title": "AJAX là gì?",
+      "body": "AJAX là cách gửi request lên server mà không cần reload toàn bộ trang, thường dùng để lấy dữ liệu hoặc submit một thao tác nhỏ mượt hơn.",
+      "bullets": [
+        "Frontend có thể gọi API rồi cập nhật một phần giao diện.",
+        "Ngày nay nhiều app dùng `fetch` hoặc thư viện HTTP client, nhưng ý tưởng nền vẫn giống AJAX.",
+        "Laravel thường gặp AJAX ở form phụ, search nhanh, filter, hoặc nút like/favorite."
+      ],
+      "tip": "Nếu muốn trả lời gọn: `AJAX giúp trang trao đổi dữ liệu với server mà không phải reload toàn bộ page`."
+    },
+    {
+      "title": "CORS là gì ở mức cơ bản?",
+      "body": "CORS là cơ chế trình duyệt kiểm soát việc một trang web ở domain này có được gọi tài nguyên từ domain khác hay không.",
+      "bullets": [
+        "Nó thường xuất hiện khi frontend và backend chạy khác origin.",
+        "Nếu cấu hình CORS sai, request từ browser có thể bị chặn dù API vẫn chạy.",
+        "Đây là vấn đề của browser policy, không đơn thuần là bug code Laravel."
+      ],
+      "tip": "Câu trả lời ngắn: `CORS là rule của browser cho cross-origin request`."
+    },
+    {
+      "title": "`localStorage` khác gì `session` và `cookie`?",
+      "body": "`localStorage` là nơi browser lưu dữ liệu phía client và giữ lại qua nhiều lần mở tab hoặc reload; `cookie` có thể được gửi kèm request; còn `session` phía Laravel thường gắn với dữ liệu phía server.",
+      "bullets": [
+        "`localStorage` không tự gửi lên server theo mỗi request.",
+        "`cookie` thường được browser gửi kèm request nếu phù hợp domain/path.",
+        "`session` trong Laravel thường dựa trên session id do browser giữ."
+      ],
+      "note": "Nhiều bạn mới dễ gom tất cả thành `lưu ở browser`, nhưng vai trò và flow của chúng khác nhau."
+    },
+    {
+      "title": "Git được dùng để làm gì trong công việc hằng ngày của lập trình viên?",
+      "body": "Git dùng để quản lý version code, theo dõi thay đổi, làm việc theo nhánh và phối hợp với người khác an toàn hơn.",
+      "bullets": [
+        "Bạn có thể kể vài lệnh thật như `git status`, `git add`, `git commit`, `git pull`.",
+        "Ngay cả fresher cũng nên hiểu tại sao không nên sửa code rồi quên commit hoặc không biết thay đổi nào đến từ đâu."
+      ],
+      "note": "Nếu công ty hỏi thêm về teamwork, Git gần như chắc chắn sẽ xuất hiện."
+    },
+    {
+      "title": "Hash mật khẩu là gì và vì sao không nên lưu password thô?",
+      "body": "Hash mật khẩu là cách biến password thành chuỗi đã qua thuật toán một chiều để hệ thống không cần lưu mật khẩu gốc. Không nên lưu password thô vì nếu lộ dữ liệu, người dùng sẽ bị nguy hiểm trực tiếp.",
+      "bullets": [
+        "Khi đăng nhập, hệ thống hash giá trị nhập vào rồi so sánh với giá trị đã lưu.",
+        "Laravel có sẵn các cơ chế hỗ trợ hash password an toàn hơn thay vì tự viết tay.",
+        "Đây là câu rất nền để kiểm tra ý thức bảo mật cơ bản."
+      ],
+      "tip": "Nếu muốn nói gọn: `password nên được hash chứ không lưu plain text`."
+    },
+    {
+      "title": "Nếu chưa có kinh nghiệm làm việc ở công ty thật, nên trả lời sao cho không bị yếu?",
+      "body": "Đừng cố giả vờ đã từng làm team lớn. Hãy nói thẳng bạn chưa có kinh nghiệm công ty, nhưng đã tự làm project, clone repo, đọc docs, sửa bug và học theo flow gần với công việc thật.",
+      "bullets": [
+        "Trung thực quan trọng hơn cố thổi kinh nghiệm.",
+        "Bạn có thể bù bằng project thật, thói quen học và cách debug có cấu trúc.",
+        "Nếu từng làm đồ án nhóm, cũng có thể kể phần phối hợp nhỏ đó."
+      ],
+      "tip": "Khung trả lời tốt là: `em chưa đi làm thật, nhưng em đã tập làm theo quy trình gần thực tế ở project của mình`."
+    },
+    {
+      "title": "Sai lầm phổ biến của fresher khi trả lời phỏng vấn kỹ thuật là gì?",
+      "body": "Hay nhất là nói quá khả năng, dùng thuật ngữ mơ hồ, hoặc kể về project theo kiểu rất dài nhưng không chạm vào phần mình thật sự làm.",
+      "bullets": [
+        "Không phân biệt rõ PHP với Laravel.",
+        "Thuộc tên khái niệm nhưng không gắn được với ví dụ thật.",
+        "Khoe quá nhiều thứ nâng cao nhưng không chắc phần cơ bản."
+      ],
+      "note": "Ở level này, chắc nền quan trọng hơn cố tỏ ra senior."
+    },
+    {
+      "title": "Nếu không biết câu trả lời, nên phản ứng thế nào?",
+      "body": "Hãy nói rõ phần bạn biết, phần bạn chưa chắc, và cách bạn sẽ kiểm tra lại bằng docs, code hiện có hoặc tái hiện thử trong project nhỏ.",
+      "bullets": [
+        "Trung thực tốt hơn đoán bừa.",
+        "Nhưng đừng dừng ngay ở `em không biết`; hãy cho thấy cách bạn học và kiểm chứng."
+      ]
+    },
+    {
+      "title": "GitHub hoặc portfolio của một fresher Laravel nên cho thấy điều gì?",
+      "body": "Không cần quá nhiều repo, nhưng nên có vài project có thể chạy, có README cơ bản, có migration, có route rõ ràng và code đủ sạch để người khác đọc.",
+      "bullets": [
+        "Ít nhưng thật còn hơn nhiều repo bỏ dở.",
+        "Nếu có auth, CRUD, validation, upload hoặc test cơ bản thì càng tốt.",
+        "README nên nói cách chạy project chứ không chỉ để trống."
+      ]
+    },
+    {
+      "title": "Một công ty thường kỳ vọng gì ở ứng viên fresher PHP hoặc Laravel?",
+      "body": "Họ thường không chờ bạn giải bài toán kiến trúc lớn ngay, mà kỳ vọng bạn chắc nền, chịu học, đọc được code có sẵn, sửa được feature nhỏ và giao tiếp trung thực.",
+      "bullets": [
+        "Hiểu cơ bản về PHP, HTTP, form, database và flow request-response.",
+        "Biết dùng Git, chạy project local và đọc lỗi.",
+        "Có thể giải thích một project mình từng làm mà không mơ hồ."
+      ],
+      "note": "Đúng level fresher là chắc nền, làm được việc nhỏ và học nhanh; không phải cố nói như lead."
+    },
+    {
+      "title": "Lập trình hướng đối tượng `OOP` là gì trong PHP?",
+      "body": "`OOP` là cách tổ chức code quanh `class` và `object` thay vì chỉ viết một chuỗi function rời rạc. Trong PHP và Laravel, OOP giúp code dễ chia trách nhiệm, dễ tái sử dụng và dễ maintain hơn khi project lớn lên.",
+      "bullets": [
+        "Laravel dùng rất nhiều class như controller, request, model, job, policy, command.",
+        "Khi trả lời, đừng chỉ nói `OOP là class với object`; hãy nói thêm vì sao nó giúp project rõ hơn."
+      ],
+      "tip": "Một câu ngắn gọn: `OOP là cách tổ chức code bằng object để gom dữ liệu và hành vi liên quan vào cùng một nơi`."
+    },
+    {
+      "title": "Bốn ý cơ bản của OOP như `encapsulation`, `inheritance`, `polymorphism`, `abstraction` nên hiểu thế nào?",
+      "body": "`Encapsulation` là giấu bớt chi tiết bên trong và chỉ mở thứ cần dùng; `inheritance` là lớp con kế thừa từ lớp cha; `polymorphism` là nhiều object có thể phản hồi cùng một interface theo cách riêng; `abstraction` là chỉ giữ những gì quan trọng cho bài toán hiện tại.",
+      "bullets": [
+        "Fresher không cần định nghĩa sách giáo khoa quá dài, nhưng nên nói được ý chính và ví dụ đơn giản.",
+        "Nếu bạn nói được `controller`, `model`, `interface`, `service` theo ngữ cảnh project thì câu trả lời sẽ mạnh hơn."
+      ],
+      "code": "interface Notifier\n{\n    public function send(string $message): void;\n}\n\nclass MailNotifier implements Notifier\n{\n    public function send(string $message): void\n    {\n        // gui email\n    }\n}"
+    },
+    {
+      "title": "Một URL thường gồm những phần nào?",
+      "body": "Một URL thường có `scheme` như `https`, phần `domain` hoặc `host`, có thể có `port`, rồi tới `path`, `query string` và `fragment`.",
+      "bullets": [
+        "Ví dụ `https://example.com:8443/posts/12?tab=comments#history`.",
+        "`/posts/12` là `path`, `?tab=comments` là `query`, `#history` là `fragment`."
+      ],
+      "code": "https://example.com:8443/posts/12?tab=comments#history\n\\___/ \\__________/ \\______/ \\___________/ \\______/\nscheme   host:port    path      query       fragment"
+    },
+    {
+      "title": "`Domain`, `DNS`, `IP`, `port` khác nhau thế nào?",
+      "body": "`Domain` là tên dễ nhớ như `example.com`; `DNS` là hệ thống đổi tên đó ra `IP`; `IP` là địa chỉ mạng của máy đích; `port` là cổng dịch vụ cụ thể trên máy đó, ví dụ `80`, `443`, `3306`.",
+      "bullets": [
+        "Bạn có thể ví `domain` là tên cửa hàng, còn `IP` là địa chỉ cụ thể.",
+        "Một server có thể chạy nhiều dịch vụ khác nhau trên các port khác nhau."
+      ],
+      "note": "Đây là nhóm khái niệm mạng rất hay bị hỏi để xem bạn có hiểu web app không chỉ ở mức code."
+    },
+    {
+      "title": "Khi gõ một URL vào browser, chuyện gì xảy ra ở mức cơ bản?",
+      "body": "Trình duyệt cần tìm `IP` qua `DNS`, mở kết nối đến server, gửi `HTTP request`, server xử lý rồi trả `response`, sau đó browser render nội dung nhận được. Nếu là app Laravel thì phía server còn đi qua web server, `public/index.php`, bootstrap, route và controller trước khi trả response.",
+      "bullets": [
+        "Fresher không cần kể quá sâu vào TCP handshake, nhưng nên biết chuỗi lớn là `DNS -> request -> server xử lý -> response -> browser render`.",
+        "Nếu gắn thêm Laravel vào flow, câu trả lời sẽ nổi bật hơn."
+      ],
+      "code": "Browser -> DNS -> Web Server (Nginx/Apache) -> public/index.php\n-> bootstrap/app.php -> middleware -> route -> controller -> response -> Browser"
+    },
+    {
+      "title": "Nếu URL là `https://example.com/posts/12?tab=comments#history`, phần nào được gửi lên server và phần nào không?",
+      "body": "`Path` và `query string` được gửi lên server để server xử lý. `Fragment` như `#history` không được gửi lên server; nó chỉ được browser dùng ở phía client để nhảy tới một phần trong trang hoặc xử lý UI.",
+      "bullets": [
+        "`/posts/12` và `?tab=comments` có thể ảnh hưởng dữ liệu trả về.",
+        "`#history` thường không đi tới Laravel route hay controller."
+      ],
+      "tip": "Đây là câu rất tốt để phân biệt ai thật sự hiểu URL với ai chỉ nhìn nó như một chuỗi ký tự."
+    },
+    {
+      "title": "Nếu người dùng gõ thẳng URL tới một file hoặc đường dẫn không được phép, web app thường làm gì?",
+      "body": "Điều đó tùy tài nguyên đó là public hay private. Nếu route hoặc file không tồn tại thì có thể ra `404`; nếu tồn tại nhưng không được phép truy cập thì có thể ra `403`, redirect sang login, hoặc yêu cầu chữ ký/tokens. File private không nên chỉ đoán tên là tải được.",
+      "bullets": [
+        "Đây là chỗ auth, authorization, storage public/private và web server config bắt đầu liên quan nhau.",
+        "Câu trả lời tốt nên nhấn `không phải cái gì có URL cũng nên public`."
+      ]
+    },
+    {
+      "title": "Nếu interviewer hỏi 'Có 1000 số nhưng thiếu 1 số, em tìm thế nào?', bạn nên tiếp cận ra sao?",
+      "body": "Một cách rất cơ bản là dùng tổng kỳ vọng của dãy `1..1000`, rồi trừ đi tổng thực tế để ra số bị thiếu. Điều nhà tuyển dụng muốn thấy nhiều khi không phải bạn thuộc công thức, mà là bạn biết bắt đầu từ một cách nghĩ rõ ràng.",
+      "bullets": [
+        "Bạn có thể nói thêm cách sort hoặc đánh dấu, nhưng cách dùng tổng thường ngắn gọn.",
+        "Hãy nói rõ giả định: dãy là `1..1000`, chỉ thiếu đúng một số, không trùng số."
+      ],
+      "code": "$expected = 1000 * 1001 / 2;\n$actual = array_sum($numbers);\n$missing = $expected - $actual;"
+    },
+    {
+      "title": "Nếu gặp một bài toán logic mà chưa ra ngay, nên trình bày cách nghĩ thế nào để vẫn được điểm?",
+      "body": "Hãy nói rõ bạn đang làm rõ giả định gì, đang thử hướng nào, và vì sao hướng đó hợp lý. Nhiều interviewer đánh giá cách suy nghĩ, cách đặt câu hỏi và sự bình tĩnh còn nhiều hơn việc bạn ra đáp án trong 10 giây.",
+      "bullets": [
+        "Đừng im lặng quá lâu rồi đoán bừa.",
+        "Cũng đừng nhảy ngay sang code khi chưa chốt giả định đầu vào."
+      ],
+      "tip": "Một khung tốt là: `em muốn chốt giả định trước, sau đó em thử hướng đơn giản nhất rồi mới tối ưu tiếp nếu cần`."
+    },
+    {
+      "title": "Vì sao không nên chỉ tin validation ở frontend?",
+      "body": "Frontend có thể giúp báo lỗi sớm cho người dùng, nhưng dữ liệu gửi lên server vẫn có thể bị sửa bằng tool khác, request giả lập hoặc do bug phía client. Vì vậy server vẫn phải validate lại.",
+      "bullets": [
+        "Client-side validation tốt cho trải nghiệm.",
+        "Server-side validation mới là lớp kiểm tra cuối cùng cho tính đúng và an toàn."
+      ],
+      "note": "Đây là câu nền rất hay để xem bạn có phân biệt UX với security và correctness không."
+    },
+    {
+      "title": "Nếu interviewer hỏi 'em làm sao để hiểu requirement trước khi code?', fresher nên trả lời thế nào?",
+      "body": "Bạn có thể nói rằng trước khi code bạn muốn làm rõ input là gì, output là gì, ai dùng tính năng đó, case lỗi ra sao, và có ràng buộc gì đặc biệt không. Điều này cho thấy bạn không lao vào code khi bài toán còn mơ hồ.",
+      "bullets": [
+        "Ngay cả fresher cũng nên có thói quen hỏi lại requirement.",
+        "Đây là một kỹ năng làm việc rất thực tế, không chỉ là kỹ năng code."
+      ]
+    },
+    {
+      "title": "Cache trình duyệt ở mức cơ bản là gì, và vì sao đôi khi sửa code rồi vẫn thấy giao diện cũ?",
+      "body": "Browser có thể giữ lại file CSS, JS hoặc ảnh cũ trong cache để tải nhanh hơn. Vì vậy có lúc bạn sửa code rồi nhưng trình duyệt vẫn đang dùng bản asset cũ nếu chưa refresh mạnh, build lại hoặc đổi version asset.",
+      "bullets": [
+        "Đây là lỗi rất hay gặp khi mới làm web.",
+        "Không phải lúc nào `code không chạy` cũng là do logic sai; đôi khi là do asset cũ."
+      ]
+    },
+    {
+      "title": "Nếu người dùng báo 'em bấm rồi mà không thấy gì xảy ra', fresher nên nghĩ tới những khả năng cơ bản nào?",
+      "body": "Có thể form chưa submit, route sai, JavaScript lỗi, validation fail nhưng không hiển thị, request không tới server, hoặc response trả về nhưng UI không render đúng. Điều quan trọng là nghĩ theo chuỗi chứ không đoán ngẫu nhiên.",
+      "bullets": [
+        "Đây là bài test nhỏ về tư duy debug theo flow.",
+        "Bạn có thể chia thành `frontend -> request -> backend -> response -> UI update`."
+      ],
+      "tip": "Một câu trả lời tốt là: `em sẽ kiểm tra từ hành động người dùng tới request và response thay vì mở file ngẫu nhiên`."
+    },
+    {
+      "title": "`HTTPS` là gì và vì sao web app hiện đại gần như luôn cần nó?",
+      "body": "`HTTPS` là `HTTP` đi kèm mã hóa qua `TLS`, giúp dữ liệu giữa browser và server khó bị đọc trộm hoặc sửa giữa đường hơn. Nó đặc biệt quan trọng với login, cookie, form, token và mọi dữ liệu nhạy cảm.",
+      "bullets": [
+        "Fresher không cần đi sâu vào handshake, nhưng nên hiểu giá trị nền của mã hóa đường truyền.",
+        "Một câu trả lời tốt nên gắn `HTTPS` với bảo vệ user chứ không chỉ nói `cho an toàn hơn`."
+      ]
+    },
+    {
+      "title": "Cookie `HttpOnly` và `Secure` nên hiểu ở mức cơ bản thế nào?",
+      "body": "`HttpOnly` giúp giảm việc JavaScript phía client đọc cookie đó; `Secure` giúp cookie chỉ được gửi qua kết nối `HTTPS`. Hai thuộc tính này là các lớp giảm rủi ro phổ biến cho cookie nhạy cảm như session cookie.",
+      "bullets": [
+        "Bạn không cần trả lời như security engineer, nhưng nên hiểu chúng có mục đích gì.",
+        "Đây là câu nền rất hợp cho level fresher+."
+      ],
+      "tip": "Một câu ngắn gọn là: `HttpOnly giảm nguy cơ JS đọc cookie, Secure buộc cookie đi qua HTTPS`."
+    }
+  ]
+}

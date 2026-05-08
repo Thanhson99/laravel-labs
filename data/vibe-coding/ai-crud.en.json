@@ -1,0 +1,219 @@
+{
+  "heading": "Vibe Coding AI CRUD",
+  "intro": "This branch focuses on using AI to build real Laravel features. The goal is not to let AI write everything blindly, but to shape the request, constrain the scope, and review the output so the feature lands in the right structure.",
+  "type": "list",
+  "breaks": [
+    {
+      "start": 1,
+      "title": "What Features Should You Pick",
+      "description": "Choose features that are practical but still small enough to build, review, and correct inside a short workflow.",
+      "tone": "amber"
+    },
+    {
+      "start": 5,
+      "title": "Flow For Feature Builds",
+      "description": "A strong build workflow mixes code with reasons: why the layer exists and why the command is run.",
+      "tone": "coral"
+    },
+    {
+      "start": 9,
+      "title": "Series That Expand Well",
+      "description": "These directions can be split into multiple smaller workflows while still staying connected.",
+      "tone": "amber"
+    }
+  ],
+  "items": [
+    {
+      "title": "What is the best first feature to let AI draft?",
+      "body": "A strong opening feature is `CRUD + validation + flash message`. It touches routes, controllers, requests, models, views, and redirects while still staying small enough to review completely.",
+      "code": "php artisan make:model Post -mcr\nphp artisan make:request StorePostRequest\n",
+      "tip": "Pick a simple entity such as `Post`, `Task`, or `Note` if you want the first AI-assisted flow to stay easy to inspect."
+    },
+    {
+      "title": "Should a CRUD flow cover everything from migration to Blade?",
+      "body": "Yes, if the goal is to understand the whole flow. But keep the pacing split: schema first, then request/controller, then Blade and small UX improvements."
+    },
+    {
+      "title": "Which auth flow is good for AI-assisted building?",
+      "body": "Flows like `login`, `register`, `forgot password`, `email verification`, or `profile update` work well because they are common, constraint-heavy, and they expose where AI often gets things subtly wrong."
+    },
+    {
+      "title": "What flow gives an upload feature real depth?",
+      "body": "Do not stop at `store()` only. Include mime validation, naming, saving the path to the database, rendering a preview, and explaining the difference between public and private files.",
+      "code": "$path = $request->file('avatar')->store('avatars', 'public');\n$user->update(['avatar_path' => $path]);\n",
+      "note": "If you skip `storage:link`, you will probably miss a key step in the upload flow."
+    },
+    {
+      "title": "What pacing should an AI-assisted feature build follow?",
+      "body": "Start from a clear outcome, lock the prompt, let AI draft the first pass, then move layer by layer through migration -> route -> request -> controller -> view -> manual test."
+    },
+    {
+      "title": "When should you interrupt the AI flow to explain tradeoffs?",
+      "body": "Right when the output starts dumping everything into the controller, or when you must choose `FormRequest`, `Policy`, `Service`, or `Action`. This is where the human has to take steering back."
+    },
+    {
+      "title": "Should prompt/templates be prepared in advance?",
+      "body": "Yes, especially for repetitive pieces such as resource routes, request rules, migration skeletons, and response shapes.",
+      "code": "Route::resource('posts', PostController::class);\n\npublic function rules(): array\n{\n    return [\n        'title' => ['required', 'string', 'max:255'],\n        'body' => ['required', 'string'],\n    ];\n}\n"
+    },
+    {
+      "title": "How should AI-generated API features be checked differently from web features?",
+      "body": "API features need close inspection around `JSON response`, `status codes`, `validation errors`, `auth`, `rate limiting`, and making sure the model does not accidentally drag redirect-and-Blade behavior into the flow."
+    },
+    {
+      "title": "Which build series expand well?",
+      "body": "Useful series include `blog mini app`, `admin CRUD`, `upload center`, `notification flow`, and `REST API starter`.",
+      "bullets": [
+        "Blog mini app: post, comment, tag, like, filter.",
+        "Admin CRUD: role, status, approve/reject, search.",
+        "Upload center: image, PDF, private download, cleanup.",
+        "REST API starter: auth, index, store, pagination, resource."
+      ]
+    },
+    {
+      "title": "What is a common mistake when using AI to build features?",
+      "body": "Accepting the output just because it runs. The fix is to keep asking what responsibility each file carries and whether the boundary still matches the current design."
+    },
+    {
+      "title": "Should AI be allowed to write migrations?",
+      "body": "It can draft them, but you must review types, indexes, foreign keys, nullable columns, defaults, and rollback behavior carefully. Migrations are one of the places where plausible code can still damage real data."
+    },
+    {
+      "title": "Is AI good for drafting FormRequest classes?",
+      "body": "Yes, especially for drafting `rules()` and basic messages. But you still need to verify whether the rules match the real business constraints, especially around unique, auth, files, and conditional validation.",
+      "code": "public function rules(): array\n{\n    return [\n        'email' => ['required', 'email'],\n        'avatar' => ['nullable', 'image', 'max:2048'],\n    ];\n}\n"
+    },
+    {
+      "title": "What should be pinned when AI generates Blade or UI code?",
+      "body": "Lock down route names, variables passed to the view, error display, `old()` values, `@csrf`, and the current style/component conventions. Otherwise AI easily drifts away from the existing UI pattern."
+    },
+    {
+      "title": "What should be inspected if AI touches Eloquent relationships?",
+      "body": "Inspect relationship names, foreign keys, eager loading, `fillable`, casts, and whether the generated query pattern quietly introduces N+1 behavior."
+    },
+    {
+      "title": "Should AI be allowed to write tests for the feature?",
+      "body": "Yes, but check whether the tests actually lock behavior or only assert shallow outcomes. AI often produces long tests that still miss the main risk.",
+      "tip": "One short test that locks the real bug matters more than five tests that only assert `200`."
+    },
+    {
+      "title": "If AI generates route, request, controller, and model in one pass, what review order works best?",
+      "body": "Review from the outside inward: `route -> auth/validation -> controller -> model/query -> response/view`. That order catches flow mistakes before you disappear into small details."
+    },
+    {
+      "title": "What is a case where AI often drifts on business rules?",
+      "body": "Flows like creating an order, decrementing stock, sending mail, writing logs, and dispatching jobs in one transaction. AI can easily make it all run while still getting order, boundaries, or rollback behavior wrong."
+    },
+    {
+      "title": "When should AI be forced to explain every file it just changed?",
+      "body": "Especially when the diff starts touching more than 3-4 files, or when it edits files outside the zone you originally expected. The explanation step often catches spread and misunderstanding early."
+    },
+    {
+      "title": "What does a strong multi-step feature-build prompt look like?",
+      "body": "Split the work into stages instead of using one giant prompt: schema first, then request + controller, then Blade or API response, then tests and a verification checklist.",
+      "code": "Step 1: create migration + model only\nStep 2: add request validation\nStep 3: add controller/store flow\nStep 4: add Blade form\nStep 5: list verification gaps\n"
+    },
+    {
+      "title": "What should you do when AI drifts away from repo conventions?",
+      "body": "Do not just fix it silently by hand. Update your prompt or instruction set so the model learns the expected naming, folder structure, action class pattern, policy usage, resource shape, and response style."
+    },
+    {
+      "title": "What is a red flag when AI builds CRUD features?",
+      "body": "The CRUD flow appears to run, but the controller ends up carrying validation, business rules, uploads, queries, and redirects all together. That usually means the output optimized for generation speed, not for feature longevity.",
+      "note": "The more the code tries to do everything in one place, the more you should suspect the AI has drifted structurally."
+    },
+    {
+      "title": "What should be inspected when AI generates search, filter, or list pages?",
+      "body": "Inspect query parameters, default sort, pagination, filter sanitation, eager loading, and whether the query scope becomes too wide.",
+      "code": "$posts = Post::query()\n    ->when($request->filled('status'), fn ($q) => $q->where('status', $request->status))\n    ->latest()\n    ->paginate(15);\n"
+    },
+    {
+      "title": "What is a strong workflow for AI-assisted feature building?",
+      "body": "Split the feature into `data shape`, `request/validation`, `controller flow`, `view/API response`, then `tests`. Only let the model move to the next stage once the current one has been checked.",
+      "tip": "This sharply reduces diff size and lowers the chance of business drift."
+    },
+    {
+      "title": "When should AI stop coding and only list risks?",
+      "body": "When the feature touches transactions, inventory, payment, email side effects, job dispatch, policies, or private file upload. In those zones, the risk list matters as much as the patch itself."
+    },
+    {
+      "title": "Where do AI-generated CRUD flows fail most often?",
+      "body": "Places like unique validation, update flow differing from create flow, old-file cleanup, ownership checks, and list pages with filtering or pagination are where AI output often looks fine while still drifting logically."
+    },
+    {
+      "title": "What does AI often get wrong in update flows?",
+      "body": "It often copies create rules into update rules without ignoring the current record, or forgets nullable fields, old-file behavior, and conditional validation.",
+      "code": "Rule::unique('users', 'email')->ignore($user->id)\n"
+    },
+    {
+      "title": "What is a good workflow for AI CRUD with uploads?",
+      "body": "Split it into file validation, file storage, database update, preview rendering, and old-file cleanup. If all of that is pushed into one prompt, the model often drops one link in the chain."
+    },
+    {
+      "title": "When should AI CRUD be paired with tests immediately?",
+      "body": "When the feature touches auth, ownership, file replacement, multi-step forms, status transitions, or API response shape. Those zones are full of quiet bugs."
+    },
+    {
+      "title": "What is a major red flag in AI-generated list pages?",
+      "body": "The page works, but it lacks eager loading, does not sanitize filters, drops query strings during pagination, or leaves sort/filter behavior too open.",
+      "tip": "List pages are often where performance and UX degradation starts very early."
+    }
+  ,
+    {
+      "title": "What is a strong tip when asking AI to build a feature?",
+      "body": "Force it to list `changed files` and `risks` at the end of every turn. That one habit speeds up review dramatically and catches scope spread early."
+    },
+    {
+      "title": "When should prompts be split by web flow and API flow from the start?",
+      "body": "When a feature contains both Blade and API behavior, or both web and mobile/API flows. If you do not split early, the model often mixes redirects, JSON responses, validation, and auth expectations together."
+    },
+    {
+      "title": "What small UX details does AI often get wrong?",
+      "body": "It often forgets `old()` values, field-specific error rendering, disabled submit states, or wording that matches the current form flow. Small issues like that make the app feel half-finished fast."
+    },
+    {
+      "title": "What is a major anti-pattern in AI CRUD?",
+      "body": "Seeing the feature run and stopping there, while the controller grows, validation mixes with business rules, and queries start repeating in the wrong places."
+    },
+    {
+      "title": "When should AI be forced to write acceptance criteria for the feature?",
+      "body": "Very early, especially when the requirement is still vague or when the feature contains multiple behavior branches such as create, update, or status transitions. Acceptance criteria catches business drift before the patch even starts.",
+      "code": "Acceptance criteria:\n- who can access the flow\n- valid input\n- invalid input\n- expected DB change\n- expected response or redirect\n"
+    },
+    {
+      "title": "What is one easy regression trap in AI CRUD work?",
+      "body": "The update flow gets fixed, but the create flow, search flow, or ownership check quietly breaks because the model focused only on the front symptom."
+    },
+    {
+      "title": "When should you ask AI to list edge cases before building?",
+      "body": "When the feature contains unique fields, file replacement, nested relations, status transitions, or multiple user roles. A good edge-case list makes the actual build prompt much stronger.",
+      "tip": "Without an edge-case list, it is very easy to get a CRUD flow that works on the happy path and breaks as soon as real usage begins."
+    },
+    {
+      "title": "What is a strong workflow for multi-step AI feature build?",
+      "body": "Lock the data shape first, then the acceptance criteria, then patch one layer at a time. It feels slightly slower at the start but removes a lot of late-stage patching and review noise."
+    },
+    {
+      "title": "When should you be careful with migrations generated by AI?",
+      "body": "When AI adds `drop`, changes data types, renames columns, or packs too many schema changes into one step. The feature may look like simple CRUD, but a bad migration can damage real data."
+    },
+    {
+      "title": "Why do green tests not guarantee that an AI-built feature is solid?",
+      "body": "Because the tests may only cover the happy path. AI often misses ownership rules, update edge cases, old-file behavior, pagination behavior, or authorization details in the real screen."
+    },
+    {
+      "title": "What is a very common bug when AI builds CRUD?",
+      "body": "The form works, the record is created, and the basic test still passes, but ownership or update rules are missing. This is a classic failure because AI tends to optimize the happy path first.",
+      "code": "public function update(UpdatePostRequest $request, Post $post)\n{\n    abort_unless($request->user()->id === $post->user_id, 403);\n\n    $post->update($request->validated());\n\n    return redirect()->route('posts.show', $post);\n}\n"
+    },
+    {
+      "title": "When does AI generate long CRUD tests that are still shallow?",
+      "body": "When you only say `write tests for this feature` without naming the main risk. In that case the model often writes many surface-level assertions such as status, redirect, or count, while failing to lock the real bug.",
+      "tip": "Always state the exact bug or risk the test must lock instead of asking for generic tests."
+    },
+    {
+      "title": "Why should an AI-built CRUD feature still be tested manually in the real UI or API?",
+      "body": "Because many bugs live in the interaction between validation, old input, policy, pagination, query strings, old files, or update edge cases. Those often do not show up clearly if you only inspect the diff and draft tests."
+    }
+  ]
+}

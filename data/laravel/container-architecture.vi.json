@@ -1,0 +1,438 @@
+{
+  "anchor": "laravel-container-architecture",
+  "type": "list",
+  "heading": "Service container và kiến trúc app: từ dependency injection tới cách giữ app không thành mê cung",
+  "intro": "Site này đi từ khái niệm rất nền như service container, binding, singleton, service provider tới các quyết định kiến trúc thực tế hơn: khi nào tách service, khi nào không cần repository, khi nào feature-based structure đáng giá, và vì sao nhiều app Laravel hỏng không phải vì thiếu pattern mà vì đặt logic sai chỗ.",
+  "breaks": [
+    {
+      "start": 1,
+      "title": "Nền Tảng Container",
+      "description": "Service container là gì, dependency injection là gì, và vì sao Laravel dùng container ở rất nhiều lớp quan trọng.",
+      "tone": "amber"
+    },
+    {
+      "start": 13,
+      "title": "Binding, Singleton Và Provider",
+      "description": "Bind cái gì, singleton khi nào, provider làm gì, và vì sao nhiều hành vi app thực ra đang được cắm vào từ lớp bootstrap.",
+      "tone": "copper"
+    },
+    {
+      "start": 25,
+      "title": "Service, Action, Policy, Job Và Phân Vai Trách Nhiệm",
+      "description": "Không chỉ service class, mà toàn bộ request flow phải được chia việc cho đúng lớp nếu muốn app sống lâu.",
+      "tone": "olive"
+    },
+    {
+      "start": 39,
+      "title": "Repository, Layering Và Tổ Chức Theo Feature",
+      "description": "Khi nào abstraction thật sự đáng giá, khi nào chỉ thêm ceremony, và cách repo lớn lên mà không bắt người đọc nhảy file vô tận.",
+      "tone": "ocean"
+    },
+    {
+      "start": 53,
+      "title": "Case Thực Chiến, Anti-Pattern Và Mindset Dài Hạn",
+      "description": "Các lỗi kiến trúc rất hay gặp trong dự án thật: controller quá béo, service god-class, helper vô chủ, abstraction thừa và flow khó đoán.",
+      "tone": "slate"
+    }
+  ],
+  "items": [
+    {
+      "title": "1. Service container là gì?",
+      "body": "Service container là nơi Laravel biết cách tạo object và giải dependency cho bạn. Nó đứng sau rất nhiều chỗ tưởng như framework tự biết phải nhét gì vào controller, middleware, command, listener hoặc service class."
+    },
+    {
+      "title": "2. Dependency injection là gì?",
+      "body": "Đó là cách một class nhận dependency từ bên ngoài thay vì tự `new` mọi thứ bên trong. Cách này làm code dễ thay thế, dễ test và minh bạch hơn về việc class đó đang phụ thuộc vào gì.",
+      "code": "class ReportController extends Controller\n{\n    public function __construct(private SalesReportService $reports)\n    {\n    }\n\n    public function index()\n    {\n        return view('reports.sales', [\n            'rows' => $this->reports->monthly(),\n        ]);\n    }\n}",
+      "note": "Sai lầm thường gặp: controller tự `new SalesReportService()` rồi kéo theo `new` tiếp 3-4 dependency khác. Cách sửa là để container resolve giúp qua constructor injection."
+    },
+    {
+      "title": "3. Vì sao Laravel dùng container nhiều như vậy?",
+      "body": "Vì app lớn lên rất nhanh về số lớp và số dependency. Nếu mọi controller, command và service đều tự tay nối dây object, code sẽ rối rất nhanh. Container giúp framework tập trung việc khởi tạo ở một nơi có quy luật."
+    },
+    {
+      "title": "4. Container khác gì với việc tự `new` object bình thường?",
+      "body": "Tự `new` thì bạn kiểm soát trực tiếp nhưng phải tự lo toàn bộ dependency chain. Container thì nhìn bớt tường minh ở chỗ khởi tạo, nhưng đổi lại giúp app scale tốt hơn khi số lớp và số phụ thuộc tăng."
+    },
+    {
+      "title": "5. Một ví dụ rất quen: controller được inject service",
+      "body": "Bạn type-hint một service trong constructor hoặc method, Laravel sẽ cố resolve nó từ container thay vì bắt bạn tự tạo bằng tay.",
+      "code": "class OrderController\n{\n    public function __construct(private OrderService $orders) {}\n}"
+    },
+    {
+      "title": "6. Vì sao DI giúp test dễ hơn?",
+      "body": "Vì bạn có thể thay dependency thật bằng fake, mock hoặc implementation khác. Một class tự `new` quá nhiều thứ bên trong thường rất khó cô lập khi test."
+    },
+    {
+      "title": "7. Câu hỏi thực chiến: class này đang phụ thuộc quá nhiều thứ chưa?",
+      "body": "Nếu constructor dài bất thường, hoặc một class phải nhận quá nhiều service không liên quan chặt chẽ, đó thường là tín hiệu class đó đang ôm quá nhiều trách nhiệm."
+    },
+    {
+      "title": "8. Method injection và constructor injection khác nhau gì?",
+      "body": "Constructor injection phù hợp cho dependency cốt lõi của class. Method injection hợp khi dependency chỉ cần cho một action cụ thể. Dùng sai cách có thể làm class nặng hoặc method khó đọc.",
+      "code": "class InvoiceController extends Controller\n{\n    public function __construct(private InvoiceService $invoices)\n    {\n    }\n\n    public function download(Invoice $invoice, PdfBuilder $pdf)\n    {\n        return $pdf->download($invoice);\n    }\n}",
+      "bullets": [
+        "`InvoiceService` là dependency lõi nên đặt ở constructor.",
+        "`PdfBuilder` chỉ dùng cho một action nên method injection khá hợp lý.",
+        "Nếu mọi method đều inject một object khác nhau, class đó thường đang thiếu ranh giới rõ."
+      ]
+    },
+    {
+      "title": "9. Có phải cái gì cũng nên đưa qua container không?",
+      "body": "Không. Value object nhỏ, class cực đơn giản, hoặc object rất local đôi khi không cần bind gì cả. Kiến trúc tốt không phải biến mọi class thành nghi thức bind phức tạp."
+    },
+    {
+      "title": "10. Container giúp gì cho package và extensibility?",
+      "body": "Nó cho phép app hoặc package bind interface, swap implementation, decorate service hoặc thêm hành vi mà không phải sửa code gọi nó ở khắp nơi."
+    },
+    {
+      "title": "11. Tip nền tảng: hiểu container để bớt cảm giác Laravel 'ma thuật'",
+      "body": "Nhiều thứ trong Laravel không phải tự nhiên xuất hiện, mà là container đang resolve đúng lớp ở đúng thời điểm. Hiểu điều đó giúp bạn debug tự tin hơn nhiều."
+    },
+    {
+      "title": "12. Kinh nghiệm nền: container là công cụ tổ chức phụ thuộc, không phải danh hiệu kiến trúc",
+      "body": "Nó đáng giá khi giúp code rõ và bền hơn. Nếu chỉ bind cho có pattern mà không giải quyết gì, bạn đang thêm ceremony chứ không thêm clarity."
+    },
+    {
+      "title": "13. Binding là gì?",
+      "body": "Binding là việc nói cho container biết khi ai đó cần một abstraction hoặc một class nào đó thì nên trả implementation nào, hoặc tạo object theo cách nào.",
+      "code": "$this->app->bind(InvoiceExporter::class, function ($app) {\n    return new PdfInvoiceExporter(\n        storage_path('app/invoices'),\n        $app->make(LogoResolver::class),\n    );\n});",
+      "note": "Binding không chỉ là map interface -> class. Bạn cũng có thể kiểm soát cách object được tạo khi nó cần config, path hoặc dependency phức tạp hơn."
+    },
+    {
+      "title": "14. Singleton là gì trong bối cảnh container?",
+      "body": "Singleton nghĩa là trong cùng application lifecycle, container chỉ tạo một instance rồi tái sử dụng lại. Nó hợp với những service nên dùng chung trạng thái hoặc config đã khởi tạo."
+    },
+    {
+      "title": "15. Khi nào nên dùng singleton?",
+      "body": "Khi object nặng để khởi tạo, hoặc nên tồn tại một bản duy nhất trong lifecycle hiện tại như một số client, registry hoặc service giữ config đã chuẩn bị sẵn."
+    },
+    {
+      "title": "16. Khi nào singleton dễ thành bẫy?",
+      "body": "Khi service giữ state khó đoán hoặc vô tình mang dữ liệu từ chỗ này sang chỗ khác. Nếu bạn không hiểu lifecycle của app, singleton có thể làm bug khó tái hiện hơn."
+    },
+    {
+      "title": "17. Interface binding có lợi gì thật sự?",
+      "body": "Nó giúp code gọi abstraction thay vì implementation cụ thể. Điều này đáng giá khi bạn có nhiều cách hiện thực, cần fake trong test, hoặc muốn ngắt app khỏi package cụ thể."
+    },
+    {
+      "title": "18. Nhưng có phải cứ interface là tốt hơn không?",
+      "body": "Không. Interface chỉ đáng khi nó mô tả một abstraction thật. Nếu app chỉ có một implementation rõ ràng và khó có khả năng thay, interface đôi khi chỉ làm tăng số file và số lần nhảy context."
+    },
+    {
+      "title": "19. Service provider là gì?",
+      "body": "Service provider là nơi Laravel đăng ký binding và boot các hành vi khởi tạo của app hoặc package. Nếu container là kho chứa quy tắc resolve thì provider là nơi cài các quy tắc đó.",
+      "code": "class BillingServiceProvider extends ServiceProvider\n{\n    public function register(): void\n    {\n        $this->app->bind(PaymentGateway::class, StripeGateway::class);\n    }\n\n    public function boot(): void\n    {\n        Gate::policy(Invoice::class, InvoicePolicy::class);\n    }\n}",
+      "note": "Khi app có hành vi 'tự nhiên hoạt động', provider thường là nơi nên mở sớm để xem rule nào đang được cắm vào hệ thống."
+    },
+    {
+      "title": "20. `register()` và `boot()` khác nhau gì?",
+      "body": "`register()` thường để bind service vào container. `boot()` thường để chạy logic cần sau khi app hoặc service đã sẵn sàng như observer, event, macro, route model binding hoặc custom behavior."
+    },
+    {
+      "title": "21. Vì sao provider là nơi người mới hay bỏ qua nhưng người làm lâu hay nhìn rất sớm?",
+      "body": "Vì nhiều hành vi quan trọng như observer, macro, policy, custom package boot hoặc binding interface đều xuất phát từ đây. Nếu app có hành vi 'tự nhiên' xuất hiện, provider là nơi rất đáng nghi đầu tiên."
+    },
+    {
+      "title": "22. Case thật: hành vi của app xuất hiện từ hư không thường bắt nguồn từ đâu?",
+      "body": "Provider, global helper, observer, macro, middleware hoặc package boot logic là những nơi rất hay tạo cảm giác 'không biết ai đang điều khiển cái này'."
+    },
+    {
+      "title": "23. Nên để binding ở đâu cho dễ sống?",
+      "body": "Binding theo domain hoặc feature thường dễ hiểu hơn nhét lung tung vào một provider chung. App nhỏ có thể còn chịu được, nhưng app lớn mà mọi binding nằm một chỗ sẽ nhanh thành tường chữ khó đọc."
+    },
+    {
+      "title": "24. Tip thực chiến: provider tốt là provider làm app rõ hơn, không phải provider khiến app bí ẩn hơn",
+      "body": "Nếu mở provider ra mà người khác vẫn đoán được nó đang cắm gì vào hệ thống và vì sao, đó là dấu hiệu tốt. Nếu provider biến thành nơi mọi thứ lạ lùng tụ về, repo sẽ rất nhanh mệt."
+    },
+    {
+      "title": "25. Controller nên giữ vai trò gì trong kiến trúc app?",
+      "body": "Controller nên điều phối request flow: nhận request, gọi service hoặc action, trả response. Nó không nên là nơi business rule, query nặng, auth phức tạp và side effect cùng sống chen chúc.",
+      "code": "class OrderController extends Controller\n{\n    public function store(StoreOrderRequest $request, CreateOrderAction $action)\n    {\n        $order = $action->execute($request->validated(), $request->user());\n\n        return redirect()->route('orders.show', $order);\n    }\n}",
+      "bullets": [
+        "Controller nhận input hợp lệ từ request layer.",
+        "Use case chính được giao cho action hoặc service.",
+        "Response vẫn do controller quyết định vì đó là ranh giới HTTP."
+      ],
+      "note": "Sai lầm thường gặp: nhét validate, transaction, gửi mail, gọi API ngoài và format response vào cùng một method controller."
+    },
+    {
+      "title": "26. Service class đáng tách khi nào?",
+      "body": "Khi logic nhiều bước, được tái sử dụng, có side effect, chạm nhiều model hoặc cần test độc lập. Nếu chỉ là một đoạn rất nhỏ và cục bộ, tách quá sớm có thể làm repo loãng."
+    },
+    {
+      "title": "27. Action class khác service class ở đâu?",
+      "body": "Action class thường đại diện cho một việc rất cụ thể như `CreateOrder`, `InviteTeamMember`, `SyncInvoice`. Service class đôi khi rộng hơn và giữ một nhóm hành vi theo domain. Không có luật tuyệt đối, nhưng action thường giúp flow đọc tự nhiên hơn."
+    },
+    {
+      "title": "28. Domain service có phải khái niệm 'to tát' quá cho Laravel không?",
+      "body": "Không nhất thiết. Nếu business logic của bạn đủ dài đời và không thuộc hẳn model, controller hay integration cụ thể nào, một domain service đặt tên rõ hoàn toàn đáng giá."
+    },
+    {
+      "title": "29. Form Request cũng là kiến trúc",
+      "body": "Nó giữ cho validation và authorize logic ra khỏi controller. Đây không phải chuyện tiện tay, mà là cách làm request layer rõ hơn và bền hơn khi app lớn.",
+      "code": "class StoreOrderRequest extends FormRequest\n{\n    public function authorize(): bool\n    {\n        return $this->user()->can('create', Order::class);\n    }\n\n    public function rules(): array\n    {\n        return [\n            'customer_id' => ['required', 'exists:customers,id'],\n            'items' => ['required', 'array', 'min:1'],\n        ];\n    }\n}",
+      "note": "Khi bỏ authorize và rules vào Form Request, controller nhìn ra đúng vai orchestration hơn rất nhiều."
+    },
+    {
+      "title": "30. Policy và Gate cũng là kiến trúc",
+      "body": "Nếu rule quyền bị rải lung tung trong controller, Blade và service thì app sẽ rất khó kiểm soát. Policy gom rule quyền theo resource hoặc action là một quyết định kiến trúc rõ ràng."
+    },
+    {
+      "title": "31. Event và listener có vai trò kiến trúc gì?",
+      "body": "Chúng tách side effect ra khỏi logic lõi. Ví dụ tạo user xong thì gửi mail, log audit, sync CRM. Nếu làm mọi thứ ngay trong service chính, class đó sẽ rất nhanh phình to.",
+      "code": "event(new OrderPlaced($order));\n\nclass SendOrderConfirmation\n{\n    public function handle(OrderPlaced $event): void\n    {\n        Mail::to($event->order->customer_email)\n            ->send(new OrderConfirmationMail($event->order));\n    }\n}",
+      "note": "Sai lầm thường gặp: event cho cả những việc cực nhỏ không có nhu cầu tách rời. Hãy dùng event khi nhiều phản ứng độc lập thực sự đáng tồn tại."
+    },
+    {
+      "title": "32. Job và queue có vai trò kiến trúc gì?",
+      "body": "Chúng cho phép phân biệt việc phải làm ngay trong request với việc có thể xử lý nền. Đó là một quyết định kiến trúc về trải nghiệm người dùng và độ nhất quán hệ thống."
+    },
+    {
+      "title": "33. Notification và mail cũng nên được đặt đúng vai",
+      "body": "Đừng để controller tự quyết định hết chi tiết gửi mail. Tùy bài toán, event, listener, notification hoặc service riêng thường là nơi hợp lý hơn."
+    },
+    {
+      "title": "34. Tip thực chiến: kiến trúc tốt là giao việc cho đúng lớp, không bắt một lớp làm tất cả",
+      "body": "Nhiều app nhìn xấu không phải vì thiếu pattern, mà vì mọi thứ vẫn sống trong vài file quen tay như controller, model và helper."
+    },
+    {
+      "title": "35. Service quá nhỏ có sao không?",
+      "body": "Có thể có. Nếu một service chỉ bọc một dòng code không thêm clarity nào, nó chỉ làm tăng số file và khiến người đọc phải nhảy thêm một bước vô ích."
+    },
+    {
+      "title": "36. Service quá lớn thì sao?",
+      "body": "Đó là service god-class. Nó thường giữ quá nhiều use case, quá nhiều dependency và quá nhiều side effect. Khi class như vậy xuất hiện, app chỉ đổi chỗ vấn đề từ controller sang service."
+    },
+    {
+      "title": "37. Khi nào nên gom logic theo use case thay vì theo loại lớp?",
+      "body": "Khi feature đã đủ lớn để người đọc cần đi theo hành vi cụ thể hơn là theo layer kỹ thuật. Ví dụ `Orders/CreateOrder` thường dễ theo hơn là một repo có `Controllers/`, `Services/`, `Repositories/` trải rộng toàn app."
+    },
+    {
+      "title": "38. Vì sao naming trong kiến trúc quan trọng không kém code?",
+      "body": "Tên lớp là tín hiệu đầu tiên cho biết trách nhiệm ở đâu. `CreateInvoiceAction` dễ đoán hơn `InvoiceManager`, và `BillingGateway` rõ hơn `PaymentHelper`."
+    },
+    {
+      "title": "39. Repository có thực sự cần trong Laravel không?",
+      "body": "Không phải mặc định. Nếu Eloquent đã diễn đạt đủ tốt, repository chỉ để bọc CRUD đơn giản sẽ thành ceremony. Nó đáng khi abstraction thực sự mang lại clarity hoặc flexibility.",
+      "code": "interface InvoiceReadRepository\n{\n    public function overdueForTeam(int $teamId): Collection;\n}\n\nclass EloquentInvoiceReadRepository implements InvoiceReadRepository\n{\n    public function overdueForTeam(int $teamId): Collection\n    {\n        return Invoice::query()\n            ->where('team_id', $teamId)\n            ->wherePast('due_at')\n            ->whereNull('paid_at')\n            ->get();\n    }\n}",
+      "note": "Repository bắt đầu có lý khi nó diễn tả một contract đọc/ghi có ý nghĩa nghiệp vụ, không phải chỉ bọc lại `find()` và `save()`."
+    },
+    {
+      "title": "40. Khi nào repository đáng giá thật?",
+      "body": "Khi nguồn dữ liệu có thể thay, query phức tạp cần contract rõ, hoặc app đọc từ nhiều nguồn như DB, API ngoài, cache hoặc search engine. Lúc đó repository có lý do sống rõ hơn."
+    },
+    {
+      "title": "41. Case thật: thêm repository chỉ vì tutorial rất dễ làm app khó đọc hơn",
+      "body": "Nhiều repo có repository chỉ để gọi lại `Model::query()` hoặc `find()` mà không thêm gì. Khi đó team mất thêm file, thêm abstraction và thêm lớp naming mà không thu về lợi ích thật."
+    },
+    {
+      "title": "42. Layer-based structure đau ở đâu khi app lớn?",
+      "body": "Bạn phải nhảy qua nhiều thư mục để hiểu một feature: route ở một nơi, request ở một nơi, controller ở một nơi, service ở một nơi, policy ở một nơi, view ở một nơi. Mỗi lần sửa một use case lại phải khảo cổ cả repo."
+    },
+    {
+      "title": "43. Feature-based structure giúp gì?",
+      "body": "Nó gom code liên quan tới cùng một bài toán gần nhau hơn. Người đọc đi theo feature thật của business thay vì đi theo bản đồ kỹ thuật trừu tượng.",
+      "code": "app/\n  Domain/\n    Orders/\n      Actions/\n        CreateOrderAction.php\n      Policies/\n        OrderPolicy.php\n      Requests/\n        StoreOrderRequest.php\n      Queries/\n        ListOrdersQuery.php\n  Http/\n    Controllers/\n      OrderController.php",
+      "note": "Không cần đúng y chang cây này. Ý chính là mở feature `Orders` ra là thấy phần lớn code liên quan gần nhau hơn."
+    },
+    {
+      "title": "44. Có phải app nào cũng nên chuyển sang feature-based structure?",
+      "body": "Không. App nhỏ có thể chưa cần. Nhưng khi team bắt đầu than phiền chuyện 'không biết logic của feature này đang rải ở bao nhiêu chỗ', đó là tín hiệu nên nghĩ nghiêm túc."
+    },
+    {
+      "title": "45. Kết hợp layer và feature thế nào cho vừa?",
+      "body": "Nhiều team để `app/Domain/Orders/Actions`, `Requests`, `Policies`, `Queries` hoặc cách chia tương tự. Mục tiêu là vẫn có quy luật nhưng bám theo business hơn."
+    },
+    {
+      "title": "46. Vì sao 'vừa đủ' là từ khóa của kiến trúc Laravel?",
+      "body": "Tách quá ít thì logic bị nhồi cục. Tách quá nhiều thì repo thành mê cung. Mỗi bước tách nên có lý do rõ: đọc dễ hơn, test rõ hơn, hoặc thay đổi an toàn hơn."
+    },
+    {
+      "title": "47. App architecture có liên quan gì tới onboarding người mới?",
+      "body": "Rất liên quan. Repo tốt giúp người mới lần theo một use case mà không phải hỏi quá nhiều. Repo xấu buộc người mới phải học truyền miệng vì code không tự nói lên được cấu trúc."
+    },
+    {
+      "title": "48. Test phản ánh kiến trúc thế nào?",
+      "body": "Nếu test phải setup rất nặng chỉ để chạm một use case nhỏ, hoặc không biết mock ở đâu vì dependency dây dưa, đó là dấu hiệu kiến trúc đang làm flow khó cô lập."
+    },
+    {
+      "title": "49. Đừng nhầm 'nhiều folder' với 'kiến trúc tốt'",
+      "body": "Nhiều folder có thể chỉ là dấu hiệu của việc tách theo cảm hứng. Kiến trúc tốt phải làm người đọc hiểu nhanh hơn, không phải đi nhiều bước hơn."
+    },
+    {
+      "title": "50. Tip bổ sung: class nào cũng nên trả lời được câu hỏi 'tôi chịu trách nhiệm điều gì?'",
+      "body": "Nếu một class không trả lời nổi điều đó bằng một câu ngắn, rất có thể nó đang làm nhiều việc hoặc tên của nó đang không phản ánh đúng vai trò."
+    },
+    {
+      "title": "51. Case thật: nhiều app Laravel không chết vì thiếu container, mà chết vì thiếu quy ước đặt logic",
+      "body": "Framework cho bạn đủ công cụ. Vấn đề là team có thống nhất cách dùng chúng hay không. Nếu không có quy ước, cùng một bài toán mỗi dev sẽ giải theo một kiểu."
+    },
+    {
+      "title": "52. Kinh nghiệm chuyển tầng: khi app bắt đầu làm bạn hỏi 'sao việc này lại nằm ở đây?', nghĩa là kiến trúc đang cần được xem lại",
+      "body": "Đó là một tín hiệu thực tế hơn nhiều so với việc đợi tới lúc code xấu đến mức ai cũng sợ sửa."
+    },
+    {
+      "title": "53. Anti-pattern: controller quá béo",
+      "body": "Controller chứa validate, query, policy, event, notification, formatting, external call và cả transaction là mùi cực phổ biến ở Laravel app đi nhanh."
+    },
+    {
+      "title": "54. Anti-pattern: model quá thông minh",
+      "body": "Model ôm business rule, side effect, HTTP call, permission, caching và query reporting là dấu hiệu app đang đổ mọi thứ vào nơi gần dữ liệu nhất chứ không phải nơi hợp lý nhất."
+    },
+    {
+      "title": "55. Anti-pattern: service god-class",
+      "body": "Ban đầu team tách controller thành service để 'đẹp hơn', nhưng rồi mọi use case cùng domain bị nhét hết vào một class dài vài trăm dòng. Đó không phải cải thiện, chỉ là đổi chỗ nỗi đau."
+    },
+    {
+      "title": "56. Anti-pattern: helper toàn cục vô chủ",
+      "body": "Helper rất tiện nên dễ bị lạm dụng. Khi business logic, format đặc thù hoặc query ngầm chui vào helper, repo sẽ trở nên rất khó lần dấu vết."
+    },
+    {
+      "title": "57. Anti-pattern: abstraction vì tutorial chứ không vì bài toán",
+      "body": "Repository, DTO, contract, adapter, strategy, factory đều có giá trị trong đúng ngữ cảnh. Dùng hết cùng lúc chỉ vì nghe có vẻ 'chuẩn' sẽ làm team mệt mà không rõ lợi ích."
+    },
+    {
+      "title": "58. Anti-pattern: provider làm quá nhiều việc",
+      "body": "Provider mà vừa bind đủ thứ, vừa boot observer, vừa đọc config, vừa chạy logic kỳ lạ thì sẽ trở thành vùng đất khó hiểu nhất của app."
+    },
+    {
+      "title": "59. Anti-pattern: event-driven quá mức cho những việc rất đơn giản",
+      "body": "Có những flow chỉ cần một service gọi một notification, không nhất thiết phải bẻ thành 4 event và 6 listener. Over-engineering làm app khó lần hơn chứ không mạnh hơn."
+    },
+    {
+      "title": "60. Case thật: đổi business rule nhưng không biết sửa ở controller, service, policy hay observer nào",
+      "body": "Đây là dấu hiệu logic đã bị rải mà không có trung tâm rõ. Khi một luật nghiệp vụ sống ở quá nhiều nơi, kiến trúc đang khiến team trả lãi kỹ thuật mỗi lần sửa."
+    },
+    {
+      "title": "61. Case thật: cùng một việc nhưng web flow và API flow xử lý khác nhau quá xa",
+      "body": "Nếu `create order` ở web đi qua một service, còn API lại tự viết logic riêng trong controller khác, sớm muộn hai luồng sẽ lệch nhau. Kiến trúc tốt cần giữ use case lõi không bị fork vô tổ chức."
+    },
+    {
+      "title": "62. Tip thực chiến: kiến trúc tốt giúp use case lõi được tái sử dụng, còn input/output được thay đổi linh hoạt",
+      "body": "Controller web, controller API, command hoặc job có thể là cửa vào khác nhau, nhưng business core bên trong nên có trung tâm đủ rõ để không bị copy-paste."
+    },
+    {
+      "title": "63. Câu hỏi nên tự hỏi trước khi tách thêm lớp mới",
+      "body": "Lớp mới này có làm flow rõ hơn không, có giúp test dễ hơn không, có giảm lặp đáng kể không, và người mới đọc vào có hiểu nhanh hơn không. Nếu cả bốn câu đều mơ hồ, có lẽ chưa cần tách."
+    },
+    {
+      "title": "64. Câu hỏi nên tự hỏi khi thấy một class đã quá lớn",
+      "body": "Use case nào đang chen vào đây, dependency nào không còn liên quan chặt, state nào đang bị giữ không hợp lý, và ranh giới nào có thể tách ra mà không làm flow vỡ vụn."
+    },
+    {
+      "title": "65. Kinh nghiệm cuối: kiến trúc tốt không phải để khoe pattern, mà để người khác còn dám sửa app sau bạn",
+      "body": "Đó là tiêu chuẩn thực tế nhất. Nếu người sau nhìn vào và đoán tương đối đúng logic ở đâu, đổi luật ở đâu, test ở đâu và side effect ở đâu, thì app đang được tổ chức đúng hướng."
+    },
+    {
+      "title": "66. DTO có đáng dùng trong Laravel không?",
+      "body": "Có thể đáng, nhưng không phải mặc định. DTO hữu ích khi data đi qua nhiều lớp, cần shape rõ ràng hoặc muốn tránh chuyền mảng lỏng lẻo khắp nơi. Nếu bài toán nhỏ, DTO có thể chỉ làm tăng ceremony.",
+      "code": "final class CreateOrderData\n{\n    public function __construct(\n        public int $customerId,\n        public array $items,\n        public ?string $note,\n    ) {}\n}",
+      "note": "DTO đáng giá khi cùng một shape dữ liệu đi qua request, action, job hoặc integration và bạn muốn giảm lỗi do mảng tự do."
+    },
+    {
+      "title": "67. Khi nào một mảng dữ liệu nên được nâng thành object rõ nghĩa?",
+      "body": "Khi cùng một shape dữ liệu được chuyền qua nhiều service, action hoặc integration, hoặc khi tên field bắt đầu nhiều và dễ nhầm. Một object rõ nghĩa thường giúp code bớt lỗi hơn một mảng khóa chuỗi kéo dài."
+    },
+    {
+      "title": "68. Package integration nên đứng ở đâu trong kiến trúc?",
+      "body": "Đừng để controller hay model gọi thẳng package nặng nếu app sẽ phụ thuộc lâu dài vào nó. Thường nên có một lớp gateway, adapter hoặc service đủ rõ để sau này đổi package hoặc mock test dễ hơn.",
+      "code": "interface SmsGateway\n{\n    public function send(string $to, string $message): void;\n}\n\nfinal class TwilioSmsGateway implements SmsGateway\n{\n    public function send(string $to, string $message): void\n    {\n        // gọi SDK/package ở đây\n    }\n}",
+      "note": "Đừng rải call package ở khắp controller, job và listener. Hãy gom nó vào một cổng vào đủ rõ để đổi nhà cung cấp đỡ đau."
+    },
+    {
+      "title": "69. Case thật: app bị khóa chặt vào package vì gọi API package ở khắp mọi nơi",
+      "body": "Lúc đầu nhanh, nhưng khi package đổi API, hết maintain hoặc cần thay thế, cả codebase đau đồng loạt. Đây là lý do abstraction có chọn lọc đôi khi rất đáng giá."
+    },
+    {
+      "title": "70. Transaction boundary nên nằm ở đâu?",
+      "body": "Thường ở lớp orchestration của use case, nơi bạn biết toàn bộ các bước ghi dữ liệu nào phải cùng thành công. Đặt transaction quá sâu trong một model hoặc helper nhỏ thường làm flow khó đoán hơn.",
+      "code": "class CreateOrderAction\n{\n    public function execute(array $data, User $user): Order\n    {\n        return DB::transaction(function () use ($data, $user) {\n            $order = Order::create([\n                ...$data,\n                'created_by' => $user->id,\n            ]);\n\n            $order->items()->createMany($data['items']);\n\n            event(new OrderPlaced($order));\n\n            return $order;\n        });\n    }\n}",
+      "note": "Sai lầm thường gặp: transaction nằm rải trong model nhỏ, rồi event hoặc side effect chạy ở nơi khó đoán. Cách sửa là đặt boundary ở use case đủ lớn để thấy toàn flow ghi dữ liệu."
+    },
+    {
+      "title": "71. Vì sao transaction boundary là quyết định kiến trúc chứ không chỉ là chuyện database?",
+      "body": "Vì nó quyết định use case nào được xem là một đơn vị nhất quán. Nếu đặt sai ranh giới transaction, app có thể ghi nửa chừng rồi side effect chạy lệch, hoặc rollback không còn phản ánh đúng business flow."
+    },
+    {
+      "title": "72. Domain event và framework event khác nhau ở góc nhìn thực tế thế nào?",
+      "body": "Framework event là cơ chế kỹ thuật. Domain event là cách bạn diễn tả một việc có ý nghĩa nghiệp vụ đã xảy ra như `OrderPlaced` hay `InvoicePaid`. Khi đặt tên tốt, event giúp flow business rõ hơn nhiều."
+    },
+    {
+      "title": "73. Có nên biến mọi thay đổi nhỏ thành event không?",
+      "body": "Không. Event nhiều quá mà không có ý nghĩa rõ sẽ làm flow khó lần. Chỉ nên tạo event khi nó thực sự là một sự kiện đáng được nhiều lớp khác phản ứng theo cách độc lập."
+    },
+    {
+      "title": "74. Internal module trong Laravel là gì theo kiểu thực dụng?",
+      "body": "Đó có thể là một nhóm code theo domain hoặc feature có ranh giới khá rõ, không nhất thiết phải thành package riêng. Nó hữu ích khi app đủ lớn để cần vùng trách nhiệm tách biệt hơn bên trong `app/`."
+    },
+    {
+      "title": "75. Khi nào nên giữ module nội bộ, khi nào nên tách package riêng?",
+      "body": "Nếu logic chỉ dùng trong một app, module nội bộ thường đủ. Chỉ nên nghĩ tới package riêng khi thật sự có nhu cầu tái sử dụng xuyên nhiều project hoặc cần vòng đời version riêng."
+    },
+    {
+      "title": "76. Case thật: tách package quá sớm làm team khổ hơn là sướng",
+      "body": "Package riêng kéo theo versioning, release, test matrix và integration complexity. Nếu lợi ích tái sử dụng chưa rõ, giữ module nội bộ thường ít ma sát hơn nhiều."
+    },
+    {
+      "title": "77. Service provider của app và service provider của package khác nhau ở áp lực bảo trì nào?",
+      "body": "Provider của app có thể bám vào bối cảnh riêng của project. Provider của package thường cần trung tính hơn, dễ cấu hình hơn và ít giả định hơn vì nó có thể sống trong nhiều môi trường."
+    },
+    {
+      "title": "78. Kiến trúc tốt có giúp đọc log và debug dễ hơn không?",
+      "body": "Có. Khi trách nhiệm rõ, log được đặt ở các điểm chuyển hợp lý như controller, service, integration, job hoặc event. Kiến trúc mù mờ thường kéo theo log mù mờ."
+    },
+    {
+      "title": "79. Case thật: code không quá xấu nhưng flow vẫn khó hiểu vì naming quá tệ",
+      "body": "Tên như `handle`, `process`, `manager`, `helper` xuất hiện mọi nơi sẽ làm mất tín hiệu kiến trúc. Khi tên không nói rõ trách nhiệm, người đọc phải mở file nhiều hơn để đoán."
+    },
+    {
+      "title": "80. Anti-pattern: mọi thứ đều được gọi là `Service`",
+      "body": "Nếu repo có `UserService`, `PaymentService`, `OrderService`, `MailService`, `SystemService` nhưng không có naming rule rõ, từ `Service` sẽ mất dần ý nghĩa và không còn giúp đoán trách nhiệm."
+    },
+    {
+      "title": "81. Anti-pattern: dùng static helper để né container và dependency injection",
+      "body": "Static helper có thể nhanh lúc đầu, nhưng về lâu dài làm dependency ẩn, khó fake khi test và khó thay implementation. Đây là kiểu 'đi nhanh trước mắt, trả nợ về sau' rất quen thuộc.",
+      "code": "// anti-pattern\nPriceHelper::convert($amount, 'USD');\n\n// dễ sống hơn\nclass CheckoutService\n{\n    public function __construct(private CurrencyConverter $converter) {}\n}",
+      "note": "Helper tĩnh làm call site ngắn đi, nhưng thường giấu mất dependency thật. Injection dài hơn một chút nhưng giúp flow rõ và test được."
+    },
+    {
+      "title": "82. Tip thực chiến: nếu một lớp khó test, đó thường là tín hiệu kiến trúc chứ không chỉ là tín hiệu testing",
+      "body": "Class khó mock, phải boot quá nhiều thứ, hoặc chạm nhiều dependency không liên quan thường nói rằng trách nhiệm của nó đã bị trộn quá mức."
+    },
+    {
+      "title": "83. Tip thực chiến: tách lớp để giảm tải nhận thức, không phải để tăng số lượng khái niệm",
+      "body": "Mỗi lớp mới đều đòi người đọc học thêm một cái tên và một trách nhiệm. Nếu lớp mới không làm đầu óc người đọc nhẹ hơn, có thể bạn vừa thêm chi phí hơn là thêm giá trị."
+    },
+    {
+      "title": "84. Câu hỏi nên hỏi khi review kiến trúc một PR",
+      "body": "Logic mới đang được đặt đúng chỗ chưa, có tạo thêm dependency khó hiểu không, use case lõi có bị copy sang luồng khác không, tên lớp có nói đúng trách nhiệm không, và có đang thêm abstraction chỉ vì sợ file hiện tại dài ra không."
+    },
+    {
+      "title": "85. Kinh nghiệm cuối bổ sung: app bền không phải app nhiều pattern nhất, mà là app khiến team còn nhìn ra đường đi khi business tiếp tục đổi",
+      "body": "Laravel cho bạn rất nhiều công cụ. Giá trị thật nằm ở việc dùng chúng đủ rõ để vài tháng hay vài năm sau, team vẫn đổi luật được mà không cảm thấy đang chạm vào bom nổ chậm."
+    },
+    {
+      "title": "86. Ví dụ binding interface vào implementation trong service provider",
+      "body": "Đây là ví dụ cơ bản để thấy container không phải phép màu, mà là một registry có chủ đích.",
+      "code": "class AppServiceProvider extends ServiceProvider\n{\n    public function register(): void\n    {\n        $this->app->bind(OrderGateway::class, StripeOrderGateway::class);\n    }\n}",
+      "note": "Khi controller hoặc service type-hint `OrderGateway`, container sẽ biết phải cấp implementation nào."
+    },
+    {
+      "title": "87. Ví dụ constructor injection trong controller hoặc service",
+      "body": "Đây là kiểu code giúp dependency lộ rõ hơn thay vì gọi static helper khắp nơi.",
+      "code": "class OrderController extends Controller\n{\n    public function __construct(private OrderService $orders)\n    {\n    }\n\n    public function store(StoreOrderRequest $request)\n    {\n        $order = $this->orders->create($request->validated());\n\n        return redirect()->route('orders.show', $order);\n    }\n}",
+      "bullets": [
+        "Dependency hiện ra ngay ở constructor.",
+        "Class dễ test hơn vì có thể thay dependency bằng fake hoặc mock.",
+        "Người đọc nhìn vào chữ ký class là đoán được nó phụ thuộc vào gì."
+      ]
+    },
+    {
+      "title": "88. Ví dụ action class nhỏ gọn cho một use case cụ thể",
+      "body": "Khi một flow đủ rõ và độc lập, action class có thể làm code dễ đọc hơn service quá tổng quát.",
+      "code": "class CreateOrderAction\n{\n    public function execute(array $data): Order\n    {\n        return DB::transaction(fn () => Order::create($data));\n    }\n}",
+      "note": "Tên kiểu `CreateOrderAction` giúp người đọc hiểu phạm vi use case nhanh hơn những tên mơ hồ như `OrderManager`."
+    }
+  ]
+}

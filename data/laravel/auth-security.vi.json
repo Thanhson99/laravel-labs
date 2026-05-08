@@ -1,0 +1,513 @@
+{
+  "anchor": "laravel-auth-security",
+  "type": "list",
+  "heading": "Auth, authorization và bảo mật: từ login cơ bản tới tư duy phòng thủ thật trong app Laravel",
+  "intro": "Đây là một trong những site quan trọng nhất của cả cụm Laravel. Phần khó của auth không nằm ở việc làm cho form login chạy được, mà nằm ở việc giữ danh tính, quyền, session, token và hành vi người dùng ở trạng thái an toàn khi app đã có người dùng thật, nhiều flow thật và nhiều rủi ro thật.",
+  "breaks": [
+    {
+      "start": 1,
+      "title": "Nền Tảng Auth",
+      "description": "Authentication là gì, authorization là gì, và vì sao phần này lớn hơn rất nhiều so với một form login.",
+      "tone": "amber"
+    },
+    {
+      "start": 13,
+      "title": "Session, Cookie Và Web Auth Flow",
+      "description": "Login web, logout, remember me, session fixation, CSRF và các lỗi flow rất hay gặp trong ứng dụng truyền thống.",
+      "tone": "copper"
+    },
+    {
+      "start": 27,
+      "title": "Sanctum, API, SPA Và Token",
+      "description": "Auth cho SPA/API, stateful domain, token flow, CSRF cookie, revoke token và các lỗi khiến login có vẻ đúng nhưng request sau vẫn sai.",
+      "tone": "olive"
+    },
+    {
+      "start": 43,
+      "title": "Policy, Gate, Role Và Permission",
+      "description": "Kiểm soát quyền ở mức use case, resource, role và permission thay vì viết `if admin` rải khắp codebase.",
+      "tone": "ocean"
+    },
+    {
+      "start": 57,
+      "title": "Password, Reset, Verification Và 2FA",
+      "description": "Hash mật khẩu, flow đổi mật khẩu, reset, verify email, two-factor và những chỗ dễ làm hời hợt nhưng hậu quả lớn.",
+      "tone": "indigo"
+    },
+    {
+      "start": 71,
+      "title": "Bảo Vệ Nền Và Lỗi Phổ Biến",
+      "description": "CSRF, XSS, mass assignment, brute force, rate limiting, secure cookie, trusted proxy và các lỗi tưởng nhỏ nhưng rất dễ thành cửa yếu.",
+      "tone": "rose"
+    },
+    {
+      "start": 87,
+      "title": "Case Thực Chiến, Audit Và Mindset Dài Hạn",
+      "description": "Login loop, policy drift, revoke access, audit trail, suspicious access, security logging và cách nghĩ bảo mật theo vòng đời sản phẩm.",
+      "tone": "slate"
+    }
+  ],
+  "items": [
+    {
+      "title": "1. Authentication là gì?",
+      "body": "Authentication trả lời câu hỏi 'bạn là ai'. Nó là lớp xác minh danh tính của người đang gửi request."
+    },
+    {
+      "title": "2. Authorization là gì?",
+      "body": "Authorization trả lời câu hỏi 'bạn được làm gì'. Người dùng có thể đăng nhập hợp lệ nhưng vẫn không được phép chạm vào một resource hoặc action cụ thể.",
+      "code": "Route::get('/posts/{post}/edit', function (Post $post) {\n    $this->authorize('update', $post);\n\n    return view('posts.edit', compact('post'));\n});",
+      "note": "Auth xác minh danh tính. Authorization mới quyết định user đó có được sửa `Post` này hay không."
+    },
+    {
+      "title": "3. Vì sao phải tách rõ auth và authorization?",
+      "body": "Vì nếu trộn lẫn chúng, code sẽ nhanh chóng thành một mớ điều kiện khó đọc. Bạn sẽ thấy những đoạn kiểu 'nếu login rồi thì chắc được phép' xuất hiện khắp nơi, và đó là nơi bug quyền bắt đầu mọc."
+    },
+    {
+      "title": "4. Auth trong Laravel lớn hơn login form ở đâu?",
+      "body": "Nó gồm đăng ký, verify email, login, giữ phiên, remember me, đổi mật khẩu, reset mật khẩu, logout, revoke access, policy, role, permission, log bảo mật, chống abuse và nhiều flow sản phẩm khác."
+    },
+    {
+      "title": "5. Câu hỏi thực chiến: một tài khoản 'đăng nhập được' có nghĩa là hệ thống auth đã tốt chưa?",
+      "body": "Chưa. Còn phải hỏi session có an toàn không, quyền có đúng không, reset password có đáng tin không, token có revoke được không, brute force có bị chặn không và log có đủ để điều tra sự cố không."
+    },
+    {
+      "title": "6. Breeze, Jetstream, Fortify và Sanctum khác nhau ở đâu?",
+      "body": "Breeze là điểm bắt đầu gọn. Jetstream thêm nhiều lớp sản phẩm hơn như browser sessions hoặc team. Fortify thiên về backend auth actions. Sanctum giải quyết auth cho SPA hoặc API theo cách rất hay gặp trong Laravel.",
+      "code": "composer require laravel/breeze --dev\nphp artisan breeze:install\nphp artisan migrate\n\n# hoặc nếu cần Sanctum cho SPA/API\nphp artisan install:api",
+      "note": "Không phải project nào cũng cần tất cả. Chọn theo flow cần xây chứ không theo danh sách package nổi tiếng."
+    },
+    {
+      "title": "7. Vì sao không nên học các package auth như danh sách tên cần thuộc lòng?",
+      "body": "Vì mỗi package đang giải một lớp khác nhau của hệ thống. Học theo tên package dễ làm bạn cài đúng thư viện nhưng vẫn không hiểu mình đang xây flow nào."
+    },
+    {
+      "title": "8. Identity trong app Laravel có thể đến từ những nguồn nào?",
+      "body": "User session, API token, personal access token, remember cookie, trusted device flow hoặc một lớp SSO bên ngoài tùy hệ thống."
+    },
+    {
+      "title": "9. Case thật: nhiều app có auth chạy được nhưng không có security model rõ ràng",
+      "body": "Tức là ai cũng biết cách login, nhưng không ai nói rõ app đang tin dữ liệu nào, tin thiết bị nào, revoke ra sao, hết hạn ra sao và log những gì."
+    },
+    {
+      "title": "10. Tip nền tảng: hãy nhìn auth như một chuỗi trạng thái của người dùng",
+      "body": "Người dùng có thể ở trạng thái guest, registered but unverified, authenticated, remembered, locked out, suspended hoặc revoked. Nghĩ theo trạng thái giúp flow rõ hơn nhiều."
+    },
+    {
+      "title": "11. Kiến trúc auth tốt giúp gì cho sản phẩm?",
+      "body": "Nó làm team tự tin thêm tính năng, sửa quyền, xử lý sự cố và điều tra bug bảo mật. Auth tệ thường không lộ ngay, nhưng khi lộ thì sửa rất đau."
+    },
+    {
+      "title": "12. Kinh nghiệm nền: auth tốt không chỉ bảo vệ hệ thống, mà còn bảo vệ team khỏi việc đoán mò khi có sự cố",
+      "body": "Khi có login loop, revoke sai, token bị lạm dụng hoặc user than phiền mất quyền, một hệ auth rõ sẽ cứu bạn rất nhiều giờ điều tra."
+    },
+    {
+      "title": "13. Session-based auth hoạt động thế nào trong web app Laravel?",
+      "body": "Sau khi login thành công, Laravel gắn danh tính user vào session. Những request sau mang theo session identifier nên backend biết request thuộc về ai.",
+      "code": "if (Auth::attempt($credentials)) {\n    $request->session()->regenerate();\n\n    return redirect()->intended('/dashboard');\n}",
+      "note": "Điểm quan trọng không chỉ là `attempt()` thành công, mà còn là request sau có mang lại đúng session cookie hay không."
+    },
+    {
+      "title": "14. Cookie đóng vai trò gì trong web auth flow?",
+      "body": "Cookie thường là thứ browser giữ để request sau biết session nào đang được dùng. Nếu cookie domain, secure flag hoặc same-site sai, auth flow rất dễ lệch."
+    },
+    {
+      "title": "15. Login flow cơ bản của web app gồm những bước gì?",
+      "body": "Render form, submit credential, validate input, xác thực user, regenerate session, redirect đến nơi phù hợp và giữ trạng thái đăng nhập cho các request sau."
+    },
+    {
+      "title": "16. Vì sao sau login nên regenerate session?",
+      "body": "Để giảm rủi ro session fixation. Đây là một bước nhỏ nhưng rất quan trọng về mặt bảo mật."
+    },
+    {
+      "title": "17. Session fixation là gì?",
+      "body": "Đó là khi attacker cố ép nạn nhân dùng một session identifier đã biết trước. Nếu app không rotate session đúng lúc, rủi ro sẽ tăng rõ rệt."
+    },
+    {
+      "title": "18. Logout đúng nghĩa cần làm gì?",
+      "body": "Không chỉ redirect về trang login. Nó cần invalidate session, rotate CSRF nếu cần, xóa context đăng nhập và đảm bảo request sau không còn coi user là authenticated.",
+      "code": "Auth::logout();\n\n$request->session()->invalidate();\n$request->session()->regenerateToken();\n\nreturn redirect('/login');",
+      "note": "Sai lầm thường gặp: chỉ `Auth::logout()` rồi redirect. Cách đó chưa dọn session state sạch bằng flow đầy đủ ở trên."
+    },
+    {
+      "title": "19. `remember me` tiện ở đâu và nguy hiểm ở đâu?",
+      "body": "Nó giúp trải nghiệm người dùng mượt hơn, nhưng cũng làm tăng thời gian tồn tại của quyền truy cập trên thiết bị. Nếu không có device awareness hoặc revoke tử tế, đây có thể thành cửa yếu."
+    },
+    {
+      "title": "20. Browser sessions có giá trị sản phẩm thật không?",
+      "body": "Có. Người dùng thật rất quan tâm việc tài khoản của họ đang mở ở đâu, có thể đăng xuất thiết bị cũ không và có nhìn thấy truy cập lạ không."
+    },
+    {
+      "title": "21. Case thật: login loop thường đến từ đâu?",
+      "body": "Session driver, cookie domain, secure cookie, proxy header, middleware auth/guest hoặc redirect logic lệch đều có thể gây ra vòng lặp login khó chịu."
+    },
+    {
+      "title": "22. Case thật: local login ổn nhưng production bị đá ra liên tục",
+      "body": "Thường do proxy, HTTPS, secure cookie, session store, domain hoặc cache cấu hình chứ không hẳn do controller login."
+    },
+    {
+      "title": "23. CSRF trong web flow giúp gì?",
+      "body": "Nó bảo vệ state-changing request khỏi việc bị trình duyệt gửi đi ngoài ý muốn từ một ngữ cảnh khác. Đây là lớp nền rất quan trọng cho form web.",
+      "code": "<form method=\"POST\" action=\"{{ route('profile.update') }}\">\n    @csrf\n    @method('PATCH')\n    <input name=\"name\" value=\"{{ old('name', $user->name) }}\">\n    <button type=\"submit\">Lưu</button>\n</form>",
+      "note": "Nếu thiếu `@csrf`, request web đổi trạng thái rất dễ trả `419` hoặc tệ hơn là mở cửa cho CSRF."
+    },
+    {
+      "title": "24. Vì sao 419 hay làm người mới hoang mang?",
+      "body": "Vì nó thường là dấu hiệu session/token/cookie lệch nhau, không phải lỗi business. Nếu không hiểu web auth flow, dev rất dễ sửa sai hướng."
+    },
+    {
+      "title": "25. Tip thực chiến: bug auth web thường nằm ở cookie, session hoặc proxy nhiều không kém code login",
+      "body": "Đó là lý do nên lần đủ flow môi trường thay vì chỉ nhìn form và controller."
+    },
+    {
+      "title": "26. Kinh nghiệm web auth: đăng nhập chạy được mới chỉ là nửa đầu câu chuyện",
+      "body": "Nửa còn lại là phiên tồn tại ra sao, logout sạch ra sao, redirect đúng ra sao và revoke truy cập thế nào khi có sự cố."
+    },
+    {
+      "title": "27. Sanctum giải bài toán gì?",
+      "body": "Sanctum giải auth cho SPA hoặc API theo cách hợp tự nhiên với Laravel, đặc biệt cho các ứng dụng cùng domain hoặc hệ sinh thái gần nhau."
+    },
+    {
+      "title": "28. SPA auth với Sanctum khác token API thuần ở đâu?",
+      "body": "Nó có thể dựa vào cookie và session stateful chứ không chỉ token kiểu bearer đơn giản. Điều này làm nhiều người dễ nhầm flow."
+    },
+    {
+      "title": "29. Flow Sanctum cho SPA thường đi như thế nào?",
+      "body": "Lấy CSRF cookie, gửi request login, tạo session, rồi các request sau tự mang cookie phù hợp để backend nhận diện user.",
+      "code": "await axios.get('/sanctum/csrf-cookie', { withCredentials: true });\nawait axios.post('/login', payload, { withCredentials: true });\nconst { data } = await axios.get('/api/user', { withCredentials: true });",
+      "note": "Nhìn ba request liên tiếp này sẽ hiểu flow Sanctum nhanh hơn nhiều so với học thuộc khái niệm stateful."
+    },
+    {
+      "title": "30. `SANCTUM_STATEFUL_DOMAINS` quan trọng ở đâu?",
+      "body": "Nó ảnh hưởng việc backend coi request từ domain nào là stateful. Nếu lệch, login có thể nhìn như thành công nhưng request sau vẫn như guest."
+    },
+    {
+      "title": "31. Case thật: login Sanctum trả 200 nhưng request sau vẫn 401",
+      "body": "Rất hay do cookie không gửi kèm, sai domain, sai same-site, sai secure setting, frontend không gửi credentials hoặc origin không nằm trong bối cảnh stateful đúng.",
+      "code": "SANCTUM_STATEFUL_DOMAINS=localhost,127.0.0.1,app.test\nSESSION_DOMAIN=.app.test\n\naxios.defaults.withCredentials = true;",
+      "bullets": [
+        "Check tab Network để xem cookie có thực sự được set và gửi lại không.",
+        "Check `SESSION_DOMAIN` và `SANCTUM_STATEFUL_DOMAINS` có khớp môi trường hiện tại không.",
+        "Check frontend request có bật `withCredentials` không."
+      ]
+    },
+    {
+      "title": "32. Vì sao debug Sanctum phải nhìn request sau login?",
+      "body": "Vì auth thật sự chỉ được chứng minh khi request tiếp theo mang đúng danh tính lên server, không phải khi endpoint login trả đẹp."
+    },
+    {
+      "title": "33. Token auth nên nghĩ tới khi nào?",
+      "body": "Khi client không phải browser web truyền thống, hoặc khi cần token riêng cho mobile, integration, CLI hoặc use case ngoài session web."
+    },
+    {
+      "title": "34. Personal access token đáng chú ý ở đâu?",
+      "body": "Scope, revoke, rotate, expiry, và chỗ lưu hoặc hiển thị token là các phần rất dễ bị làm hời hợt nhưng hậu quả lớn."
+    },
+    {
+      "title": "35. Token revoke có phải phần phụ không?",
+      "body": "Không. Nếu token bị lộ, revoke là tuyến phòng thủ cực thực tế. Hệ thống có token mà không có chiến lược revoke rõ là hệ thống đang nợ bảo mật."
+    },
+    {
+      "title": "36. Case thật: token tồn tại quá lâu làm gì sai?",
+      "body": "Nó tăng cửa sổ rủi ro khi token bị lộ hoặc user rời hệ thống mà access vẫn sống dai."
+    },
+    {
+      "title": "37. Tip thực chiến: auth cho SPA dễ lỗi ở phần trình duyệt gửi gì hơn là phần controller nhận gì",
+      "body": "Credentials, cookie, origin, CSRF header và same-site policy là những thứ phải nhìn kỹ."
+    },
+    {
+      "title": "38. API auth tốt nên trả lỗi kiểu gì?",
+      "body": "Phải rõ ràng giữa chưa xác thực, token sai, token hết hạn, và không đủ quyền. Nếu mọi thứ đều thành một lỗi mơ hồ, client rất khó xử lý đúng."
+    },
+    {
+      "title": "39. Case thật: mobile app, SPA và web admin dùng chung auth flow có thể rối ở đâu?",
+      "body": "Mỗi loại client có kỳ vọng khác nhau về state, cookie, token và UX. Nếu gộp mù mà không phân lớp rõ, team sẽ rất khó bảo trì."
+    },
+    {
+      "title": "40. Kinh nghiệm API auth: chọn đúng flow cho đúng loại client còn quan trọng hơn chọn đúng package",
+      "body": "Package chỉ là công cụ; vấn đề thật là trust model của bạn là gì."
+    },
+    {
+      "title": "41. Tip bảo trì: đừng để web auth, SPA auth và token auth đụng nhau trong một mớ logic không tên",
+      "body": "Mỗi flow nên có boundary và naming đủ rõ để người sau còn biết mình đang debug loại auth nào."
+    },
+    {
+      "title": "42. Kết luận trung gian: Sanctum mạnh khi bạn hiểu nó là flow stateful/token cụ thể, không phải phép màu auth chung cho mọi case",
+      "body": "Đây là chỗ nhiều người cài đúng package nhưng hiểu sai bài toán."
+    },
+    {
+      "title": "43. Policy dùng để làm gì?",
+      "body": "Policy gom rule quyền quanh resource hoặc action cụ thể như xem, sửa, xóa, publish, refund hoặc invite.",
+      "code": "class InvoicePolicy\n{\n    public function refund(User $user, Invoice $invoice): bool\n    {\n        return $user->team_id === $invoice->team_id\n            && $user->can('billing.refund')\n            && $invoice->status === 'paid';\n    }\n}",
+      "note": "Một policy tốt đọc gần như câu business rule, không giống đống `if` lẫn lộn."
+    },
+    {
+      "title": "44. Gate khác policy ở đâu?",
+      "body": "Gate hợp cho rule nhỏ hoặc quyền mang tính toàn cục hơn. Policy thường rõ ràng hơn khi quyền gắn với model hoặc tài nguyên cụ thể."
+    },
+    {
+      "title": "45. Vì sao role và permission đáng model hóa thay vì `if admin`?",
+      "body": "Vì sản phẩm thật ít khi chỉ có hai trạng thái admin/user. Quyền thường tăng dần theo feature, team, plan, tenant hoặc workflow."
+    },
+    {
+      "title": "46. Case thật: hardcode `if admin` làm app đau ở đâu?",
+      "body": "Khi sản phẩm có thêm manager, support, finance, reviewer, approver hoặc scoped admin thì logic cũ rất nhanh nổ tung."
+    },
+    {
+      "title": "47. Policy drift là gì?",
+      "body": "Là khi rule quyền bị copy ra nhiều nơi: controller, Blade, service, frontend condition. Một thời gian sau các nơi lệch nhau và không ai chắc rule thật nằm ở đâu."
+    },
+    {
+      "title": "48. Vì sao quyền nên kiểm tra ở backend dù frontend đã ẩn nút?",
+      "body": "Vì ẩn nút chỉ là UX, không phải bảo mật. Request giả vẫn có thể được gửi lên."
+    },
+    {
+      "title": "49. Blade `@can` tiện nhưng có đủ không?",
+      "body": "Nó tiện cho render UI, nhưng backend vẫn phải tự bảo vệ ở route/controller/service phù hợp.",
+      "code": "@can('update', $post)\n    <a href=\"{{ route('posts.edit', $post) }}\">Sửa bài viết</a>\n@endcan",
+      "note": "Ẩn nút chỉ là trải nghiệm giao diện. Endpoint backend vẫn phải `authorize()` lại."
+    },
+    {
+      "title": "50. Multi-tenant permission làm gì khó hơn?",
+      "body": "Một user có thể được phép ở tenant này nhưng không ở tenant kia. Nếu không gắn tenant context vào rule quyền, app rất dễ rò access."
+    },
+    {
+      "title": "51. Case thật: user đăng nhập đúng nhưng nhìn nhầm dữ liệu của team khác",
+      "body": "Đây là lỗi authorization hoặc scoping nguy hiểm hơn nhiều so với bug giao diện. Nó thường đến từ query không scope đúng hoặc rule quyền đặt sai chỗ."
+    },
+    {
+      "title": "52. Permission package như `spatie/laravel-permission` mạnh ở đâu?",
+      "body": "Nó giúp mô hình hóa role/permission bài bản hơn, nhưng chỉ mạnh khi team hiểu rõ domain quyền của sản phẩm. Package không tự nghĩ giúp bạn business rule."
+    },
+    {
+      "title": "53. Tip thực chiến: quyền tốt nên đọc như câu business, không như câu đố kỹ thuật",
+      "body": "Ví dụ `canRefund($user, $invoice)` dễ hiểu hơn chuỗi điều kiện lẫn lộn giữa role, status và owner check rải trong controller."
+    },
+    {
+      "title": "54. Review quyền trong PR nên hỏi gì?",
+      "body": "Rule này nằm đúng chỗ chưa, có bị lặp ở nhiều nơi chưa, có tính tới tenant/team scope chưa, và có đang lỡ mở rộng quyền quá mức vì 'cho chạy được' không."
+    },
+    {
+      "title": "55. Kinh nghiệm authorization: rule quyền thay đổi chậm hơn giao diện nhưng phá hệ thống đau hơn",
+      "body": "Vì khi quyền sai, user có thể làm điều lẽ ra không được phép hoặc bị chặn khỏi việc phải làm được."
+    },
+    {
+      "title": "56. Kết luận phần quyền: xác thực danh tính là cửa vào, nhưng authorization mới là hàng rào thật của business",
+      "body": "Nhiều app dừng ở login mà bỏ quên hàng rào này."
+    },
+    {
+      "title": "57. Password hashing quan trọng ở đâu?",
+      "body": "Mật khẩu không nên lưu plaintext hay hash yếu. Laravel mặc định hỗ trợ hash tốt, nhưng bạn vẫn phải hiểu rằng đây là lớp bảo vệ sống còn.",
+      "code": "use Illuminate\\Support\\Facades\\Hash;\n\n$user->password = Hash::make($request->string('password'));\n$user->save();",
+      "note": "Sai lầm rất nguy hiểm: lưu password thẳng hoặc tự hash bằng cách không phù hợp như `md5` hay `sha1`."
+    },
+    {
+      "title": "58. Đổi mật khẩu nên nghĩ gì ngoài việc update field?",
+      "body": "Nên nghĩ tới invalidate session cũ, revoke remember state hoặc token phù hợp, log security event và thông báo người dùng khi cần."
+    },
+    {
+      "title": "59. Reset password flow dễ sai ở đâu?",
+      "body": "Token reset, thời gian sống, rate limit, email delivery, thông báo lỗi quá chi tiết hoặc quy trình cho phép enumerate email là các chỗ hay hở."
+    },
+    {
+      "title": "60. Email verification có đáng giá thật không?",
+      "body": "Có, nhất là khi email là identity chính, ảnh hưởng billing, notify hoặc recovery. Nhưng không phải sản phẩm nào cũng cần mức chặt như nhau."
+    },
+    {
+      "title": "61. 2FA nên thêm khi nào?",
+      "body": "Khi tài khoản có giá trị cao hơn, dữ liệu nhạy cảm hơn hoặc sản phẩm có nguy cơ account takeover thực sự. Không nhất thiết app nào cũng cần ngay từ ngày đầu, nhưng nhiều sản phẩm thật nên nghĩ sớm.",
+      "code": "if ($user->two_factor_secret) {\n    return redirect()->route('two-factor.challenge');\n}",
+      "note": "Nếu thêm 2FA, hãy nghĩ luôn tới backup code, trusted device và support flow chứ không chỉ step nhập mã."
+    },
+    {
+      "title": "62. Case thật: 2FA làm UX xấu nếu không thiết kế recovery",
+      "body": "Backup code, trusted device, recovery flow và support process là phần không thể bỏ qua. 2FA chỉ thêm step mà không thêm recovery sẽ gây khổ cho user thật."
+    },
+    {
+      "title": "63. Password policy nên nghiêm tới đâu?",
+      "body": "Tùy sản phẩm, nhưng phải nhất quán với rủi ro thật. Một app nội bộ demo và một hệ billing nhiều tiền không thể dùng cùng mindset."
+    },
+    {
+      "title": "64. Case thật: reset flow là nơi attacker thử abuse rất nhiều",
+      "body": "Vì nó thường mở cửa cho enumeration, spam mail, brute force token hoặc social engineering."
+    },
+    {
+      "title": "65. Tip thực chiến: auth UX và security không nên xem như hai phe đối nghịch tuyệt đối",
+      "body": "Thiết kế tốt có thể giữ đủ an toàn mà vẫn đỡ làm user mệt hơn rất nhiều."
+    },
+    {
+      "title": "66. Device trust hoặc browser session management đáng giá ở đâu?",
+      "body": "Nó cho user thấy và kiểm soát nơi tài khoản của họ đang sống. Đây là tính năng vừa bảo mật vừa rất có giá trị niềm tin."
+    },
+    {
+      "title": "67. Logging cho password change, reset, login fail có đáng không?",
+      "body": "Rất đáng. Những event này giúp điều tra khi có khiếu nại tài khoản hoặc nghi ngờ hành vi bất thường."
+    },
+    {
+      "title": "68. Tip bảo trì: auth flow đổi ít nhưng đổi một lần là ảnh hưởng rất rộng",
+      "body": "Nên test kỹ và log đủ khi chạm vào reset, login, verify hoặc 2FA."
+    },
+    {
+      "title": "69. Kết luận phần password/verify: đây là nơi sản phẩm chứng minh mình đáng tin chứ không chỉ 'đăng nhập được'",
+      "body": "Người dùng thật sẽ cảm nhận rất rõ chất lượng của những flow này."
+    },
+    {
+      "title": "70. CSRF bảo vệ điều gì?",
+      "body": "Nó bảo vệ request thay đổi trạng thái khỏi việc bị gửi đi ngoài ý muốn từ một ngữ cảnh khác."
+    },
+    {
+      "title": "71. XSS vẫn là bài toán rất thật trong Laravel dù Blade escape mặc định",
+      "body": "Bởi vì dev vẫn có thể dùng raw HTML, output dữ liệu chưa sanitize hoặc đưa data nguy hiểm sang JS/frontend không cẩn thận."
+    },
+    {
+      "title": "72. Mass assignment là gì và vì sao vẫn nguy hiểm?",
+      "body": "Nếu model nhận input bừa bãi vào field nhạy cảm như role, status hoặc ownership, attacker có thể lợi dụng chỗ đó để nâng quyền hoặc đổi trạng thái.",
+      "code": "// nguy hiểm\nUser::create($request->all());\n\n// an toàn hơn\nUser::create($request->only('name', 'email', 'password'));",
+      "note": "Sai lầm thường gặp: form không có field `role` nên tưởng an toàn. Nhưng attacker có thể tự gửi field đó nếu backend không khóa lại."
+    },
+    {
+      "title": "73. `fillable` và `guarded` là lớp bảo vệ kiểu gì?",
+      "body": "Chúng giúp bạn kiểm soát field nào được phép assign hàng loạt. Đây là phòng tuyến nền rất thực tế."
+    },
+    {
+      "title": "74. Rate limiting có giá trị ngoài login ở đâu?",
+      "body": "Reset password, OTP, resend verify mail, invitation, search public, upload public hoặc webhook endpoint đều có thể cần throttle hợp lý."
+    },
+    {
+      "title": "75. Brute force không chỉ là bài toán password",
+      "body": "Nó còn có thể xuất hiện ở OTP, reset token, verify flow hoặc endpoint nhạy cảm khác."
+    },
+    {
+      "title": "76. Secure cookie, same-site và trusted proxy đáng hiểu vì sao?",
+      "body": "Vì chỉ lệch môi trường hoặc proxy một chút là auth flow có thể vừa lỗi vừa yếu đi theo cách rất khó nhìn nếu chỉ đọc code PHP."
+    },
+    {
+      "title": "77. Case thật: app sau proxy hoặc CDN có thể vô tình làm auth yếu hơn",
+      "body": "Nếu scheme, host hoặc cookie setting lệch, signed URL, secure cookie hoặc redirect auth flow có thể cư xử khác hẳn local."
+    },
+    {
+      "title": "78. Audit log khác gì log debug thông thường?",
+      "body": "Audit log thiên về dấu vết hành vi có ý nghĩa sản phẩm hoặc bảo mật như ai login, ai đổi quyền, ai revoke token, ai xóa user. Nó có tuổi thọ điều tra cao hơn log debug.",
+      "code": "activity('security')\n    ->causedBy($user)\n    ->withProperties([\n        'ip' => $request->ip(),\n        'user_agent' => $request->userAgent(),\n        'action' => 'password_changed',\n    ])\n    ->log('User changed password');",
+      "note": "Log debug thường giúp sửa bug. Audit log giúp trả lời ai đã làm gì khi có tranh chấp hoặc nghi ngờ abuse."
+    },
+    {
+      "title": "79. Case thật: debug log có nhiều nhưng vẫn không điều tra nổi sự cố bảo mật",
+      "body": "Vì log nhiều không đồng nghĩa log đúng. Nếu không log đúng event auth và quyền, sự cố sẽ vẫn mù."
+    },
+    {
+      "title": "80. Tip thực chiến: log nên giúp trả lời 'ai làm gì, khi nào, với tài nguyên nào, từ đâu'",
+      "body": "Đó là bộ câu hỏi rất có giá trị khi xử lý bug quyền, tranh chấp thao tác hoặc nghi ngờ lạm dụng."
+    },
+    {
+      "title": "81. Suspicious access nên nghĩ theo tín hiệu nào?",
+      "body": "Thiết bị lạ, IP lạ, đổi mật khẩu bất thường, reset liên tục, fail login nhiều lần hoặc token được dùng theo pattern lạ đều là tín hiệu đáng chú ý."
+    },
+    {
+      "title": "82. Revoke access là một capability sản phẩm, không chỉ là thao tác kỹ thuật",
+      "body": "Nó cần rõ ràng cho admin, rõ ràng cho chính user và rõ ràng trong audit. Nếu revoke rồi mà access còn sống lơ lửng, niềm tin hệ thống sẽ giảm mạnh."
+    },
+    {
+      "title": "83. Case thật: user bị khóa hoặc bị revoke nhưng session cũ vẫn sống",
+      "body": "Đây là kiểu lệch giữa business state và auth state rất nguy hiểm. Khi khóa user, bạn phải nghĩ luôn tới session, token và worker context đang còn sống hay không.",
+      "code": "$user->update(['suspended_at' => now()]);\n$user->tokens()->delete();\n\nAuth::logoutOtherDevices($currentPassword);",
+      "note": "Ý chính là revoke không chỉ đổi cờ trong database. Bạn còn phải nghĩ tới access đang sống ở session hoặc token."
+    },
+    {
+      "title": "84. Case thật: quyền UI đã ẩn nhưng API vẫn cho làm",
+      "body": "Đây là một trong những bug authorization điển hình nhất. Frontend và backend đang lệch hàng rào."
+    },
+    {
+      "title": "85. Security review cho PR nên hỏi gì?",
+      "body": "Flow này có tạo surface mới không, có rate limit chưa, có policy chưa, có sanitize output chưa, có nguy cơ enumerate user không, có log event quan trọng không và revoke access có được nghĩ tới không."
+    },
+    {
+      "title": "86. Kinh nghiệm thực chiến: nhiều lỗ hổng không đến từ lỗi framework mà từ logic sản phẩm 'tạm thời' sống quá lâu",
+      "body": "Ví dụ bypass verify để demo, bỏ policy cho kịp deadline, cho login quá dễ ở môi trường staging rồi quên dọn. Những 'tạm thời' này hay thành nợ bảo mật thật."
+    },
+    {
+      "title": "87. Kinh nghiệm cuối: auth tốt là auth khiến danh tính, quyền và đường rút quyền đều rõ",
+      "body": "Tức là biết ai là ai, được làm gì, access sống bao lâu, và khi cần thì cắt access sạch đến đâu."
+    },
+    {
+      "title": "88. App càng có người dùng thật, auth càng trở thành phần của trust product chứ không chỉ phần backend",
+      "body": "Người dùng không nhìn thấy code của bạn, nhưng họ cảm nhận rất rõ khi login bất ổn, reset khó tin, quyền lộn xộn hoặc session có vẻ không an toàn."
+    },
+    {
+      "title": "89. Một hệ auth tốt không cần phải quá nhiều công nghệ, nhưng phải có model rõ",
+      "body": "Bạn có thể dùng session, Sanctum, policy và vài lớp bảo vệ nền rất cơ bản, miễn là team hiểu rõ trust model và vận hành nhất quán."
+    },
+    {
+      "title": "90. Câu hỏi cuối để tự soi: nếu tài khoản quan trọng nhất của sản phẩm bị lộ hôm nay, team của bạn có biết phải nhìn log nào, revoke cái gì và giải thích gì cho user không?",
+      "body": "Nếu câu trả lời còn mơ hồ, auth/security của app vẫn còn nhiều chỗ để trưởng thành."
+    },
+    {
+      "title": "91. Một cấu hình auth cơ bản trong Laravel thường bắt đầu từ đâu?",
+      "body": "Thường bắt đầu từ `config/auth.php`, model `User`, guard đang dùng và provider người dùng. Đây là nơi bạn cần đọc khi muốn biết app đang xác thực bằng session hay token và nó đang lấy user từ đâu.",
+      "code": "'defaults' => [\n    'guard' => 'web',\n    'passwords' => 'users',\n],\n\n'guards' => [\n    'web' => [\n        'driver' => 'session',\n        'provider' => 'users',\n    ],\n],\n\n'providers' => [\n    'users' => [\n        'driver' => 'eloquent',\n        'model' => App\\\\Models\\\\User::class,\n    ],\n]"
+    },
+    {
+      "title": "92. Vì sao `guard` và `provider` lại quan trọng?",
+      "body": "Vì `guard` quyết định cơ chế auth đang dùng, còn `provider` quyết định nguồn user được lấy từ đâu. Nếu app có admin riêng, user riêng hoặc nhiều loại account, bạn sẽ đụng guard/provider rất nhanh."
+    },
+    {
+      "title": "93. Ví dụ code login web cơ bản và vì sao lại viết như vậy",
+      "body": "Dùng `Auth::attempt()` để thử xác thực credential, rồi regenerate session để giảm rủi ro session fixation. Redirect sau login giúp flow web rõ và nhất quán hơn.",
+      "code": "public function store(LoginRequest $request)\n{\n    if (! Auth::attempt($request->only('email', 'password'), $request->boolean('remember'))) {\n        return back()->withErrors([\n            'email' => 'Thông tin đăng nhập không đúng.',\n        ]);\n    }\n\n    $request->session()->regenerate();\n\n    return redirect()->intended('/dashboard');\n}"
+    },
+    {
+      "title": "94. Ví dụ code logout cơ bản và vì sao phải làm đủ bước",
+      "body": "Logout đúng không chỉ là `Auth::logout()`. Bạn còn nên invalidate session và rotate CSRF token để request cũ không mang theo state nhạy cảm nữa.",
+      "code": "public function destroy(Request $request)\n{\n    Auth::logout();\n\n    $request->session()->invalidate();\n    $request->session()->regenerateToken();\n\n    return redirect('/login');\n}"
+    },
+    {
+      "title": "95. Một ví dụ form Blade có `@csrf` để làm gì?",
+      "body": "Web form thay đổi trạng thái nên cần token CSRF để Laravel kiểm tra request đó đến từ flow hợp lệ của app, không phải từ nơi khác cố gửi ké.",
+      "code": "<form method=\"POST\" action=\"{{ route('login') }}\">\n    @csrf\n    <input type=\"email\" name=\"email\">\n    <input type=\"password\" name=\"password\">\n    <button type=\"submit\">Login</button>\n</form>"
+    },
+    {
+      "title": "96. Ví dụ policy cơ bản và vì sao policy đáng tách riêng",
+      "body": "Policy gom rule quyền vào một nơi đọc được. Thay vì `if ($user->id === $post->user_id)` rải nhiều nơi, bạn gom lại để controller, Blade và service cùng dựa vào một rule nhất quán.",
+      "code": "class PostPolicy\n{\n    public function update(User $user, Post $post): bool\n    {\n        return $user->id === $post->user_id;\n    }\n}\n\n// Controller\n$this->authorize('update', $post);"
+    },
+    {
+      "title": "97. Một ví dụ Sanctum SPA config cơ bản nên nhìn ở đâu?",
+      "body": "Hãy nhìn `.env`, `config/session.php`, `config/sanctum.php` và client frontend. Nếu stateful domain hoặc cookie config lệch, login có thể trả 200 nhưng auth flow thực tế vẫn sai.",
+      "code": "SANCTUM_STATEFUL_DOMAINS=localhost,127.0.0.1,app.test\nSESSION_DOMAIN=.app.test\nSESSION_DRIVER=file\n\n// frontend request\naxios.get('/sanctum/csrf-cookie', { withCredentials: true })\naxios.post('/login', payload, { withCredentials: true })"
+    },
+    {
+      "title": "98. Vì sao Sanctum phải gọi `/sanctum/csrf-cookie` trước login trong nhiều case?",
+      "body": "Vì browser cần nhận CSRF cookie đúng context trước khi gửi request stateful tiếp theo. Nếu thiếu bước đó, nhiều SPA auth flow sẽ fail theo kiểu rất khó hiểu với người mới."
+    },
+    {
+      "title": "99. Ví dụ `fillable` để tránh mass assignment và vì sao không nên coi nhẹ",
+      "body": "Nếu bạn để model nhận bừa các field nhạy cảm, request có thể nâng quyền hoặc đổi owner ngoài ý muốn. `fillable` là một lớp bảo vệ nhỏ nhưng rất thực dụng.",
+      "code": "class User extends Model\n{\n    protected $fillable = [\n        'name',\n        'email',\n        'password',\n    ];\n}"
+    },
+    {
+      "title": "100. Cấu hình và code auth tốt không chỉ là 'đúng cú pháp', mà là đúng trust model",
+      "body": "Lý do phải regenerate session, thêm `@csrf`, tách policy, cấu hình Sanctum đúng domain, và giới hạn mass assignment không nằm ở việc 'Laravel khuyên thế', mà vì mỗi bước đó đang đóng một cửa yếu cụ thể trong hệ thống."
+    },
+    {
+      "title": "101. Ví dụ login web cơ bản bằng `Auth::attempt()` và vì sao phải regenerate session",
+      "body": "Đây là flow đăng nhập web rất kinh điển trong Laravel.",
+      "code": "if (Auth::attempt($request->only('email', 'password'))) {\n    $request->session()->regenerate();\n\n    return redirect()->intended('/dashboard');\n}\n\nreturn back()->withErrors([\n    'email' => 'Thông tin đăng nhập không đúng.',\n]);",
+      "note": "`regenerate()` giúp giảm rủi ro session fixation sau khi login thành công."
+    },
+    {
+      "title": "102. Ví dụ logout an toàn hơn thay vì chỉ gọi `Auth::logout()` rồi thôi",
+      "body": "Logout đúng không chỉ là bỏ user khỏi guard hiện tại.",
+      "code": "Auth::logout();\n\n$request->session()->invalidate();\n$request->session()->regenerateToken();\n\nreturn redirect('/');",
+      "bullets": [
+        "`invalidate()` xóa session cũ khỏi chu kỳ hiện tại.",
+        "`regenerateToken()` tạo CSRF token mới cho request tiếp theo.",
+        "Cách làm này giúp flow logout sạch hơn về mặt session state."
+      ]
+    },
+    {
+      "title": "103. Ví dụ policy và authorize ngay trong controller",
+      "body": "Đây là cách rất thường thấy để giữ rule quyền gần use case nhưng không nhét thẳng vào view hay controller body kiểu `if ($user->is_admin)`.",
+      "code": "class PostPolicy\n{\n    public function update(User $user, Post $post): bool\n    {\n        return $user->id === $post->user_id;\n    }\n}\n\n$this->authorize('update', $post);",
+      "note": "Policy không chỉ làm code sạch hơn mà còn giúp quyền được test, tái sử dụng và ít bị hardcode lung tung hơn."
+    }
+  ]
+}

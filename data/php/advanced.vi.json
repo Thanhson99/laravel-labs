@@ -1,0 +1,484 @@
+{
+  "anchor": "php-advanced",
+  "badge": "Cấp 3",
+  "actionLabel": "Mở cấp độ nâng cao",
+  "title": "Cấp 3: Kiến trúc, testing, integration và production",
+  "summary": "Giai đoạn này đi vào PHP hiện đại và backend ở mức sâu hơn: OOP rõ ràng hơn, PHPUnit, queue, webhook, transaction, cache, deploy, observability, boundary hệ thống và tư duy production để code sống được ngoài môi trường tutorial.",
+  "highlights": [
+    "PHP nâng cao không còn xoay quanh cú pháp nữa mà xoay quanh boundaries, failure mode, hiệu năng, testability và cách hệ thống phản ứng ngoài đời thật.",
+    "Bạn sẽ chạm tới `enum`, `readonly`, `trait`, dependency injection, middleware, webhook signature, queue, retry, transaction và production safety.",
+    "Phần testing giờ có cả mindset lẫn ví dụ `PHPUnit` để nối từ code thuần sang thói quen kiểm chứng hành vi có chủ đích.",
+    "Mục tiêu của cấp 3 là khiến bạn không chỉ viết code chạy được, mà còn hiểu tradeoff, cách debug, cách bảo vệ hệ thống và cách giải thích thiết kế của mình."
+  ],
+  "modules": [
+    {
+      "title": "Chủ đề PHP hiện đại",
+      "description": "Đây là các chủ đề thường xuất hiện trong tutorial mới, trong team và trong package code.",
+      "bullets": [
+        "Namespace và PSR-4 autoloading",
+        "Class, interface, abstract class và trait",
+        "Exception, xử lý lỗi và defensive programming",
+        "Khai báo kiểu dữ liệu, nullable type và kiểu trả về",
+        "Composer package và quản lý dependency",
+        "`enum`, `readonly`, `final` và các tính năng giúp mô hình dữ liệu rõ nghĩa hơn",
+        "Các công cụ như `static` method hoặc `static` property cũng nên được hiểu đúng ngữ cảnh thay vì lạm dụng"
+      ]
+    },
+    {
+      "title": "final, readonly và những giới hạn có chủ đích",
+      "description": "PHP hiện đại không chỉ cho bạn thêm sức mạnh, nó còn cho bạn cách đặt ranh giới rõ hơn cho code.",
+      "bullets": [
+        "`final` giúp chặn việc class hoặc method bị override ngoài ý muốn.",
+        "`readonly` giúp nói rõ rằng dữ liệu đó chỉ nên được gán một lần rồi giữ ổn định.",
+        "Tip: các từ khóa giới hạn tốt thường làm ý định của code rõ hơn, chứ không chỉ làm code trông hiện đại hơn."
+      ]
+    },
+    {
+      "title": "static và khi nào nên cẩn thận",
+      "description": "`static` có chỗ dùng hợp lý, nhưng cũng là nơi dễ khiến code trở nên cứng và khó test nếu lạm dụng.",
+      "bullets": [
+        "`static` method có thể hợp với helper thuần không cần trạng thái đối tượng.",
+        "`static` property dễ tạo cảm giác tiện nhưng cũng dễ kéo global state quay lại theo đường khác.",
+        "Tip: nếu dùng `static`, hãy tự hỏi bạn đang làm rõ trách nhiệm hay chỉ đang né việc thiết kế object tử tế hơn."
+      ]
+    },
+    {
+      "title": "Kiến trúc và ranh giới trách nhiệm",
+      "description": "Ở mức nâng cao, câu chuyện thường chuyển từ cú pháp sang hình dáng của code và ranh giới giữa các phần.",
+      "bullets": [
+        "Cố gắng tách phần nhận request, business rule, lưu trữ dữ liệu và hiển thị ra khỏi nhau khi phù hợp.",
+        "Tránh class biết quá nhiều hoặc làm quá nhiều vì nó sẽ rất khó test và khó sửa về sau.",
+        "Tip: nếu một class cần quá nhiều dependency không liên quan nhau, thiết kế đó thường đang muốn được tách nhỏ."
+      ]
+    },
+    {
+      "title": "Exception và chiến lược xử lý lỗi",
+      "description": "Code PHP tốt không chỉ trả `false` khắp nơi mà cần có chiến lược xử lý lỗi có chủ đích.",
+      "bullets": [
+        "Dùng exception cho các trường hợp bất thường cần được xử lý có cấu trúc.",
+        "Dùng return value rõ ràng khi thất bại là điều dự kiến và dễ mô hình hóa.",
+        "Tip: xác định sớm tầng nào được phép catch exception và chuyển nó thành thông báo cho người dùng."
+      ]
+    },
+    {
+      "title": "Hiệu năng và nhận thức bộ nhớ",
+      "description": "Không cần tối ưu sớm quá mức, nhưng người học nâng cao nên biết code đắt ở đâu.",
+      "bullets": [
+        "Query database lặp đi lặp lại bên trong loop thường tốn hơn rất nhiều so với các khác biệt cú pháp nhỏ.",
+        "Array quá lớn, transform lặp lại nhiều lần hoặc nạp file không cần thiết đều có thể làm tăng áp lực bộ nhớ.",
+        "Tip: hãy profile hoặc đo điểm nghẽn trước khi viết lại nửa codebase chỉ để chạy nhanh hơn."
+      ]
+    },
+    {
+      "title": "Testing và độ tin cậy",
+      "description": "Ở mức cao hơn, độ đúng của code không chỉ dựa vào cảm giác mà dựa vào thứ bạn kiểm chứng được.",
+      "bullets": [
+        "Unit test giúp cô lập business rule và các phép tính nhỏ.",
+        "Integration test giúp xác nhận hành vi với database, HTTP hoặc framework.",
+        "Tip: test hợp đồng và mục đích của code, đừng bám quá sát từng chi tiết private implementation."
+      ]
+    },
+    {
+      "title": "PHPUnit từ góc nhìn dễ học",
+      "description": "PHPUnit là công cụ test phổ biến nhất trong hệ PHP. Bạn không cần học mọi tính năng ngay, nhưng nên sớm hiểu hình dạng cơ bản của một test tử tế.",
+      "bullets": [
+        "Một test tốt thường có ba phần: chuẩn bị dữ liệu, gọi hành vi cần test, rồi `assert` kết quả.",
+        "Tên test nên nói được hành vi, ví dụ kiểu `it_calculates_total_price` hoặc `test_it_rejects_invalid_email`.",
+        "Hãy bắt đầu với các `assert` đơn giản như `assertSame`, `assertTrue`, `assertFalse`, `assertCount` trước khi lao vào mock phức tạp.",
+        "Tip: nếu code rất khó test, đôi khi vấn đề không nằm ở PHPUnit mà nằm ở việc code đang ôm quá nhiều trách nhiệm hoặc phụ thuộc quá cứng."
+      ]
+    },
+    {
+      "title": "Unit test và integration test khác nhau ở đâu",
+      "description": "Người mới học test thường nghe hai tên này rất nhiều nhưng chưa cảm được ranh giới của chúng.",
+      "bullets": [
+        "Unit test tập trung vào một hàm hoặc một class nhỏ, cố gắng kiểm tra logic trong phạm vi hẹp và nhanh.",
+        "Integration test kiểm tra việc nhiều phần làm việc cùng nhau như database, HTTP layer, queue hoặc framework.",
+        "Tip: khi một test chậm, khó setup hoặc đụng quá nhiều tài nguyên ngoài, rất có thể nó đã nghiêng về integration hơn là unit."
+      ]
+    },
+    {
+      "title": "Cache, queue và các bài toán nền hệ thống",
+      "description": "Khi ứng dụng lớn hơn, nhiều vấn đề không còn nằm ở cú pháp PHP mà nằm ở cách hệ thống phản ứng với tải và công việc nền.",
+      "bullets": [
+        "Cache giúp tránh tính lại hoặc query lại những dữ liệu đắt một cách không cần thiết.",
+        "Queue giúp chuyển các việc chậm như gửi mail, xử lý ảnh hoặc đồng bộ dữ liệu sang nền.",
+        "Tip: trước khi thêm cache hoặc queue, hãy chỉ ra chính xác nút thắt cổ chai nằm ở đâu."
+      ]
+    },
+    {
+      "title": "N+1 query và cách nhận biết",
+      "description": "Đây là một lỗi hiệu năng kinh điển trong backend PHP, đặc biệt khi làm việc với ORM hoặc các quan hệ dữ liệu.",
+      "bullets": [
+        "`N+1` thường xảy ra khi bạn load một danh sách rồi lại query thêm cho từng phần tử bên trong loop.",
+        "Dấu hiệu quen thuộc là trang vẫn chạy đúng nhưng chậm dần rõ rệt khi số bản ghi tăng lên.",
+        "Tip: hãy nhìn log query hoặc query count khi một loop chạm vào quan hệ dữ liệu, thay vì chỉ nhìn code PHP bề mặt."
+      ]
+    },
+    {
+      "title": "Boundary dữ liệu và service integration",
+      "description": "Ở mức nâng cao, bạn nên xem database, cache, mail, queue và HTTP API là các ranh giới ngoài của hệ thống chứ không phải chi tiết lặt vặt.",
+      "bullets": [
+        "Mỗi boundary đều có độ trễ, lỗi riêng và cách retry hoặc timeout khác nhau.",
+        "Code gọi service ngoài nên có chỗ tập trung để bạn kiểm soát log, timeout, retry và fallback.",
+        "Tip: khi một service ngoài chậm hoặc lỗi, điều quan trọng là biết hệ thống của bạn sẽ phản ứng ra sao chứ không chỉ biết lệnh gọi nằm ở đâu."
+      ]
+    },
+    {
+      "title": "Webhook, retry và xử lý bất định",
+      "description": "Khi hệ thống bắt đầu giao tiếp hai chiều với service ngoài, bạn sẽ gặp webhook, timeout, retry và các case nhận dữ liệu lặp hoặc nhận chậm.",
+      "bullets": [
+        "Webhook là dữ liệu được service ngoài đẩy ngược về hệ thống của bạn sau khi một sự kiện xảy ra.",
+        "Retry có thể cứu request lỗi tạm thời, nhưng cũng có thể gây xử lý trùng nếu thiết kế không cẩn thận.",
+        "Tip: các luồng webhook nên được thiết kế theo hướng `idempotent`, nghĩa là nhận lại cùng một sự kiện vẫn không làm hỏng dữ liệu."
+      ]
+    },
+    {
+      "title": "Observability và điều tra lỗi production",
+      "description": "Ở mức nâng cao, debug không còn là việc in ra vài biến. Bạn cần đủ dấu vết để điều tra hành vi hệ thống khi sự cố xảy ra thật.",
+      "bullets": [
+        "Log, metrics và trace giúp bạn nhìn hệ thống từ nhiều góc thay vì đoán bằng cảm giác.",
+        "Một lỗi production tốt nhất nên có đủ context để trả lời: request nào, user nào, service nào, chậm ở đâu, hỏng ở đâu.",
+        "Tip: nếu production lỗi mà bạn không biết bắt đầu nhìn ở đâu, thường là hệ thống observability của bạn còn thiếu."
+      ]
+    },
+    {
+      "title": "Deploy, môi trường và cấu hình",
+      "description": "Một lập trình viên PHP mạnh cần hiểu rằng code chạy khác nhau giữa local, staging và production nếu cấu hình không được kiểm soát tốt.",
+      "bullets": [
+        "Tách rõ config theo môi trường thay vì hardcode trong codebase.",
+        "Biết cách quản lý migration, secret và cache config khi deploy.",
+        "Tip: bug môi trường thường không nằm ở câu lệnh PHP đơn lẻ mà ở sự lệch cấu hình hoặc dữ liệu."
+      ]
+    },
+    {
+      "title": "Hướng giải quyết bài toán",
+      "description": "Ở cấp độ này hãy giải các bài toán nhỏ nhưng có ý nghĩa thay vì chỉ học thuộc từ khóa.",
+      "bullets": [
+        "Refactor logic lặp lại thành hàm hoặc class.",
+        "Chọn cấu trúc dữ liệu phù hợp với bài toán.",
+        "Giải thích tradeoff thay vì chỉ viết code.",
+        "Khi đề xuất một hướng giải, hãy nói luôn nó làm tăng độ phức tạp hoặc chi phí bảo trì ở điểm nào."
+      ]
+    },
+    {
+      "title": "Transaction, tính nhất quán và cập nhật nhiều bước",
+      "description": "Khi một thao tác chạm nhiều bản ghi hoặc nhiều bảng, điều quan trọng không còn là từng câu lệnh PHP đơn lẻ mà là tính nhất quán của cả luồng cập nhật.",
+      "bullets": [
+        "Transaction giúp gom nhiều bước cập nhật thành một đơn vị thành công hoặc thất bại cùng nhau.",
+        "Nếu vừa lưu đơn hàng, vừa trừ tồn kho, vừa ghi lịch sử thì bạn cần nghĩ tới việc bước nào được rollback khi bước khác lỗi.",
+        "Tip: transaction không cứu được mọi lỗi kiến trúc, nhưng nó là nền quan trọng khi nhiều thay đổi dữ liệu phải đi cùng nhau."
+      ]
+    },
+    {
+      "title": "Đừng trừu tượng hóa sớm quá",
+      "description": "Người học nâng cao thường bắt đầu biết nhiều pattern, nhưng biết nhiều pattern không có nghĩa là phải dùng hết.",
+      "bullets": [
+        "Một abstraction tốt làm rõ trách nhiệm, giảm lặp và dễ test hơn.",
+        "Một abstraction tệ chỉ khiến code xa rời bài toán và buộc người đọc phải nhảy qua nhiều file vô ích.",
+        "Tip: trước khi thêm lớp service, repository hay adapter mới, hãy tự hỏi nó đang giải quyết pain point thật nào."
+      ]
+    },
+    {
+      "title": "Concurrency, retry và trạng thái không chắc chắn",
+      "description": "Nhiều bug khó không đến từ cú pháp mà đến từ việc hai tiến trình chạm cùng dữ liệu hoặc một tác vụ bị chạy lại.",
+      "bullets": [
+        "Nếu một job có thể chạy hai lần, hệ thống cần biết điều đó có làm sai dữ liệu hay không.",
+        "Retry tốt phải đi cùng với `idempotent` hoặc một khóa nghiệp vụ đủ rõ.",
+        "Tip: khi nói về production safety, hãy nghĩ tới trường hợp request bị gửi lặp, job chạy lại hoặc timeout ở giữa đường."
+      ]
+    },
+    {
+      "title": "Queue, job nền và tính không đồng bộ",
+      "description": "Khi hệ thống lớn hơn, nhiều việc nên được chuyển ra nền thay vì bắt request chờ xong ngay lập tức.",
+      "bullets": [
+        "Queue phù hợp cho gửi mail, tạo báo cáo, resize ảnh, đồng bộ dữ liệu và các việc chậm khác.",
+        "Một job tốt cần biết cách log tiến trình, retry có kiểm soát và tránh gây xử lý trùng.",
+        "Tip: đừng đưa mọi thứ vào queue chỉ vì nó nghe hiện đại. Hãy chỉ dùng khi nó giải được độ trễ hoặc tách tải thật sự."
+      ]
+    },
+    {
+      "title": "Rate limiting và an toàn cho API",
+      "description": "Khi hệ thống có API hoặc endpoint nhạy cảm, bạn cần nghĩ tới việc bảo vệ tài nguyên khỏi lạm dụng.",
+      "bullets": [
+        "Rate limiting giúp giới hạn số request theo user, IP, token hoặc action.",
+        "Các endpoint như login, OTP, webhook hoặc export dữ liệu thường là nơi cần hạn chế sớm.",
+        "Tip: rate limiting không chỉ để chống tấn công; nó còn giúp hệ thống bền hơn trước burst traffic và client lỗi."
+      ]
+    },
+    {
+      "title": "Scheduler, cron và tác vụ theo lịch",
+      "description": "Không phải mọi công việc đều được kích hoạt bởi request của người dùng. Nhiều việc backend chạy theo giờ hoặc theo lịch.",
+      "bullets": [
+        "Các ví dụ quen thuộc là cleanup log, gửi báo cáo định kỳ, sync dữ liệu đêm, expire token hoặc dọn file tạm.",
+        "Scheduler thường đi cùng logging, alerting và khả năng chạy lại an toàn nếu job trước đó lỗi.",
+        "Tip: khi một tác vụ chạy theo lịch, hãy luôn hỏi nếu nó bị chạy trễ, chạy lặp hoặc chạy song song thì chuyện gì xảy ra."
+      ]
+    },
+    {
+      "title": "Cache invalidation và dữ liệu cũ",
+      "description": "Cache giúp nhanh hơn, nhưng dữ liệu cũ là cái giá bạn phải quản lý.",
+      "bullets": [
+        "Mỗi khi dữ liệu nguồn đổi, bạn cần biết cache nào phải xóa hoặc làm mới.",
+        "Cache không chỉ là lưu giá trị; nó còn là quyết định về tuổi thọ dữ liệu và độ chấp nhận dữ liệu cũ.",
+        "Tip: nếu chưa biết lúc nào cache nên hết hạn hoặc bị xóa, đừng cache quá sớm."
+      ]
+    }
+  ],
+  "examplesTitle": "Ví dụ nâng cao",
+  "examples": [
+    {
+      "title": "Một interface và hai implementation",
+      "description": "Ví dụ nhỏ cho thấy `interface` đóng vai trò contract, còn class là phần cài đặt cụ thể.",
+      "code": "<?php\ninterface PaymentGateway\n{\n    public function charge(int $amount): bool;\n}\n\nclass StripeGateway implements PaymentGateway\n{\n    public function charge(int $amount): bool\n    {\n        return true;\n    }\n}\n\nclass FakeGateway implements PaymentGateway\n{\n    public function charge(int $amount): bool\n    {\n        return true;\n    }\n}\n"
+    },
+    {
+      "title": "Catch exception và chuyển nghĩa lỗi",
+      "description": "Một tầng ném exception kỹ thuật, tầng khác quyết định cách hiển thị lỗi ra ngoài.",
+      "code": "<?php\nfunction loadUser(PDO $pdo, int $id): array\n{\n    $stmt = $pdo->prepare('SELECT * FROM users WHERE id = :id');\n    $stmt->execute(['id' => $id]);\n    $user = $stmt->fetch();\n\n    if (!$user) {\n        throw new RuntimeException('User not found');\n    }\n\n    return $user;\n}\n\ntry {\n    $user = loadUser($pdo, 10);\n} catch (RuntimeException $exception) {\n    echo 'Unable to load that user right now.';\n}\n"
+    },
+    {
+      "title": "Một cache đơn giản theo key",
+      "description": "Ví dụ nhỏ để nhìn ra ý tưởng tránh gọi lại cùng một phép xử lý đắt quá nhiều lần.",
+      "code": "<?php\n$cache = [];\n\nfunction getReport(array &$cache, string $key): string\n{\n    if (isset($cache[$key])) {\n        return $cache[$key];\n    }\n\n    $cache[$key] = 'expensive-report-data';\n\n    return $cache[$key];\n}\n\necho getReport($cache, 'weekly');\n"
+    },
+    {
+      "title": "Một ví dụ `N+1` dễ hình dung",
+      "description": "Đây là pattern nguy hiểm khi mỗi phần tử trong danh sách lại kích hoạt thêm một truy vấn riêng.",
+      "code": "<?php\n$users = $pdo->query('SELECT id, name FROM users')->fetchAll();\n\nforeach ($users as $user) {\n    $stmt = $pdo->prepare('SELECT * FROM posts WHERE user_id = :user_id');\n    $stmt->execute(['user_id' => $user['id']]);\n    $posts = $stmt->fetchAll();\n\n    echo $user['name'] . ' has ' . count($posts) . ' posts' . PHP_EOL;\n}\n"
+    },
+    {
+      "title": "Một wrapper gọi service ngoài",
+      "description": "Ví dụ nhỏ cho thấy việc gom logic gọi API vào một hàm riêng giúp kiểm soát timeout và xử lý lỗi tốt hơn.",
+      "code": "<?php\nfunction fetchStatus(string $url): string\n{\n    $context = stream_context_create([\n        'http' => [\n            'method' => 'GET',\n            'timeout' => 3,\n        ],\n    ]);\n\n    $response = @file_get_contents($url, false, $context);\n\n    if ($response === false) {\n        throw new RuntimeException('Service is unavailable');\n    }\n\n    return $response;\n}\n"
+    },
+    {
+      "title": "Một webhook handler rất nhỏ",
+      "description": "Ví dụ này chỉ để hình dung shape của việc nhận JSON từ service ngoài.",
+      "code": "<?php\n$payload = file_get_contents('php://input');\n$data = json_decode($payload, true);\n\nif (!is_array($data)) {\n    http_response_code(400);\n    echo 'Invalid payload';\n    return;\n}\n\necho 'Webhook received';\n"
+    },
+    {
+      "title": "Transaction đơn giản với rollback",
+      "description": "Một ví dụ ngắn để thấy luồng nhiều bước có thể cần rollback khi một bước thất bại.",
+      "code": "<?php\ntry {\n    $pdo->beginTransaction();\n\n    $pdo->exec(\"UPDATE wallets SET balance = balance - 100 WHERE id = 1\");\n    $pdo->exec(\"UPDATE wallets SET balance = balance + 100 WHERE id = 2\");\n\n    $pdo->commit();\n} catch (Throwable $exception) {\n    $pdo->rollBack();\n    throw $exception;\n}\n"
+    },
+    {
+      "title": "Một guard chống xử lý trùng cơ bản",
+      "description": "Ví dụ rất nhỏ cho ý tưởng kiểm tra event đã xử lý hay chưa trước khi chạy tiếp.",
+      "code": "<?php\n$eventId = $payload['event_id'] ?? null;\n\nif ($eventId === null) {\n    throw new RuntimeException('Missing event id');\n}\n\nif (in_array($eventId, $processedEventIds, true)) {\n    return;\n}\n\n$processedEventIds[] = $eventId;\n"
+    },
+    {
+      "title": "Một guard rate limit rất nhỏ",
+      "description": "Ví dụ ý tưởng để chặn hành động bị gọi quá dày trong một cửa sổ thời gian.",
+      "code": "<?php\n$key = 'login:' . $userId;\n$attempts = $cache[$key] ?? 0;\n\nif ($attempts >= 5) {\n    throw new RuntimeException('Too many attempts');\n}\n\n$cache[$key] = $attempts + 1;\n"
+    },
+    {
+      "title": "Một scheduler task rất nhỏ",
+      "description": "Ví dụ ý tưởng cho một tác vụ định kỳ chạy cleanup theo lịch.",
+      "code": "<?php\nfunction cleanupExpiredTokens(PDO $pdo): void\n{\n    $stmt = $pdo->prepare('DELETE FROM password_resets WHERE expires_at < NOW()');\n    $stmt->execute();\n}\n"
+    },
+    {
+      "title": "Một `enum` rất nhỏ",
+      "description": "Ví dụ ngắn để thấy khi nào một tập trạng thái cố định nên được mô hình hóa rõ hơn.",
+      "code": "<?php\nenum OrderStatus: string\n{\n    case Draft = 'draft';\n    case Paid = 'paid';\n    case Cancelled = 'cancelled';\n}\n\necho OrderStatus::Paid->value;\n"
+    },
+    {
+      "title": "Một class `readonly` nhỏ",
+      "description": "Ví dụ ngắn để thấy khi nào dữ liệu nên được giữ ổn định sau lúc khởi tạo.",
+      "code": "<?php\nreadonly class Money\n{\n    public function __construct(\n        public int $amount,\n        public string $currency,\n    ) {}\n}\n\n$price = new Money(150000, 'VND');\n"
+    },
+    {
+      "title": "Một `static` helper nhỏ",
+      "description": "Ví dụ ngắn cho trường hợp một helper thuần không cần state object.",
+      "code": "<?php\nclass SlugHelper\n{\n    public static function make(string $text): string\n    {\n        return strtolower(str_replace(' ', '-', trim($text)));\n    }\n}\n\necho SlugHelper::make('Laravel Labs');\n"
+    },
+    {
+      "title": "Một test PHPUnit rất nhỏ",
+      "description": "Ví dụ nhập môn để thấy hình dạng cơ bản của một test class và một assertion.",
+      "code": "<?php\nuse PHPUnit\\Framework\\TestCase;\n\nfinal class PriceCalculatorTest extends TestCase\n{\n    public function test_it_calculates_total_price(): void\n    {\n        $calculator = new PriceCalculator();\n\n        $total = $calculator->total([100, 200, 300]);\n\n        $this->assertSame(600, $total);\n    }\n}\n"
+    },
+    {
+      "title": "Một service nhỏ dễ test",
+      "description": "Ví dụ này đi cùng PHPUnit rất tốt vì class có một trách nhiệm rõ và ít phụ thuộc ngoài.",
+      "code": "<?php\nfinal class PriceCalculator\n{\n    public function total(array $prices): int\n    {\n        return array_sum($prices);\n    }\n}\n"
+    },
+    {
+      "title": "Một test validate exception",
+      "description": "Ví dụ ngắn để thấy test không chỉ kiểm tra giá trị đúng mà còn kiểm tra hành vi lỗi.",
+      "code": "<?php\nuse PHPUnit\\Framework\\TestCase;\n\nfinal class UserInputTest extends TestCase\n{\n    public function test_it_rejects_empty_email(): void\n    {\n        $validator = new UserInputValidator();\n\n        $this->expectException(InvalidArgumentException::class);\n        $validator->validateEmail('');\n    }\n}\n"
+    },
+    {
+      "title": "Trait nhỏ để tái sử dụng log message",
+      "description": "Ví dụ ngắn để thấy trait hợp với phần hành vi lặp lại nhỏ giữa nhiều class.",
+      "code": "<?php\ntrait WritesLogMessage\n{\n    public function formatLog(string $message): string\n    {\n        return '[' . date('H:i:s') . '] ' . $message;\n    }\n}\n\nclass ImportJob\n{\n    use WritesLogMessage;\n}\n"
+    },
+    {
+      "title": "Dependency injection rất nhỏ",
+      "description": "Ví dụ ngắn để thấy service nhận dependency từ bên ngoài thay vì tự tạo bên trong.",
+      "code": "<?php\nclass ReportService\n{\n    public function __construct(private PDO $pdo) {}\n\n    public function loadUsers(): array\n    {\n        return $this->pdo->query('SELECT id, name FROM users')->fetchAll();\n    }\n}\n"
+    },
+    {
+      "title": "Middleware rất nhỏ",
+      "description": "Ví dụ ý tưởng cho một lớp chặn request trước khi đi sâu hơn vào logic chính.",
+      "code": "<?php\nclass EnsureAuthenticated\n{\n    public function handle(array $request, callable $next)\n    {\n        if (($request['user_id'] ?? null) === null) {\n            http_response_code(401);\n            echo 'Unauthorized';\n            return null;\n        }\n\n        return $next($request);\n    }\n}\n"
+    },
+    {
+      "title": "Kiểm tra chữ ký webhook rất nhỏ",
+      "description": "Ví dụ ý tưởng để xác nhận payload thực sự đến từ service ngoài mong muốn.",
+      "code": "<?php\n$payload = file_get_contents('php://input');\n$signature = $_SERVER['HTTP_X_SIGNATURE'] ?? '';\n$expected = hash_hmac('sha256', $payload, $secret);\n\nif (!hash_equals($expected, $signature)) {\n    http_response_code(401);\n    echo 'Invalid signature';\n    return;\n}\n"
+    }
+  ],
+  "questionsTitle": "Câu hỏi luyện tập kèm đáp án",
+  "questions": [
+    {
+      "tag": "Chủ đề hot",
+      "question": "Sự khác nhau giữa interface và trait trong PHP là gì?",
+      "answer": "Interface định nghĩa một hợp đồng mà class phải triển khai, còn trait cung cấp phần cài đặt phương thức có thể tái sử dụng trong nhiều class."
+    },
+    {
+      "tag": "Chủ đề hot",
+      "question": "Vì sao `===` thường an toàn hơn `==` trong PHP?",
+      "answer": "Vì `===` so sánh cả giá trị lẫn kiểu dữ liệu, tránh việc ép kiểu ngầm có thể tạo ra bug khó đoán."
+    },
+    {
+      "tag": "PHP hiện đại",
+      "question": "Khi nào `enum` đáng học và đáng dùng?",
+      "answer": "Khi hệ thống có một tập giá trị trạng thái rõ ràng như `draft`, `paid`, `cancelled`, `active`, `inactive`. `enum` giúp code bớt dùng chuỗi rải rác, dễ đọc hơn và giảm lỗi gõ sai giá trị."
+    },
+    {
+      "tag": "PHP hiện đại",
+      "question": "Khi nào `readonly` thực sự hữu ích?",
+      "answer": "Khi bạn có những object mang dữ liệu mà sau khi tạo xong không nên bị sửa lung tung nữa, như money, config snapshot hoặc DTO đọc dữ liệu. `readonly` giúp ý định đó rõ ràng hơn và giảm lỗi do mutation ngoài ý muốn."
+    },
+    {
+      "tag": "PHPUnit",
+      "question": "Khi mới học PHPUnit, nên bắt đầu từ đâu để đỡ ngợp?",
+      "answer": "Hãy bắt đầu từ một class rất nhỏ, ít dependency và một assertion rõ ràng. Đừng mở đầu bằng mock phức tạp hay test framework nặng. Một test kiểu nhập dữ liệu, gọi method, rồi `assertSame` kết quả thường là điểm vào tốt nhất."
+    },
+    {
+      "tag": "PHPUnit",
+      "question": "Một tên test tốt trông như thế nào?",
+      "answer": "Tên test tốt nên nói ra hành vi đang được kiểm chứng, không chỉ lặp lại tên method. Ví dụ `test_it_calculates_total_price` hoặc `test_it_rejects_invalid_email` giúp người đọc biết ngay ý định của test mà không cần mở file implementation."
+    },
+    {
+      "tag": "PHPUnit",
+      "question": "Khi nào nên nghi ngờ code đang khó test hơn mức cần thiết?",
+      "answer": "Khi để test một hành vi nhỏ mà bạn phải khởi tạo quá nhiều dependency, chạm database thật, gọi HTTP thật hoặc setup rất dài. Đó thường là dấu hiệu class đang ôm quá nhiều việc hoặc boundary chưa rõ, chứ không đơn thuần là thiếu kỹ năng viết test."
+    },
+    {
+      "tag": "Thiết kế",
+      "question": "Một lưu ý khi dùng `static` là gì?",
+      "answer": "Đừng dùng `static` chỉ vì nó tiện gọi. Nó hợp với helper thuần hoặc utility không cần state, nhưng nếu lạm dụng thì code dễ cứng, khó mock và kéo cảm giác global state quay lại theo cách khác."
+    },
+    {
+      "tag": "OOP",
+      "question": "Khi nào nên nghĩ tới `abstract class` thay vì chỉ interface hoặc trait?",
+      "answer": "Khi nhiều class cần chia sẻ không chỉ contract mà còn một phần hành vi hoặc state nền chung. Interface hợp để định nghĩa hợp đồng, trait hợp cho mảnh hành vi tái sử dụng nhỏ, còn abstract class hợp khi bạn thật sự có một base type với logic chung có ý nghĩa."
+    },
+    {
+      "tag": "Architecture",
+      "question": "Vì sao dependency injection lại quan trọng ở mức nâng cao?",
+      "answer": "Vì nó giúp class nói rõ nó cần gì để hoạt động, giảm việc tự tạo dependency cứng bên trong, và làm test hoặc thay thế implementation dễ hơn nhiều. Nó là một trong các nền quan trọng để boundaries rõ ràng hơn."
+    },
+    {
+      "tag": "Middleware",
+      "question": "Middleware giải quyết kiểu vấn đề gì?",
+      "answer": "Middleware hợp với các việc cắt ngang nhiều endpoint như auth, logging, rate limit, locale, hoặc kiểm tra request cơ bản trước khi vào logic chính. Nó giúp bạn không phải lặp cùng một lớp kiểm tra ở quá nhiều controller hoặc handler."
+    },
+    {
+      "tag": "Webhook",
+      "question": "Vì sao webhook signature verification đáng học sớm?",
+      "answer": "Vì chỉ nhận JSON rồi tin ngay payload là quá yếu. Signature verification giúp bạn có bằng chứng tốt hơn rằng nội dung đó thực sự do service ngoài ký ra, giảm rủi ro bị đẩy dữ liệu giả hoặc request không hợp lệ vào hệ thống."
+    },
+    {
+      "tag": "Luyện tập",
+      "question": "Bạn sẽ cải thiện một file đầy các đoạn kiểm tra validation lặp lại như thế nào?",
+      "answer": "Hãy chuyển các rule lặp lại thành hàm hoặc class có thể tái sử dụng, đặt tên rõ ràng và gom bộ rule vào một nơi để sau này sửa một lần."
+    },
+    {
+      "tag": "Luyện tập",
+      "question": "Khi nào nên dùng exception thay vì trả về false?",
+      "answer": "Dùng exception khi lỗi là trường hợp bất thường và nơi gọi cần xử lý lỗi có cấu trúc, đặc biệt khi có nhiều tầng code phản ứng khác nhau."
+    },
+    {
+      "tag": "Tradeoff",
+      "question": "Vì sao đặt query database bên trong loop thường là dấu hiệu xấu?",
+      "answer": "Vì code có thể tạo thêm một query cho từng phần tử trong vòng lặp, từ đó biến một trang đơn giản thành bài toán kiểu `N+1` rất chậm. Thói quen tốt hơn là hỏi trước xem dữ liệu cần thiết có thể được nạp gộp trong ít query hơn trước khi bước vào loop hay không."
+    },
+    {
+      "tag": "Kiến trúc",
+      "question": "Làm sao nhận ra một class đang ôm quá nhiều việc?",
+      "answer": "Một class thường bị quá tải khi nó có nhiều lý do thay đổi không liên quan nhau, có quá nhiều dependency hoặc method thuộc nhiều mối quan tâm khác nhau như validate, lưu trữ, format và orchestration cùng lúc. Một refactor tốt thường bắt đầu từ việc gọi tên riêng từng nhóm trách nhiệm đó."
+    },
+    {
+      "tag": "Tip",
+      "question": "Một thói quen tốt khi thảo luận về refactor ở mức nâng cao là gì?",
+      "answer": "Đừng chỉ mô tả code sau refactor trông sạch hơn ra sao. Hãy giải thích luôn tradeoff: nó cải thiện readability, testability hoặc boundaries ở đâu, và đồng thời nó làm tăng thêm mức indirection, số file hoặc số abstraction ở mức nào."
+    },
+    {
+      "tag": "Hệ thống",
+      "question": "Khi nào nên nghĩ tới cache thay vì chỉ tối ưu cú pháp PHP?",
+      "answer": "Hãy nghĩ tới cache khi một dữ liệu hoặc kết quả tính toán được đọc lặp đi lặp lại nhưng thay đổi không quá thường xuyên, và chi phí tạo lại nó là đáng kể. Tối ưu cú pháp nhỏ hiếm khi cứu được một điểm nghẽn nếu vấn đề thật nằm ở I/O, database hoặc tác vụ nền."
+    },
+    {
+      "tag": "Deploy",
+      "question": "Vì sao bug production đôi khi không tái hiện ở local dù code giống nhau?",
+      "answer": "Vì production còn phụ thuộc vào cấu hình môi trường, secret, dữ liệu thật, cache, version dịch vụ phụ trợ và cả luồng traffic. Nhiều bug tưởng là bug code thực ra là bug do lệch môi trường hoặc giả định sai về dữ liệu chạy thực tế."
+    },
+    {
+      "tag": "Hiệu năng",
+      "question": "Một lưu ý quan trọng khi làm backend với ORM hoặc quan hệ dữ liệu là gì?",
+      "answer": "Đừng mặc định rằng code nhìn gọn là query cũng gọn. Một loop truy cập quan hệ có thể âm thầm tạo `N+1 query` và làm trang chậm đi rất mạnh khi dữ liệu tăng. Hãy tập thói quen nhìn query log, số query và chỗ nào trong code đang chạm vào boundary dữ liệu."
+    },
+    {
+      "tag": "Service",
+      "question": "Khi PHP kết nối tới service ngoài như payment, mail hoặc HTTP API thì nên lưu ý điều gì?",
+      "answer": "Hãy luôn nghĩ tới timeout, retry, log lỗi và fallback thay vì chỉ nghĩ tới đoạn code gọi thành công. Service ngoài là nơi dễ phát sinh lỗi mạng, chậm phản hồi hoặc thay đổi contract, nên phần integration cần được gom lại và xử lý như một boundary riêng của hệ thống."
+    },
+    {
+      "tag": "Webhook",
+      "question": "Vì sao webhook và retry thường làm backend khó hơn mức nhìn bề mặt?",
+      "answer": "Vì chúng đưa vào hệ thống các tình huống bất định như request đến trễ, đến lặp lại hoặc đến sai thứ tự. Nếu code chỉ nghĩ theo đường thành công lý tưởng thì rất dễ sinh bug dữ liệu. Đây là lý do các luồng nhận sự kiện ngoài thường cần validation, logging và thiết kế `idempotent` rõ ràng."
+    },
+    {
+      "tag": "Observability",
+      "question": "Một dấu hiệu cho thấy backend production còn khó vận hành là gì?",
+      "answer": "Một dấu hiệu rõ là khi lỗi xảy ra bạn không biết phải nhìn log nào, request nào, service nào hoặc dữ liệu nào để điều tra. Điều đó thường có nghĩa là observability của hệ thống còn thiếu context hoặc thiếu sự tập trung ở các boundary quan trọng."
+    },
+    {
+      "tag": "Consistency",
+      "question": "Khi nào transaction nên là suy nghĩ mặc định của bạn?",
+      "answer": "Khi một hành động nghiệp vụ chạm nhiều thay đổi dữ liệu mà các thay đổi đó phải đi cùng nhau để giữ hệ thống nhất quán. Nếu một bước thành công còn bước khác thất bại mà dữ liệu không thể để ở trạng thái lưng chừng, bạn nên nghĩ ngay tới transaction hoặc một chiến lược consistency rõ ràng."
+    },
+    {
+      "tag": "Mindset",
+      "question": "Một đúc kết quan trọng ở mức nâng cao là gì?",
+      "answer": "Code giỏi không phải code dùng nhiều từ khóa khó, mà là code có boundary rõ, lỗi được nhìn thấy sớm, dữ liệu đi qua từng bước có thể giải thích được và tradeoff được nói ra thành lời. Khi bạn giải thích được vì sao hệ thống chọn cách này thay vì cách kia, bạn mới thật sự bắt đầu rời khỏi mức học cú pháp."
+    },
+    {
+      "tag": "Production",
+      "question": "Một câu hỏi nên tự hỏi trước khi đưa code backend lên production là gì?",
+      "answer": "Nếu request này chạy lại lần nữa, nếu service ngoài timeout, hoặc nếu bước giữa chừng thành công còn bước cuối thất bại thì hệ thống của mình sẽ ra sao. Câu hỏi đó thường mở ra các vấn đề thật như transaction, retry, duplicate handling, logging và alerting."
+    },
+    {
+      "tag": "Queue",
+      "question": "Khi nào nên đẩy một việc sang queue thay vì xử lý ngay trong request?",
+      "answer": "Khi công việc đó chậm, không nhất thiết phải trả kết quả ngay cho người dùng, hoặc có thể gây nghẽn request như gửi mail, tạo report, resize ảnh hay sync dữ liệu. Điều quan trọng là hiểu lợi ích thật: giảm thời gian chờ của request và tách tải, chứ không phải dùng queue chỉ vì nó trông chuyên nghiệp."
+    },
+    {
+      "tag": "API Safety",
+      "question": "Vì sao rate limiting là một phần của thiết kế backend chứ không chỉ là chi tiết hạ tầng?",
+      "answer": "Vì nó ảnh hưởng trực tiếp tới độ bền và hành vi của endpoint. Một API không có giới hạn hợp lý rất dễ bị spam, brute force, burst traffic hoặc client lỗi gọi dồn dập. Nghĩ tới rate limiting sớm là nghĩ tới cách hệ thống tự bảo vệ chính nó."
+    },
+    {
+      "tag": "Scheduler",
+      "question": "Một lưu ý quan trọng khi thiết kế tác vụ chạy theo lịch là gì?",
+      "answer": "Đừng chỉ nghĩ tới lúc nó chạy đúng giờ và thành công. Hãy nghĩ nếu job bị chạy trễ, chạy hai lần, đang chạy dở thì deploy, hoặc chạm cùng dữ liệu với request thường thì hệ thống sẽ phản ứng ra sao. Tư duy này giúp scheduler bớt mong manh hơn rất nhiều."
+    },
+    {
+      "tag": "Cache",
+      "question": "Vì sao cache invalidation bị xem là khó?",
+      "answer": "Vì bạn không chỉ lưu dữ liệu nhanh hơn, bạn còn phải quyết định khi nào dữ liệu đó không còn đáng tin. Nếu không xác định rõ thời điểm làm mới hoặc xóa cache, bạn dễ có hệ thống rất nhanh nhưng trả dữ liệu cũ sai ngữ cảnh."
+    }
+  ]
+}

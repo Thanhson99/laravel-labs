@@ -1,0 +1,766 @@
+{
+  "anchor": "laravel-performance-search",
+  "type": "list",
+  "heading": "Performance, caching, and search: from a working app to a healthy fast app",
+  "intro": "This topic gathers the practical knowledge around performance, caching, and search in Laravel. The goal is not only to know `Cache::remember()` or add a search box, but to understand where bottlenecks really live, which layer should be cached, why invalidation is hard, how queries and indexes shape performance, how full-text differs from simple database filtering, and how to optimize without creating stale data or accidental complexity.",
+  "breaks": [
+    {
+      "start": 1,
+      "title": "I. Performance Mindset And Reading Bottlenecks",
+      "description": "What performance means, where speed and slowness come from, how to measure them, and why blind optimization is often worse than doing nothing.",
+      "tone": "amber"
+    },
+    {
+      "start": 19,
+      "title": "II. Queries, Eloquent, Indexes, And The Database Layer",
+      "description": "N+1, eager loading, query shape, indexes, explain plans, pagination, aggregates, and the database behaviors that slow apps down from the bottom up.",
+      "tone": "copper"
+    },
+    {
+      "start": 43,
+      "title": "III. Cache Foundations, Redis, And Invalidation",
+      "description": "What cache is, cache layers, Redis, key design, TTL, stale data, invalidation, tags, atomicity, and the very real traps of cache-heavy systems.",
+      "tone": "sand"
+    },
+    {
+      "start": 69,
+      "title": "IV. Caching In Laravel: Config, Routes, Views, Queries, And Responses",
+      "description": "The built-in Laravel cache layers and the cache you design yourself, when they help, and when they become abuse.",
+      "tone": "amber"
+    },
+    {
+      "start": 91,
+      "title": "V. Search, Filters, Sorting, Pagination, And Search Experience",
+      "description": "Simple SQL search, filter-sort-paginate flows, search UX, full-text mindset, and why search is a product problem as much as a technical one.",
+      "tone": "copper"
+    },
+    {
+      "start": 113,
+      "title": "VI. Scout, Meilisearch, Algolia, And External Search Engines",
+      "description": "When database search is not enough, what Scout is for, how index sync works, and the risks of separating search from the primary database.",
+      "tone": "sand"
+    },
+    {
+      "start": 131,
+      "title": "VII. Profiling, Observability, Queue Offload, And Production Operations",
+      "description": "Profiling, query logs, Telescope, Horizon, tracing, cache hit rates, index health, background reindexing, and treating performance as an operational concern.",
+      "tone": "amber"
+    },
+    {
+      "start": 149,
+      "title": "VIII. Real Cases, Anti-Patterns, And Final Assessment",
+      "description": "Classic production cache and search failures, symptoms of optimizing the wrong thing, and how to know whether the app is healthy enough in this area.",
+      "tone": "copper"
+    }
+  ],
+  "items": [
+    {
+      "title": "1. What should performance mean in a Laravel application?",
+      "body": "It means response speed, ability to handle load, stability under pressure, and the overall feeling of smoothness in real user flows.",
+      "code": "Route::get('/health/perf-demo', function () {\n    $startedAt = microtime(true);\n\n    $users = User::query()->latest()->take(20)->get();\n\n    return response()->json([\n        'count' => $users->count(),\n        'duration_ms' => round((microtime(true) - $startedAt) * 1000, 2),\n    ]);\n});",
+      "note": "Common mistake: treating performance as only 'is the request fast'. Fix it by looking at response time, load, stability, and real flow experience together."
+    },
+    {
+      "title": "2. Is performance only about making requests faster?",
+      "body": "No. It also includes scalability, resource efficiency, queue backlog, search speed, page rendering behavior, and stability under growth."
+    },
+    {
+      "title": "3. Why is blind optimization an anti-pattern?",
+      "body": "Because you may make the code more complex without touching the actual bottleneck. Wrong or weak measurement easily leads to optimizing the wrong thing."
+    },
+    {
+      "title": "4. What is a bottleneck?",
+      "body": "It is the real constraint limiting speed or throughput, such as a slow query, a stressed Redis instance, a slow external provider, or CPU-heavy media processing."
+    },
+    {
+      "title": "5. Why can an app 'feel slow' without Laravel itself being the problem?",
+      "body": "Because the issue may live in the database, network, frontend assets, CDN, outside APIs, queue lag, or the search backend rather than the framework."
+    },
+    {
+      "title": "6. What is the right optimization mindset?",
+      "body": "Measure first, identify the true bottleneck, optimize the correct layer, verify the result, and avoid unnecessary complexity.",
+      "code": "DB::listen(function ($query) {\n    logger()->info('sql', [\n        'sql' => $query->sql,\n        'time_ms' => $query->time,\n    ]);\n});",
+      "note": "A common mistake is adding cache as soon as something feels slow. Measure first so you know whether the bottleneck is SQL, rendering, queues, or an external dependency."
+    },
+    {
+      "title": "7. How are latency and throughput different?",
+      "body": "Latency is how long one request or task takes. Throughput is how much total work the system can handle over time."
+    },
+    {
+      "title": "8. Which layers can make a page feel slow?",
+      "body": "Database queries, PHP computation, external APIs, cache misses, view rendering, network delivery, image weight, JS bundles, or search backends."
+    },
+    {
+      "title": "9. Why are P95 or P99 often more useful than averages?",
+      "body": "Because averages can hide the truly painful slow requests. P95 and P99 help you see the users who are suffering most."
+    },
+    {
+      "title": "10. Why can local development create a false sense of performance?",
+      "body": "Local setups usually have little data, no concurrency, no real provider behavior, and no real production cache patterns."
+    },
+    {
+      "title": "11. Why is search also a performance problem?",
+      "body": "Because users feel search speed immediately. Slow or poor search makes the whole product feel sluggish and unreliable."
+    },
+    {
+      "title": "12. Is cache an optimization trick or part of system design?",
+      "body": "In real applications it is usually part of system design, not just a small optimization trick."
+    },
+    {
+      "title": "13. Can performance and correctness conflict?",
+      "body": "Yes. Caching and denormalization can improve speed but introduce stale data and consistency risk when designed poorly."
+    },
+    {
+      "title": "14. What is a senior performance mindset tip?",
+      "body": "If you cannot point to the bottleneck and explain how it was measured, you are probably still guessing rather than optimizing."
+    },
+    {
+      "title": "15. How do admin apps and public-facing apps differ in performance concerns?",
+      "body": "Admin apps are often heavy on filters, sorting, exports, and search, while public apps feel more pressure around TTFB, caching, CDN behavior, and burst traffic."
+    },
+    {
+      "title": "16. When does performance become a product concern and not only a technical concern?",
+      "body": "When slow pages reduce user completion, make search frustrating, hurt conversion, or create steady support complaints."
+    },
+    {
+      "title": "17. Should systems be optimized from day one?",
+      "body": "You should keep the architecture healthy enough to optimize later, but avoid heavy over-engineering before real signals appear."
+    },
+    {
+      "title": "18. What is the most important foundation for learning performance work?",
+      "body": "Learning to read systems across layers: request handling, database, cache, queue, search, network, and real data behavior."
+    },
+    {
+      "title": "19. Why are queries one of the most common Laravel bottlenecks?",
+      "body": "Because many screens depend on relational data, filtering, sorting, pagination, and aggregates. Poor query shape becomes expensive very quickly."
+    },
+    {
+      "title": "20. What is N+1?",
+      "body": "It is when the app runs one query for the main list and then many additional queries per item instead of using eager loading effectively."
+    },
+    {
+      "title": "21. What problem does eager loading solve?",
+      "body": "It reduces query count by loading relationships in advance instead of letting loops or views trigger repeated hidden queries."
+    },
+    {
+      "title": "22. Is loading more relationships always better?",
+      "body": "No. Over-eager loading increases memory usage, object hydration cost, and often loads data that is never used."
+    },
+    {
+      "title": "23. What does query logging help with?",
+      "body": "It shows query count, slow queries, and the parts of the app that are issuing too many queries.",
+      "code": "DB::enableQueryLog();\n\n$posts = Post::query()->with('author')->latest()->take(10)->get();\n\nlogger()->info('query-log', DB::getQueryLog());",
+      "bullets": [
+        "Useful when you suspect N+1 or a block of code is firing too many queries.",
+        "Do not leave verbose query logging on carelessly in production."
+      ]
+    },
+    {
+      "title": "24. Why can a small number of queries still be slow?",
+      "body": "Because a few queries may still suffer from missing indexes, heavy sorts, broad joins, full scans, or very large data volume."
+    },
+    {
+      "title": "25. What is an index?",
+      "body": "An index is a structure that helps the database find rows more efficiently for certain filters or sorts, at the cost of extra storage and write overhead."
+    },
+    {
+      "title": "26. Should every column be indexed?",
+      "body": "No. Extra indexes increase insert and update cost and consume more storage."
+    },
+    {
+      "title": "27. When are composite indexes useful?",
+      "body": "When queries repeatedly filter or sort by multiple columns in a specific pattern."
+    },
+    {
+      "title": "28. What is `EXPLAIN` or a query plan for?",
+      "body": "It shows how the database intends to execute a query, whether indexes are used, whether full scans happen, and where the costly steps are.",
+      "code": "EXPLAIN SELECT *\nFROM posts\nWHERE team_id = 5\n  AND published_at IS NOT NULL\nORDER BY created_at DESC\nLIMIT 20;",
+      "note": "Before adding cache for a slow query, inspect the plan first so you know what the database is actually struggling with."
+    },
+    {
+      "title": "29. Why can `select *` be harmful?",
+      "body": "It retrieves columns you do not need, increases database-to-app transfer, and makes model hydration heavier."
+    },
+    {
+      "title": "30. Can aggregates like `count`, `sum`, or `group by` become expensive?",
+      "body": "Yes, especially on large tables or join-heavy queries. They often need indexing, precomputation, or careful caching."
+    },
+    {
+      "title": "31. How does pagination affect performance?",
+      "body": "Offset pagination can become slower at deep pages. Cursor pagination or alternative strategies may fit better at scale.",
+      "code": "// Offset pagination\n$posts = Post::query()->latest()->paginate(20);\n\n// Cursor pagination\n$posts = Post::query()\n    ->orderByDesc('id')\n    ->cursorPaginate(20);",
+      "note": "Common mistake: assuming all pagination behaves the same. Use realistic data depth and consider cursors for deep lists."
+    },
+    {
+      "title": "32. What surprises can relation-based queries like `whereHas` introduce?",
+      "body": "They are convenient, but on large datasets they can create heavier queries than developers expect unless the actual plan is inspected."
+    },
+    {
+      "title": "33. Is sorting on unindexed columns risky?",
+      "body": "Yes, especially when combined with heavy filtering and pagination."
+    },
+    {
+      "title": "34. Do soft deletes affect performance?",
+      "body": "Yes. `deleted_at` changes many query shapes and may require thoughtful indexing to avoid slowdowns."
+    },
+    {
+      "title": "35. How do chunking and cursors help in large processing tasks?",
+      "body": "They avoid loading entire large datasets into memory and reduce the chance of timeouts in background processing."
+    },
+    {
+      "title": "36. When do denormalization or materialized-view style patterns make sense?",
+      "body": "When read patterns are very expensive and the business can tolerate precomputed or eventually updated representations."
+    },
+    {
+      "title": "37. What is a practical database-performance tip?",
+      "body": "Do not optimize queries by feeling. Look at real queries on realistic data and read the actual execution plan."
+    },
+    {
+      "title": "38. What is a code smell in the Eloquent layer?",
+      "body": "Views or resources touching extra relations unexpectedly, controllers looping through items with extra queries, and nobody noticing query count growth."
+    },
+    {
+      "title": "39. Should the database always be blamed first when the app is slow?",
+      "body": "No, but it is one of the first places to investigate because many Laravel bottlenecks originate there."
+    },
+    {
+      "title": "40. Why can a correct query still be slow in production?",
+      "body": "Because of data volume, wrong indexes, collation effects, concurrent load, plan changes, or sort and filter patterns that do not match indexes."
+    },
+    {
+      "title": "41. Is simple `LIKE`-based search enough?",
+      "body": "It is enough for many small cases, but it becomes weak when data grows or when ranking, typo tolerance, or multi-field behavior matters."
+    },
+    {
+      "title": "42. Why does a strong database layer matter even when using cache and search engines?",
+      "body": "Because cache misses and reindexing still fall back to the source data layer. Caches and search engines do not erase poor database design."
+    },
+    {
+      "title": "43. What is cache from a system perspective?",
+      "body": "It is a temporary storage layer for results or frequently used data that reduces the cost of recomputation or source access."
+    },
+    {
+      "title": "44. Why is cache both attractive and dangerous?",
+      "body": "Because it can make systems much faster while also introducing stale data, race conditions, and bugs that are hard to reproduce."
+    },
+    {
+      "title": "45. What do cache hit and cache miss mean?",
+      "body": "A hit means the data was found in cache. A miss means the system must compute or fetch it from the original source."
+    },
+    {
+      "title": "46. Why is Redis commonly used for caching?",
+      "body": "Because it is fast, widely adopted, and often already present in Laravel systems for queues, sessions, or rate limiting."
+    },
+    {
+      "title": "47. What is TTL?",
+      "body": "Time to live is how long a cache entry remains valid before expiring.",
+      "code": "Cache::put('homepage:stats', [\n    'user_count' => User::count(),\n], now()->addMinutes(5));",
+      "note": "TTL is not a decorative number. It expresses how long the product can tolerate stale data."
+    },
+    {
+      "title": "48. Is a short TTL always better than a long TTL?",
+      "body": "No. TTL should reflect the trade-off between freshness and recomputation cost."
+    },
+    {
+      "title": "49. What is stale data?",
+      "body": "It is cached data that no longer reflects the current source of truth."
+    },
+    {
+      "title": "50. Why is cache invalidation hard?",
+      "body": "Because you must know when the source changes, which keys depend on it, which flows write the data, and how many places read from that cache."
+    },
+    {
+      "title": "51. Should every slow query simply be cached?",
+      "body": "No. Some slow queries need indexing or redesign first. Cache can hide a smell rather than fix it."
+    },
+    {
+      "title": "52. Why is cache key design so important?",
+      "body": "Keys must be clear enough to prevent collisions, support invalidation, and distinguish tenant, locale, filter state, or user context.",
+      "code": "$key = sprintf(\n    'search:%s:%s:%s',\n    $tenant->id,\n    app()->getLocale(),\n    md5(json_encode($filters))\n);",
+      "note": "In Laravel cache thinking, the key is part of the contract. A vague key leads to vague invalidation."
+    },
+    {
+      "title": "53. What bug can happen if tenant or locale is missing from a cache key?",
+      "body": "You can leak data across tenants or show the wrong language or context."
+    },
+    {
+      "title": "54. When are cache tags helpful?",
+      "body": "When you want grouped invalidation such as for a product family, category, dashboard area, or tenant partition."
+    },
+    {
+      "title": "55. Where does `Cache::remember()` fit well?",
+      "body": "When data is read frequently, expensive enough to justify caching, and the invalidation logic is understood.",
+      "code": "$topPosts = Cache::remember('blog:top-posts', 600, function () {\n    return Post::query()\n        ->with('author')\n        ->orderByDesc('view_count')\n        ->take(5)\n        ->get();\n});",
+      "bullets": [
+        "Good for homepages, sidebars, dashboard summaries, and light leaderboards.",
+        "Not good when data must be exact immediately and invalidation is unclear."
+      ]
+    },
+    {
+      "title": "56. Why can `rememberForever()` be scary?",
+      "body": "Because without a clear invalidation strategy, stale data may live indefinitely."
+    },
+    {
+      "title": "57. What is a cache stampede?",
+      "body": "It is when many requests hit the same expired cache key and all recompute the expensive value at once."
+    },
+    {
+      "title": "58. How do locks or stale-while-revalidate thinking help?",
+      "body": "They reduce stampedes by letting one process refresh while others wait or temporarily serve an older value."
+    },
+    {
+      "title": "59. Should user-personalized data be cached?",
+      "body": "It can be, but cache keys and invalidation must be extremely careful. This is an easy place to leak data."
+    },
+    {
+      "title": "60. Where are Redis atomic increments and decrements useful?",
+      "body": "They are useful for counters, quotas, rate limits, and some lightweight shared-state patterns."
+    },
+    {
+      "title": "61. What is cache warming?",
+      "body": "It means pre-building important cache values so the first request after deploy or expiration is not painfully slow."
+    },
+    {
+      "title": "62. What is eviction?",
+      "body": "It is when the cache backend removes keys because memory pressure or policy forces it to drop old entries."
+    },
+    {
+      "title": "63. Why is Redis memory pressure also a product concern?",
+      "body": "Because evictions or latency spikes can make the application unexpectedly slow or inconsistent."
+    },
+    {
+      "title": "64. What is a senior cache tip?",
+      "body": "Cache is secondary data. If losing it breaks the entire app, the architecture is depending on it the wrong way."
+    },
+    {
+      "title": "65. Should cache ever be treated as the source of truth?",
+      "body": "Usually no. The source of truth should still be the database or another primary system."
+    },
+    {
+      "title": "66. What is a code smell in cache usage?",
+      "body": "Keys are created ad hoc, nobody knows where invalidation lives, and stale data bugs are fixed by clearing all cache repeatedly."
+    },
+    {
+      "title": "67. What questions should a good cache strategy answer?",
+      "body": "What gets cached, how keys are structured, how long values live, who invalidates them, what happens on a miss, and how painful stale values are."
+    },
+    {
+      "title": "68. Why is cache invalidation also a product question?",
+      "body": "Because different data tolerates freshness delays differently. A stale product price is very different from a stale analytics widget."
+    },
+    {
+      "title": "69. What does config caching do in Laravel?",
+      "body": "It compiles configuration into a faster form so application boot becomes more efficient and predictable in production."
+    },
+    {
+      "title": "70. When is route caching useful?",
+      "body": "When the application has many routes and production boot performance matters, assuming route definitions are compatible."
+    },
+    {
+      "title": "71. What does view caching help with?",
+      "body": "It avoids repeated Blade compilation work and is especially useful in production.",
+      "code": "php artisan view:cache\nphp artisan view:clear",
+      "note": "If a deploy still seems to render old output, think about view cache before blaming business logic."
+    },
+    {
+      "title": "72. Do Laravel optimization commands make apps magically fast?",
+      "body": "No. They help, but they do not replace proper query fixes, payload reduction, or architecture-level optimization."
+    },
+    {
+      "title": "73. What is response caching?",
+      "body": "It means caching full HTML or JSON responses for suitable routes, reducing work across multiple layers.",
+      "code": "return Cache::remember(\n    'landing-page:guest',\n    300,\n    fn () => view('landing', [\n        'plans' => Plan::query()->public()->get(),\n    ])->render()\n);",
+      "note": "Response cache is powerful, but it is easy to cache the wrong thing across users, locales, or tenants if the key lacks enough context."
+    },
+    {
+      "title": "74. When is response caching a good fit?",
+      "body": "When the content changes infrequently, is lightly personalized, or can be keyed clearly by request context."
+    },
+    {
+      "title": "75. Is query-result caching worthwhile?",
+      "body": "It can be, but invalidation must be taken seriously. Otherwise it becomes a major stale-data source."
+    },
+    {
+      "title": "76. Should full model objects be cached?",
+      "body": "Sometimes, but you must think about serialization, schema changes, and invalidation carefully."
+    },
+    {
+      "title": "77. What is fragment caching for views?",
+      "body": "It means caching only a specific heavy UI fragment instead of the entire response."
+    },
+    {
+      "title": "78. How is page caching different from fragment caching?",
+      "body": "Page caching stores the full response, while fragment caching stores only a portion. They differ in personalization and invalidation trade-offs."
+    },
+    {
+      "title": "79. Should dashboard metrics be cached?",
+      "body": "Very often yes, because dashboard aggregates can be expensive. You just need an acceptable freshness window.",
+      "code": "$metrics = Cache::remember('ops:dashboard:5m', 300, function () {\n    return [\n        'orders_today' => Order::whereDate('created_at', today())->count(),\n        'revenue_today' => Order::whereDate('created_at', today())->sum('total'),\n    ];\n});",
+      "note": "Dashboards are a strong place to accept a few minutes of staleness in exchange for lighter and more stable requests."
+    },
+    {
+      "title": "80. How does tenant- or role-aware caching help?",
+      "body": "It keeps context boundaries correct and reduces the risk of cross-user or cross-tenant leakage."
+    },
+    {
+      "title": "81. Should session cache and application cache be treated as the same thing?",
+      "body": "No. Sessions store user-specific state, while application cache speeds up shared or reusable data."
+    },
+    {
+      "title": "82. Is caching useful inside background jobs too?",
+      "body": "Yes in some cases, such as caching metadata, external config, rate-limit state, or processing checkpoints, as long as invalidation is understood."
+    },
+    {
+      "title": "83. What requires care when caching API responses?",
+      "body": "User context, auth, locale, query params, versioning, and privacy all need to be reflected in the key strategy."
+    },
+    {
+      "title": "84. Do HTTP cache headers matter in Laravel apps?",
+      "body": "Yes. Browser and CDN caching can speed up many routes and assets dramatically if freshness is coordinated properly."
+    },
+    {
+      "title": "85. What do ETag and Last-Modified help with?",
+      "body": "They let clients and servers avoid re-sending unchanged content unnecessarily."
+    },
+    {
+      "title": "86. What is a practical Laravel cache-command tip?",
+      "body": "Do not turn `cache:clear` into a reflex. If correctness often depends on manually clearing cache, the invalidation strategy is flawed."
+    },
+    {
+      "title": "87. What is a code smell in Laravel cache layering?",
+      "body": "Every area caches its own way, there is no key convention, and production issues are 'fixed' by nuking the whole cache."
+    },
+    {
+      "title": "88. Does cache affect deployment safety?",
+      "body": "Yes. Old config, route, view, or response cache artifacts can make new deployments behave like a confusing mix of versions."
+    },
+    {
+      "title": "89. What does a healthy cache setup need besides code?",
+      "body": "Observability: hit rates, memory use, eviction behavior, latency, and stale-data symptoms."
+    },
+    {
+      "title": "90. What is the short conclusion about cache?",
+      "body": "Cache is strong when its purpose, invalidation, and data freshness tolerance are explicit. Blind cache is just technical debt with better latency."
+    },
+    {
+      "title": "91. Where does simple admin-panel search usually begin?",
+      "body": "With filtering, sorting, pagination, and a few `LIKE` or exact-match conditions on important columns.",
+      "code": "$users = User::query()\n    ->when($term, fn ($q) => $q->where('name', 'like', \"%{$term}%\"))\n    ->when($role, fn ($q) => $q->where('role', $role))\n    ->orderByDesc('id')\n    ->paginate(20);",
+      "note": "This is often the right starting point before reaching for Scout or an external search engine."
+    },
+    {
+      "title": "92. Why is search a product problem and not only a query problem?",
+      "body": "Because users do not only need results. They need relevant, fast, refinable, trustworthy results."
+    },
+    {
+      "title": "93. Is throwing every searchable field into one giant query a good long-term idea?",
+      "body": "Only up to a point. Once data volume or relevance matters, that approach becomes difficult to scale and reason about."
+    },
+    {
+      "title": "94. How are filtering and search different?",
+      "body": "Filtering is structured and explicit. Search is often more free-form and may require ranking or typo tolerance."
+    },
+    {
+      "title": "95. How does sorting affect perceived search quality?",
+      "body": "A lot. Results can technically match but still feel unintelligent if sorted badly.",
+      "code": "$products = Product::query()\n    ->where('name', 'like', \"%{$keyword}%\")\n    ->orderByDesc('is_featured')\n    ->orderByDesc('popularity_score')\n    ->orderBy('name')\n    ->paginate(20);",
+      "note": "Common mistake: treating search as only keyword matching. Sorting is part of relevance too."
+    },
+    {
+      "title": "96. What should be considered in search pagination?",
+      "body": "Results may shift as data changes, so cursor-like behavior or external engines may fit better than classic offset paging."
+    },
+    {
+      "title": "97. What is full-text search?",
+      "body": "It is a richer text-search approach than plain `LIKE`, often using text indexes, ranking, and better term handling."
+    },
+    {
+      "title": "98. Is database full-text enough for every search problem?",
+      "body": "No. It can work well for moderate cases, but typo tolerance, faceting, and advanced ranking often push teams toward dedicated search engines."
+    },
+    {
+      "title": "99. What is search relevance?",
+      "body": "It is the degree to which returned results match what the user actually intended to find."
+    },
+    {
+      "title": "100. What makes search UX good besides speed?",
+      "body": "Helpful placeholders, useful filters, sensible sorting, strong empty states, optional result highlighting, and a feeling that the system understands the user's intent."
+    },
+    {
+      "title": "101. What is faceted search?",
+      "body": "It is search enhanced with filter groups such as category, status, tag, or brand so users can narrow results quickly.",
+      "code": "$products = Product::search($keyword)\n    ->where('category_id', $categoryId)\n    ->where('brand_id', $brandId)\n    ->paginate(20);",
+      "note": "Facets are not just prettier filters. They turn search from a text box into a way to explore data."
+    },
+    {
+      "title": "102. When do search suggestions or autocomplete help?",
+      "body": "When users benefit from guidance or the dataset is large enough that free typing easily drifts away from useful results."
+    },
+    {
+      "title": "103. Why is typo tolerance important?",
+      "body": "Because end users misspell things all the time, especially in public-facing search experiences."
+    },
+    {
+      "title": "104. Why is multilingual search harder?",
+      "body": "Because tokenization, stemming, stop words, and relevance patterns vary across languages."
+    },
+    {
+      "title": "105. What requires care in tenant- or permission-aware search?",
+      "body": "The query or search engine must always enforce the correct boundary, or it may leak other tenants' or unauthorized content."
+    },
+    {
+      "title": "106. How do soft deletes relate to search?",
+      "body": "If the query layer or index is not synchronized with soft-delete state, search results may include content that should be hidden."
+    },
+    {
+      "title": "107. Is caching search results worthwhile?",
+      "body": "It can be, especially for repeated queries, but it is sensitive to filters, sort order, tenant boundaries, and freshness requirements.",
+      "code": "$cacheKey = 'posts:search:'.md5(json_encode([\n    'term' => $term,\n    'sort' => $sort,\n    'tenant' => $tenant->id,\n]));\n\n$results = Cache::remember($cacheKey, 120, fn () => Post::search($term)->get());",
+      "note": "Search result caching is most useful when you already understand the freshness window and have encoded enough context into the key."
+    },
+    {
+      "title": "108. Is A/B testing between SQL search and an external search engine reasonable?",
+      "body": "Yes during transition or evaluation phases, but you need to measure latency, result quality, and synchronization cost."
+    },
+    {
+      "title": "109. What is a practical search tip?",
+      "body": "Search can fail even when it is fast. Many systems return technically correct but product-useless results."
+    },
+    {
+      "title": "110. What is a common anti-pattern in search?",
+      "body": "Stuffing every column into `LIKE '%term%'` and hoping it behaves like a real search engine."
+    },
+    {
+      "title": "111. Is search analytics worth keeping?",
+      "body": "Very much so. It reveals what users look for, which queries return nothing, and where synonyms or ranking improvements are needed."
+    },
+    {
+      "title": "112. How should search quality be measured beyond latency?",
+      "body": "Look at zero-result rate, click-through rate, refinement behavior, and how often users keep changing their query."
+    },
+    {
+      "title": "113. What is Laravel Scout for?",
+      "body": "Scout is the abstraction layer that helps Laravel models synchronize with external search engines such as Meilisearch or Algolia."
+    },
+    {
+      "title": "114. When should Scout be considered instead of plain SQL search?",
+      "body": "When you need stronger relevance, typo tolerance, facets, more consistent speed on larger datasets, or a dedicated search layer."
+    },
+    {
+      "title": "115. Does Scout solve all search problems automatically?",
+      "body": "No. It helps with integration and synchronization, but relevance, index design, and authorization-aware filtering still require real design thinking."
+    },
+    {
+      "title": "116. What is Meilisearch strong at?",
+      "body": "It is relatively approachable, fast, and relevant for many product-level search cases, and works well for teams that want a modern search experience without too much friction."
+    },
+    {
+      "title": "117. What is Algolia strong at?",
+      "body": "It is strong in hosted experience, ecosystem, relevance tuning, and product-grade search features, though cost and vendor considerations come with it."
+    },
+    {
+      "title": "118. How does an external search engine increase system complexity?",
+      "body": "You must synchronize data, reindex, accept eventual consistency, and operate another backend besides the primary database."
+    },
+    {
+      "title": "119. What is reindexing?",
+      "body": "It is the process of rebuilding search-engine data, often needed when mappings, ranking rules, or indexed fields change.",
+      "code": "php artisan scout:flush \"App\\\\Models\\\\Post\"\nphp artisan scout:import \"App\\\\Models\\\\Post\"",
+      "note": "Reindexing is not just a technical chore. It is where data drift between the database and the search engine often becomes visible."
+    },
+    {
+      "title": "120. What is search-index drift?",
+      "body": "It is when the search engine and the primary database stop matching, causing missing, stale, or extra search results."
+    },
+    {
+      "title": "121. How do queues relate to Scout and search syncing?",
+      "body": "Search-index updates are often queued so the main request stays fast, but that adds retry and consistency concerns."
+    },
+    {
+      "title": "122. Should every imaginable field be indexed for search?",
+      "body": "No. Index only the fields that truly support search, filtering, sorting, or relevance."
+    },
+    {
+      "title": "123. What requires care in permission-aware external search?",
+      "body": "If the engine does not naturally enforce application permissions, boundaries must be encoded or filtered carefully to avoid leaking data."
+    },
+    {
+      "title": "124. What strategy does multi-tenant search need?",
+      "body": "Common strategies include tenant-specific indexes, tenant keys, or mandatory tenant filters depending on scale and complexity.",
+      "code": "$results = Product::search($term)\n    ->where('tenant_id', $tenant->id)\n    ->paginate(20);",
+      "note": "With Scout and external search engines, tenant boundaries should not depend on the frontend remembering a filter. They should be part of the index or query strategy from the start."
+    },
+    {
+      "title": "125. Should the search engine replace the database as source of truth?",
+      "body": "No. Search indexes are usually projections optimized for retrieval, not the primary data authority."
+    },
+    {
+      "title": "126. What does eventual consistency mean in search?",
+      "body": "A user may create or update a record, but search may not reflect it immediately because background indexing has not finished."
+    },
+    {
+      "title": "127. What is a practical Scout tip?",
+      "body": "Do not test search only on ideal static data. Test create, update, delete, soft-delete, permission changes, and reindex behavior too.",
+      "code": "class PostSearchService\n{\n    public function search(string $keyword)\n    {\n        return Post::search($keyword)\n            ->query(fn ($query) => $query->where('is_published', true))\n            ->paginate(15);\n    }\n}",
+      "bullets": [
+        "Centralizing search logic makes engine changes less painful.",
+        "Do not let every controller invent its own search rules."
+      ]
+    },
+    {
+      "title": "128. What is a code smell in a search-engine integration?",
+      "body": "Nobody knows how indexing happens, how to reindex, or how to diagnose when search results drift away from the database."
+    },
+    {
+      "title": "129. Why is search-engine cost also a product concern?",
+      "body": "Because records, fields, replicas, and query volume all affect cost. Great search without cost control still becomes a business problem."
+    },
+    {
+      "title": "130. When is staying with SQL search still reasonable?",
+      "body": "When the dataset is still moderate, requirements are simple, and the team is not ready to operate a separate search layer."
+    },
+    {
+      "title": "131. What is profiling in Laravel performance work?",
+      "body": "It means measuring where time or resources are being spent across requests, queries, cache behavior, and background tasks."
+    },
+    {
+      "title": "132. How does Telescope help with performance debugging?",
+      "body": "It helps you inspect requests, queries, jobs, cache activity, mail, and other runtime signals during debugging in appropriate environments."
+    },
+    {
+      "title": "133. What should query profiling focus on?",
+      "body": "Query count, slow queries, repeated queries, unusual relation loading, and where they originate."
+    },
+    {
+      "title": "134. Why is cache hit rate such an important metric?",
+      "body": "Because the entire point of cache is to hit. If hit rate is poor, you may be paying complexity without getting enough benefit."
+    },
+    {
+      "title": "135. How should search latency be broken down?",
+      "body": "By endpoint, large tenants, query type, or heavy filter combination so the real bottleneck becomes visible.",
+      "code": "$startedAt = microtime(true);\n$results = Post::search($keyword)->take(10)->get();\n\nlogger()->info('search-latency', [\n    'keyword' => $keyword,\n    'duration_ms' => round((microtime(true) - $startedAt) * 1000, 2),\n    'result_count' => $results->count(),\n]);",
+      "note": "If all you have is a vague 'search is slow' number, it is much harder to tell whether the problem is the app, the engine, or the network."
+    },
+    {
+      "title": "136. What should be observed during reindex operations?",
+      "body": "Throughput, total completion time, failed item count, queue lag, and how much search freshness is affected."
+    },
+    {
+      "title": "137. How does queue offloading help performance?",
+      "body": "It moves heavy work such as reindexing, aggregate generation, export creation, or cache warming out of the request path."
+    },
+    {
+      "title": "138. Do CDN and browser caching matter for application performance?",
+      "body": "Very much so, especially for assets, images, and certain suitable public responses."
+    },
+    {
+      "title": "139. Is load testing useful for performance and search work?",
+      "body": "Yes when it simulates realistic usage patterns. It can reveal hot queries, cache-miss storms, queue buildup, or search bursts."
+    },
+    {
+      "title": "140. What is a good operational tip about performance?",
+      "body": "Watch for gradual slowdown trends, not only one-time snapshots. Performance decay is often incremental."
+    },
+    {
+      "title": "141. What should a minimum dashboard for this area include?",
+      "body": "P95 latency, error rate, slow queries, cache hit rate, Redis health, queue lag, and search latency or failed indexing.",
+      "code": "// example signals to surface in a dashboard\n[\n    'http.p95_ms',\n    'db.slow_query_count',\n    'cache.hit_rate',\n    'redis.memory_usage',\n    'queue.search_sync_lag',\n    'search.failed_index_jobs',\n]"
+    },
+    {
+      "title": "142. Where should alerts be placed?",
+      "body": "When latency rises, errors spike, cache hit rate drops sharply, Redis memory pressure grows, reindex queue backlog grows, or the search engine stops syncing."
+    },
+    {
+      "title": "143. How does capacity planning relate here?",
+      "body": "As data, traffic, and search volume grow, you need to know where the database, Redis, queue workers, and search backend will hit their limits."
+    },
+    {
+      "title": "144. What is a performance budget?",
+      "body": "It is a target boundary for latency, payload size, query count, or rendering cost so the team knows when a change pushed the app beyond a healthy zone."
+    },
+    {
+      "title": "145. What is a classic production bug with cache?",
+      "body": "The underlying data changed, but the UI still shows an older version for hours because the key lacked proper context or invalidation was missed."
+    },
+    {
+      "title": "146. What is a classic production bug with search?",
+      "body": "The database contains the new record, but search cannot find it because index syncing failed silently or the indexing queue died."
+    },
+    {
+      "title": "147. What is another very real bug?",
+      "body": "Cache improves speed but accidentally leaks one tenant's data into another tenant's context because the key omitted the right boundary."
+    },
+    {
+      "title": "148. What is the biggest anti-pattern in performance work?",
+      "body": "Optimizing by instinct, adding cache everywhere, never re-measuring, and making the code harder to understand."
+    },
+    {
+      "title": "149. What is a major anti-pattern in search work?",
+      "body": "Treating search as a technical input box instead of as a core product experience."
+    },
+    {
+      "title": "150. What is an anti-pattern in the cache layer?",
+      "body": "Having no owner for cache-key strategy, clearing cache manually, and using `cache:clear` as a reset button for the universe."
+    },
+    {
+      "title": "151. What is a senior question to ask before adding cache?",
+      "body": "If this data is stale for 30 seconds, 5 minutes, or 1 hour, how much business pain does that create, and who owns making it fresh again?",
+      "code": "// Before caching, ask:\n// 1. Is 5-minute staleness acceptable here?\n// 2. Who invalidates this when a new post is published?\n// 3. If the cache drifts, where will support notice it?",
+      "note": "Good cache has an owner, an invalidation strategy, and clear limits. It is not something you add just because a query looks slow."
+    },
+    {
+      "title": "152. What is another senior question before adding a search engine?",
+      "body": "Does the current problem truly require relevance tuning, typo tolerance, and the scale of a dedicated search engine, or is the team adding infrastructure too early?"
+    },
+    {
+      "title": "153. Final assessment: when can you say this part of the app is healthy enough?",
+      "body": "When the main bottlenecks are measured clearly, hot queries are under control, cache strategy is deliberate, search is trustworthy, and the team has enough observability to see degradation before users complain."
+    },
+    {
+      "title": "154. How does a thundering herd differ from a cache stampede operationally?",
+      "body": "They are closely related, but thundering herd emphasizes many requests collapsing onto the same resource after weak cache or lock protection, causing a chain-load explosion."
+    },
+    {
+      "title": "155. What is zero-downtime reindex thinking?",
+      "body": "It means building or syncing a new index in parallel, verifying it, and then switching search traffic to it instead of breaking the old index in the middle of production usage."
+    },
+    {
+      "title": "156. Why is synonym strategy valuable in search?",
+      "body": "It helps search understand the language real users use, including abbreviations, common product names, or language-specific variants."
+    },
+    {
+      "title": "157. Why are zero-result analytics worth keeping?",
+      "body": "Searches that return nothing are strong signals that data is missing, synonyms are missing, indexing is broken, or the UX no longer matches real user expectations."
+    },
+    {
+      "title": "158. What is cache ownership?",
+      "body": "It means assigning clear responsibility for a family of cache keys or an important cache layer. Without ownership, stale-data bugs are often handled by instinct rather than design."
+    },
+    {
+      "title": "159. Example of basic caching with `Cache::remember()`",
+      "body": "This is the kind of practical snippet Laravel learners should read and run early.",
+      "code": "$posts = Cache::remember('homepage:posts', 300, function () {\n    return Post::latest()->take(10)->get();\n});",
+      "bullets": [
+        "Keys should have clear naming from the beginning.",
+        "TTL should reflect business tolerance for stale data, not an arbitrary guess.",
+        "If invalidation is unclear, cache quickly becomes a bug source."
+      ]
+    },
+    {
+      "title": "160. Example of eager loading to reduce N+1 on a list page",
+      "body": "Many Laravel performance bugs start from a query that looks harmless like this.",
+      "code": "$posts = Post::with('user')\n    ->latest()\n    ->paginate(20);",
+      "note": "If the view loops through posts and touches `post->user` without eager loading, it is very easy to generate dozens or hundreds of hidden extra queries."
+    },
+    {
+      "title": "161. Example of a minimal Scout search flow",
+      "body": "Once a project touches an external search engine, learners should see at least one real code path.",
+      "code": "class Post extends Model\n{\n    use Searchable;\n}\n\n$results = Post::search('laravel')->get();",
+      "note": "This is only the entry point. Real search also brings indexing, sync drift, ranking, and permission-aware filtering."
+    },
+    {
+      "title": "162. Final assessment after review: is the performance-search topic detailed enough?",
+      "body": "For a learning portal, this is now fairly complete: performance mindset, database and query tuning, cache design, invalidation, search UX, Scout and external engines, observability, cost, and production cases are all covered. If you want to go deeper later, the strongest next split would be one dedicated site for DB/query tuning, one for cache architecture, and one for search relevance or product search."
+    }
+  ]
+}

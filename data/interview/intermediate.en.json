@@ -1,0 +1,438 @@
+{
+  "heading": "Intermediate",
+  "intro": "The `intermediate` question bank is for people who have gone through enough real Laravel project work that the conversation is no longer just about CRUD. At this level interviewers want to see tradeoff thinking, responsibility split, bottleneck awareness, data-flow understanding, and more production-minded judgment instead of simply making code run.",
+  "questionNumbered": true,
+  "questionStyle": "interview",
+  "breaks": [
+    {
+      "start": 1,
+      "title": "Application Architecture And Responsibility Split",
+      "description": "Questions about how you divide code, introduce services or actions, and keep a codebase maintainable over time.",
+      "tone": "amber"
+    },
+    {
+      "start": 12,
+      "title": "Data Flow, Queries, And Transactions",
+      "description": "Focused on Eloquent, query builder, raw SQL, consistency, and avoiding data bugs in real systems.",
+      "tone": "coral"
+    },
+    {
+      "start": 22,
+      "title": "Queues, Cache, And Performance",
+      "description": "Intermediate interviews often start asking why a request is slow, when to use a queue, when to cache, and how to identify the real bottleneck.",
+      "tone": "amber"
+    },
+    {
+      "start": 33,
+      "title": "APIs, Integrations, And Testing",
+      "description": "This group checks how you think about contracts, webhooks, third-party APIs, and confidence in your tests.",
+      "tone": "coral"
+    },
+    {
+      "start": 43,
+      "title": "Production Thinking, Teamwork, And Tradeoffs",
+      "description": "The final section evaluates how you think about larger systems, technical decisions, team communication, and long-term consequences.",
+      "tone": "amber"
+    }
+  ],
+  "items": [
+    {
+      "title": "When does a controller start to look overloaded?",
+      "body": "When it no longer only coordinates the request, but also holds long validation logic, long business flow, complex queries, side effects, and response formatting in the same place.",
+      "bullets": [
+        "A long controller is not automatically wrong, but a controller carrying too many responsibilities becomes hard to maintain.",
+        "Intermediate thinking is about recognizing the smell, not just making the endpoint work."
+      ],
+      "tip": "A good answer usually says `a controller should coordinate, not own the entire business process`."
+    },
+    {
+      "title": "When do you introduce a `service class`, `action class`, or use-case class?",
+      "body": "When a flow has multiple coordinated steps, may be reused from different entry points, or has become large enough to deserve its own readable and testable unit.",
+      "bullets": [
+        "Do not split only to look architecturally sophisticated.",
+        "Useful separation is about clarity and maintainability, not just more files."
+      ],
+      "tip": "A strong answer usually says `split by use case, complexity, and reuse`.",
+      "code": "class CreateOrderAction\n{\n    public function handle(User $user, array $payload): Order\n    {\n        return DB::transaction(function () use ($user, $payload) {\n            $order = Order::create([\n                'user_id' => $user->id,\n                'status' => 'pending',\n                'total' => $payload['total'],\n            ]);\n\n            OrderItem::insert($this->mapItems($order, $payload['items']));\n\n            return $order;\n        });\n    }\n}"
+    },
+    {
+      "title": "From a practical point of view, how is a `service class` different from a `repository pattern`?",
+      "body": "A service usually owns business flow or orchestration, while a repository usually abstracts data access. Not every project needs a repository, but many real projects naturally need services once business flow expands.",
+      "bullets": [
+        "A repository should not exist just because it is a famous pattern.",
+        "A service class often appears more naturally in medium or growing applications."
+      ],
+      "note": "This is a strong tradeoff question because it separates problem understanding from pattern memorization."
+    },
+    {
+      "title": "When should `Form Request`, `Policy`, `Service`, and `Model methods` each be separated out?",
+      "body": "Validation belongs in a `Form Request`, permission rules belong in `Policy`, orchestration belongs in a `Service` or `Action`, and smaller model-related data logic can live in a model method or scope where it stays coherent.",
+      "bullets": [
+        "An intermediate answer should explain why each responsibility belongs where it does.",
+        "This shows that you understand not only file names but also real boundaries."
+      ],
+      "code": "public function update(UpdatePostRequest $request, Post $post, UpdatePostAction $action)\n{\n    $this->authorize('update', $post);\n\n    $post = $action->handle($post, $request->validated());\n\n    return redirect()->route('posts.show', $post);\n}"
+    },
+    {
+      "title": "For a growing application, do you prefer technical-layer structure or feature-based structure?",
+      "body": "Both have tradeoffs. Technical layers feel familiar in smaller projects, while feature-based structure often makes request flow easier to follow once the project and team both grow.",
+      "bullets": [
+        "A good answer is not extreme; it ties structure to project scale and team habits.",
+        "This is not about one universally correct style."
+      ],
+      "tip": "A safe answer is: `smaller apps can stay close to the default layer structure, but larger apps may gradually benefit from feature-based grouping`."
+    },
+    {
+      "title": "When do helpers or traits start becoming a code smell?",
+      "body": "When every piece of logic that does not clearly belong somewhere else gets thrown into them, making the names look tidy while the responsibilities become increasingly vague.",
+      "bullets": [
+        "Helpers and traits are not inherently wrong, but they become dangerous dump zones without discipline.",
+        "An intermediate engineer should recognize this smell."
+      ]
+    },
+    {
+      "title": "How do you view the idea of `fat model, skinny controller`?",
+      "body": "The original idea is to avoid bloated controllers, but pushing everything into models can create god-objects. The real goal is proper responsibility split, not simply moving weight from one class to another.",
+      "bullets": [
+        "This is a very good balance question.",
+        "Intermediate answers should not repeat slogans mechanically."
+      ]
+    },
+    {
+      "title": "If the same use case is available from both web routes and API routes, how do you avoid duplicated business logic?",
+      "body": "Move the main processing into a shared service or action so the web controller and API controller mainly differ in request and response shape rather than duplicating the use case.",
+      "bullets": [
+        "Without that split, one side may get fixed while the other side is forgotten.",
+        "This is a practical question about multi-entry-point consistency."
+      ]
+    },
+    {
+      "title": "What are the first signs that a growing app needs more architecture attention?",
+      "body": "When new features touch many unrelated files, one bug fix breaks other flows, controllers or models become abnormally large, and new contributors cannot guess where a change should go.",
+      "bullets": [
+        "This answer is stronger when it is grounded in maintainability signals instead of pattern names.",
+        "Interviewers at this level often care more about what you can observe than what you can recite."
+      ]
+    },
+    {
+      "title": "If asked to assess the current architecture of a project, where do you begin?",
+      "body": "Start from real flow: how requests enter, where business logic lives, how data access is shaped, how permissions are handled, and whether tests follow real use cases. Only then move into judgments about the structure.",
+      "bullets": [
+        "Do not lead with patterns if you have not yet followed the actual flow.",
+        "This question evaluates review skill as much as framework knowledge."
+      ]
+    },
+    {
+      "title": "How do you choose between Eloquent, Query Builder, and raw SQL?",
+      "body": "Eloquent is great for most CRUD and readable business flow, Query Builder fits more custom query shapes, and raw SQL fits heavy reporting or highly specialized cases where tighter control matters.",
+      "bullets": [
+        "A strong answer is based on the problem, not on personal ideology.",
+        "There is no need to force only one approach everywhere."
+      ],
+      "tip": "A very good answer is: `I optimize for clarity first, then move toward Query Builder or SQL when the problem justifies it`."
+    },
+    {
+      "title": "When a query is slow, why should you not jump to caching immediately?",
+      "body": "Because cache may hide the symptom without teaching you the bottleneck. First you should understand whether the problem is N+1, missing indexes, wrong eager loading, poor filtering, or loading too much data.",
+      "bullets": [
+        "Cache is a tool, not an automatic cure.",
+        "Intermediate developers are expected to measure and understand before optimizing."
+      ]
+    },
+    {
+      "title": "When do you start thinking about `select(...)` instead of loading every field?",
+      "body": "When list pages grow, when responses only need part of the record, or when you want to avoid loading fields you do not actually render or use.",
+      "bullets": [
+        "This is a small but meaningful optimization habit.",
+        "It does not have to be forced everywhere, but recognizing the opportunity is good."
+      ]
+    },
+    {
+      "title": "At intermediate level, how should you explain N+1 more deeply than at junior level?",
+      "body": "Beyond knowing `with()`, you should be able to explain how N+1 appears in list rendering, nested relations, Blade loops, and API resources, and why it may stay hidden locally but appear in production data.",
+      "bullets": [
+        "The intermediate difference is understanding context, not only knowing one fix."
+      ]
+    },
+    {
+      "title": "When is lazy loading acceptable, and when should eager loading clearly win?",
+      "body": "Lazy loading can be acceptable in tiny or rare paths, while eager loading should be preferred when you already know a relation will be touched for many records in the same flow.",
+      "bullets": [
+        "This is a tradeoff question, not a one-rule answer.",
+        "A strong intermediate answer is use-case aware."
+      ]
+    },
+    {
+      "title": "How do you think about transaction boundaries, and who should own them?",
+      "body": "A transaction boundary should usually live around the orchestration of a multi-write use case, often in a service or action that owns that use case, instead of being scattered across helper methods.",
+      "bullets": [
+        "At this level, you should begin thinking in terms of `use case boundary`.",
+        "Poorly placed transaction boundaries make consistency bugs much easier."
+      ],
+      "code": "DB::transaction(function () use ($order, $payload) {\n    $order->update(['status' => 'paid']);\n\n    Payment::create([\n        'order_id' => $order->id,\n        'reference' => $payload['reference'],\n        'amount' => $payload['amount'],\n    ]);\n\n    event(new OrderPaid($order->fresh()));\n});"
+    },
+    {
+      "title": "If the same flow performs DB writes and calls an external API, how do you think about consistency?",
+      "body": "This is where eventual consistency starts to matter. You cannot always roll back external side effects the same way you roll back database writes, so you need to think about order, retry, logging, reconciliation, and acceptable system behavior.",
+      "bullets": [
+        "You do not need a full system-design answer, but you should see that the problem is no longer simple.",
+        "This is an excellent boundary question for intermediate maturity."
+      ],
+      "note": "A mature answer does not promise that everything can be rolled back perfectly."
+    },
+    {
+      "title": "How should you understand `chunk()`, `cursor()`, and `get()`?",
+      "body": "`get()` loads all results at once, `chunk()` processes them in batches, and `cursor()` can help iterate more lightly over larger result sets in some cases.",
+      "bullets": [
+        "This is an intermediate question because it begins to touch data volume.",
+        "You do not need deep internals, but you should know the intended use."
+      ]
+    },
+    {
+      "title": "If a migration that adds a unique index fails in production, what do you think about?",
+      "body": "Think about old dirty data that is already duplicated, about applying the schema change too quickly, or about needing a cleanup or backfill step before adding the constraint.",
+      "bullets": [
+        "This is a strong real-data question.",
+        "A clean local database does not prove production is clean."
+      ]
+    },
+    {
+      "title": "When does a queue become genuinely necessary?",
+      "body": "When the main request is slowed down by heavy side effects such as mail, image processing, third-party calls, file export, or other work that does not need to finish before the user gets a response.",
+      "bullets": [
+        "Knowing queues does not mean forcing them everywhere.",
+        "An intermediate answer should tie queues to UX and system load."
+      ]
+    },
+    {
+      "title": "When should you avoid queuing something even if it technically could be queued?",
+      "body": "When the user needs the result immediately, when the use case is too small to justify the complexity, or when eventual consistency would confuse the user more than it helps the system.",
+      "bullets": [
+        "This is a very good tradeoff question.",
+        "A strong intermediate answer knows that async is not automatically better."
+      ]
+    },
+    {
+      "title": "If a job may run more than once, what risks do you think about?",
+      "body": "Think about duplicate side effects such as multiple emails, duplicate records, double charges, or state drift if the job is not idempotent.",
+      "bullets": [
+        "This is a strong question for testing whether you really understand retries.",
+        "At this level you should be comfortable using the word `idempotent`."
+      ],
+      "code": "class SendInvoiceEmail implements ShouldQueue\n{\n    public function handle(): void\n    {\n        if ($this->invoice->sent_at) {\n            return;\n        }\n\n        Mail::to($this->invoice->customer_email)->send(new InvoiceReadyMail($this->invoice));\n\n        $this->invoice->forceFill(['sent_at' => now()])->save();\n    }\n}"
+    },
+    {
+      "title": "How should cache be explained at intermediate level?",
+      "body": "Cache is a tool that reduces the cost of recreating expensive data, but in return you must think about invalidation, stale data, cache keys, and who owns the responsibility for keeping cache coherent.",
+      "bullets": [
+        "Many candidates only say `cache makes things faster`; that is true but incomplete.",
+        "An intermediate answer should mention the cost of correctness."
+      ],
+      "tip": "A very strong answer is: `cache helps speed, but it also gives us ownership of cache correctness`."
+    },
+    {
+      "title": "When does cache create more bugs than value?",
+      "body": "When data changes frequently, invalidation is unclear, multiple write paths touch the same concept, or the team does not clearly own the cache strategy.",
+      "bullets": [
+        "Wrong cache can make users see stale data and think the system is broken.",
+        "This is why intermediate engineers should not add cache too early."
+      ]
+    },
+    {
+      "title": "What do you think if a page is slow even though the database query is not terrible?",
+      "body": "The bottleneck may be heavy Blade rendering, external service calls, file I/O, too much PHP-side transformation, or an oversized response payload.",
+      "bullets": [
+        "This is a good answer because it proves you do not only look at the database.",
+        "Performance is end-to-end, not only query time."
+      ]
+    },
+    {
+      "title": "If you want to optimize a list page, what checklist would you follow?",
+      "body": "Check query count, eager loading, selected fields, pagination, filter logic, payload size, Blade rendering, and whether any external service call is blocking the request.",
+      "bullets": [
+        "Having a clear checklist is a strong intermediate signal.",
+        "You do not need to optimize immediately, but you should know where to look first."
+      ],
+      "code": "$orders = Order::query()\n    ->with(['customer:id,name', 'items:id,order_id,sku'])\n    ->select(['id', 'customer_id', 'status', 'created_at'])\n    ->latest()\n    ->paginate(20);"
+    },
+    {
+      "title": "When should a third-party API call be wrapped behind an adapter or gateway?",
+      "body": "When the integration stops being a tiny call, when the response needs normalization, when multiple places need the same dependency, or when you want to reduce direct coupling to a vendor SDK or HTTP shape.",
+      "bullets": [
+        "Intermediate engineers do not need giant architecture, but they should begin thinking in terms of boundaries with external systems.",
+        "This makes testing and vendor replacement easier."
+      ]
+    },
+    {
+      "title": "How is a webhook different from your system actively calling an external API?",
+      "body": "A webhook means an outside system calls into your application when an event happens; a normal client call means your application actively requests something from the outside.",
+      "bullets": [
+        "Webhooks usually introduce signature verification, retries, duplicate events, and structured logging.",
+        "This distinction matters a lot in real integrations."
+      ]
+    },
+    {
+      "title": "When receiving a webhook, why should heavy work usually not be done directly in the request cycle?",
+      "body": "Because the webhook endpoint should respond quickly enough to avoid sender timeouts or premature retries. Heavy work is usually better queued or persisted for follow-up processing.",
+      "bullets": [
+        "This is where intermediate thinking starts to touch queues and eventual consistency.",
+        "Not every webhook must synchronously complete the entire business flow."
+      ],
+      "code": "Route::post('/webhooks/payment', PaymentWebhookController::class);\n\nclass PaymentWebhookController\n{\n    public function __invoke(Request $request)\n    {\n        WebhookCall::create([\n            'provider' => 'payment-gateway',\n            'payload' => $request->json()->all(),\n        ]);\n\n        ProcessPaymentWebhook::dispatch($request->json()->all());\n\n        return response()->json(['received' => true]);\n    }\n}"
+    },
+    {
+      "title": "How should testing at intermediate level sound different from testing at junior level?",
+      "body": "Beyond basic feature tests, you should be able to talk about mail fakes, queue fakes, API contract tests, side-effect testing, and tradeoffs between speed, stability, and confidence.",
+      "bullets": [
+        "Intermediate candidates should not only say `I write tests`; they should say `what kind of test covers what kind of risk`.",
+        "A strong answer also explains when to mock, fake, or hit the database for real."
+      ]
+    },
+    {
+      "title": "When should you use `Queue::fake()` or `Http::fake()` in tests?",
+      "body": "When you want to assert that the application dispatched a job or made the correct outbound request without executing the real side effect during the test run.",
+      "bullets": [
+        "This usually makes tests faster and less flaky.",
+        "Intermediate developers should understand fakes as contract and intent testing."
+      ],
+      "code": "Http::fake([\n    'https://partner.example.com/*' => Http::response(['ok' => true], 200),\n]);\n\n$response = $this->postJson('/api/sync-order', ['order_id' => 12]);\n\n$response->assertOk();\nHttp::assertSent(fn ($request) => $request['order_id'] === 12);"
+    },
+    {
+      "title": "If a test is very slow but does not add much confidence, what do you think?",
+      "body": "The test may be too heavy for its level, may repeat unnecessary setup, or may be verifying things that belong in a lower and cheaper layer. Intermediate engineers should talk about test cost, not only test quantity.",
+      "bullets": [
+        "More tests do not automatically mean a better test suite.",
+        "This is a very strong quality-thinking question."
+      ]
+    },
+    {
+      "title": "If an API integration works sometimes but fails sometimes, how would you debug it?",
+      "body": "Check timeouts, retries, outbound payload, real response shape, auth token behavior, request/response logs, and whether the failure is network, contract, or business-condition related.",
+      "bullets": [
+        "This is a realistic bug that tests log-reading and issue isolation skill.",
+        "Intermediate engineers should have a checklist instead of guessing."
+      ]
+    },
+    {
+      "title": "If a feature has many tradeoffs, how do you communicate the technical decision to your team?",
+      "body": "Explain the problem, the available options, the pros and cons, the maintainability impact, the risks, and why the team chose the current path.",
+      "bullets": [
+        "Do not only say `I think this way is better`.",
+        "Clear communication is part of technical maturity."
+      ],
+      "tip": "A very strong structure is: `problem -> options -> tradeoffs -> chosen path`."
+    },
+    {
+      "title": "If product wants speed but the codebase already has technical debt, how do you think about it?",
+      "body": "A good intermediate answer is not extreme. Sometimes a small debt is accepted to move quickly, but you should know what debt you are taking on, where the risk is, and when the team needs to come back and repay it.",
+      "bullets": [
+        "This is a maturity question, not only a Laravel question.",
+        "Not every technical debt is bad if it is visible and deliberately managed."
+      ]
+    },
+    {
+      "title": "If a technical decision helps today but makes life harder for the team later, how do you weigh it?",
+      "body": "Consider current delivery speed, how frequently the feature area will evolve, long-term maintenance cost, boundary clarity, and the onboarding cost for future teammates. Good decisions do not optimize only for today.",
+      "bullets": [
+        "This is a very intermediate tradeoff question.",
+        "It checks whether you can see long-term cost."
+      ]
+    },
+    {
+      "title": "If an interviewer asks `What did a production bug teach you?`, what should you emphasize?",
+      "body": "Emphasize how you narrowed the issue safely, what you learned about monitoring, logging, validation, transaction boundaries, or deployment, and how your way of working improved afterward.",
+      "bullets": [
+        "This is not a drama story question; it is a technical growth question.",
+        "A good production bug story should show improved engineering judgment."
+      ]
+    },
+    {
+      "title": "What usually separates an intermediate engineer from a junior engineer in the eyes of interviewers?",
+      "body": "Intermediate engineers usually see systems through tradeoffs, choose abstractions for reasons, think in terms of boundaries and consistency, and explain decisions using real problems rather than buzzwords.",
+      "bullets": [
+        "It is no longer only `can build a feature`, but `can build a feature with clearer intent and judgment`.",
+        "The biggest difference is often in thinking style, not the number of framework commands memorized."
+      ],
+      "note": "This is also a good self-check for whether you have really moved beyond junior level."
+    },
+    {
+      "title": "If a user double-clicks submit and creates duplicate orders or records, what kinds of protection do you think about?",
+      "body": "Think about both UI and server-side protection. The UI may disable the button or show loading state, but the server should still protect correctness through validation, uniqueness, transaction boundaries, status checks, or `idempotency keys` for sensitive flows.",
+      "bullets": [
+        "This is a very real production bug pattern.",
+        "A good intermediate answer does not stop at `disable the button`."
+      ],
+      "tip": "A strong line is: `the client can reduce duplicates, but the server must still own final correctness`."
+    },
+    {
+      "title": "If a call to an external service often times out, how would you analyze it?",
+      "body": "Look at timeout configuration, retry policy, network reliability, payload size, whether the partner service is actually slow, whether DNS or TLS setup is part of the problem, and whether this call truly needs to block the main user flow.",
+      "bullets": [
+        "Do not only increase the timeout blindly.",
+        "Sometimes the better fix is queueing, graceful degradation, or moving the heavy step out of the critical request."
+      ],
+      "code": "Http::timeout(5)\n    ->retry(2, 300)\n    ->connectTimeout(2)\n    ->post($url, $payload);"
+    },
+    {
+      "title": "If something works locally but fails only in production, where do you start shrinking the difference?",
+      "body": "Compare config, environment, cached config, queue workers, real database data, file permissions, external services, PHP or extension versions, and traffic shape. Many production bugs come from environment, data, or workload differences rather than different code.",
+      "bullets": [
+        "Intermediate engineers should get comfortable with `same code, different environment` thinking.",
+        "This question tests whether you can isolate variables instead of guessing."
+      ],
+      "tip": "A good flow is: `identify what only production has, then narrow from there`."
+    },
+    {
+      "title": "If a request passes through many layers before failing, how do you trace it without getting lost?",
+      "body": "Follow one concrete thread: which route, which user, which payload, which logs, which query, which job or event. The goal is to keep one continuous red thread across the flow instead of debugging unrelated files one by one.",
+      "bullets": [
+        "This is where contextual logging becomes very valuable.",
+        "Good intermediate engineers add logs at the right points instead of everywhere."
+      ],
+      "code": "Log::info('sync-order:start', [\n    'request_id' => $request->header('X-Request-Id'),\n    'order_id' => $order->id,\n    'user_id' => $request->user()?->id,\n]);"
+    },
+    {
+      "title": "If the team is debating between performance optimization and keeping the code easier to read, how do you balance it?",
+      "body": "A good intermediate answer starts from the real bottleneck and the business need. If there is no measurement yet, clarity usually wins first. Once the bottleneck is proven, optimize with purpose and keep guardrails such as tests, metrics, or short explanation comments so the next person understands why the code is no longer 'normally clean'.",
+      "bullets": [
+        "Do not optimize early from instinct alone.",
+        "But do not protect code elegance dogmatically when production is truly hurting."
+      ]
+    },
+    {
+      "title": "If a feature needs coordination across backend, frontend, and a third-party service, what should an intermediate engineer proactively clarify?",
+      "body": "Clarify the contract, waiting states, error shapes, whether retries or duplicates can happen, and who owns each step. When many sides are involved, misunderstanding the contract often causes more pain than syntax bugs.",
+      "bullets": [
+        "This is where communication starts becoming tightly connected to engineering.",
+        "A strong intermediate engineer does not only code their own piece; they also clarify the seam between pieces."
+      ],
+      "tip": "A strong line is: `I try to clarify boundaries and contracts before optimizing the implementation`."
+    },
+    {
+      "title": "If you need to estimate a task with moderate technical risk, how should an intermediate engineer sound different from a junior engineer?",
+      "body": "Beyond coding scope, an intermediate engineer should mention dependencies that may slow the work down, whether data migration is involved, where integration risk sits, and whether special testing or rollout steps are needed. Estimation at this level starts to include system risk, not only typing speed.",
+      "bullets": [
+        "This shows that you are beginning to see tasks through multiple layers.",
+        "A mature estimate is usually framed together with assumptions and risks."
+      ],
+      "note": "This is a very strong question for checking whether the candidate understands real engineering work outside the IDE."
+    },
+    {
+      "title": "At intermediate level, how do you think about `rate limiting`, `throttling`, and abuse protection?",
+      "body": "Not only as a default middleware to enable blindly. You should think about which endpoints are easy to spam, which behaviors can exhaust resources, whether one tenant can become a noisy neighbor, and how a throttled response should guide the client about retry behavior.",
+      "bullets": [
+        "This is where security and reliability start to overlap strongly.",
+        "Protecting the system is not only about blocking attackers; it is also about preserving resources under bad or excessive behavior."
+      ]
+    },
+    {
+      "title": "If an internal API is only used inside the company but still gets misused or overloaded, what guardrails should still exist?",
+      "body": "Internal does not mean automatically safe. You still need appropriate auth, audit logging, timeouts, retry policy, rate limits, or least-privilege network paths. Internal systems often become dangerous precisely because everyone assumes they are safe by default.",
+      "bullets": [
+        "This is a very good boundary-thinking question.",
+        "Internal systems can create major incidents when their guardrails are too weak."
+      ],
+      "tip": "A strong line is: `internal traffic still needs a trust boundary; it is just a different boundary from the public internet`."
+    }
+  ]
+}

@@ -1,0 +1,261 @@
+{
+  "heading": "Vibe Coding Prompting",
+  "intro": "Nhánh này dùng để gom phần nền của `Vibe Coding`: nó là gì, vì sao bùng lên, AI đang thay đổi cách viết code ra sao, và người dùng cần hiểu gì trước khi giao quá nhiều quyền cho mô hình.",
+  "type": "list",
+  "breaks": [
+    {
+      "start": 1,
+      "title": "Các Mục Nền Tảng Nên Có",
+      "description": "Chọn vài chủ đề gốc thật rõ để người học hiểu được xương sống của Vibe Coding và AI-assisted development.",
+      "tone": "amber"
+    },
+    {
+      "start": 5,
+      "title": "Flow Học Và Triển Khai",
+      "description": "Mỗi workflow nên có mở đầu rõ, ví dụ ngắn, code minh họa và phần chốt để người học không bị lạc.",
+      "tone": "coral"
+    },
+    {
+      "start": 9,
+      "title": "Checklist Nền Tảng",
+      "description": "Giữ một checklist rõ sẽ giúp module này gọn hơn, ít quên hơn và bớt lan man.",
+      "tone": "amber"
+    }
+  ],
+  "items": [
+    {
+      "title": "Vibe Coding là gì theo cách hiểu ngắn gọn?",
+      "body": "Đó là cách lập trình nơi bạn mô tả ý định bằng ngôn ngữ tự nhiên, để AI sinh ra phần lớn code, rồi bạn tập trung vào kiểm tra, sửa, định hướng và đánh giá kết quả cuối.",
+      "bullets": [
+        "Đây là trục tư duy giúp người mới hiểu vì sao code backend lại được chạy.",
+        "Nó cũng là nền để sau này giải thích Laravel request flow dễ hơn.",
+        "Một mở đầu tốt không cần nhiều code, chỉ cần flow rõ."
+      ],
+      "code": "Prompt / requirement -> AI generates code -> Human reviews -> Test -> Refine -> Ship or reject",
+      "tip": "Nên giải thích sớm rằng `Vibe Coding` không đồng nghĩa với bỏ tư duy kỹ thuật, mà là chuyển trọng tâm từ gõ syntax sang điều khiển và kiểm tra output."
+    },
+    {
+      "title": "Điểm khác nhau giữa lập trình thường và Vibe Coding là gì?",
+      "body": "Lập trình thường đặt trọng tâm vào việc người viết tự viết từng đoạn code. Vibe Coding đặt trọng tâm vào việc nêu đúng ý định, ràng buộc, test và review để AI sinh ra đoạn code đó nhanh hơn."
+    },
+    {
+      "title": "Vì sao xu hướng này bùng lên mạnh?",
+      "body": "Vì các tool như Cursor, Copilot, Claude Code hay agent-style editor làm việc với codebase ngày càng tốt. Người dùng cảm thấy họ có thể đi từ ý tưởng sang feature nhanh hơn nhiều nếu biết viết prompt và bóc output đúng cách.",
+      "bullets": [
+        "Tốc độ dựng scaffold và boilerplate tăng mạnh.",
+        "Refactor lặp lại hoặc viết test nháp nhanh hơn.",
+        "Nhưng đổi lại, nguy cơ code sai ý hoặc sai kiến trúc cũng tăng nếu người dùng quá tin."
+      ]
+    },
+    {
+      "title": "Cần hiểu sai lầm nào sớm nhất về Vibe Coding?",
+      "body": "Sai lầm lớn nhất là nghĩ AI hiểu hệ thống của bạn tốt hơn thực tế. AI có thể sinh code rất mượt nhưng vẫn hiểu sai business, sai boundary hoặc vô tình phá structure đang có."
+    },
+    {
+      "title": "Một prompt tốt trong Vibe Coding thường có gì?",
+      "body": "Prompt tốt thường nêu rõ bối cảnh, outcome, ràng buộc kỹ thuật, file liên quan, style mong muốn, và điều không được làm.",
+      "code": "Build a Laravel feature to create posts.\nConstraints:\n- use FormRequest\n- keep controller thin\n- do not modify unrelated files\n- add validation errors in Blade\n- explain changed files at the end\n"
+    },
+    {
+      "title": "Khi nào không nên dùng Vibe Coding?",
+      "body": "Khi bạn chưa hiểu domain, chưa hiểu codebase, hoặc đang chạm vùng quá rủi ro như security, billing, migration dữ liệu, secret, auth flow, runtime production. Ở các vùng đó AI vẫn hữu ích, nhưng chỉ nên dùng như trợ lý phụ."
+    },
+    {
+      "title": "Người dùng vẫn cần giữ kỹ năng nào?",
+      "body": "Vẫn phải giữ khả năng đọc code, trace bug, hiểu request flow, hiểu database, auth, HTTP, deploy, test và review. Nếu mất những kỹ năng này thì Vibe Coding dễ biến thành `copy output và cầu may`."
+    },
+    {
+      "title": "Một workflow nền tảng nên dạy gì tiếp theo?",
+      "body": "Nên dạy cách chia task cho AI: scaffold, explain, compare options, write tests, refactor nhỏ, generate docs, rồi chỗ nào bắt buộc phải verify tay."
+    },
+    {
+      "title": "Checklist trước khi tin output AI nên có gì?",
+      "body": "Ít nhất nên check flow, file bị đụng, security, validation, auth, query, logging, tests và side effects.",
+      "bullets": [
+        "AI có sửa file không liên quan không.",
+        "AI có bịa API hoặc method không tồn tại không.",
+        "AI có bỏ quên validation, auth, hoặc error path không.",
+        "AI có tạo code chạy được nhưng sai structure không."
+      ]
+    },
+    {
+      "title": "Một sai lầm phổ biến khi mới dùng Vibe Coding là gì?",
+      "body": "Quăng yêu cầu quá rộng và quá mơ hồ như `làm cho tôi một app hoàn chỉnh`, rồi cố vá sau. Cách tốt hơn là bóc nhỏ feature, chốt từng bước và kiểm output từng lớp."
+    },
+    {
+      "title": "Vì sao `focus vào kết quả cuối` vừa mạnh vừa nguy hiểm?",
+      "body": "Vì nó giúp đi rất nhanh từ ý tưởng sang sản phẩm, nhưng cũng khiến người dùng bỏ qua các lớp kiểm tra trung gian. Với code, bỏ qua lớp trung gian thường đồng nghĩa với bug, security risk hoặc tech debt nén lại."
+    },
+    {
+      "title": "Prompt càng dài có phải càng tốt không?",
+      "body": "Không hẳn. Prompt tốt là prompt đủ rõ, đủ constraint, nhưng không nhồi những thứ không liên quan. Prompt quá dài mà không có cấu trúc dễ làm AI lấy sai trọng tâm.",
+      "bullets": [
+        "Luôn nêu outcome trước.",
+        "Nêu file hoặc module liên quan nếu có.",
+        "Nêu thứ không được làm.",
+        "Nêu cách bạn muốn nhận output: patch, explanation, checklist hay test."
+      ]
+    },
+    {
+      "title": "Một form prompt dễ tái dùng nên trông thế nào?",
+      "body": "Có thể giữ một template ổn định để không phải nghĩ lại từ đầu mỗi lần giao việc cho AI.",
+      "code": "Goal:\nContext:\nFiles involved:\nConstraints:\nDo not:\nOutput format:\nVerification steps:\n"
+    },
+    {
+      "title": "Khi nào nên hỏi AI để giải thích thay vì để nó code luôn?",
+      "body": "Khi bạn chưa hiểu một luồng, chưa biết boundary, hoặc chưa chắc pattern nào hợp hơn. Lúc đó nên bắt AI so sánh lựa chọn trước, rồi mới để nó code sau."
+    },
+    {
+      "title": "Có nên cho AI đọc cả repo một lúc không?",
+      "body": "Thường là không nên ngay từ đầu. Tốt hơn là chỉ rõ vài file hoặc một vùng feature cụ thể. Context quá rộng dễ làm mô hình kéo theo nhiều phần không liên quan và sửa lan."
+    },
+    {
+      "title": "Dấu hiệu nào cho thấy output AI đang bịa?",
+      "body": "Các dấu hiệu thường gặp là gọi method không tồn tại, tự invent config key, nhắc tới package repo không hề có, hoặc tạo flow nghe hợp lý nhưng không khớp framework version hiện tại.",
+      "tip": "Chỉ cần thấy một dấu hiệu bịa, nên dừng lại và chuyển sang mode `verify từng lớp`."
+    },
+    {
+      "title": "Một workflow Vibe Coding an toàn cho người mới nên bắt đầu thế nào?",
+      "body": "Bắt đầu từ việc dùng AI để giải thích code, sinh nháp nhỏ, rồi mới tăng dần sang sửa file thật. Đừng nhảy ngay vào mode giao cả feature lớn khi bạn còn chưa có checklist review ổn định."
+    },
+    {
+      "title": "Nên coi AI là pair programmer, intern hay auto-pilot?",
+      "body": "Thực tế nhất là coi nó như một cộng sự rất nhanh nhưng không ổn định: nó có thể draft tốt, so sánh lựa chọn tốt, nhưng vẫn cần người chốt hướng và chịu trách nhiệm cuối."
+    },
+    {
+      "title": "Khi nào nên dùng AI để brainstorm thay vì generate code?",
+      "body": "Khi bạn cần so sánh pattern, nghĩ edge case, liệt kê checklist test, hoặc bóc requirement mơ hồ. Ở pha này AI thường hữu ích hơn việc ép nó code ngay."
+    },
+    {
+      "title": "Một red flag lớn trong mindset Vibe Coding là gì?",
+      "body": "Cảm giác `code này trông giống đúng nên chắc ổn`. Đây là bẫy rất nặng vì AI sinh ra code có văn phong tự tin, sạch sẽ và dễ làm người đọc buông cảnh giác."
+    },
+    {
+      "title": "Chỉ số nào cho thấy bạn đang dùng Vibe Coding tốt hơn trước?",
+      "body": "Không phải số dòng code sinh ra, mà là số diff bị thu hẹp, số bug do output AI giảm dần, tốc độ review tốt hơn, và khả năng dừng AI đúng lúc tăng lên."
+    },
+    {
+      "title": "Prompt quá rộng thường gây ra kiểu hỏng gì?",
+      "body": "Nó làm AI sửa lan, kéo thêm file không liên quan, và tối ưu cho cảm giác “đủ đầy” thay vì tối ưu cho scope nhỏ và an toàn.",
+      "tip": "Nếu prompt có thể tách thành 3 bước nhỏ mà bạn vẫn để nguyên một khối, thường là đang quá rộng."
+    },
+    {
+      "title": "Một checklist review output nền tảng nên có gì?",
+      "body": "Nên nhìn ít nhất vào `scope`, `boundary`, `API bịa`, `security`, `test`, và `file ngoài vùng`.",
+      "code": "Review checklist:\n- changed files match scope?\n- invented methods/config?\n- auth/validation skipped?\n- tests suggested?\n- boundary still clear?\n",
+      "note": "Checklist tốt giúp người mới bớt bị vẻ ngoài tự tin của AI dẫn hướng."
+    },
+    {
+      "title": "Khi nào nên chuyển từ chat giải thích sang patch thật?",
+      "body": "Khi bạn đã hiểu flow hiện tại, biết vùng file cần chạm, và có thể tự mô tả tiêu chí patch tốt là gì."
+    },
+    {
+      "title": "Một strong workflow cho người mới nên nhớ là gì?",
+      "body": "Giải thích trước, draft nhỏ sau, diff nhỏ trước, vùng nhạy cảm sau cùng. Đây là cách tăng tốc mà không đánh đổi hết khả năng kiểm soát.",
+      "tip": "Nếu bạn không tự giải thích lại được output AI bằng lời của mình, chưa nên merge hay dùng tiếp."
+    },
+    {
+      "title": "Một prompt xấu thường trông như nào?",
+      "body": "Prompt xấu thường mơ hồ, không nêu constraint, không nói file liên quan, và không nói thứ gì không được đụng tới. Nó khiến AI tối ưu cho sự đầy đủ giả thay vì đúng scope.",
+      "code": "Bad prompt:\n\"Build me a complete Laravel admin panel with everything needed.\"\n"
+    },
+    {
+      "title": "Một prompt tốt hơn nên khác ở đâu?",
+      "body": "Prompt tốt hơn luôn có outcome rõ, boundary rõ, và tiêu chí verify rõ. Nó giúp output nhỏ hơn, ít nhiễu hơn, dễ review hơn.",
+      "code": "Better prompt:\n\"Add a create-post flow.\nUse FormRequest.\nDo not touch auth files.\nKeep controller thin.\nList changed files and risks at the end.\"\n",
+      "tip": "Prompt càng giống một task ticket tốt thì output càng dễ sống."
+    },
+    {
+      "title": "Có nên yêu cầu AI tự nêu assumption không?",
+      "body": "Rất nên. Đây là một cách hay để ép mô hình lộ ra chỗ nó đang đoán. Khi assumption lộ ra sớm, bạn sửa prompt dễ hơn nhiều."
+    },
+    {
+      "title": "Một câu hỏi hay để chặn AI đi sai từ đầu là gì?",
+      "body": "Hãy hỏi: `Trước khi code, hãy liệt kê 5 assumption lớn nhất của bạn về codebase này.` Câu này thường làm lộ ngay vùng nó đang hiểu sai."
+    },
+    {
+      "title": "Khi nào nên bỏ hẳn Vibe Coding và tự đi tay?",
+      "body": "Khi vấn đề đang mơ hồ nhưng hậu quả sai lại lớn. Lúc đó tốt hơn là tự bóc domain, tự đọc flow, rồi chỉ dùng AI ở các bước phụ như checklist hoặc nháp test."
+    }
+    ,
+    {
+      "title": "AI trong Vibe Coding thực chất là ai?",
+      "body": "Nó không phải senior engineer thật, cũng không phải auto-pilot hiểu toàn bộ hệ thống của bạn. Thực tế hơn, hãy coi nó là một bộ máy tổng hợp cực nhanh: giỏi draft, giỏi so pattern, nhưng không chịu trách nhiệm cho hậu quả cuối.",
+      "tip": "Coi AI như một cộng sự rất nhanh nhưng thiếu context sẽ giúp bạn dùng nó tỉnh táo hơn nhiều."
+    },
+    {
+      "title": "Nên coi AI giống intern, pair programmer hay reviewer?",
+      "body": "Tùy việc. Với scaffold hoặc boilerplate, nó giống intern rất nhanh. Với brainstorm hoặc compare option, nó giống pair tốt. Với review, nó là lớp phụ chứ không phải gate cuối.",
+      "bullets": [
+        "Intern mode: draft CRUD, request rule, test nháp.",
+        "Pair mode: so sánh 2 cách tách lớp, nghĩ edge case.",
+        "Reviewer mode: soi missing validation, missing auth, missing test."
+      ]
+    },
+    {
+      "title": "Có nên cho AI đóng vai cụ thể không?",
+      "body": "Có, vì vai trò giúp output bớt mơ hồ. Có lúc bạn muốn nó đóng vai reviewer khắt khe, có lúc muốn nó đóng vai Laravel maintainer, có lúc chỉ muốn nó draft nhanh như một junior.",
+      "code": "Act as a strict Laravel reviewer.\nCheck boundary, validation, auth, query cost, and missing tests.\nDo not propose large refactors yet.\n"
+    },
+    {
+      "title": "AI giỏi nhất ở việc gì trong lập trình hằng ngày?",
+      "body": "Giỏi nhất ở draft nhanh, tóm tắt file dài, tạo checklist, liệt kê edge case, so sánh pattern, viết nháp test, và refactor lặp lại ở phạm vi nhỏ."
+    },
+    {
+      "title": "AI dở nhất ở việc gì?",
+      "body": "Dở nhất ở domain mơ hồ, business rule nhiều ngoại lệ, runtime nhiều lớp, dữ liệu bẩn, security nhạy cảm, và các quyết định tradeoff cần hiểu lịch sử hệ thống."
+    },
+    {
+      "title": "Vì sao phải kiểm soát context khi làm Vibe Coding?",
+      "body": "Vì AI không thật sự nhớ repo như người trong team. Nếu context quá rộng, nó sẽ kéo theo nhiều giả định sai. Nếu context quá hẹp, nó lại không thấy boundary hoặc dependency cần thiết.",
+      "code": "Context to provide:\n- exact goal\n- touched files\n- framework version\n- constraints\n- what not to touch\n",
+      "tip": "Context tốt không phải là càng nhiều càng tốt, mà là đúng phần cần cho quyết định hiện tại."
+    },
+    {
+      "title": "Acceptance criteria quan trọng thế nào trong Vibe Coding?",
+      "body": "Nếu không có acceptance criteria rõ, AI sẽ tối ưu theo cảm giác đủ đầy thay vì tối ưu theo hành vi thật cần đạt. Đây là nguyên nhân làm output trông ổn nhưng vẫn sai product.",
+      "bullets": [
+        "Nêu input hợp lệ và input lỗi.",
+        "Nêu user nào được phép chạy flow.",
+        "Nêu response hoặc UI mong muốn.",
+        "Nêu command hoặc test để verify."
+      ]
+    },
+    {
+      "title": "Khi nào nên yêu cầu AI viết kế hoạch trước khi viết code?",
+      "body": "Khi feature có nhiều bước hoặc đụng nhiều lớp như request, data, file, auth hoặc queue. Một plan ngắn trước sẽ làm lộ assumption sai sớm hơn nhiều so với nhảy thẳng vào patch.",
+      "code": "Before writing code, propose:\n1. touched files\n2. flow steps\n3. risks\n4. verification plan\n"
+    },
+    {
+      "title": "Một bài học lớn khi làm việc với AI là gì?",
+      "body": "Người giỏi Vibe Coding không phải người để AI code nhiều nhất, mà là người biết chặn đúng lúc, đổi prompt đúng lúc, và thu diff về vùng nhỏ nhất đủ an toàn để review."
+    },
+    {
+      "title": "Vì sao phải cẩn thận với dữ liệu nhạy cảm khi prompt cho AI?",
+      "body": "Nhiều người mới vô thức dán `.env`, token, log chứa email hoặc payload thật vào prompt. Một workflow tốt luôn `mask secret`, `ẩn dữ liệu thật` và chỉ đưa đúng context cần thiết."
+    },
+    {
+      "title": "Khi nào nên đóng một phiên làm việc với AI và mở phiên mới?",
+      "body": "Khi context đã quá dài, mô hình bắt đầu lặp lại assumption cũ, hoặc bạn đổi hẳn bài toán. Session mới giúp giảm drift và tránh để AI kéo theo hiểu lầm từ 20 prompt trước."
+    },
+    {
+      "title": "Context window drift là gì trong Vibe Coding?",
+      "body": "Đó là lúc phiên làm việc đã quá dài, AI bắt đầu bám vào assumption cũ, quên constraint mới hoặc kéo theo quyết định không còn đúng với task hiện tại.",
+      "code": "Symptoms:\n- repeats old assumptions\n- keeps touching previous files\n- ignores updated constraints\n- answers with stale architecture ideas\n",
+      "tip": "Khi thấy context drift, thường nên tóm tắt lại ngắn gọn hoặc mở hẳn session mới."
+    },
+    {
+      "title": "Có nên paste nguyên code nội bộ hoặc tài liệu nhạy cảm vào prompt không?",
+      "body": "Không nên một cách vô thức. Ngoài secret và dữ liệu người dùng, còn phải cẩn thận với code độc quyền, tài liệu nội bộ, hợp đồng API riêng, hoặc nội dung thuộc license không nên chia sẻ rộng.",
+      "bullets": [
+        "Mask secret và dữ liệu cá nhân.",
+        "Chỉ đưa đoạn code thật sự cần cho quyết định hiện tại.",
+        "Nếu repo có policy nội bộ, phải bám policy đó trước khi prompt."
+      ]
+    },
+    {
+      "title": "Vì sao `copyright` và `license` cũng là một phần của Vibe Coding?",
+      "body": "Vì AI có thể gợi ý snippet, cấu trúc hoặc dependency mà bạn không hiểu nguồn gốc. Người dùng vẫn phải chịu trách nhiệm với package được thêm vào, nội dung được copy, và điều kiện license đi kèm."
+    }
+  ]
+}

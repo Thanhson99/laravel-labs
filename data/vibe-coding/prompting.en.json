@@ -1,0 +1,261 @@
+{
+  "heading": "Vibe Coding Prompting",
+  "intro": "Use this branch to capture the foundations of `Vibe Coding`: what it is, why it exploded, how AI changes coding workflows, and what a developer still needs to understand before trusting the model too far.",
+  "type": "list",
+  "breaks": [
+    {
+      "start": 1,
+      "title": "Core Foundation Modules",
+      "description": "Pick a small set of root topics so learners understand the backbone of Vibe Coding and AI-assisted development.",
+      "tone": "amber"
+    },
+    {
+      "start": 5,
+      "title": "Learning And Execution Flow",
+      "description": "Each workflow should have a short opening, a practical example, a code walk, and a clean close.",
+      "tone": "coral"
+    },
+    {
+      "start": 9,
+      "title": "Core Checklist",
+      "description": "A visible checklist makes the module tighter, calmer, and easier to reuse.",
+      "tone": "amber"
+    }
+  ],
+  "items": [
+    {
+      "title": "What is Vibe Coding in short?",
+      "body": "It is a style of programming where you describe intent in natural language, let AI generate much of the code, and shift your effort toward review, correction, verification, and steering the final outcome.",
+      "bullets": [
+        "This is the backbone that explains why backend code runs at all.",
+        "It also becomes the bridge into Laravel request flow later.",
+        "A good first module does not need much code if the flow is clear."
+      ],
+      "code": "Prompt / requirement -> AI generates code -> Human reviews -> Test -> Refine -> Ship or reject",
+      "tip": "Explain early that `Vibe Coding` does not remove engineering judgment. It changes the center of work from writing syntax to directing and validating output."
+    },
+    {
+      "title": "What is different between regular coding and Vibe Coding?",
+      "body": "Regular coding centers on the human typing most of the implementation manually. Vibe Coding centers on expressing intent, constraints, and verification so the AI can draft the implementation faster."
+    },
+    {
+      "title": "Why did this trend explode so quickly?",
+      "body": "Because tools like Cursor, Copilot, Claude Code, and agent-style editors became much better at operating on real codebases. People feel they can move from idea to feature much faster if they know how to prompt and inspect output well.",
+      "bullets": [
+        "Boilerplate and scaffolding speed up dramatically.",
+        "Repeated refactors and draft tests become cheaper.",
+        "But architecture drift and silent wrongness also rise if the user trusts too easily."
+      ]
+    },
+    {
+      "title": "What is the earliest misconception to fix?",
+      "body": "The biggest mistake is thinking the AI understands your system better than it actually does. The output may look smooth while still misunderstanding business rules, boundaries, or runtime consequences."
+    },
+    {
+      "title": "What does a good Vibe Coding prompt usually contain?",
+      "body": "A strong prompt states the context, expected outcome, technical constraints, affected files, style expectations, and things the model must not touch.",
+      "code": "Build a Laravel feature to create posts.\nConstraints:\n- use FormRequest\n- keep controller thin\n- do not modify unrelated files\n- add validation errors in Blade\n- explain changed files at the end\n"
+    },
+    {
+      "title": "When should Vibe Coding not be trusted too far?",
+      "body": "When you do not understand the domain, do not understand the codebase, or you are touching risky areas like security, billing, data migration, auth flow, secrets, or production runtime."
+    },
+    {
+      "title": "Which skills still matter even with Vibe Coding?",
+      "body": "You still need code reading, bug tracing, request flow knowledge, database and auth understanding, deploy awareness, testing habits, and review discipline. Without them, Vibe Coding becomes output-copying and luck."
+    },
+    {
+      "title": "What should the next foundation workflow teach?",
+      "body": "Teach how to split work for AI: scaffolding, explanation, comparing options, drafting tests, small refactors, doc generation, and which parts must still be verified manually."
+    },
+    {
+      "title": "What checklist should exist before trusting AI output?",
+      "body": "At minimum, check flow, touched files, security, validation, auth, queries, logging, tests, and side effects.",
+      "bullets": [
+        "Did the model touch unrelated files?",
+        "Did it invent APIs or methods that do not exist?",
+        "Did it skip validation, auth, or failure paths?",
+        "Did it produce runnable but structurally wrong code?"
+      ]
+    },
+    {
+      "title": "What is a common beginner mistake with Vibe Coding?",
+      "body": "Throwing a huge vague request at the model like `build me a complete app`, then patching the chaos afterward. The better pattern is to split features, lock one step at a time, and inspect each layer."
+    },
+    {
+      "title": "Why is `focus on the outcome` both powerful and dangerous?",
+      "body": "Because it helps you move fast from idea to output, but it also tempts you to skip the intermediate checks. In software, skipped intermediate checks often turn into bugs, security risks, or compressed technical debt."
+    },
+    {
+      "title": "Is a longer prompt always better?",
+      "body": "Not really. A good prompt is clear and constrained, but still focused. A long prompt without structure often makes the model optimize for the wrong thing.",
+      "bullets": [
+        "State the outcome first.",
+        "Name the relevant files or module if you can.",
+        "State what must not be changed.",
+        "State the output shape you want: patch, explanation, checklist, or tests."
+      ]
+    },
+    {
+      "title": "What can a reusable prompt template look like?",
+      "body": "Keeping a stable template reduces noise and improves consistency from one AI task to the next.",
+      "code": "Goal:\nContext:\nFiles involved:\nConstraints:\nDo not:\nOutput format:\nVerification steps:\n"
+    },
+    {
+      "title": "When should AI explain before it codes?",
+      "body": "When you do not understand the flow yet, do not know the boundary, or are unsure which pattern fits best. In that case, ask it to compare options first, then let it implement later."
+    },
+    {
+      "title": "Should AI be given the whole repo at once?",
+      "body": "Usually not at the start. It is better to scope it to a few files or one feature area first. Over-broad context often causes the model to modify unrelated zones."
+    },
+    {
+      "title": "What are signs that the AI is hallucinating?",
+      "body": "Common signs include calling methods that do not exist, inventing config keys, referencing packages that are not in the repo, or generating a flow that sounds plausible but does not match the framework version.",
+      "tip": "One hallucination signal is enough to switch into strict layer-by-layer verification mode."
+    },
+    {
+      "title": "What is a safe Vibe Coding workflow for beginners?",
+      "body": "Start by using AI to explain code and draft small snippets, then gradually move toward real file edits. Do not jump straight into giving it whole large features before your review checklist is stable."
+    },
+    {
+      "title": "Should AI be treated as a pair programmer, an intern, or an auto-pilot?",
+      "body": "The most realistic view is a very fast but unstable collaborator: strong at drafting and comparing options, but still needing a human to set direction and hold final responsibility."
+    },
+    {
+      "title": "When is AI better for brainstorming than for generating code?",
+      "body": "When you need to compare patterns, think through edge cases, build testing checklists, or unpack vague requirements. In that phase AI is often more useful than forcing it to implement immediately."
+    },
+    {
+      "title": "What is a major red flag in Vibe Coding mindset?",
+      "body": "The feeling that `this code looks correct, so it is probably fine`. That is dangerous because AI outputs often sound confident and look polished enough to lower human skepticism."
+    },
+    {
+      "title": "What metrics suggest you are getting better at Vibe Coding?",
+      "body": "Not lines of generated code, but smaller diffs, fewer AI-caused bugs, faster reviews, and better judgment about when to stop the model and inspect manually."
+    },
+    {
+      "title": "What kind of damage usually comes from overly broad prompts?",
+      "body": "They cause the model to edit too widely, touch unrelated files, and optimize for the feeling of completeness instead of the safety of a narrow scope.",
+      "tip": "If your prompt could be split into three smaller steps and you still keep it as one block, it is probably too broad."
+    },
+    {
+      "title": "What should a basic output-review checklist contain?",
+      "body": "At minimum inspect `scope`, `boundary`, `invented APIs`, `security`, `tests`, and `out-of-zone files`.",
+      "code": "Review checklist:\n- changed files match scope?\n- invented methods/config?\n- auth/validation skipped?\n- tests suggested?\n- boundary still clear?\n",
+      "note": "A good checklist protects beginners from being steered by the polished tone of AI output."
+    },
+    {
+      "title": "When should you move from explanation chat to a real patch?",
+      "body": "When you already understand the current flow, know which file zone should change, and can state what a good patch would look like."
+    },
+    {
+      "title": "What is a strong beginner workflow to remember?",
+      "body": "Explain first, draft small next, keep diffs small, and leave sensitive zones for later. That is how you gain speed without giving up control.",
+      "tip": "If you cannot explain the AI output back in your own words, it is not ready to merge or trust further."
+    },
+    {
+      "title": "What does a bad prompt usually look like?",
+      "body": "A bad prompt is vague, lacks constraints, does not identify relevant files, and does not say what must stay untouched. That pushes the model toward fake completeness instead of correct scope.",
+      "code": "Bad prompt:\n\"Build me a complete Laravel admin panel with everything needed.\"\n"
+    },
+    {
+      "title": "How should a better prompt differ?",
+      "body": "A better prompt always has a clear outcome, a clear boundary, and clear verification criteria. That makes the output smaller, cleaner, and easier to review.",
+      "code": "Better prompt:\n\"Add a create-post flow.\nUse FormRequest.\nDo not touch auth files.\nKeep controller thin.\nList changed files and risks at the end.\"\n",
+      "tip": "The more a prompt resembles a strong task ticket, the more usable the output becomes."
+    },
+    {
+      "title": "Should AI be asked to list its assumptions?",
+      "body": "Yes. This is one of the best ways to force the model to reveal where it is guessing. Once assumptions surface early, fixing the prompt becomes much easier."
+    },
+    {
+      "title": "What is a useful question for stopping AI drift early?",
+      "body": "Ask: `Before coding, list the 5 biggest assumptions you are making about this codebase.` That often exposes misunderstanding immediately."
+    },
+    {
+      "title": "When should Vibe Coding be dropped and manual work take over?",
+      "body": "When the problem is still ambiguous but the cost of being wrong is high. In that case, it is usually better to unpack the domain and read the flow yourself, then use AI only for support tasks such as checklists or draft tests."
+    }
+  ,
+    {
+      "title": "Who is the AI in Vibe Coding, really?",
+      "body": "It is not a real senior engineer, and it is not an auto-pilot that understands your whole system. A more honest view is a very fast synthesizer: strong at drafting and pattern reuse, but not accountable for final consequences.",
+      "tip": "Treating AI as a fast collaborator with missing context usually leads to healthier decisions."
+    },
+    {
+      "title": "Should AI be treated like an intern, a pair programmer, or a reviewer?",
+      "body": "It depends on the task. For scaffolding and boilerplate it behaves like a very fast intern. For comparing options it can act like a useful pair. For review it is an extra layer, not the final gate.",
+      "bullets": [
+        "Intern mode: draft CRUD, request rules, draft tests.",
+        "Pair mode: compare layering options, surface edge cases.",
+        "Reviewer mode: spot missing validation, auth, or tests."
+      ]
+    },
+    {
+      "title": "Should AI be given a role explicitly?",
+      "body": "Yes, because roles reduce ambiguity. Sometimes you want a strict reviewer, sometimes a Laravel maintainer mindset, and sometimes just a fast junior drafter.",
+      "code": "Act as a strict Laravel reviewer.\nCheck boundary, validation, auth, query cost, and missing tests.\nDo not propose large refactors yet.\n"
+    },
+    {
+      "title": "What is AI best at in day-to-day engineering work?",
+      "body": "Fast drafting, summarizing large files, building checklists, surfacing edge cases, comparing patterns, drafting tests, and performing small repetitive refactors."
+    },
+    {
+      "title": "What is AI worst at?",
+      "body": "Ambiguous domains, exception-heavy business rules, multi-layer runtime systems, dirty data, sensitive security zones, and tradeoff decisions that depend on system history."
+    },
+    {
+      "title": "Why do you need to control context in Vibe Coding?",
+      "body": "Because the model does not actually remember the repo the way a teammate does. If the context is too wide, it drags in wrong assumptions. If it is too narrow, it misses boundaries and dependencies that matter.",
+      "code": "Context to provide:\n- exact goal\n- touched files\n- framework version\n- constraints\n- what not to touch\n",
+      "tip": "Good context is not the most context possible. It is the right context for the current decision."
+    },
+    {
+      "title": "Why do acceptance criteria matter in Vibe Coding?",
+      "body": "Without clear acceptance criteria, the model optimizes for a feeling of completeness instead of the behavior you actually need. That is how output can look polished and still be wrong for the product.",
+      "bullets": [
+        "State valid input and invalid input.",
+        "State which user may run the flow.",
+        "State the expected response or UI.",
+        "State the commands or tests used to verify it."
+      ]
+    },
+    {
+      "title": "When should you ask the model for a plan before you ask for code?",
+      "body": "When the feature spans several steps or several layers such as request, data, files, auth, or queues. A short plan reveals bad assumptions much earlier than jumping straight into a patch.",
+      "code": "Before writing code, propose:\n1. touched files\n2. flow steps\n3. risks\n4. verification plan\n"
+    },
+    {
+      "title": "What is one major lesson when working with AI?",
+      "body": "The strongest Vibe Coding user is not the one who lets the model write the most code. It is the one who stops it at the right moment, rewrites the prompt at the right moment, and shrinks the diff into the smallest safe unit that can still be reviewed well."
+    },
+    {
+      "title": "Why should you be careful with sensitive data in prompts?",
+      "body": "Many beginners paste `.env` values, tokens, logs with real emails, or real payloads into prompts without noticing. A strong workflow always `masks secrets`, `hides real user data`, and shares only the context that is actually needed."
+    },
+    {
+      "title": "When should you end an AI session and start a new one?",
+      "body": "When the context has become too long, the model keeps repeating stale assumptions, or you are switching to a different problem. A fresh session reduces drift and prevents old misunderstandings from contaminating the next task."
+    },
+    {
+      "title": "What is context-window drift in Vibe Coding?",
+      "body": "It is the moment when the session has grown too long and the model starts clinging to old assumptions, ignores newer constraints, or keeps pulling in decisions that no longer fit the current task.",
+      "code": "Symptoms:\n- repeats old assumptions\n- keeps touching previous files\n- ignores updated constraints\n- answers with stale architecture ideas\n",
+      "tip": "Once you see context drift, it is usually better to restate the task briefly or start a fresh session."
+    },
+    {
+      "title": "Should you paste full internal code or sensitive documents into prompts?",
+      "body": "Not casually. Beyond secrets and user data, you also need to be careful with proprietary code, private internal documents, partner contracts, or material whose license or sharing boundaries are unclear.",
+      "bullets": [
+        "Mask secrets and personal data.",
+        "Share only the code needed for the current decision.",
+        "If the repo has internal policy, follow that before prompting."
+      ]
+    },
+    {
+      "title": "Why do copyright and license questions also belong to Vibe Coding?",
+      "body": "Because AI may suggest snippets, structures, or dependencies whose origin you do not fully understand. The human user still owns the responsibility for added packages, copied content, and any license obligations attached to them."
+    }
+  ]
+}

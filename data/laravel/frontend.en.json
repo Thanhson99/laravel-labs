@@ -1,0 +1,536 @@
+{
+  "anchor": "laravel-frontend",
+  "type": "list",
+  "heading": "Node, npm, and the frontend layer around Laravel: no longer just a side detail",
+  "intro": "Many modern Laravel projects are not only PHP and Blade. They also carry Node, npm, Vite, Tailwind, Alpine, Livewire, or Inertia with Vue or React. That means this topic should be treated as a real runtime layer of the project, not a vague frontend appendix.",
+  "breaks": [
+    {
+      "start": 1,
+      "title": "Frontend-Layer Foundations",
+      "description": "What Node is, what npm is, what assets are, what build tools do, and why Laravel cares about them.",
+      "tone": "amber"
+    },
+    {
+      "start": 8,
+      "title": "Project Setup and Dependency Discipline",
+      "description": "How to read `package.json`, respect `package-lock.json`, and set up a cloned project without environment drift.",
+      "tone": "copper"
+    },
+    {
+      "start": 15,
+      "title": "Vite, Build, and the Asset Pipeline",
+      "description": "Dev server behavior, production builds, `@vite`, the manifest, `vite.config`, and build-only failure modes.",
+      "tone": "olive"
+    },
+    {
+      "start": 23,
+      "title": "CSS, UI Stack, and Technology Choices",
+      "description": "Tailwind, Alpine, Livewire, Inertia, Vue/React, and how to choose the right stack for actual app complexity.",
+      "tone": "ocean"
+    },
+    {
+      "start": 33,
+      "title": "Environment, Failure Modes, and Deployment",
+      "description": "Docker, WSL, asset paths, cache/CDN, build artifacts, and the frontend environment problems teams repeatedly hit.",
+      "tone": "indigo"
+    },
+    {
+      "start": 41,
+      "title": "Checklists, Review, and Long-Term Maintenance",
+      "description": "Onboarding, PR review, safer package upgrades, anti-patterns, and signs the frontend layer has become a subsystem.",
+      "tone": "slate"
+    }
+  ],
+  "items": [
+    {
+      "title": "What is Node?",
+      "body": "Node.js is a JavaScript runtime that runs outside the browser. In Laravel projects, Node does not replace PHP as the main backend runtime. Instead, it usually powers frontend tooling such as Vite, Tailwind, PostCSS, ESLint, and other asset-build tools. In short: Laravel uses PHP to run the application, and Node to support the frontend tooling layer around it."
+    },
+    {
+      "title": "What is npm?",
+      "body": "npm is the package manager that comes with the Node.js ecosystem. It installs, removes, updates, and manages frontend dependencies in the project. If Composer pulls PHP packages into `vendor/`, npm pulls frontend packages into `node_modules/`. Beyond dependency installation, npm is also the runner for scripts such as `npm run dev` and `npm run build`."
+    },
+    {
+      "title": "What are frontend assets in a Laravel project?",
+      "body": "Frontend assets are the interface resources the browser needs: CSS, JavaScript, images, fonts, SVGs, icons, and related static files. In modern Laravel projects, these assets are usually not just written and shipped directly. They often go through a build pipeline so they become smaller, more optimized, and easier to manage."
+    },
+    {
+      "title": "What is a build tool, and why does a modern Laravel project need one?",
+      "body": "A build tool turns frontend source files into output that is ready for local development or production. It can bundle modules, compile CSS, minify JavaScript, watch files, handle hot reload, and generate hashed output files. In newer Laravel projects, Vite usually plays this role."
+    },
+    {
+      "title": "What is Vite?",
+      "body": "Vite is a modern frontend dev server and bundler. In local development, it makes frontend work fast with quick reload and hot module updates. In production, it builds optimized assets. Laravel integrates Vite so frontend assets can connect cleanly into Blade and also support stacks such as Vue, React, and Inertia."
+    },
+    {
+      "title": "What are Tailwind, Alpine, Vue, and React in very basic terms?",
+      "body": "Tailwind is a utility-first CSS framework that helps you style interfaces quickly. Alpine is a lightweight JavaScript library for small interactions on server-rendered HTML. Vue and React are stronger frontend frameworks or libraries, better suited for interfaces with more components and more complex client-side state. Laravel does not require all of them at once; projects choose based on real UI complexity."
+    },
+    {
+      "title": "Why should a Laravel learner still understand some frontend theory?",
+      "body": "Because many problems that feel like 'Laravel is broken' are actually frontend-tooling problems: assets are not built, the dev server is not running, CSS was not compiled, JavaScript is missing, or a frontend package failed. Without a basic understanding of Node, npm, Vite, and the asset pipeline, debugging goes in the wrong direction very easily."
+    },
+    {
+      "title": "Why does Laravel need Node and npm if it is a PHP framework?",
+      "body": "Because modern frontend work needs an asset-build layer: bundling files, hot reload, compiling CSS, transforming JS, optimizing bundles, resolving module imports, and more. PHP is not responsible for that part. Laravel keeps PHP on backend concerns and uses the Node ecosystem for the frontend tooling layer."
+    },
+    {
+      "title": "Quick model: `composer` manages PHP packages, `npm` manages frontend packages",
+      "body": "If `composer` manages `vendor/` for backend code, then `npm` manages `node_modules/` for frontend tooling and browser-side libraries. The two systems live side by side. Real Laravel apps often need both, and newer developers often assume Composer alone is enough."
+    },
+    {
+      "title": "Read `package.json` to understand what frontend layer the project uses",
+      "body": "A quick look at `package.json` often tells you whether the project uses Vite, Tailwind, Vue, React, custom build scripts, or heavier UI tooling. It plays a role similar to `composer.json`, but for the frontend side of the application.",
+      "code": "{\n  \"private\": true,\n  \"scripts\": {\n    \"dev\": \"vite\",\n    \"build\": \"vite build\"\n  },\n  \"devDependencies\": {\n    \"vite\": \"^5.0.0\",\n    \"laravel-vite-plugin\": \"^1.0.0\",\n    \"tailwindcss\": \"^3.0.0\"\n  }\n}",
+      "bullets": [
+        "If you see `vite` and `laravel-vite-plugin`, the project likely uses Vite as its primary asset pipeline.",
+        "If you see `vue` or `react`, the frontend has moved beyond pure Blade.",
+        "If you see `tailwindcss`, `postcss`, or `autoprefixer`, the project has a modern CSS build layer."
+      ]
+    },
+    {
+      "title": "Also inspect `resources/`, `vite.config.*`, and `public/build/` to understand the asset pipeline",
+      "body": "Do not stop at `package.json`. A Laravel repo with frontend tooling reveals a lot through its folders and config files. `resources/js` and `resources/css` show where source assets live. `vite.config.js` or `vite.config.ts` shows what Vite builds, which plugins it uses, and how aliases or outputs are configured. `public/build/` and the manifest show how production assets are emitted.",
+      "code": "resources/\n  js/\n  css/\n  views/\nvite.config.js\npublic/build/\npublic/build/manifest.json",
+      "bullets": [
+        "`resources/js`: the main JS entry, components, composables, or frontend logic.",
+        "`resources/css`: source styles, often tied to Tailwind or custom CSS.",
+        "`vite.config.*`: where to inspect Vue/React plugins, path aliases, entry points, and output decisions.",
+        "`public/build/manifest.json`: how backend rendering finds hashed production asset files."
+      ]
+    },
+    {
+      "title": "Why does `package-lock.json` matter, and why should you not treat it casually?",
+      "body": "If `package.json` is the project's dependency intent, then `package-lock.json` is the exact snapshot of the resolved dependency tree. It keeps developer machines, CI, and production builds aligned. Once the lock file is changed carelessly or ignored, build drift becomes much more likely.",
+      "code": "package.json\npackage-lock.json",
+      "bullets": [
+        "If a cloned project already has a lock file, respect it instead of forcing npm to resolve from scratch.",
+        "A PR that changes `package-lock.json` should be reviewed as a real dependency change, not as meaningless noise.",
+        "Without lock-file discipline, code can stay the same while builds start behaving differently."
+      ]
+    },
+    {
+      "title": "What does the setup flow look like for a Laravel project with a frontend layer?",
+      "body": "Beyond Composer and Artisan, a frontend-enabled Laravel app often also needs `node_modules/` and either a running dev server or a production build. If you skip that part, the app may boot while the interface still looks broken or JavaScript fails entirely.",
+      "code": "composer install\ncp .env.example .env\nphp artisan key:generate\nnpm install\nphp artisan migrate\nnpm run dev",
+      "bullets": [
+        "`npm install`: restore frontend dependencies from the lock file or package manifest.",
+        "`npm run dev`: start the Vite dev server so CSS and JS can rebuild and hot reload locally.",
+        "If you only run the PHP side and ignore the frontend layer, you may get missing styles, missing scripts, or browser console errors."
+      ],
+      "note": "Some projects use `npm run build` instead of `npm run dev` when the immediate goal is only to confirm the production assets compile cleanly."
+    },
+    {
+      "title": "When do you use `npm install`, and why does it matter?",
+      "body": "This command installs frontend dependencies into `node_modules/`. It plays a role similar to `composer install` on the PHP side. Without `node_modules/`, the asset build layer usually cannot function because Vite, Tailwind, frontend plugins, and browser-side packages are missing.",
+      "code": "npm install\nnpm ci",
+      "bullets": [
+        "`npm install`: use it after cloning, after adding packages, or whenever `node_modules/` is missing.",
+        "`npm ci`: better for CI or clean reproducible installs based on the lock file.",
+        "If the repo includes `package-lock.json`, respect it so machines do not silently drift to different versions."
+      ]
+    },
+    {
+      "title": "When should you use `npm install` versus `npm ci`?",
+      "body": "`npm install` is fine for normal local development when you are setting up or adding packages. `npm ci` is usually better for CI/CD and clean reproducible builds because it follows the lock file more strictly and reduces drift. Confusing the two will not always break things immediately, but it affects long-term build stability.",
+      "bullets": [
+        "Normal local development: `npm install` is the familiar default.",
+        "CI, Docker builds, staging builds, or production pipelines: `npm ci` is often more trustworthy.",
+        "If the lock file and manifest disagree, `npm ci` exposes that mismatch more clearly."
+      ]
+    },
+    {
+      "title": "`npm run dev`: the command you will keep running during local development",
+      "body": "This usually starts the Vite dev server. It watches CSS, JS, Vue, React, and related assets, then rebuilds them when files change. In many modern Laravel projects, this command lives alongside `php artisan serve` during daily development.",
+      "code": "npm run dev",
+      "bullets": [
+        "Use it while editing UI, JavaScript, or styles and you want feedback immediately.",
+        "Use it to get hot reload or fast refresh depending on the chosen stack.",
+        "If this process is not running, frontend changes may not show up even though your files were saved."
+      ]
+    },
+    {
+      "title": "What is `npm run dev` really doing behind the scenes?",
+      "body": "It is not just 'running the frontend'. The Vite dev server creates a separate development environment: it watches files, serves modules over HTTP, injects the HMR client, rebuilds changed pieces, and syncs that back into the page. Understanding that helps you distinguish Blade rendering issues from dev-server issues.",
+      "bullets": [
+        "If the dev-server terminal dies, HMR dies with it even if PHP is still serving pages.",
+        "If the browser cannot connect to Vite, the problem may be host, port, proxy, or the server not running.",
+        "If a change does not appear, verify that you edited files under `resources/`, not generated build output."
+      ]
+    },
+    {
+      "title": "`npm run build`: when you need production-ready assets",
+      "body": "Unlike `dev`, `build` generates optimized production assets: smaller bundles, hashed filenames, tree-shaking, minification, and a predictable output for deployment. If deployment happens without a clean build step, the app can miss assets or ship an inefficient bundle.",
+      "code": "npm run build",
+      "bullets": [
+        "Use it before deployment or to verify the production asset pipeline still works.",
+        "Some import, alias, plugin, or path issues only reveal themselves during `build`, not during `dev`.",
+        "If CI has a frontend checkpoint, `npm run build` is often that checkpoint."
+      ]
+    },
+    {
+      "title": "Problems that only show up during `npm run build`, not during `dev`",
+      "body": "This is a very practical lesson. Dev servers can be more forgiving in some situations, or at least their runtime flow differs from production builds. That means some issues look fine locally but fail only when the production bundle is generated.",
+      "bullets": [
+        "Case-sensitive import paths: local may appear fine while CI or production build fails.",
+        "Alias config that sort of works in dev but breaks in production output.",
+        "Packages that depend on browser globals or special env behavior and break during minification or bundling.",
+        "Asset, font, image, or dynamic import paths that only become obviously wrong during build."
+      ],
+      "note": "A strong habit is to run `npm run build` at least once before considering a meaningful frontend change complete."
+    },
+    {
+      "title": "What does Vite actually do in a Laravel project?",
+      "body": "Vite is the modern asset bundler and dev server Laravel uses in many new projects. It handles fast dev serving, HMR, production builds, module transforms, import resolution, and Vue/React plugin integration, then connects those assets back into Blade through `@vite`.",
+      "code": "@vite(['resources/css/app.css', 'resources/js/app.js'])",
+      "bullets": [
+        "If Blade contains `@vite(...)`, that is the bridge between Blade and the asset pipeline.",
+        "If local CSS or JS does not load, check whether the Vite server is actually running.",
+        "If production asset paths are broken, inspect the build step and Vite manifest output."
+      ]
+    },
+    {
+      "title": "Understand `@vite(...)`, the manifest, and why production cannot depend on the dev server",
+      "body": "In local development, Blade can point to the Vite dev server for live assets. In production, the app must read the build manifest to know the real hashed asset filenames. That means if the build never ran, the manifest is wrong, or build files were not deployed, HTML may render while CSS and JS still fail.",
+      "code": "@vite(['resources/css/app.css', 'resources/js/app.js'])\n\npublic/build/manifest.json",
+      "bullets": [
+        "Local: Blade often pulls assets from the Vite dev server.",
+        "Production: Blade relies on the build manifest to map entries to hashed files.",
+        "If production renders HTML but no real assets load, inspect build artifacts before blaming controllers or routes."
+      ]
+    },
+    {
+      "title": "Vite config is often where the most important frontend decisions live",
+      "body": "Many newer developers skip `vite.config.js`, but it often reveals exactly what the app builds, whether Vue or React plugins are active, which aliases exist, how Blade refresh works, and where output files go. When builds fail or imports behave strangely, this is often one of the first files worth reading.",
+      "code": "import { defineConfig } from 'vite'\nimport laravel from 'laravel-vite-plugin'\n\nexport default defineConfig({\n  plugins: [\n    laravel({\n      input: ['resources/css/app.css', 'resources/js/app.js'],\n      refresh: true,\n    }),\n  ],\n})",
+      "bullets": [
+        "Inspect `input` to see which files are true build entry points.",
+        "Inspect plugins to understand whether the app is plain Blade, Vue, or React based.",
+        "Inspect aliases and output rules when debugging imports or deployment artifacts."
+      ]
+    },
+    {
+      "title": "PostCSS, Autoprefixer, and the CSS-processing layer behind Tailwind",
+      "body": "In many Laravel projects, Tailwind does not run alone. It goes through a PostCSS pipeline that may include `autoprefixer`, nesting plugins, and other CSS transforms. If CSS behaves differently between local and production builds, do not forget this layer exists.",
+      "code": "postcss.config.js\n\nexport default {\n  plugins: {\n    tailwindcss: {},\n    autoprefixer: {},\n  },\n}",
+      "bullets": [
+        "`autoprefixer` helps CSS stay more compatible across browsers where prefixes still matter.",
+        "A broken PostCSS config can make Tailwind or CSS output incomplete or invalid.",
+        "When a project has custom CSS plugins, PostCSS is often one of the first places worth reading."
+      ]
+    },
+    {
+      "title": "How should you organize frontend code under `resources/js` so it does not become a dump?",
+      "body": "A tiny app may survive with a single `app.js`. Once the frontend grows, you usually want a clearer split between entries, components, pages, composables, or utilities. Without that, Laravel frontend code quickly becomes something nobody wants to reopen.",
+      "bullets": [
+        "Small app: `app.js` plus a few support files can be enough.",
+        "Medium app: split into `components/`, `pages/`, `lib/`, `utils/`, or feature-based folders.",
+        "With Inertia/Vue/React, folders like `Pages`, `Layouts`, and `Components` often deserve explicit conventions.",
+        "File names, import aliases, and source placement should stabilize early."
+      ]
+    },
+    {
+      "title": "Blade, Tailwind, and Alpine: a lightweight but very practical stack",
+      "body": "This is a common choice for server-rendered Laravel apps. Blade renders HTML, Tailwind handles utility-first CSS, and Alpine handles small interactive behavior like toggles, dropdowns, modals, tabs, or lightweight state. For many internal tools and admin dashboards, this stack is already enough.",
+      "bullets": [
+        "A good fit for form-heavy apps, CRUD dashboards, and clear page flows.",
+        "Lighter than Vue or React in organization cost and state management complexity.",
+        "Often easier for Laravel-heavy teams to maintain."
+      ]
+    },
+    {
+      "title": "Tailwind in Laravel is part of the build pipeline, not just a bag of CSS classes",
+      "body": "Tailwind is not only about long utility classes in templates. It also involves content scanning, purging unused classes, PostCSS processing, theme configuration, and sometimes internal plugins. If content paths are wrong, classes you wrote may disappear from the production bundle even if local development looked fine.",
+      "code": "export default {\n  content: [\n    './resources/**/*.blade.php',\n    './resources/**/*.js',\n    './resources/**/*.vue',\n  ],\n  theme: {\n    extend: {},\n  },\n}",
+      "bullets": [
+        "Wrong `content` paths can cause valid classes to be purged away.",
+        "Theme config is where spacing, colors, fonts, and breakpoints grow toward a design system.",
+        "In larger apps, Tailwind config becomes part of the product's UI language."
+      ]
+    },
+    {
+      "title": "When does the frontend layer start needing a design system, or at least UI conventions?",
+      "body": "At first, a few Tailwind classes feel enough. As the project grows, though, a lack of conventions around spacing, color, buttons, forms, cards, modals, and typography causes the UI to drift badly. This is not only about aesthetics; it is a maintenance cost problem.",
+      "bullets": [
+        "A small app may not need a formal design system, but it still benefits from basic conventions.",
+        "When multiple people touch the UI, missing conventions make Tailwind-heavy code hard to read and harder to reuse.",
+        "Some teams solve this with Blade components, some with Vue/React components, and some through Tailwind tokens and config."
+      ]
+    },
+    {
+      "title": "Where Alpine fits best and where it starts to hurt",
+      "body": "Alpine is excellent for micro-interactions: toggles, tabs, dropdowns, modals, accordions, and small local state on a server-rendered page. But if you try to turn it into a large application state system, the code gets messy quickly. Knowing that limit matters.",
+      "bullets": [
+        "Very good for small enhancement on top of Blade-rendered pages.",
+        "Useful when you want minimal custom JS but still need light interaction.",
+        "A poor fit once state becomes large, deeply nested, or highly cross-component."
+      ]
+    },
+    {
+      "title": "What is Livewire, and when is it worth using?",
+      "body": "Livewire lets you build more interactive interfaces while staying close to Laravel's server-side model. Instead of building lots of APIs or managing heavy client-side state yourself, you let Livewire components communicate with the server in a Laravel-native way.",
+      "bullets": [
+        "A strong fit when the team is much stronger in PHP/Laravel than in SPA frontend work.",
+        "Useful for multi-step forms, tables, filters, and medium-complexity UI interactions.",
+        "If interaction becomes extremely dense, highly realtime, or heavily client-state-driven, evaluate the tradeoff carefully."
+      ]
+    },
+    {
+      "title": "A common mistake: choosing Livewire or React based on trend instead of maintenance reality",
+      "body": "The better question is not which stack feels hotter, but who will maintain the screen, where the real state lives, how interactive the UX must be, and whether the team is comfortable debugging browser-heavy behavior. A poor stack choice becomes expensive faster than people expect.",
+      "bullets": [
+        "Backend-heavy team and mostly CRUD/internal dashboards: Livewire is often very reasonable.",
+        "Heavier interactive UI, large client-side state, dense charts, app-like workflows: Vue or React may justify themselves.",
+        "There is no good answer if the team lacks enough people who truly understand the chosen stack."
+      ]
+    },
+    {
+      "title": "Inertia with Vue or React: when the app starts leaning toward SPA-like behavior",
+      "body": "Inertia does not turn Laravel into a pure API backend. Instead, it creates a bridge where Laravel still drives navigation and data flow in a familiar way, while the UI uses Vue or React for a more app-like frontend experience. It is useful when UX needs to go beyond Blade/Alpine but the team does not want to split frontend and backend completely.",
+      "bullets": [
+        "Good for larger dashboards, internal products, and interfaces that want smoother navigation.",
+        "Lets Laravel remain the backend center instead of jumping straight to a separate API architecture.",
+        "The tradeoff is more frontend complexity: component trees, client state, build tooling, and browser-side bugs."
+      ]
+    },
+    {
+      "title": "What Inertia helps with, and what it does not magically solve",
+      "body": "Inertia helps you avoid designing a separate API layer too early when the web UI is still the main client. But it does not erase frontend complexity. Once Vue or React is involved, you still need to understand components, props, state, async flow, and frontend code organization.",
+      "bullets": [
+        "It reduces the pressure to split frontend and backend too early.",
+        "It lets Laravel routes and controllers remain powerful in the web flow.",
+        "It does not let you skip modern frontend knowledge if the UI is truly interactive."
+      ]
+    },
+    {
+      "title": "Vue or React inside Laravel is not only a taste question",
+      "body": "The more useful question is what type of application the team needs, what skills the team already has, and whether the extra frontend complexity is justified. Many small or medium Laravel projects do not need React just to make CRUD screens look modern. Some highly interactive products do justify it.",
+      "bullets": [
+        "For light interaction: Blade + Alpine may already be enough.",
+        "For moderate state while staying close to Laravel: Livewire is a strong candidate.",
+        "For more app-like UX: Inertia + Vue or React is worth evaluating.",
+        "If frontend is truly separate, that is a different architecture discussion altogether."
+      ]
+    },
+    {
+      "title": "A quick frontend-stack selection matrix for Laravel projects",
+      "body": "Think in terms of interaction density and team skill, not in terms of trend.",
+      "bullets": [
+        "Level 1: mostly server-rendered pages, low interaction -> Blade + Tailwind + Alpine.",
+        "Level 2: moderately complex forms and data tables, backend-heavy team -> Livewire.",
+        "Level 3: rich interactive dashboards, app-like UX -> Inertia + Vue or React.",
+        "Level 4: truly separate frontend clients and multi-platform product flow -> dedicated API or a more separated architecture."
+      ],
+      "note": "A common mistake is jumping directly to level 3 or 4 when the real problem still belongs to level 1 or 2."
+    },
+    {
+      "title": "Common errors when a Laravel frontend project is first cloned",
+      "body": "Many problems that look like Laravel problems are actually Node or Vite problems: wrong Node version, missing `node_modules/`, dev server not running, lock-file drift, frontend plugin conflicts, or broken import paths.",
+      "code": "node -v\nnpm -v\nnpm install\nnpm run dev\nnpm run build",
+      "bullets": [
+        "If `npm install` fails, inspect the Node version and lock file first.",
+        "If the page loads without CSS or JS, check whether `npm run dev` ran or whether production assets were built.",
+        "If build fails, read the import, alias, plugin, syntax, or dependency error carefully."
+      ],
+      "note": "When a Laravel page renders HTML but has no real styling, the asset layer is often the first place to inspect."
+    },
+    {
+      "title": "Frontend environment issues that waste a lot of beginner time",
+      "body": "Many painful cases are not code bugs at all, but environment mismatches. The more projects you touch, the more repetitive these patterns become.",
+      "bullets": [
+        "Wrong Node major version for the package set or plugin stack in use.",
+        "Running `npm install` on a project whose lock file was created under a different expectation and not noticing the drift.",
+        "Vite port conflicts or incorrect host binding inside Docker, VMs, or remote dev setups.",
+        "Old build artifacts left on the server, making a fresh deploy look ineffective.",
+        "CDN, reverse proxy, or browser cache serving stale assets and sending debugging in the wrong direction."
+      ]
+    },
+    {
+      "title": "Why do Docker, WSL, VMs, and remote-dev setups make the frontend layer harder?",
+      "body": "When the app does not run directly on a simple local machine, the Vite dev server gets extra concerns around host binding, port exposure, file watching, permissions, and network bridging. Many issues that look like npm problems are actually environment problems around the dev container or filesystem events.",
+      "bullets": [
+        "File watchers may miss changes or lag badly inside large mounted volumes.",
+        "The dev server may bind the wrong `host`, so the browser outside the container cannot reach it.",
+        "Port mapping or reverse proxy rules can break HMR reconnection.",
+        "WSL-like environments can be sensitive to path, permission, or watch-limit details."
+      ],
+      "note": "If the team uses Docker or WSL, onboarding docs should explain how Vite runs there instead of only saying `npm run dev`."
+    },
+    {
+      "title": "Asset paths, images, fonts, and static files are a frequent source of annoying bugs",
+      "body": "The frontend layer is not only JS and CSS. Images, fonts, SVGs, videos, and static files often cause local-versus-production issues when path strategy is inconsistent.",
+      "bullets": [
+        "Some projects keep assets inside `resources/` and import them through Vite, while others place them directly under `public/`.",
+        "Those approaches have different tradeoffs around hashing, caching, build behavior, and how Blade or components reference them.",
+        "Font 404s, broken image paths, or missing SVGs are often signs that the repo's asset-path strategy is unclear."
+      ]
+    },
+    {
+      "title": "A practical npm command set for Laravel projects",
+      "body": "These are frontend commands you will keep seeing in Laravel codebases with a modern asset layer.",
+      "code": "npm install\nnpm ci\nnpm run dev\nnpm run build\nnpm run preview\nnpm outdated\nnpm audit\nnpm remove <package-name>",
+      "bullets": [
+        "`npm install`: install frontend dependencies for local work.",
+        "`npm ci`: clean lock-file-based install, especially useful in CI.",
+        "`npm run dev`: run the dev server and watch assets.",
+        "`npm run build`: build production assets.",
+        "`npm outdated`: inspect what frontend packages are behind.",
+        "`npm audit`: review known frontend package advisories."
+      ]
+    },
+    {
+      "title": "When should you use `npm ci`, `npm outdated`, or `npm audit`, and why do they matter?",
+      "body": "Many developers only know `npm install`, but the supporting commands become more important once the project has CI/CD, more packages, and a longer maintenance horizon.",
+      "bullets": [
+        "`npm ci`: use it when you want exact lock-file installs in CI or build servers with less drift and more predictability.",
+        "`npm outdated`: use it to plan upgrades instead of blindly updating dependencies.",
+        "`npm audit`: use it to inspect known package advisories, but do not fix everything blindly without understanding build impact.",
+        "`npm remove`: remove packages cleanly instead of editing `package.json` by hand."
+      ]
+    },
+    {
+      "title": "How do you upgrade frontend packages more safely?",
+      "body": "Frontend dependencies can create chain reactions. Upgrading a small package may affect Vite plugins, PostCSS, Tailwind, or framework-level components. That is why upgrades should be intentional instead of a blind response to every outdated warning.",
+      "bullets": [
+        "Prefer upgrading related package groups instead of random one-off bumps.",
+        "Read release notes for important packages like Vite, Tailwind, Vue, or React integrations.",
+        "After upgrading: run install/ci, then `npm run dev`, `npm run build`, and inspect key screens.",
+        "If a PR only upgrades packages, keep it separate from feature work so review stays clear."
+      ]
+    },
+    {
+      "title": "Deploying the frontend layer in Laravel is its own operational problem",
+      "body": "Many backend-focused teams forget that 'deploying Laravel' does not automatically mean 'frontend assets are ready'. If CI/CD does not build assets, publish artifacts, or ship the correct output with the backend code, the new backend becomes irrelevant because the UI still loads stale or missing files.",
+      "code": "npm ci\nnpm run build",
+      "bullets": [
+        "Decide whether build runs in CI, on a developer machine, or on the server itself.",
+        "Ensure `public/build/` or equivalent artifacts are deployed in sync with backend code.",
+        "If backend rolls back but asset versions do not, frontend-backend mismatch can appear."
+      ]
+    },
+    {
+      "title": "Frontend cache, CDN, and browser cache can send debugging in the wrong direction",
+      "body": "When hashed assets are built correctly, cache is your friend. When build/deploy discipline is weak, cache becomes a source of confusion: developers think the server did not deploy, operations thinks the browser cached too much, and the real issue is an artifact or manifest mismatch.",
+      "bullets": [
+        "Hashed filenames make caching safer, but only if the build artifact itself is correct.",
+        "Without proper hashing or versioning, old CSS and JS stay alive much longer than expected.",
+        "When production looks 'half old, half new', think about manifest, CDN cache, browser cache, and rollback mismatch."
+      ]
+    },
+    {
+      "title": "A playbook for when a Laravel frontend 'looks broken' but the cause is unclear",
+      "body": "This is a practical check sequence before going deep into framework internals.",
+      "code": "1) node -v && npm -v\n2) npm install or npm ci\n3) npm run dev\n4) if production flow is suspicious: npm run build\n5) check that Blade uses @vite(...)\n6) inspect browser console and network asset requests",
+      "bullets": [
+        "If HTML loads but no styles appear, think asset pipeline first.",
+        "If local works but build fails, think imports, aliases, plugins, and config.",
+        "If production fails while local works, think artifacts, manifest, cache, or deploy steps."
+      ]
+    },
+    {
+      "title": "A review checklist for PRs that touch Laravel frontend tooling",
+      "body": "If a PR changes `package.json`, `vite.config`, frontend components, or the asset pipeline, it deserves a review checklist that goes beyond whether the UI looks nice.",
+      "bullets": [
+        "Did `package.json` or `package-lock.json` change, and is the reason clear?",
+        "Did `npm run build` pass cleanly?",
+        "Are import paths, aliases, and asset paths consistent?",
+        "Was a new package added, and is it actually worth the long-term cost?",
+        "Does the change affect Blade-only pages, Livewire, Inertia, or Vue/React in a broader way?"
+      ]
+    },
+    {
+      "title": "An onboarding checklist for new developers joining a Laravel project with frontend tooling",
+      "body": "A healthy project should help new developers get productive quickly. If the frontend layer has many requirements but none are documented, the team will repeat the same setup mistakes forever.",
+      "bullets": [
+        "Which Node version should be used?",
+        "Should local setup use `npm install` or `npm ci`?",
+        "Does the project require `npm run dev` alongside PHP during normal development?",
+        "Is the app using Blade + Alpine, Livewire, or Inertia/Vue/React?",
+        "Are there Docker, WSL, VM, or proxy-specific instructions?"
+      ]
+    },
+    {
+      "title": "When has the Laravel frontend layer grown large enough to deserve separate thinking?",
+      "body": "There is a threshold where the frontend is no longer just 'a few assets'. Once page count, component count, package count, and browser-only bugs all grow, you should treat it as a subsystem with its own ownership, guidance, and review discipline.",
+      "bullets": [
+        "There are many shared components across screens.",
+        "Client-side state has become non-trivial, or tables/charts/filters are heavy.",
+        "Multiple frontend packages materially affect build and deployment behavior.",
+        "Production issues increasingly appear in the browser or asset pipeline rather than in PHP code."
+      ]
+    },
+    {
+      "title": "Practical frontend-layer habits from real Laravel work",
+      "body": "Newer developers often treat the frontend layer as an optional side detail. After a few real projects, it becomes obvious that this layer causes many environment, build, and deployment issues if the team treats it casually.",
+      "bullets": [
+        "If a freshly cloned project looks visually broken, do not stare only at PHP. Check Node, npm, and Vite first.",
+        "After updating frontend packages, run `npm run build` to verify production assets, not only the dev server.",
+        "If deployment includes queues and frontend build, remember these are different responsibilities: restarting workers does not replace building assets.",
+        "Do not add frontend libraries just because they look impressive. Every package adds build, maintenance, and upgrade cost.",
+        "If the team is strong in backend Laravel and the frontend is not highly complex, Blade + Alpine or Livewire often ages better than a half-committed SPA."
+      ]
+    },
+    {
+      "title": "Common anti-patterns in the frontend layer of Laravel projects",
+      "body": "Knowing what not to do is as valuable as knowing the commands.",
+      "bullets": [
+        "Adding React or Vue just for a few tiny interactions that Alpine could handle cleanly.",
+        "Adding multiple UI libraries without any strategy for style consistency or component ownership.",
+        "Ignoring lock-file discipline or committing noisy dependency changes without review.",
+        "Testing only with `npm run dev` and never verifying a production build.",
+        "Editing generated build output instead of editing source files under `resources/`."
+      ]
+    },
+    {
+      "title": "How to study the frontend layer in Laravel without getting lost",
+      "body": "Learn it in layers. First understand `package.json`, `npm install`, `npm run dev`, `npm run build`, and how `@vite` connects assets into Blade. Only after that should you go deeper into Tailwind, Alpine, Livewire, Inertia, Vue, or React. If you jump straight into a frontend framework without understanding the asset pipeline, you will learn it in a fog."
+    },
+    {
+      "title": "486. How can mismatched Node versions between developer machines and CI silently break the frontend layer?",
+      "body": "Some packages build fine on one Node version but fail or produce heavy warnings on another. That is why `.nvmrc`, `engines` in `package.json`, or clear version guidance matters in real projects."
+    },
+    {
+      "title": "487. Real case: Vite dev server is running but the browser still does not get HMR",
+      "body": "This is often caused by host, port, local HTTPS, Docker networking, WSL bridging, or incorrect HMR configuration. Many people assume the JS app is broken when the real issue is the dev-server connection itself."
+    },
+    {
+      "title": "488. Why do frontend environment variables like `VITE_*` matter?",
+      "body": "Frontend code can only read variables that are intentionally exposed. If developers assume every `.env` value is available in the browser, they can create bugs or leak data that should never leave the server."
+    },
+    {
+      "title": "489. Real case: local build looks fine but the deployed artifact still serves the wrong assets",
+      "body": "This can happen because the build ran in a different environment, the base path is wrong, the manifest is stale, CDN cache is old, or the deploy is missing the `public/build` output. This is a classic Laravel frontend release bug."
+    },
+    {
+      "title": "490. Extra tip: a stable frontend layer is not only one that builds, but one whose package manager, versions, and pipeline are used consistently by the whole team",
+      "body": "If the repo is supposed to use npm but one developer installs with pnpm, another with yarn, and others use different Node versions, environment bugs will keep appearing. Tooling discipline matters almost as much as UI code."
+    },
+    {
+      "title": "491. Example of a minimal frontend flow in a Laravel project that uses Vite",
+      "body": "These are commands Laravel learners should run a few times so they understand that the frontend layer does not appear magically.",
+      "code": "npm install\nnpm run dev\nnpm run build",
+      "bullets": [
+        "`npm install` installs packages from `package.json` and the lock file.",
+        "`npm run dev` starts the dev server or watch mode for local development.",
+        "`npm run build` produces production assets in `public/build` so the app can serve optimized files."
+      ],
+      "note": "If local `dev` works but `build` fails, that is a very important signal because production does not depend on the dev server."
+    },
+    {
+      "title": "492. Example `package.json` scripts and how to read the repo's frontend workflow quickly",
+      "body": "Looking at scripts often tells you how the project builds, watches, lints, and tests its frontend layer.",
+      "code": "{\n  \"scripts\": {\n    \"dev\": \"vite\",\n    \"build\": \"vite build\"\n  }\n}",
+      "bullets": [
+        "If scripts are minimal, the frontend stack may still be fairly small.",
+        "If there are many scripts for lint, test, type-check, or e2e, the frontend layer is already more mature.",
+        "Reading scripts first helps you avoid running the wrong tool or assuming the repo uses something else."
+      ]
+    },
+    {
+      "title": "493. Example of connecting Vite assets into a Laravel Blade UI",
+      "body": "The frontend pipeline only matters when the final assets are actually wired back into the real UI entry point.",
+      "code": "@vite(['resources/css/app.css', 'resources/js/app.js'])",
+      "note": "This directive tells Laravel to load assets from the dev server in local development and from the built manifest in production. It is a very important bridge between the backend and the frontend toolchain."
+    }
+  ]
+}

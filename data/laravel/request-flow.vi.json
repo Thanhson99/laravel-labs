@@ -1,0 +1,724 @@
+{
+  "anchor": "laravel-request-flow",
+  "type": "list",
+  "heading": "Luồng request trong Laravel: từ request đi vào tới response đi ra",
+  "intro": "Site này đi rất sâu vào request flow của Laravel theo đúng thứ tự một request thật đi qua hệ thống. Mục tiêu không chỉ là biết route hay controller, mà là nhìn ra toàn bộ pipeline: web server, bootstrap, container, middleware, validation, auth, service, query, response, exception, session, cache và các bài toán production thường gặp.",
+  "breaks": [
+    {
+      "start": 1,
+      "title": "Nền Tảng Và Entry Point",
+      "description": "Request là gì, web server đẩy request vào đâu, và Laravel bắt đầu xử lý từ file nào.",
+      "tone": "amber"
+    },
+    {
+      "start": 11,
+      "title": "Bootstrap, Kernel Và Route Matching",
+      "description": "Ứng dụng được khởi tạo ra sao, HTTP kernel làm gì, route được match như thế nào, và middleware được gắn vào flow ở đâu.",
+      "tone": "copper"
+    },
+    {
+      "start": 23,
+      "title": "Middleware, Validation Và Authorization",
+      "description": "Request bị chặn hay được đi tiếp ở đâu, input được làm sạch thế nào, và quyền được kiểm tra ra sao.",
+      "tone": "olive"
+    },
+    {
+      "start": 35,
+      "title": "Controller, Service Và Tầng Dữ Liệu",
+      "description": "Controller điều phối thế nào, service nên đứng ở đâu, model/query/transaction chạm vào request flow ra sao.",
+      "tone": "ocean"
+    },
+    {
+      "start": 47,
+      "title": "Response, Session Và Trải Nghiệm Web",
+      "description": "Blade, redirect, JSON, file response, old input, flash message và session gắn với request kết thúc thế nào.",
+      "tone": "indigo"
+    },
+    {
+      "start": 59,
+      "title": "API Flow, Auth Và Exception",
+      "description": "Sự khác biệt giữa web và API, token/session auth, status code, exception handling và response lỗi.",
+      "tone": "rose"
+    },
+    {
+      "start": 71,
+      "title": "Event, Queue, Cache Và Side Effect",
+      "description": "Những gì request nên làm ngay, nên defer sang queue, nên cache ở đâu và ảnh hưởng tới trải nghiệm người dùng thế nào.",
+      "tone": "slate"
+    },
+    {
+      "start": 83,
+      "title": "Debug, Performance Và Security",
+      "description": "Cách lần request flow có hệ thống, tìm chỗ nghẽn, tránh bug bảo mật và nhìn ra các mùi code trong pipeline.",
+      "tone": "stone"
+    },
+    {
+      "start": 95,
+      "title": "Production Cases Và Kinh Nghiệm Dài Hạn",
+      "description": "Những bài toán thực tế khi app lớn lên: retry, idempotency, race condition, observability và cách thiết kế flow bền hơn.",
+      "tone": "amber"
+    },
+    {
+      "start": 107,
+      "title": "Flow Mở Rộng: Livewire, Inertia, Redis Và Case Thật",
+      "description": "Request flow khi đi qua Livewire hoặc Inertia, khi state nằm trong Redis, và các lỗi production rất hay làm team mất thời gian.",
+      "tone": "copper"
+    },
+    {
+      "start": 125,
+      "title": "Flow Thực Chiến: Upload, SPA Auth Và Multi-Tenant",
+      "description": "Những luồng request hay làm dự án thật đau đầu: upload file lớn, Sanctum cho SPA, và cách request phải tự mang đúng tenant context.",
+      "tone": "olive"
+    }
+  ],
+  "items": [
+    {
+      "title": "1. Request trong web app là gì?",
+      "body": "Request là một lần người dùng hoặc client gửi yêu cầu tới server để lấy dữ liệu hoặc yêu cầu hệ thống làm một việc nào đó. Ví dụ mở một trang, submit form, gọi API, tải file hoặc đăng nhập.",
+      "code": "GET /posts\nPOST /login\nPOST /api/orders\nGET /files/report.pdf",
+      "note": "Nhìn request dưới dạng method + URL ngay từ đầu sẽ giúp bạn đỡ thấy request flow quá trừu tượng."
+    },
+    {
+      "title": "2. Response là gì?",
+      "body": "Response là thứ server trả lại sau khi xử lý request. Nó có thể là HTML, JSON, redirect, file download, stream hoặc một status code báo lỗi."
+    },
+    {
+      "title": "3. Request flow là gì?",
+      "body": "Đó là toàn bộ đường đi của một request từ lúc đi vào hệ thống cho tới lúc trả response ra ngoài. Hiểu flow này sẽ giúp framework bớt cảm giác bí ẩn."
+    },
+    {
+      "title": "4. Vì sao phải học request flow kỹ?",
+      "body": "Vì rất nhiều bug không nằm ở một file đơn lẻ mà nằm ở chỗ request bị chặn sai, validate sai, query sai, redirect sai hoặc exception bị map sai response."
+    },
+    {
+      "title": "5. Request thường đi vào Laravel từ đâu?",
+      "body": "Thông thường web server như Nginx hoặc Apache sẽ trỏ request hợp lệ về `public/index.php`. Đây là entry point quen thuộc của ứng dụng Laravel.",
+      "code": "server {\n    root /var/www/app/public;\n\n    location / {\n        try_files $uri $uri/ /index.php?$query_string;\n    }\n}",
+      "note": "Sai lầm thường gặp: document root trỏ nhầm vào thư mục project thay vì `public/`. Cách sửa là luôn kiểm tra web root trước khi nghi code Laravel."
+    },
+    {
+      "title": "6. Vai trò của thư mục `public/` trong request flow là gì?",
+      "body": "`public/` là web root an toàn để expose ra ngoài. Browser chỉ nên chạm vào asset public và file `index.php`, không nên truy cập thẳng vào code ứng dụng bên trong."
+    },
+    {
+      "title": "7. Vì sao `public/index.php` quan trọng?",
+      "body": "Nó là cánh cửa đầu tiên của app. Từ đây Laravel load autoload, bootstrap ứng dụng, tạo app instance và chuyển request vào kernel HTTP."
+    },
+    {
+      "title": "8. Web server có vai trò gì trước khi request vào Laravel?",
+      "body": "Web server quyết định request nào là file tĩnh, request nào nên đẩy vào PHP, và thường cũng xử lý một số việc như TLS termination, gzip, cache header hoặc rewrite rule."
+    },
+    {
+      "title": "9. PHP-FPM liên quan gì tới request flow?",
+      "body": "Trong nhiều hệ thống PHP hiện đại, web server chuyển request động sang PHP-FPM để chạy code PHP. Laravel sống ở lớp này, còn Nginx/Apache chỉ là lớp mặt tiền."
+    },
+    {
+      "title": "10. Tip nền tảng: đừng chỉ học route và controller mà bỏ qua lớp web server",
+      "body": "Nhiều lỗi tưởng là Laravel nhưng thực ra do rewrite rule, document root sai, header sai, timeout sai hoặc PHP-FPM không chạy."
+    },
+    {
+      "title": "11. Sau `public/index.php`, Laravel bootstrap những gì?",
+      "body": "Laravel load Composer autoload, bootstrap ứng dụng, chuẩn bị config, environment, service container, exception handler và HTTP kernel.",
+      "code": "require __DIR__.'/../vendor/autoload.php';\n\n$app = require_once __DIR__.'/../bootstrap/app.php';",
+      "note": "Chỉ cần hiểu 2 dòng này là bạn đã nối được `public/index.php` với `vendor/` và `bootstrap/app.php`."
+    },
+    {
+      "title": "12. `bootstrap/app.php` giữ vai trò gì?",
+      "body": "Đây là nơi tạo application instance và đăng ký các phần nền như container, kernel, exception handler. Nó là cầu nối giữa entry point và phần lõi của framework."
+    },
+    {
+      "title": "13. HTTP kernel là gì?",
+      "body": "HTTP kernel là trung tâm điều phối request ở mức cao. Nó chịu trách nhiệm đẩy request qua middleware stack rồi dispatch vào router."
+    },
+    {
+      "title": "14. Vì sao nói kernel giống cổng điều phối lớn của app?",
+      "body": "Vì mọi request HTTP hợp lệ đều đi qua đây. Nếu middleware toàn cục, exception handling hoặc lifecycle hook có vấn đề, kernel là chỗ bị ảnh hưởng đầu tiên."
+    },
+    {
+      "title": "15. Service container bắt đầu can thiệp vào request flow từ đâu?",
+      "body": "Rất sớm. Khi Laravel resolve controller, service, middleware, form request hoặc dependency type-hinted, container đứng sau việc tạo và inject chúng."
+    },
+    {
+      "title": "16. Route matching là gì?",
+      "body": "Đó là quá trình Laravel so khớp URL, HTTP method và một số điều kiện khác để xác định request này map vào route nào."
+    },
+    {
+      "title": "17. HTTP method ảnh hưởng gì tới route?",
+      "body": "`GET`, `POST`, `PUT`, `PATCH`, `DELETE` không chỉ khác tên mà thể hiện ý nghĩa thao tác. Cùng một URL nhưng method khác có thể map sang hành vi hoàn toàn khác."
+    },
+    {
+      "title": "18. `routes/web.php` và `routes/api.php` khác nhau ra sao?",
+      "body": "`web.php` thường gắn với session, CSRF, cookie và render Blade. `api.php` thường gắn với JSON, stateless auth, rate limit và response API nhất quán.",
+      "code": "// routes/web.php\nRoute::get('/profile', [ProfileController::class, 'show']);\n\n// routes/api.php\nRoute::middleware('auth:sanctum')->get('/me', function (Request $request) {\n    return $request->user();\n});",
+      "note": "Sai lầm thường gặp: trộn web flow với API flow rồi rất nhanh lẫn luôn cả auth, CSRF và format response."
+    },
+    {
+      "title": "19. Route parameter là gì?",
+      "body": "Là phần biến động trong URL như `/posts/{post}` hoặc `/users/{user}/orders/{order}`. Nó giúp route map linh hoạt theo tài nguyên cụ thể."
+    },
+    {
+      "title": "20. Route model binding giúp gì cho request flow?",
+      "body": "Nó cho phép Laravel tự resolve model từ route parameter, ví dụ `{post}` thành instance `Post`. Việc này làm controller gọn hơn nhưng cũng phải hiểu khi nào nó fail 404."
+    },
+    {
+      "title": "21. Route group để làm gì?",
+      "body": "Route group giúp gom prefix, name, middleware, namespace hoặc domain chung cho nhiều route. Đây là cách giữ route file có cấu trúc hơn."
+    },
+    {
+      "title": "22. Route cache ảnh hưởng gì tới request flow?",
+      "body": "Nó giúp route resolution nhanh hơn trong production, nhưng nếu bạn quên clear hoặc rebuild đúng lúc thì app có thể chạy theo trạng thái route cũ."
+    },
+    {
+      "title": "23. Middleware là gì trong request flow?",
+      "body": "Middleware là lớp nằm giữa request và logic xử lý chính. Nó có thể cho request đi tiếp, sửa request, hoặc chặn và trả response ngay lập tức.",
+      "code": "public function handle(Request $request, Closure $next): Response\n{\n    if (! $request->user()) {\n        return redirect('/login');\n    }\n\n    return $next($request);\n}",
+      "note": "Nếu middleware trả response sớm, controller sẽ không bao giờ chạy. Đây là điểm debug rất hay bị quên."
+    },
+    {
+      "title": "24. Middleware toàn cục và middleware route khác nhau gì?",
+      "body": "Middleware toàn cục chạy cho gần như mọi request. Middleware route chỉ chạy ở các route hoặc group được gắn cụ thể."
+    },
+    {
+      "title": "25. Vì sao middleware là nơi rất dễ sinh bug khó thấy?",
+      "body": "Vì request có thể bị đổi context hoặc bị chặn trước cả khi vào controller. Nếu không nhớ middleware nào đang chạy, bạn sẽ debug sai lớp."
+    },
+    {
+      "title": "26. Ví dụ middleware cơ bản hay gặp",
+      "body": "Auth, guest, throttle, verified, locale, role, permission, force-https, maintenance mode, CORS hoặc middleware log request.",
+      "code": "Route::middleware(['auth', 'verified', 'throttle:60,1'])\n    ->get('/dashboard', [DashboardController::class, 'index']);",
+      "note": "Sai lầm thường gặp: gắn middleware theo thói quen mà không nhớ nó đang đổi flow ở đâu. Cách sửa là luôn đọc route kèm middleware của nó."
+    },
+    {
+      "title": "27. `auth` middleware làm gì?",
+      "body": "Nó kiểm tra xem người dùng đã đăng nhập hay chưa. Nếu chưa, web flow thường redirect về trang login còn API flow thường trả lỗi không được phép truy cập."
+    },
+    {
+      "title": "28. `guest` middleware dùng khi nào?",
+      "body": "Khi bạn chỉ muốn người chưa đăng nhập mới được truy cập, ví dụ trang login hoặc register. Người đã đăng nhập sẽ bị redirect ra chỗ khác."
+    },
+    {
+      "title": "29. `throttle` middleware để làm gì?",
+      "body": "Nó giới hạn tần suất request để giảm spam, brute force hoặc abuse. Đây là lớp bảo vệ khá quan trọng cho login, OTP, search hoặc API public."
+    },
+    {
+      "title": "30. Middleware locale có ích gì?",
+      "body": "Nó xác định ngôn ngữ hoặc region theo session, user setting, subdomain hoặc header rồi gắn context đó cho request hiện tại."
+    },
+    {
+      "title": "31. Form Request là gì?",
+      "body": "Form Request là lớp chuyên để validate và authorize request input. Nó giúp tách validation logic ra khỏi controller.",
+      "code": "class StorePostRequest extends FormRequest\n{\n    public function rules(): array\n    {\n        return [\n            'title' => ['required', 'string', 'max:255'],\n            'body' => ['required', 'string'],\n        ];\n    }\n}",
+      "note": "Khi request rule đủ rõ ở đây, controller phía sau đọc sẽ gọn và ít bị ngập trong validate."
+    },
+    {
+      "title": "32. Vì sao validation nên nằm ngoài controller khi rule phức tạp?",
+      "body": "Vì controller nên điều phối hơn là ôm hết rule. Khi validate tách riêng, bạn đọc flow đầu vào rõ hơn và test cũng sạch hơn."
+    },
+    {
+      "title": "33. `authorize()` trong Form Request có vai trò gì?",
+      "body": "Nó cho phép bạn chặn request ngay ở lớp request nếu user không có quyền. Đây là một điểm giao giữa validation flow và authorization flow."
+    },
+    {
+      "title": "34. Tip thực tế: request bẩn nên chết càng sớm càng tốt",
+      "body": "Input sai format, thiếu field, user không có quyền hoặc state không hợp lệ nên bị chặn sớm để tránh request đi sâu vào business logic vô ích."
+    },
+    {
+      "title": "35. Controller nên giữ vai trò gì?",
+      "body": "Controller nên nhận dependency, đọc input hợp lệ, gọi service hoặc action phù hợp và trả response. Nó nên là lớp điều phối chứ không phải nơi ôm toàn bộ hệ thống.",
+      "code": "class OrderController extends Controller\n{\n    public function store(StoreOrderRequest $request, CreateOrderAction $action)\n    {\n        $order = $action->execute($request->validated());\n\n        return redirect()->route('orders.show', $order);\n    }\n}",
+      "note": "Sai lầm thường gặp: controller vừa validate, vừa query, vừa gọi API ngoài, vừa gửi mail. Cách sửa là giữ nó như lớp điều phối."
+    },
+    {
+      "title": "36. Anti-pattern: controller phình to vì ôm mọi thứ",
+      "body": "Khi controller vừa validate, vừa query, vừa authorize, vừa format response, vừa gửi mail, vừa dispatch job thì request flow trở nên rối và khó test."
+    },
+    {
+      "title": "37. Service layer đứng ở đâu trong request flow?",
+      "body": "Service thường nằm giữa controller và data/integration layer. Nó gom business rule để controller gọn và flow tái sử dụng được."
+    },
+    {
+      "title": "38. Có phải dự án nào cũng cần service layer nặng không?",
+      "body": "Không. App nhỏ có thể chưa cần. Nhưng khi một request bắt đầu động tới nhiều model, policy, integration và side effect, service hoặc action class thường đáng giá."
+    },
+    {
+      "title": "39. Repository có phải luôn cần trong request flow không?",
+      "body": "Không. Đừng thêm abstraction chỉ vì nghe hay. Chỉ dùng khi nó giải quyết được bài toán rõ như thay đổi nguồn dữ liệu, query phức tạp hoặc testing strategy cụ thể."
+    },
+    {
+      "title": "40. Model chạm vào request flow như thế nào?",
+      "body": "Model thường được dùng để đọc hoặc ghi dữ liệu sau khi request qua validation và authorization. Nó là nơi request bắt đầu chạm vào trạng thái thật của hệ thống."
+    },
+    {
+      "title": "41. Query builder và Eloquent khác nhau gì trong flow xử lý?",
+      "body": "Eloquent tiện cho quan hệ và business entity, còn query builder linh hoạt hơn cho query tùy biến. Chọn đúng lớp giúp flow đọc dễ hơn."
+    },
+    {
+      "title": "42. Transaction nên xuất hiện ở đâu trong request flow?",
+      "body": "Khi một request cần nhiều thao tác ghi mà phải cùng thành công hoặc cùng rollback, transaction nên bọc quanh phần business write đó.",
+      "code": "DB::transaction(function () use ($payload) {\n    $order = Order::create($payload);\n    $order->items()->createMany($payload['items']);\n    $order->payments()->create(['amount' => $payload['amount']]);\n});",
+      "note": "Nếu flow này fail giữa chừng mà không có transaction, request có thể để lại dữ liệu nửa đúng nửa sai."
+    },
+    {
+      "title": "43. Vì sao transaction là một phần của request flow chứ không chỉ là kỹ thuật DB?",
+      "body": "Vì nó quyết định request để lại hệ thống ở trạng thái nửa đúng nửa sai hay không. Với order, payment hoặc inventory, đây là yếu tố sống còn."
+    },
+    {
+      "title": "44. Policy và Gate chen vào request flow lúc nào?",
+      "body": "Chúng được gọi khi bạn kiểm tra quyền truy cập vào hành động hoặc tài nguyên cụ thể. Việc này có thể diễn ra ở controller, Form Request, middleware hoặc service tùy thiết kế."
+    },
+    {
+      "title": "45. Event có nên dispatch ngay trong request không?",
+      "body": "Có thể, nhưng phải hiểu side effect nào cần xảy ra đồng bộ và side effect nào nên đẩy sang queue để response nhanh hơn."
+    },
+    {
+      "title": "46. Tip thực tế: request flow tốt là flow biết lớp nào chịu trách nhiệm việc gì",
+      "body": "Nếu quyền, validation, query, side effect và formatting bị trộn lẫn vô tổ chức, mỗi bug sẽ kéo bạn đi khắp codebase."
+    },
+    {
+      "title": "47. Response có những dạng nào trong Laravel?",
+      "body": "Blade view, JSON, redirect, file download, streamed response, binary response, no content hoặc custom response object.",
+      "code": "return view('posts.show', compact('post'));\nreturn response()->json(['data' => $post]);\nreturn redirect()->route('posts.index');\nreturn response()->noContent();",
+      "note": "Chọn sai loại response là một trong những cách nhanh nhất làm web flow hoặc API flow trở nên khó hiểu."
+    },
+    {
+      "title": "48. Web flow thường kết thúc bằng gì?",
+      "body": "Thường là render view hoặc redirect. Redirect rất hay đi kèm flash message, old input hoặc validation errors."
+    },
+    {
+      "title": "49. API flow thường kết thúc bằng gì?",
+      "body": "Thường là JSON cùng status code rõ ràng. Quan trọng là giữ shape response và error payload nhất quán giữa các endpoint."
+    },
+    {
+      "title": "50. Redirect trong request flow có ý nghĩa gì?",
+      "body": "Redirect không chỉ là nhảy trang. Nó là cách kết thúc request hiện tại và yêu cầu browser gửi một request mới tới URL khác."
+    },
+    {
+      "title": "51. Flash message là gì?",
+      "body": "Đó là dữ liệu ngắn sống qua một request kế tiếp, thường dùng để báo thành công, thất bại hoặc thông điệp UX sau redirect."
+    },
+    {
+      "title": "52. `old()` liên quan gì tới request flow?",
+      "body": "Khi form fail validation và redirect về lại, Laravel có thể giữ input cũ trong session để người dùng không phải nhập lại toàn bộ."
+    },
+    {
+      "title": "53. Error bag là gì?",
+      "body": "Đó là tập hợp lỗi validation được chuyển sang request kế tiếp hoặc view hiện tại để hiển thị lỗi đúng field."
+    },
+    {
+      "title": "54. Session can thiệp vào request flow ở đâu?",
+      "body": "Nó lưu trạng thái đăng nhập, flash data, locale, cart tạm, old input và nhiều dữ liệu ngắn hạn khác trong web flow."
+    },
+    {
+      "title": "55. Cookie liên quan gì tới session?",
+      "body": "Cookie thường giữ session id hoặc token cần thiết để request sau biết nó thuộc về ai. Không hiểu lớp này sẽ khó debug login hoặc logout bất thường."
+    },
+    {
+      "title": "56. File download response khác gì render view?",
+      "body": "Nó không phải UI truyền thống mà là response nhắm tới tải hoặc stream dữ liệu ra client. Flow này hay xuất hiện ở export, invoice, report hoặc media."
+    },
+    {
+      "title": "57. Stream response dùng khi nào?",
+      "body": "Khi dữ liệu lớn hoặc cần gửi dần thay vì build toàn bộ trong memory trước. Ví dụ export CSV lớn hoặc stream media."
+    },
+    {
+      "title": "58. Tip UX: response tốt là response đúng kỳ vọng của loại request đó",
+      "body": "Form web hỏng mà trả JSON thường làm UX tệ. API client gọi lỗi mà bị redirect HTML cũng là thiết kế sai flow."
+    },
+    {
+      "title": "59. Web flow và API flow khác nhau sâu ở đâu?",
+      "body": "Khác ở cách giữ trạng thái, cách xác thực, cách báo lỗi, kiểu response và cách client xử lý kết quả. Đừng coi chúng chỉ khác chỗ route file.",
+      "code": "// web flow\nreturn redirect()->back()->withErrors($validator);\n\n// api flow\nreturn response()->json([\n    'message' => 'Validation failed',\n    'errors' => $validator->errors(),\n], 422);",
+      "note": "Sai lầm thường gặp: web fail mà trả JSON, API fail mà redirect HTML. Cách sửa là luôn hỏi client nào đang gọi flow này."
+    },
+    {
+      "title": "60. Session-based auth hoạt động thế nào trong request flow?",
+      "body": "Sau khi login thành công, user được gắn session. Các request sau mang session id nên app nhận ra danh tính và quyền của user."
+    },
+    {
+      "title": "61. Token-based auth hoạt động thế nào?",
+      "body": "Client gửi token trong header hoặc cookie theo cách thiết kế cụ thể. Mỗi request phải tự mang thông tin nhận diện cần thiết thay vì dựa mạnh vào session server-side."
+    },
+    {
+      "title": "62. CSRF nằm ở đâu trong request flow?",
+      "body": "Nó là lớp bảo vệ cho web form state-changing request. Laravel kiểm tra token này trước khi cho phép request POST, PUT, PATCH hoặc DELETE đi sâu hơn."
+    },
+    {
+      "title": "63. Vì sao API thường không dùng CSRF theo cùng cách web form?",
+      "body": "Vì API stateless thường đi theo token strategy khác. Nhưng nếu API dùng cookie/session cho SPA thì bức tranh sẽ thay đổi và phải hiểu kỹ cấu trúc auth đó."
+    },
+    {
+      "title": "64. Exception là gì trong request flow?",
+      "body": "Là tình huống một lớp bên trong ném lỗi khiến flow thường bị gián đoạn. Laravel sau đó cần chuyển lỗi này thành response có ý nghĩa."
+    },
+    {
+      "title": "65. Validation exception khác gì authorization exception?",
+      "body": "Validation exception thường nói input sai. Authorization exception nói user không được phép làm việc đó. Hai loại này nên ra response khác nhau rõ ràng."
+    },
+    {
+      "title": "66. 404 trong request flow thường đến từ đâu?",
+      "body": "Không có route match, route model binding không resolve được model, hoặc logic chủ động abort 404 khi tài nguyên không tồn tại."
+    },
+    {
+      "title": "67. 419 trong Laravel thường gợi ý điều gì?",
+      "body": "Thường liên quan CSRF token, session timeout hoặc flow form/cookie không khớp. Đây là lỗi rất hay gặp ở web flow."
+    },
+    {
+      "title": "68. 422 thường xuất hiện trong trường hợp nào?",
+      "body": "Đây là status rất quen thuộc cho validation fail trong API hoặc XHR context. Nó nói request format được nhưng dữ liệu không đạt rule business cơ bản."
+    },
+    {
+      "title": "69. 401 và 403 khác nhau thế nào trong flow auth?",
+      "body": "401 thường là chưa xác thực hoặc token/session không hợp lệ. 403 thường là đã biết bạn là ai rồi nhưng bạn không có quyền làm việc đó."
+    },
+    {
+      "title": "70. Tip thực tế: lỗi đẹp là lỗi giúp client biết phải làm gì tiếp theo",
+      "body": "Validation error nên chỉ rõ field nào sai. Auth error nên rõ là cần login hay cần quyền khác. Internal error nên được log kỹ nhưng trả ra vừa đủ."
+    },
+    {
+      "title": "71. Event trong request flow nên dùng khi nào?",
+      "body": "Khi bạn muốn tách side effect ra khỏi logic lõi, ví dụ user đăng ký xong thì gửi mail, log audit hoặc sync dữ liệu ở lớp khác.",
+      "code": "UserRegistered::dispatch($user);",
+      "note": "Event giúp flow lõi bớt dính chặt vào side effect, nhưng vẫn phải rõ cái gì chạy đồng bộ và cái gì được đẩy nền."
+    },
+    {
+      "title": "72. Queue giúp request flow nhẹ đi như thế nào?",
+      "body": "Những việc nặng như gửi mail, resize ảnh, sync bên thứ ba hoặc generate report có thể đẩy sang queue để response trả nhanh hơn cho người dùng."
+    },
+    {
+      "title": "73. Khi nào không nên đẩy sang queue?",
+      "body": "Khi kết quả phải có ngay để request tiếp tục đúng logic, ví dụ xác minh dữ liệu cốt lõi trước khi commit hoặc tính toán bắt buộc cho response hiện tại."
+    },
+    {
+      "title": "74. Listener đồng bộ và listener bất đồng bộ khác gì?",
+      "body": "Listener đồng bộ chạy trong request hiện tại và kéo dài thời gian phản hồi. Listener bất đồng bộ thường vào queue và xử lý sau."
+    },
+    {
+      "title": "75. Cache xuất hiện trong request flow ở đâu?",
+      "body": "Có thể ở query result, config, route, full response fragment hoặc business lookup. Cache tốt giúp request nhanh hơn nhưng cache sai làm dữ liệu cũ kéo dài."
+    },
+    {
+      "title": "76. Vì sao cache cũng là một phần của request flow cần học?",
+      "body": "Vì request có thể trả ra dữ liệu từ cache thay vì từ DB thật. Nếu quên lớp này, bạn sẽ tưởng code không chạy hoặc dữ liệu không đổi."
+    },
+    {
+      "title": "77. Rate limiter ngoài middleware còn liên quan gì tới flow?",
+      "body": "Nó ảnh hưởng trực tiếp tới trải nghiệm người dùng và độ an toàn của endpoint. Login, OTP, resend mail hoặc search public đều hay cần suy nghĩ kỹ."
+    },
+    {
+      "title": "78. Notification có nên gửi trong request không?",
+      "body": "Notification nhẹ có thể gửi ngay, nhưng đa số thứ như email, push hoặc webhook nên cân nhắc queue để tránh kéo dài response."
+    },
+    {
+      "title": "79. Upload file chen vào request flow như thế nào?",
+      "body": "Request mang file lên, validation kiểm tra file, app lưu file vào storage, rồi mới ghi metadata vào DB hoặc dispatch xử lý tiếp theo."
+    },
+    {
+      "title": "80. Vì sao upload thường làm request flow phức tạp hơn form text bình thường?",
+      "body": "Vì nó chạm vào giới hạn kích thước, timeout, MIME type, storage disk, permission, cleanup file lỗi và đôi khi cả job xử lý hậu kỳ."
+    },
+    {
+      "title": "81. Webhook request có gì khác flow người dùng bấm form?",
+      "body": "Webhook đến từ hệ thống ngoài, thường không có session, có signature check riêng và dễ gặp bài toán retry, duplicate hoặc timing issue."
+    },
+    {
+      "title": "82. Tip thực tế: side effect nên được phân loại rõ là đồng bộ hay bất đồng bộ",
+      "body": "Nếu cái gì cũng làm ngay trong request, UX sẽ chậm. Nếu cái gì cũng đẩy sang queue, business có thể sai trạng thái ngay lúc phản hồi."
+    },
+    {
+      "title": "83. Cách debug request flow nên bắt đầu từ đâu?",
+      "body": "Bắt đầu từ URL, method và route match. Sau đó lần middleware, request input, validation, authorization, controller, service, query, event, response.",
+      "code": "1. URL + method\n2. route:list / route match\n3. middleware\n4. input + validation\n5. controller / service\n6. query / external call\n7. response / exception",
+      "note": "Sai lầm thường gặp: mở file ngẫu nhiên và đoán mò. Cách sửa là luôn trace theo thứ tự của flow."
+    },
+    {
+      "title": "84. Vì sao debug theo flow tốt hơn debug theo file?",
+      "body": "Vì request là chuỗi sự kiện có thứ tự. Nhảy file ngẫu nhiên dễ làm bạn bỏ qua lớp chặn hoặc lớp biến đổi dữ liệu quan trọng."
+    },
+    {
+      "title": "85. `route:list` giúp gì cho việc hiểu request flow?",
+      "body": "Nó cho bạn thấy toàn bộ cửa vào của hệ thống, method nào map vào đâu, middleware gì đang gắn và naming ra sao."
+    },
+    {
+      "title": "86. Logging nên đặt ở đâu trong request flow?",
+      "body": "Ở những điểm chuyển quan trọng như middleware, service, external call, exception hoặc state change. Log quá nhiều ở mọi nơi chỉ làm nhiễu."
+    },
+    {
+      "title": "87. Telescope, Debugbar hoặc profiler giúp gì?",
+      "body": "Chúng cho bạn nhìn query, request, response, exception, mail, job hoặc event để thấy flow thực tế đang diễn ra chứ không chỉ đoán."
+    },
+    {
+      "title": "88. N+1 query là bug request flow kiểu gì?",
+      "body": "Request vẫn trả đúng kết quả nhưng phải chạy quá nhiều query do relation load sai. Đây là bug hiệu năng điển hình của flow đọc dữ liệu."
+    },
+    {
+      "title": "89. Middleware order có thể gây bug không?",
+      "body": "Có. Nếu thứ tự middleware sai, request có thể bị auth trước khi locale được set, hoặc bị throttle trước khi xác định identity đúng cách."
+    },
+    {
+      "title": "90. CORS liên quan gì tới request flow?",
+      "body": "Với API hoặc SPA, browser có thể chặn request từ đầu nếu policy CORS sai. Lúc đó bug xuất hiện ở rìa hệ thống chứ chưa vào được controller."
+    },
+    {
+      "title": "91. Security tip: đừng tin input chỉ vì request đã vào được controller",
+      "body": "Request vào được controller không có nghĩa là dữ liệu sạch hoặc user hợp lệ. Validation, authorization và sanitation vẫn phải rõ ràng."
+    },
+    {
+      "title": "92. Security tip: response lỗi không nên lộ quá nhiều nội tạng hệ thống",
+      "body": "Thông tin debug chi tiết nên đi vào log hoặc monitoring thay vì trả thẳng cho client trong production."
+    },
+    {
+      "title": "93. Performance tip: request flow chậm thường do đâu?",
+      "body": "Query nặng, external call chậm, side effect làm đồng bộ quá nhiều, render view nhiều logic, cache miss, file xử lý lớn hoặc lock contention."
+    },
+    {
+      "title": "94. Kinh nghiệm đọc code: hãy lần một request hoàn chỉnh từ route tới response",
+      "body": "Cách này giúp bạn hiểu app nhanh hơn nhiều so với mở từng folder rời rạc. Nó cũng lộ ra chỗ flow đang bị đứt gãy hoặc lặp trách nhiệm."
+    },
+    {
+      "title": "95. Idempotency là gì trong request flow?",
+      "body": "Đó là khả năng một request lặp lại không tạo thêm tác dụng phụ ngoài ý muốn. Nó cực quan trọng với payment, webhook, retry và form submit dễ bị double click.",
+      "code": "$existing = Order::where('idempotency_key', $request->header('Idempotency-Key'))->first();\n\nif ($existing) {\n    return response()->json(['data' => $existing]);\n}",
+      "note": "Không có idempotency guard, retry rất dễ biến thành double order hoặc double payment."
+    },
+    {
+      "title": "96. Vì sao double-submit là bài toán thật?",
+      "body": "Người dùng có thể bấm hai lần, mạng có thể retry, client có thể gửi lại request. Nếu flow không chống đúp, đơn hàng hoặc giao dịch có thể bị tạo hai lần."
+    },
+    {
+      "title": "97. Race condition chen vào request flow ra sao?",
+      "body": "Hai request cùng đọc một trạng thái cũ rồi cùng ghi theo logic đó. Kết quả là dữ liệu sau cùng sai dù từng request riêng lẻ nhìn có vẻ đúng."
+    },
+    {
+      "title": "98. Timeout từ service ngoài ảnh hưởng gì tới request flow?",
+      "body": "Nếu request phụ thuộc bên thứ ba mà không có timeout và fallback tử tế, toàn bộ trải nghiệm người dùng có thể treo hoặc fail dây chuyền."
+    },
+    {
+      "title": "99. Retry nên đặt ở đâu và phải cẩn thận điều gì?",
+      "body": "Retry có thể ở HTTP client, job queue hoặc lớp integration, nhưng phải kết hợp với idempotency để tránh lặp side effect nguy hiểm."
+    },
+    {
+      "title": "100. Circuit breaker hoặc fallback có liên quan gì tới Laravel request flow?",
+      "body": "Khi phụ thuộc dịch vụ ngoài, bạn cần nghĩ tới cách degrade an toàn thay vì để mọi request đâm đầu vào một hệ thống đang hỏng."
+    },
+    {
+      "title": "101. Observability là gì trong bối cảnh request flow?",
+      "body": "Là khả năng nhìn thấy request đang làm gì qua log, metric, trace và exception reporting. App lớn mà không quan sát được flow thì sửa lỗi rất tốn sức."
+    },
+    {
+      "title": "102. Correlation id hoặc request id giúp gì?",
+      "body": "Nó giúp nối log của cùng một request xuyên qua nhiều lớp hoặc nhiều service, rất hữu ích khi debug lỗi production."
+    },
+    {
+      "title": "103. Maintenance mode chen vào flow thế nào?",
+      "body": "Nó có thể chặn request sớm bằng middleware hoặc cơ chế kernel-level để trả một response bảo trì thay vì cho request đi sâu vào app."
+    },
+    {
+      "title": "104. Feature flag ảnh hưởng gì tới request flow?",
+      "body": "Một request có thể đi vào nhánh logic khác nhau tùy cờ tính năng, user segment hoặc environment. Nếu không log và tổ chức tốt, flow sẽ khó đoán hơn nhiều."
+    },
+    {
+      "title": "105. Bài toán multi-tenant làm request flow khó hơn ở đâu?",
+      "body": "Request phải xác định tenant đúng, set context đúng, query đúng scope và tránh rò rỉ dữ liệu giữa tenant này sang tenant khác."
+    },
+    {
+      "title": "106. Kinh nghiệm cuối: request flow tốt là flow khiến người sau đoán đúng đường đi",
+      "body": "Nếu một dev mới có thể lần từ route tới middleware, validation, controller, service, data layer và response mà không bị lạc, nghĩa là flow của bạn đang được tổ chức tốt."
+    },
+    {
+      "title": "107. Request flow trong Livewire khác gì Blade thuần?",
+      "body": "Livewire vẫn sống trên nền request-response nhưng tạo cảm giác tương tác hơn bằng các request nền gửi lên server khi component thay đổi state. Nếu không hiểu điều này, nhiều người tưởng Livewire là ma thuật frontend hoàn toàn.",
+      "code": "<input wire:model.live=\"search\" />\n\npublic function updatedSearch()\n{\n    $this->results = Post::query()\n        ->where('title', 'like', '%'.$this->search.'%')\n        ->get();\n}",
+      "note": "Sai lầm thường gặp: quên rằng mỗi tương tác Livewire có thể là request riêng và gây query lặp rất nhiều."
+    },
+    {
+      "title": "108. Mỗi tương tác Livewire có phải là một request riêng không?",
+      "body": "Thường là có. Gõ input, bấm nút hoặc emit action có thể tạo request AJAX riêng để hydrate, validate, chạy action rồi render lại phần HTML cần thiết."
+    },
+    {
+      "title": "109. Vì sao request flow của Livewire cần được tối ưu riêng?",
+      "body": "Vì một màn hình có thể phát sinh rất nhiều request nhỏ. Nếu mỗi request đều query nặng hoặc chạy side effect không kiểm soát, trải nghiệm sẽ chậm và khó debug."
+    },
+    {
+      "title": "110. Inertia chen vào request flow như thế nào?",
+      "body": "Inertia vẫn để backend điều khiển route và controller, nhưng response là page payload để frontend framework như Vue hoặc React render. Nó nằm giữa web app truyền thống và SPA hoàn chỉnh."
+    },
+    {
+      "title": "111. Request flow của Inertia khác API + SPA thuần ở đâu?",
+      "body": "Inertia không bắt bạn tự dựng lớp API REST đầy đủ cho mọi màn hình ngay từ đầu. Controller vẫn trả dữ liệu page-level, nhưng client-side navigation tạo cảm giác ứng dụng mượt hơn."
+    },
+    {
+      "title": "112. Vì sao cần hiểu hydration hoặc re-hydration trong các flow hiện đại?",
+      "body": "Vì state có thể được dựng lại từ payload server, từ props page hoặc từ component lifecycle. Nếu không hiểu lúc nào state được tạo lại, bạn sẽ khó debug dữ liệu mất hoặc giao diện nhảy sai."
+    },
+    {
+      "title": "113. Redis tham gia request flow ở những lớp nào?",
+      "body": "Redis có thể được dùng cho cache, session, queue, rate limiting hoặc pub/sub. Khi app dùng Redis mạnh, request flow không còn chỉ là route rồi DB nữa mà còn đi qua lớp in-memory state này."
+    },
+    {
+      "title": "114. Session đặt trong Redis ảnh hưởng gì tới flow?",
+      "body": "Nó giúp session tập trung hơn khi nhiều instance app cùng chạy, nhưng cũng mở ra các lỗi như session hết hạn sớm, driver cấu hình sai hoặc môi trường không chia sẻ cùng Redis."
+    },
+    {
+      "title": "115. Queue dùng Redis ảnh hưởng gì tới request flow?",
+      "body": "Request có thể kết thúc nhanh hơn vì side effect được đẩy vào Redis-backed queue, nhưng bạn phải hiểu worker, retry, failed job và eventual consistency thay vì nghĩ việc gì dispatch xong là hoàn thành ngay."
+    },
+    {
+      "title": "116. Cache Redis làm flow khó đoán hơn ở đâu?",
+      "body": "Một request có thể trả dữ liệu nhanh từ cache thay vì query thật, nhưng nếu invalidate sai hoặc TTL không hợp lý thì người dùng sẽ thấy dữ liệu cũ và team dễ tưởng bug nằm ở controller hay DB."
+    },
+    {
+      "title": "117. Case thật: login loop thường đến từ đâu?",
+      "body": "Thường do session driver, cookie domain, secure cookie, reverse proxy header hoặc middleware auth/guest bị cấu hình lệch. Đây là lỗi rất khó chịu vì user cứ bị đá qua lại giữa login và trang bảo vệ."
+    },
+    {
+      "title": "118. Case thật: redirect loop vì sao khó chịu?",
+      "body": "Một middleware hoặc controller redirect sang route khác, rồi route đó lại bị middleware khác đẩy ngược về chỗ cũ. Nếu không vẽ flow ra giấy hoặc log rõ, team sẽ rất dễ sửa vòng quanh."
+    },
+    {
+      "title": "119. Case thật: CSRF mismatch hay xuất hiện khi nào?",
+      "body": "Khi session timeout, cookie không gửi lên đúng cách, tab cũ dùng token cũ, domain khác nhau hoặc app ngồi sau proxy mà cấu hình scheme không chuẩn. Lỗi này rất hay xảy ra ở môi trường staging và production hơn là local."
+    },
+    {
+      "title": "120. Case thật: webhook duplicate nên nhìn như một phần của request flow",
+      "body": "Nhà cung cấp bên ngoài có thể retry cùng một webhook nhiều lần. Nếu endpoint của bạn không có idempotency hoặc duplicate guard, request flow sẽ tạo đơn, log hoặc trạng thái lặp lại."
+    },
+    {
+      "title": "121. Case thật: double order hoặc double payment thường sinh ra ở đâu?",
+      "body": "Từ double click, retry client, callback ngoài lặp lại, transaction chưa chặt hoặc business rule không có khóa chống trùng. Đây là chỗ request flow phải phối hợp với constraint và idempotency."
+    },
+    {
+      "title": "122. Case thật: request local ổn nhưng production fail do proxy hoặc header",
+      "body": "HTTPS termination, trusted proxy, forwarded headers hoặc host detection sai có thể làm URL generation, secure cookie, redirect hoặc signed URL hoạt động khác hẳn production."
+    },
+    {
+      "title": "123. Tip kinh nghiệm: càng nhiều lớp hiện đại, càng cần vẽ lại flow bằng lời rất đơn giản",
+      "body": "Ví dụ: browser gọi route nào, middleware nào chạy, controller trả gì, frontend nhận payload gì, request nền nào phát sinh tiếp, side effect nào vào queue. Cách diễn đạt đơn giản này cực hiệu quả khi onboarding hoặc debug."
+    },
+    {
+      "title": "124. Tip kinh nghiệm: flow tốt không phải flow nhiều công nghệ, mà là flow dễ dự đoán",
+      "body": "Dù dùng Blade, Livewire, Inertia hay API + SPA, điều quan trọng là người sau nhìn vào và hiểu request nào sinh ra từ đâu, đi qua đâu, và kết thúc ở trạng thái nào."
+    },
+    {
+      "title": "125. Upload file lớn vì sao là một request flow riêng chứ không chỉ là form có thêm input file?",
+      "body": "Vì nó chạm tới giới hạn web server, PHP ini, timeout, memory, disk storage, validation, queue hậu xử lý và đôi khi cả việc resume upload. Một flow upload lớn hỏng có thể fail trước cả khi Laravel kịp chạm vào controller.",
+      "code": "upload_max_filesize=50M\npost_max_size=50M\nclient_max_body_size 50M;",
+      "note": "Sai lầm thường gặp: chỉ nhìn controller và validation mà quên lớp web server hoặc PHP config phía trước."
+    },
+    {
+      "title": "126. Vì sao local upload ổn nhưng staging hoặc production lại fail?",
+      "body": "Thường do khác `upload_max_filesize`, `post_max_size`, timeout của Nginx hoặc proxy, disk permission, hoặc storage driver khác nhau. Đây là lỗi rất thực chiến vì local thường nhỏ và dễ tính hơn nhiều."
+    },
+    {
+      "title": "127. Khi upload fail, nên lần theo thứ tự nào?",
+      "body": "Hãy hỏi: request có tới Laravel chưa, web server có chặn trước không, PHP có nuốt request vì file quá lớn không, validation có fail không, file có ghi được vào storage không, và job xử lý sau upload có chạy không."
+    },
+    {
+      "title": "128. Tại sao một file upload có thể không vào được controller dù route đúng?",
+      "body": "Nếu kích thước vượt quá giới hạn của web server hoặc PHP, request có thể bị chặn hoặc bị cắt ngay trước khi app nhận đủ payload. Nhiều người debug controller rất lâu trong khi request chưa đi tới đó."
+    },
+    {
+      "title": "129. Khi nào nên nghĩ tới upload trực tiếp lên S3 thay vì đi qua app server?",
+      "body": "Khi file lớn, người dùng đông, băng thông app server không đáng để gánh, hoặc bạn muốn giảm timeout và memory pressure lên application layer. Đây là quyết định kiến trúc gắn trực tiếp với request flow."
+    },
+    {
+      "title": "130. Vì sao upload thường kéo theo job nền phía sau?",
+      "body": "Vì sau khi nhận file, app còn có thể phải resize ảnh, generate thumbnail, quét virus, đọc metadata, convert format hoặc sync sang hệ khác. Nếu làm hết trong request, UX rất dễ chậm."
+    },
+    {
+      "title": "131. Case thật: upload thành công nhưng người dùng vẫn thấy lỗi vì sao?",
+      "body": "Có thể file đã lên storage nhưng DB chưa ghi metadata, hoặc metadata ghi rồi nhưng job xử lý sau bị fail, hoặc frontend đang đợi response shape khác với thực tế. Đây là kiểu bug lệch trạng thái giữa các lớp."
+    },
+    {
+      "title": "132. Sanctum chen vào request flow của SPA như thế nào?",
+      "body": "Sanctum cho phép SPA dùng cookie/session-style auth an toàn hơn trong cùng hệ sinh thái domain phù hợp. Flow này không giống API token thuần và cũng không giống web Blade truyền thống hoàn toàn.",
+      "code": "axios.get('/sanctum/csrf-cookie', { withCredentials: true })\n  .then(() => axios.post('/login', payload, { withCredentials: true }));",
+      "note": "Nếu bỏ qua bước lấy CSRF cookie hoặc cấu hình cookie sai domain, bạn sẽ rất dễ gặp login `200` nhưng request sau vẫn `401`."
+    },
+    {
+      "title": "133. Vì sao nhiều người dùng Sanctum mà vẫn rối?",
+      "body": "Vì họ nghĩ chỉ cần login API là xong, trong khi flow còn liên quan CSRF cookie, session cookie, same-site policy, stateful domain và cách browser tự gửi cookie ở các request sau."
+    },
+    {
+      "title": "134. Flow SPA auth với Sanctum thường đi thế nào?",
+      "body": "Thường browser lấy CSRF cookie trước, rồi gửi request login, server tạo session, sau đó các request tiếp theo tự mang cookie để backend nhận diện user. Nếu thiếu một mắt xích, flow sẽ trông như login không có tác dụng."
+    },
+    {
+      "title": "135. Vì sao login bằng Sanctum có thể thành công nhưng request sau vẫn bị 401?",
+      "body": "Rất hay do cookie không được gửi kèm vì sai domain, sai same-site, sai secure setting, sai `SANCTUM_STATEFUL_DOMAINS`, hoặc frontend gọi sai origin nên browser không coi là cùng ngữ cảnh stateful."
+    },
+    {
+      "title": "136. Khi debug Sanctum, đừng chỉ nhìn response login mà hãy nhìn request sau login",
+      "body": "Nhiều dev thấy login trả 200 là tưởng auth ổn, nhưng điều quan trọng là request kế tiếp có mang đúng cookie và backend có đọc được session đó không."
+    },
+    {
+      "title": "137. Case thật: CSRF cookie có rồi mà vẫn fail login là vì sao?",
+      "body": "Có thể token header không được gửi đúng, proxy làm lệch scheme, cookie path hoặc domain không khớp, hoặc frontend client chưa bật `withCredentials` hay cấu hình tương đương."
+    },
+    {
+      "title": "138. Multi-tenant làm request flow thay đổi từ bước nào?",
+      "body": "Ngay từ lúc request vào, app phải biết request này thuộc tenant nào. Việc xác định tenant có thể qua subdomain, domain riêng, path prefix, header hoặc mapping từ user context."
+    },
+    {
+      "title": "139. Vì sao xác định tenant sai là lỗi rất nguy hiểm?",
+      "body": "Vì toàn bộ query, policy, cache key, storage path, queue context và log context về sau có thể đi sai tenant. Đây không phải bug giao diện mà là nguy cơ rò rỉ dữ liệu rất nghiêm trọng."
+    },
+    {
+      "title": "140. Tenant context nên được set ở đâu trong request flow?",
+      "body": "Thường càng sớm càng tốt, hay gặp nhất là middleware. Mục tiêu là các lớp sau như service, query, policy và cache đều đọc cùng một tenant context nhất quán."
+    },
+    {
+      "title": "141. Case thật: local một tenant chạy ổn nhưng production nhiều tenant bắt đầu vỡ",
+      "body": "Lúc chỉ có một tenant, nhiều đoạn code thiếu scope vẫn không lộ vấn đề. Khi nhiều tenant thật chạy cùng lúc, query thiếu điều kiện, cache key không namespaced, hoặc file path không tách tenant sẽ lộ ra ngay."
+    },
+    {
+      "title": "142. Vì sao cache trong multi-tenant flow cần đặc biệt cẩn thận?",
+      "body": "Nếu key cache không gắn tenant id hoặc tenant slug, request của tenant A có thể đọc nhầm dữ liệu đã cache từ tenant B. Đây là lỗi rất production-minded và cực khó chịu."
+    },
+    {
+      "title": "143. Queue trong multi-tenant flow có thể sai ở đâu?",
+      "body": "Job được dispatch trong tenant A nhưng khi worker xử lý lại không restore tenant context đúng, dẫn tới query nhầm tenant hoặc ghi dữ liệu vào tenant mặc định. Đây là bug người mới rất hay bỏ sót."
+    },
+    {
+      "title": "144. Câu hỏi thực chiến nên tự hỏi khi thiết kế request flow khó",
+      "body": "Request này có thể bị gửi lại không, có thể bị chặn trước Laravel không, có cần idempotency không, có side effect nào nên sang queue không, có tenant context không, có cache nào dễ trả nhầm dữ liệu không, và khi fail thì người dùng thấy gì?"
+    },
+    {
+      "title": "145. Tip cuối: càng thực chiến, càng nên nghĩ request flow như chuỗi trạng thái chứ không chỉ là chuỗi file",
+      "body": "Người làm lâu năm ít hỏi 'file nào chạy trước' hơn và hay hỏi 'trạng thái hệ thống đổi thế nào qua từng bước'. Cách nghĩ này giúp nhìn ra bug dữ liệu, bug auth và bug side effect nhanh hơn nhiều."
+    },
+    {
+      "title": "146. Ví dụ flow request web cơ bản từ route tới controller",
+      "body": "Một đoạn code ngắn như sau đã đủ để bạn thấy request Laravel không hề 'tự nhiên mà đến view'.",
+      "code": "Route::post('/posts', [PostController::class, 'store']);\n\nclass PostController extends Controller\n{\n    public function store(StorePostRequest $request)\n    {\n        $post = Post::create($request->validated());\n\n        return redirect()->route('posts.show', $post);\n    }\n}",
+      "bullets": [
+        "Route match trước rồi mới vào controller action.",
+        "`StorePostRequest` chặn validation trước khi logic tạo post chạy.",
+        "Response cuối là redirect, không phải lúc nào cũng là JSON hoặc view."
+      ]
+    },
+    {
+      "title": "147. Ví dụ Form Request cho validation và authorization trong cùng flow",
+      "body": "Đây là nơi rất nhiều project Laravel trở nên gọn hơn nếu tách đúng.",
+      "code": "class StorePostRequest extends FormRequest\n{\n    public function authorize(): bool\n    {\n        return $this->user()?->can('create', Post::class) ?? false;\n    }\n\n    public function rules(): array\n    {\n        return [\n            'title' => ['required', 'string', 'max:255'],\n            'body' => ['required', 'string'],\n        ];\n    }\n}",
+      "note": "Khi request fail ở đây, flow còn chưa chạm business logic bên trong controller. Đây là một điểm debug rất quan trọng."
+    },
+    {
+      "title": "148. Ví dụ request API trả JSON thay vì redirect",
+      "body": "Cùng là request flow, nhưng web flow và API flow kết thúc rất khác nhau ở lớp response.",
+      "code": "Route::post('/api/posts', [ApiPostController::class, 'store']);\n\nreturn response()->json([\n    'data' => $post,\n], 201);",
+      "note": "Sự khác nhau ở response kéo theo khác nhau ở error format, auth strategy, client expectation và cả cách debug production."
+    },
+    {
+      "title": "149. Ví dụ middleware chặn request trước khi vào controller",
+      "body": "Đây là chỗ rất nhiều người mới quên mất khi debug vì controller chưa chạy mà app đã trả response.",
+      "code": "Route::middleware(['auth', 'verified'])->group(function () {\n    Route::get('/dashboard', [DashboardController::class, 'index']);\n});",
+      "note": "Nếu request bị redirect hoặc 403 ở đây, vấn đề nằm ở lớp middleware hoặc auth state chứ chưa phải business logic của controller."
+    },
+    {
+      "title": "150. Sai lầm thường gặp khi học request flow và cách sửa",
+      "body": "Sai lầm phổ biến là học từng file rời rạc, chỉ nhớ tên middleware hay controller mà không hình dung request đang đổi trạng thái thế nào. Cách sửa là luôn lần lại theo thứ tự: request vào từ đâu, bị chặn ở đâu, validate ở đâu, query ở đâu, side effect nào chạy đồng bộ hay nền, và cuối cùng response nào quay lại người dùng.",
+      "code": "request\n-> web server\n-> public/index.php\n-> middleware\n-> request validation\n-> controller/service\n-> query/transaction\n-> response",
+      "note": "Nếu lần được chuỗi này bằng lời của chính bạn, bạn đang hiểu request flow tốt hơn rất nhiều so với chỉ học thuộc tên file."
+    }
+  ]
+}

@@ -1,0 +1,812 @@
+{
+  "anchor": "laravel-devops",
+  "type": "list",
+  "heading": "Sail, môi trường và triển khai: từ local đồng nhất tới production sống khỏe",
+  "intro": "Site này tổng hợp toàn bộ phần Sail, môi trường chạy và triển khai trong Laravel theo hướng thực chiến. Mục tiêu không chỉ là biết chạy `./vendor/bin/sail up`, mà là hiểu môi trường ảnh hưởng code ra sao, Docker giúp gì và không giúp gì, `.env` và config cache liên quan thế nào, queue/scheduler/process manager sống ở đâu, deploy và rollback phải nghĩ ra sao, secret, backup, monitoring, zero-downtime và consistency môi trường quan trọng tới mức nào.",
+  "breaks": [
+    {
+      "start": 1,
+      "title": "I. Tư Duy Môi Trường Và Vì Sao Sail Quan Trọng",
+      "description": "Môi trường là một phần của ứng dụng, không chỉ là chỗ để code chạy. Bắt đầu từ câu hỏi local, staging và production lệch nhau gây đau ra sao.",
+      "tone": "amber"
+    },
+    {
+      "start": 19,
+      "title": "II. Sail, Docker Và Workflow Local Đồng Nhất",
+      "description": "Sail là gì, Docker giúp gì, service phụ trợ, volume, image, network và cách team dùng môi trường đồng nhất hơn thay vì 'máy tôi chạy được'.",
+      "tone": "copper"
+    },
+    {
+      "start": 45,
+      "title": "III. `.env`, Config, Secret Và Drift Giữa Môi Trường",
+      "description": "Biến môi trường, config cache, secret, app key, service endpoint, feature flag, drift và cách giữ local, staging, production không lệch vô thức.",
+      "tone": "sand"
+    },
+    {
+      "start": 69,
+      "title": "IV. Process, Queue, Scheduler Và Runtime Thật",
+      "description": "PHP-FPM, web server, queue worker, scheduler, supervisor, cron, restart policy và những process làm app Laravel thật sự vận hành.",
+      "tone": "amber"
+    },
+    {
+      "start": 93,
+      "title": "V. Build, Deploy, Release, Rollback",
+      "description": "Artifact, CI/CD, migration order, cache warmup, smoke test, rollback, zero-downtime mindset và cách release an toàn hơn.",
+      "tone": "copper"
+    },
+    {
+      "start": 117,
+      "title": "VI. Database, Storage, Backup, Network Và Hạ Tầng Phụ Trợ",
+      "description": "DB connection, storage, CDN, DNS, SSL, backup, restore, queue backend, Redis, object storage và cách chúng bám vào vận hành Laravel.",
+      "tone": "sand"
+    },
+    {
+      "start": 139,
+      "title": "VII. Monitoring, Alert, Observability Và Supportability",
+      "description": "Log, metric, health check, dashboard, alert, incident response, runbook và cách nhìn môi trường như một hệ có tín hiệu chứ không phải hộp đen.",
+      "tone": "amber"
+    },
+    {
+      "start": 145,
+      "title": "VIII. Config Thật, Permission, Proxy Và Playbook Vận Hành",
+      "description": "Những thứ rất hay làm app gãy ngoài đời thực như Nginx, trusted proxy, HTTPS, file permission, deploy user, health endpoint, restore drill, secret rotation và checklist trước-sau release.",
+      "tone": "sand"
+    },
+    {
+      "start": 159,
+      "title": "IX. Case Thực Chiến, Anti-Pattern Và Đánh Giá Cuối",
+      "description": "Những lỗi production điển hình, mùi devops nửa vời và tiêu chí để biết app Laravel của bạn đang chạy có kỷ luật hay chỉ đang may mắn.",
+      "tone": "copper"
+    }
+  ],
+  "items": [
+    {
+      "title": "1. Vì sao môi trường chạy là một phần của ứng dụng?",
+      "body": "Vì app không chỉ là code PHP. Nó còn phụ thuộc PHP runtime, extension, DB, Redis, filesystem, queue, web server và config môi trường.",
+      "code": "APP_ENV=production\nAPP_DEBUG=false\nDB_CONNECTION=mysql\nQUEUE_CONNECTION=redis\nCACHE_STORE=redis\nFILESYSTEM_DISK=s3",
+      "note": "Sai lầm thường gặp: nghĩ môi trường chỉ là chỗ đặt code lên chạy. Cách sửa là xem runtime, queue, cache, storage và secret đều là một phần của behavior ứng dụng."
+    },
+    {
+      "title": "2. Vì sao local chạy được chưa nói lên nhiều điều?",
+      "body": "Vì local thường thiếu data thật, queue thật, cron thật, traffic thật và các giới hạn hạ tầng production."
+    },
+    {
+      "title": "3. Environment drift là gì?",
+      "body": "Là khi local, staging và production khác nhau ở version, config, service hoặc hành vi runtime mà team không nhận ra sớm."
+    },
+    {
+      "title": "4. Vì sao environment drift nguy hiểm?",
+      "body": "Nó tạo ra bug kiểu 'máy tôi chạy được', làm deploy khó đoán và khiến debug mất rất nhiều thời gian."
+    },
+    {
+      "title": "5. Sail quan trọng vì sao trong hệ Laravel learning path?",
+      "body": "Vì nó giúp người học sớm thấy Laravel không sống một mình, mà luôn đi cùng môi trường và service phụ trợ."
+    },
+    {
+      "title": "6. Devops trong app Laravel nhỏ có cần học không?",
+      "body": "Có. Dù app nhỏ, cách bạn chạy, cấu hình, backup và deploy nó vẫn quyết định trải nghiệm lâu dài."
+    },
+    {
+      "title": "7. Tại sao nhiều người học Laravel bỏ qua phần môi trường?",
+      "body": "Vì local CRUD thường chạy được khá sớm, làm người học tưởng rằng hạ tầng chỉ là phần phụ."
+    },
+    {
+      "title": "8. Một hệ Laravel khỏe dài hạn có đặc điểm gì về môi trường?",
+      "body": "Môi trường nhất quán, process rõ ràng, queue và scheduler có giám sát, deploy có thể dự đoán và rollback có kế hoạch."
+    },
+    {
+      "title": "9. Một hệ Laravel mệt mỏi có đặc điểm gì về môi trường?",
+      "body": "Chạy bằng trí nhớ cá nhân, env bí mật, worker không ai quản, scheduler không ai nhìn và sự cố chỉ lộ khi user báo."
+    },
+    {
+      "title": "10. Tư duy đúng về môi trường là gì?",
+      "body": "Coi môi trường như một phần của kiến trúc hệ thống, không phải thứ 'set tạm cho chạy'."
+    },
+    {
+      "title": "11. Vì sao Docker không phải mục tiêu, mà chỉ là công cụ?",
+      "body": "Vì điều quan trọng là consistency và tái tạo môi trường. Docker chỉ là một trong các cách để đạt điều đó."
+    },
+    {
+      "title": "12. Vì sao deployment là chuyện sản phẩm chứ không chỉ kỹ thuật?",
+      "body": "Vì deploy kém làm downtime, mất dữ liệu, queue fail, auth lạ hoặc search lệch ngay trước mặt người dùng."
+    },
+    {
+      "title": "13. Một tip senior về phần này là gì?",
+      "body": "Nếu app chỉ chạy ổn khi một người cụ thể nhớ đúng 20 bước bí truyền, thì môi trường của bạn chưa được thiết kế tử tế."
+    },
+    {
+      "title": "14. Mối liên hệ giữa devops và code quality là gì?",
+      "body": "Code quality tốt giúp deploy an toàn hơn, còn môi trường tốt giúp code ít bug hơn vì bớt bất ngờ runtime."
+    },
+    {
+      "title": "15. Mối liên hệ giữa devops và maintenance-upgrade là gì?",
+      "body": "Version runtime, image, extension và service phụ trợ là một nửa của câu chuyện nâng cấp dài hạn."
+    },
+    {
+      "title": "16. Một mùi học sai phần này là gì?",
+      "body": "Xem Sail như chỉ là lệnh để bật container và không học gì về runtime, config, queue hay deploy."
+    },
+    {
+      "title": "17. Kết luận ngắn của phần mindset là gì?",
+      "body": "Môi trường không phải sân khấu phụ. Nó là nơi code thật sự sống hay chết."
+    },
+    {
+      "title": "18. Sail là gì trong Laravel?",
+      "body": "Sail là một môi trường Docker được Laravel chuẩn bị sẵn để giúp local development nhất quán hơn.",
+      "code": "./vendor/bin/sail up -d\n./vendor/bin/sail artisan migrate\n./vendor/bin/sail npm install\n./vendor/bin/sail npm run dev",
+      "note": "Flow local tốt không chỉ là bật container, mà là biết chạy lệnh trong đúng runtime của dự án."
+    },
+    {
+      "title": "19. Vì sao Sail hữu ích cho người học Laravel?",
+      "body": "Nó giảm friction khi chạy app cùng DB, Redis, mail catcher và các service cần thiết mà không phải cài tay mọi thứ vào máy."
+    },
+    {
+      "title": "20. Docker image trong Sail là gì?",
+      "body": "Là ảnh môi trường runtime được dựng sẵn để container có PHP, extension và công cụ cần thiết cho app."
+    },
+    {
+      "title": "21. Container khác gì máy thật?",
+      "body": "Container là môi trường cô lập hơn, tái tạo được và dễ tiêu chuẩn hóa, nhưng vẫn chạy trên hạ tầng host phía dưới."
+    },
+    {
+      "title": "22. Volume trong Docker giúp gì?",
+      "body": "Nó giúp chia sẻ hoặc giữ dữ liệu giữa host và container, ví dụ source code hoặc dữ liệu DB."
+    },
+    {
+      "title": "23. Nếu hiểu sai volume có thể gặp vấn đề gì?",
+      "body": "Mất dữ liệu, file permission rối, thay đổi local không phản ánh đúng hoặc ngược lại container che mất file host."
+    },
+    {
+      "title": "24. Network giữa các container có ý nghĩa gì?",
+      "body": "Nó cho phép app container nói chuyện với DB, Redis, mail service hoặc search service theo tên service thay vì localhost máy thật."
+    },
+    {
+      "title": "25. Vì sao `localhost` trong container thường gây nhầm?",
+      "body": "Vì `localhost` bên trong container là chính container đó, không phải host machine hay container DB khác.",
+      "code": "DB_HOST=mysql\nREDIS_HOST=redis\nMAIL_HOST=mailpit",
+      "note": "Trong Docker/Sail, app thường nói chuyện với service khác bằng service name chứ không phải `127.0.0.1` như local thuần."
+    },
+    {
+      "title": "26. Sail thường gom những service nào?",
+      "body": "PHP app container, database, Redis, mail testing service và đôi khi các service khác tùy stack."
+    },
+    {
+      "title": "27. Có nên thêm quá nhiều service local ngay từ đầu không?",
+      "body": "Không nên nếu chưa cần. Mỗi service thêm vào là thêm thời gian boot, complexity và tài nguyên."
+    },
+    {
+      "title": "28. Vì sao Sail giúp giảm bug 'máy tôi chạy được'?",
+      "body": "Vì team cùng dùng stack gần giống nhau hơn về runtime, extension và service hỗ trợ."
+    },
+    {
+      "title": "29. Sail có thay thế hoàn toàn hiểu biết Docker không?",
+      "body": "Không. Nó giúp khởi đầu tốt, nhưng người làm lâu dài vẫn nên hiểu volume, network, image và lifecycle container."
+    },
+    {
+      "title": "30. `./vendor/bin/sail up` thực chất đang làm gì?",
+      "body": "Nó khởi động tập container cần thiết theo cấu hình Docker của dự án để môi trường local sẵn sàng."
+    },
+    {
+      "title": "31. `sail shell` hoặc exec vào container có ích gì?",
+      "body": "Nó giúp bạn chạy lệnh trong đúng runtime của app, tránh lệch giữa host machine và container."
+    },
+    {
+      "title": "32. Có nên chạy Composer hoặc Artisan trong container không?",
+      "body": "Thường nên nếu đó là runtime chuẩn của dự án, vì nó giữ hành vi nhất quán hơn giữa các máy dev."
+    },
+    {
+      "title": "33. NPM/Vite trong môi trường Sail có thể có lưu ý gì?",
+      "body": "Node version, file watch, port mapping, hiệu năng volume và HMR trong Docker có thể khác local thuần."
+    },
+    {
+      "title": "34. Một tip thực chiến với Sail là gì?",
+      "body": "Hãy học service name, port mapping, volume và nơi dữ liệu thật đang nằm thay vì chỉ nhớ lệnh bật tắt."
+    },
+    {
+      "title": "35. Có nên coi Sail là production-like tuyệt đối không?",
+      "body": "Không. Nó là bước gần hơn local thủ công, nhưng không tự động phản ánh hoàn toàn production."
+    },
+    {
+      "title": "36. Mùi hệ thống xấu ở local Docker workflow là gì?",
+      "body": "Không ai biết container nào đang chạy, dữ liệu DB nằm ở đâu hoặc vì sao app mất kết nối service phụ."
+    },
+    {
+      "title": "37. Nếu container build chậm, nên nghĩ gì?",
+      "body": "Xem lại Dockerfile, cache layer, số lượng service, volume strategy và liệu có đang build lại nhiều thứ không cần thiết."
+    },
+    {
+      "title": "38. Nếu Sail chạy nặng máy dev, điều đó có nghĩa gì?",
+      "body": "Có thể stack local đang quá nhiều service hoặc cấu hình resource chưa hợp lý. Không phải cứ container hóa là miễn phí."
+    },
+    {
+      "title": "39. Có nên dùng Sail để dạy process và env đồng nhất trong team không?",
+      "body": "Rất nên. Nó là nơi tốt để hình thành kỷ luật môi trường từ sớm."
+    },
+    {
+      "title": "40. Kết luận ngắn về Sail là gì?",
+      "body": "Sail không chỉ là cách bật app, mà là cửa vào để hiểu Laravel như một hệ nhiều service chạy cùng nhau."
+    },
+    {
+      "title": "41. `.env` trong Laravel dùng để làm gì?",
+      "body": "Nó chứa cấu hình môi trường như DB, cache, queue, mail, app key và endpoint hoặc secret cho service ngoài.",
+      "code": "APP_NAME=\"Laravel Labs\"\nAPP_URL=https://labs.example.com\nAPP_KEY=base64:...\nDB_HOST=mysql\nREDIS_HOST=redis\nSTRIPE_SECRET=sk_live_...",
+      "bullets": [
+        "`.env` là nơi chứa giá trị môi trường, không phải nơi viết business logic.",
+        "Giá trị này nên được đi qua `config/*.php` thay vì gọi `env()` lung tung trong code app."
+      ]
+    },
+    {
+      "title": "42. Vì sao `.env` không nên bị coi như nơi nhét mọi thứ tùy hứng?",
+      "body": "Vì env quá bừa sẽ khó audit, khó onboarding và dễ tạo drift giữa các môi trường."
+    },
+    {
+      "title": "43. `config/*.php` và `.env` liên hệ với nhau thế nào?",
+      "body": "`.env` cung cấp giá trị môi trường, còn `config` là nơi ứng dụng đọc và tổ chức các giá trị đó thành cấu hình dùng trong code."
+    },
+    {
+      "title": "44. Vì sao không nên gọi `env()` lung tung trong code app ngoài config?",
+      "body": "Vì điều đó phá tính nhất quán config và dễ gây bug khi dùng config cache."
+    },
+    {
+      "title": "45. `config:cache` làm gì?",
+      "body": "Nó gom cấu hình thành dạng tối ưu hơn cho production, nhưng đồng thời khiến thay đổi `.env` không phản ánh ngay nếu không clear/cache lại đúng cách.",
+      "code": "php artisan config:cache\nphp artisan config:clear",
+      "note": "Sai lầm thường gặp: sửa `.env` xong reload trang và tưởng app sẽ tự hiểu. Nếu config đang cache, điều đó thường sai."
+    },
+    {
+      "title": "46. Một bug rất thường gặp với `.env` là gì?",
+      "body": "Sửa `.env` rồi quên `config:clear` hoặc deploy artifact vẫn giữ config cũ, làm app hành xử sai một cách khó hiểu."
+    },
+    {
+      "title": "47. Secret là gì trong ngữ cảnh Laravel app?",
+      "body": "Là thông tin nhạy cảm như app key, DB password, API token, webhook secret hoặc cloud credential."
+    },
+    {
+      "title": "48. Vì sao secret management là phần của devops chứ không chỉ security?",
+      "body": "Vì cách phát secret, rotate secret, inject secret và audit secret ảnh hưởng trực tiếp tới deploy và vận hành."
+    },
+    {
+      "title": "49. Có nên commit `.env` vào git không?",
+      "body": "Không. Thông thường chỉ commit `.env.example` hoặc file example tương tự, không phải secret thật."
+    },
+    {
+      "title": "50. `.env.example` có giá trị gì?",
+      "body": "Nó giúp người mới biết app cần biến môi trường nào để chạy, giảm onboarding friction và lỗi cấu hình thiếu."
+    },
+    {
+      "title": "51. Drift giữa `.env.example` và thực tế gây đau ra sao?",
+      "body": "Người mới hoặc CI có thể thiếu biến quan trọng, trong khi production đang phụ thuộc vào biến không ai còn nhớ."
+    },
+    {
+      "title": "52. Feature flag trong env có hữu ích không?",
+      "body": "Rất hữu ích khi muốn rollout behavior có kiểm soát hoặc bật tắt nhanh tính năng nhạy cảm."
+    },
+    {
+      "title": "53. App key quan trọng thế nào?",
+      "body": "Nó liên quan tới mã hóa, session hoặc nhiều cơ chế bảo mật khác. App key sai hoặc đổi bừa có thể gây hậu quả lớn."
+    },
+    {
+      "title": "54. Endpoint môi trường ngoài có nên hardcode không?",
+      "body": "Không nên. Service URL nên đi qua config/env để đổi giữa local, staging, production dễ hơn."
+    },
+    {
+      "title": "55. Vì sao local/staging/production nên có convention đặt biến rõ ràng?",
+      "body": "Để team dễ đọc, dễ audit và giảm lỗi copy-paste hoặc miss cấu hình."
+    },
+    {
+      "title": "56. Secret rotation có liên quan tới app design ra sao?",
+      "body": "App khỏe nên chịu được việc thay secret có kiểm soát mà không phải downtime dài hoặc sửa tay khắp nơi."
+    },
+    {
+      "title": "57. Một tip thực chiến về env là gì?",
+      "body": "Mỗi biến quan trọng nên có owner ngầm trong team và có lý do tồn tại rõ, không phải di sản vô danh.",
+      "code": "php artisan config:clear\nphp artisan cache:clear\nphp artisan config:cache",
+      "note": "Rất nhiều bug kiểu 'sửa `.env` mà app vẫn không đổi' đến từ việc quên vòng đời config cache và process nền chưa restart."
+    },
+    {
+      "title": "58. Mùi hệ thống xấu ở lớp config là gì?",
+      "body": "Không ai biết biến nào critical, biến nào cũ, biến nào chỉ còn tồn tại vì sợ xóa nhầm."
+    },
+    {
+      "title": "59. Có nên có môi trường staging gần production không?",
+      "body": "Rất nên nếu app có queue, cron, provider ngoài hoặc flow nhạy cảm. Staging giúp rehearsal tốt hơn local."
+    },
+    {
+      "title": "60. Config drift thường lộ ra ở đâu?",
+      "body": "Queue, mail, storage, signed URL, auth redirect, cache hoặc provider integration là những chỗ rất hay lộ sai khác môi trường."
+    },
+    {
+      "title": "61. Queue worker là gì trong bức tranh môi trường?",
+      "body": "Là process nền xử lý job từ queue backend như Redis, database hoặc dịch vụ queue khác."
+    },
+    {
+      "title": "62. Scheduler là gì trong runtime thật?",
+      "body": "Là các task định kỳ được cron gọi vào Laravel thông qua `schedule:run`."
+    },
+    {
+      "title": "63. Vì sao web process không đủ cho một app Laravel thật?",
+      "body": "Vì app thật thường còn cần queue worker, scheduler, mail delivery, cache backend, DB và các process vận hành khác."
+    },
+    {
+      "title": "64. Web server phổ biến với Laravel là gì?",
+      "body": "Thường là Nginx hoặc Apache kết hợp với PHP-FPM hoặc stack phù hợp khác."
+    },
+    {
+      "title": "65. PHP-FPM có vai trò gì?",
+      "body": "Nó quản lý process PHP phục vụ request web, tách khỏi web server thuần.",
+      "code": "server {\n    listen 80;\n    root /var/www/html/public;\n\n    location / {\n        try_files $uri $uri/ /index.php?$query_string;\n    }\n\n    location ~ \\.php$ {\n        fastcgi_pass php-fpm:9000;\n        include fastcgi_params;\n        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;\n    }\n}",
+      "note": "Nhiều người học Laravel rất lâu nhưng chưa từng nhìn một block Nginx + PHP-FPM tối thiểu, nên runtime web vẫn rất mơ hồ."
+    },
+    {
+      "title": "66. Queue worker nên được chạy bằng gì?",
+      "body": "Thường được quản lý bằng Supervisor, systemd, Horizon hoặc orchestrator tương đương để tự restart khi lỗi."
+    },
+    {
+      "title": "67. Vì sao không nên chạy worker bằng một terminal tay rồi quên nó?",
+      "body": "Vì process có thể chết, đổi code mà không restart, hoặc không ai biết nó đã dừng từ bao giờ."
+    },
+    {
+      "title": "68. `queue:restart` quan trọng vì sao?",
+      "body": "Worker là process sống lâu, có thể giữ code cũ sau deploy. Restart giúp nạp code và config mới."
+    },
+    {
+      "title": "69. Nếu quên restart worker sau deploy thì sao?",
+      "body": "Web app có thể chạy code mới còn queue job vẫn chạy code cũ, gây bug rất khó hiểu.",
+      "code": "php artisan queue:restart\n\n# or recycle workers through supervisor/systemd after deploy",
+      "note": "Worker là process sống lâu. Nếu không recycle đúng lúc, bạn sẽ có production chạy hai thế giới code khác nhau."
+    },
+    {
+      "title": "70. Cron thực sự làm gì cho scheduler?",
+      "body": "Cron hệ điều hành gọi lệnh scheduler định kỳ, thường mỗi phút, để Laravel quyết định task nào đến lúc chạy."
+    },
+    {
+      "title": "71. Nếu cron không chạy thì hậu quả gì?",
+      "body": "Cleanup, report, reminder, reconciliation hoặc token expiry task có thể âm thầm ngừng chạy."
+    },
+    {
+      "title": "72. Supervisor hoặc systemd khác nhau ở tư duy nào?",
+      "body": "Cả hai đều giúp giữ process sống, nhưng cách cấu hình và mức tích hợp hệ điều hành khác nhau."
+    },
+    {
+      "title": "73. Một mùi runtime xấu là gì?",
+      "body": "Không ai biết production đang có những process nào sống còn và process nào đã chết."
+    },
+    {
+      "title": "74. Process manager tốt nên trả lời câu hỏi gì?",
+      "body": "Process nào đang chạy, restart thế nào, crash có tự bật lại không và log hoặc trạng thái ở đâu."
+    },
+    {
+      "title": "75. Mail queue, broadcast queue và heavy job queue có nên tách không?",
+      "body": "Rất đáng cân nhắc để job nặng không chặn đường các tác vụ cần phản hồi nhanh hơn."
+    },
+    {
+      "title": "76. Một tip thực chiến về process là gì?",
+      "body": "Hãy coi worker và scheduler là citizens hạng nhất của hệ thống, không phải phần phụ sau khi web đã chạy."
+    },
+    {
+      "title": "77. Tại sao local không bộc lộ rõ problem của process?",
+      "body": "Vì dev thường chạy ít worker, ít task định kỳ và traffic nhỏ nên lỗi process dễ bị che lấp."
+    },
+    {
+      "title": "78. Queue backend cũng là phần môi trường vì sao?",
+      "body": "Redis, database queue hay SQS đều mang theo cấu hình, độ bền, latency và failure mode khác nhau."
+    },
+    {
+      "title": "79. Một app có thể boot được nhưng vẫn 'chưa sống' theo nghĩa vận hành vì sao?",
+      "body": "Vì queue chết, scheduler không chạy, storage sai, mail fail hoặc auth env lệch dù homepage vẫn lên."
+    },
+    {
+      "title": "80. Kết luận ngắn về process/runtime là gì?",
+      "body": "Laravel app thật là tập nhiều process hợp tác, không chỉ một web request loop."
+    },
+    {
+      "title": "81. Build trong ngữ cảnh deploy Laravel là gì?",
+      "body": "Là giai đoạn chuẩn bị artifact hoặc image gồm dependency, asset và cấu hình cần thiết để chạy app ở môi trường đích.",
+      "code": "composer install --no-dev --optimize-autoloader\nnpm ci\nnpm run build\nphp artisan event:cache",
+      "note": "Build tốt giúp production nhận một gói đã chuẩn bị sẵn, thay vì tự build ngẫu hứng theo trạng thái hiện tại của server."
+    },
+    {
+      "title": "82. Deploy khác release ở đâu?",
+      "body": "Deploy là đưa code lên môi trường, còn release là cho người dùng hoặc traffic thật dùng behavior mới."
+    },
+    {
+      "title": "83. Vì sao tách deploy và release bằng feature flag lại hữu ích?",
+      "body": "Nó giảm rủi ro bằng cách đưa code lên trước, rồi bật dần behavior mới sau khi quan sát."
+    },
+    {
+      "title": "84. CI/CD giúp gì cho Laravel app?",
+      "body": "Tự động hóa test, build, package, deploy và giữ quy trình phát hành ít phụ thuộc trí nhớ cá nhân hơn."
+    },
+    {
+      "title": "85. Artifact deploy có thể là gì?",
+      "body": "Có thể là image Docker, package source đã cài dependency hoặc build output đã sẵn asset."
+    },
+    {
+      "title": "86. Có nên build asset ở production server luôn không?",
+      "body": "Không phải lúc nào cũng nên. Nhiều đội thích build artifact sẵn để deploy nhất quán hơn."
+    },
+    {
+      "title": "87. Migration nên chạy ở bước nào khi deploy?",
+      "body": "Điều này phụ thuộc compatibility strategy, nhưng luôn cần nghĩ tới thứ tự giữa code mới, DB schema mới và worker cũ."
+    },
+    {
+      "title": "88. Vì sao deploy đụng DB là chỗ nhạy cảm?",
+      "body": "Vì web request, worker và schema có thể lệch nhau trong cùng một khoảng rollout."
+    },
+    {
+      "title": "89. Smoke test sau deploy giúp gì?",
+      "body": "Nó kiểm nhanh các flow sống còn để bắt lỗi sớm trước khi người dùng báo.",
+      "code": "curl -I https://app.example.com\ncurl -s https://app.example.com/health\nphp artisan queue:monitor redis:default --max=100",
+      "bullets": [
+        "Smoke test không cần quá đồ sộ, nhưng phải chạm được những path sống còn.",
+        "Rất nên có ít nhất homepage, health endpoint, login path và tín hiệu queue cơ bản."
+      ]
+    },
+    {
+      "title": "90. Rollback plan nên có từ lúc nào?",
+      "body": "Từ trước khi deploy. Rollback không phải thứ nên nghĩ ra khi sự cố đã nổ."
+    },
+    {
+      "title": "91. Code rollback và data rollback khác nhau thế nào?",
+      "body": "Code rollback thường đơn giản hơn, còn data rollback có thể rất khó hoặc không thực tế nếu dữ liệu đã biến đổi."
+    },
+    {
+      "title": "92. Zero-downtime deploy là gì?",
+      "body": "Là nỗ lực giảm hoặc tránh downtime nhìn thấy được khi phát hành, bằng quy trình deploy và compatibility thiết kế tốt."
+    },
+    {
+      "title": "93. Zero-downtime có phải luôn đạt được tuyệt đối không?",
+      "body": "Không phải lúc nào cũng tuyệt đối, nhưng nhiều hệ thống có thể tiệm cận nếu rollout kỷ luật."
+    },
+    {
+      "title": "94. Blue-green hoặc canary mindset có liên quan gì?",
+      "body": "Chúng là các chiến lược giảm rủi ro rollout bằng cách tách môi trường hoặc chỉ bật cho một phần traffic trước."
+    },
+    {
+      "title": "95. Warm cache hoặc warm config sau deploy có đáng không?",
+      "body": "Có thể rất đáng để tránh request đầu tiên hoặc dashboard đầu tiên bị chậm bất thường."
+    },
+    {
+      "title": "96. Vì sao deploy xong vẫn nên nhìn queue/scheduler ngay?",
+      "body": "Vì nhiều lỗi chỉ lộ ở process nền chứ không lộ trên request web đầu tiên."
+    },
+    {
+      "title": "97. Một tip thực chiến về deploy là gì?",
+      "body": "Nếu thay đổi đụng framework, DB, queue và env cùng lúc, hãy chia nhỏ càng nhiều càng tốt."
+    },
+    {
+      "title": "98. Mùi deploy xấu là gì?",
+      "body": "Deploy dựa vào nhớ miệng, không smoke test, không restart worker, không xem dashboard và chỉ biết sự cố khi khách than."
+    },
+    {
+      "title": "99. Có nên có release note nội bộ sau deploy không?",
+      "body": "Rất nên nếu app có nhiều flow nhạy cảm, để QA, support và dev biết vùng nào vừa đổi."
+    },
+    {
+      "title": "100. Production env variable đổi sau deploy có thể gây gì?",
+      "body": "Có thể làm app hành xử lệch ngay nếu config cache chưa refresh hoặc process nền chưa restart."
+    },
+    {
+      "title": "101. Kết luận ngắn về build/deploy là gì?",
+      "body": "Deploy tốt không phải deploy nhanh nhất, mà là deploy đoán trước được và có đường lui rõ."
+    },
+    {
+      "title": "102. Database trong vận hành Laravel có gì ngoài schema?",
+      "body": "Connection pool, credential, backup, restore, replication, latency, size growth và migration safety đều là phần vận hành thật."
+    },
+    {
+      "title": "103. Redis trong môi trường production có thể phục vụ những gì?",
+      "body": "Queue, cache, session, rate limit, lock và đôi khi pub/sub hoặc presence/realtime phụ trợ."
+    },
+    {
+      "title": "104. Vì sao Redis outage có tác động rộng?",
+      "body": "Vì nó có thể làm hỏng nhiều lớp cùng lúc: queue, cache, session hoặc rate limit."
+    },
+    {
+      "title": "105. Storage là phần hạ tầng chứ không chỉ feature vì sao?",
+      "body": "Vì quyền truy cập, bucket policy, signed URL, backup và lifecycle file đều ảnh hưởng trực tiếp tới vận hành.",
+      "code": "FILESYSTEM_DISK=s3\nAWS_ACCESS_KEY_ID=...\nAWS_SECRET_ACCESS_KEY=...\nAWS_DEFAULT_REGION=ap-southeast-1\nAWS_BUCKET=laravel-labs-prod",
+      "note": "Nếu storage config sai, app vẫn có thể chạy homepage bình thường nhưng upload, download hoặc media URL sẽ gãy âm thầm."
+    },
+    {
+      "title": "106. Backup nên bao phủ những gì ngoài DB?",
+      "body": "Storage file, cấu hình quan trọng, artifact hoặc ít nhất thông tin đủ để khôi phục lại hệ thống."
+    },
+    {
+      "title": "107. Restore drill là gì?",
+      "body": "Là việc thử khôi phục thật để chắc backup dùng được, thay vì chỉ tin rằng backup đã tồn tại là an toàn."
+    },
+    {
+      "title": "108. DNS, SSL và domain config có liên quan gì tới deploy Laravel?",
+      "body": "Rất nhiều, vì sai ở đây có thể làm app unreachable, signed URL hỏng hoặc callback/webhook fail."
+    },
+    {
+      "title": "109. Object storage như S3 có vai trò gì?",
+      "body": "Lưu file bền hơn local disk, chia sẻ tốt hơn giữa nhiều server app và dễ đi cùng CDN."
+    },
+    {
+      "title": "110. CDN liên quan tới vận hành vì sao?",
+      "body": "Cache asset, file media và response public ảnh hưởng tốc độ, cost và cả việc rollback asset."
+    },
+    {
+      "title": "111. Mail service trong môi trường thật cần để ý gì?",
+      "body": "Credential, rate limit, bounce, suppression, queue, domain verification và observability."
+    },
+    {
+      "title": "112. Search service hoặc external API cũng là part của env vì sao?",
+      "body": "Vì endpoint, auth, timeout, network và drift giữa môi trường ảnh hưởng hành vi app thật."
+    },
+    {
+      "title": "113. Một tip thực chiến về hạ tầng phụ trợ là gì?",
+      "body": "Mỗi service phụ trợ nên có owner ngầm và runbook tối thiểu, không nên để như hộp đen 'cắm vào cho chạy'."
+    },
+    {
+      "title": "114. Mùi hệ thống xấu ở hạ tầng phụ là gì?",
+      "body": "App phụ thuộc nhiều service nhưng không ai chắc service nào là critical, service nào có backup, service nào có alert."
+    },
+    {
+      "title": "115. Backup có vô dụng nếu chưa test restore không?",
+      "body": "Rất có thể. Backup không kiểm chứng restore chỉ là hy vọng được đóng gói lại."
+    },
+    {
+      "title": "116. Kết luận ngắn về hạ tầng phụ trợ là gì?",
+      "body": "Laravel app thật là mạng lưới phụ thuộc, không chỉ một repo PHP và một database đơn lẻ."
+    },
+    {
+      "title": "117. Monitoring là gì trong vận hành Laravel?",
+      "body": "Là việc theo dõi sức khỏe hệ thống qua log, metric, dashboard, alert và health signal."
+    },
+    {
+      "title": "118. Health check dùng để làm gì?",
+      "body": "Để xác minh ứng dụng và các dependency chính còn sống và phản hồi ở mức chấp nhận được."
+    },
+    {
+      "title": "119. Metric quan trọng của Laravel app nên có gì?",
+      "body": "Latency, error rate, queue lag, failed jobs, DB health, Redis health, scheduler run status và deploy version."
+    },
+    {
+      "title": "120. Log tốt trong vận hành khác log debug local thế nào?",
+      "body": "Nó có cấu trúc, có ngữ cảnh và phục vụ tra cứu/alert chứ không chỉ in ra để mắt người đọc tạm thời."
+    },
+    {
+      "title": "121. Alert tốt có đặc điểm gì?",
+      "body": "Đủ nhạy để bắt sự cố thật, nhưng đủ sạch để đội không bỏ mặc vì quá ồn.",
+      "code": "- queue lag > 60s trong 5 phút\n- failed jobs tăng đột biến\n- health endpoint fail liên tiếp\n- error rate > ngưỡng bình thường",
+      "note": "Alert tốt phải gắn với hành động. Nếu nhận alert xong mà không biết phải nhìn ở đâu tiếp, alert đó chưa đủ trưởng thành."
+    },
+    {
+      "title": "122. Alert fatigue ảnh hưởng app ra sao?",
+      "body": "Khi alert quá nhiều và vô nghĩa, đội sẽ bỏ qua cả tín hiệu thật trong lúc sự cố nghiêm trọng."
+    },
+    {
+      "title": "123. Runbook có giá trị gì?",
+      "body": "Nó giúp người trực sự cố biết nhìn vào đâu trước, chạy bước nào và tránh phản ứng ngẫu nhiên."
+    },
+    {
+      "title": "124. Observability khác monitoring thế nào?",
+      "body": "Monitoring báo bạn có vấn đề, còn observability giúp bạn hiểu tại sao hệ thống đi tới trạng thái đó."
+    },
+    {
+      "title": "125. Dashboard tốt cho Laravel app nên có gì?",
+      "body": "Request health, error trend, queue health, scheduler signal, DB/Redis signal, storage signal và deploy timeline."
+    },
+    {
+      "title": "126. Correlation id có đáng dùng trong vận hành không?",
+      "body": "Rất đáng, nhất là khi request chạm queue, external API hoặc nhiều process."
+    },
+    {
+      "title": "127. Một tip thực chiến về observability là gì?",
+      "body": "Nếu production fail mà đội không biết bắt đầu nhìn từ dashboard hay log nào, observability chưa đủ trưởng thành."
+    },
+    {
+      "title": "128. Mùi vận hành xấu ở monitoring là gì?",
+      "body": "Dashboard có nhiều số nhưng không số nào giúp trả lời câu hỏi app đang chết ở đâu."
+    },
+    {
+      "title": "129. Supportability liên quan devops ra sao?",
+      "body": "Hệ dễ support sẽ để lại đủ tín hiệu, tool và quyền quan sát để điều tra mà không phải chọc trực tiếp vào production bằng tay."
+    },
+    {
+      "title": "130. Một app dễ support có đặc điểm gì?",
+      "body": "Có health signal, runbook, owner, process rõ, queue traceable và lỗi đủ ngữ cảnh để đọc."
+    },
+    {
+      "title": "131. Kết luận ngắn về monitoring/observability là gì?",
+      "body": "Không thể vận hành tốt một app Laravel chỉ bằng niềm tin rằng mọi thứ đang ổn."
+    },
+    {
+      "title": "132. Một bug production điển hình với Sail/env là gì?",
+      "body": "Local mọi người chạy tốt, nhưng staging fail vì env thiếu biến, config cache cũ hoặc service name khác hẳn container local."
+    },
+    {
+      "title": "133. Một bug điển hình với deploy là gì?",
+      "body": "Web app lên được nhưng queue worker vẫn chạy code cũ hoặc scheduler không chạy sau release."
+    },
+    {
+      "title": "134. Một bug điển hình với storage/env là gì?",
+      "body": "Upload thành công nhưng file không hiện vì bucket policy, URL config hoặc signed URL domain lệch giữa môi trường."
+    },
+    {
+      "title": "135. Một bug điển hình với DB migration là gì?",
+      "body": "Code mới đã deploy nhưng migration fail giữa chừng, làm web và worker nhìn hai thế giới schema khác nhau."
+    },
+    {
+      "title": "136. Anti-pattern lớn nhất ở môi trường local là gì?",
+      "body": "Ai cũng tự cài stack riêng theo cảm hứng và không ai chắc runtime nào mới là chuẩn."
+    },
+    {
+      "title": "137. Anti-pattern lớn nhất ở `.env` là gì?",
+      "body": "Biến môi trường phình to, không có owner, không có docs và thay đổi bằng truyền miệng."
+    },
+    {
+      "title": "138. Anti-pattern lớn nhất ở deploy là gì?",
+      "body": "Deploy bằng tay theo trí nhớ và rollback bằng cầu nguyện."
+    },
+    {
+      "title": "139. Anti-pattern lớn nhất ở queue/scheduler là gì?",
+      "body": "Chỉ chú ý web request mà quên mất app còn sống nhờ process nền."
+    },
+    {
+      "title": "140. Anti-pattern lớn nhất ở monitoring là gì?",
+      "body": "Có log nhưng không có ngữ cảnh, có metric nhưng không có alert đúng, có dashboard nhưng không ai nhìn."
+    },
+    {
+      "title": "141. Một câu hỏi senior trước khi nói 'production đã ổn' là gì?",
+      "body": "Nếu worker chết, cron dừng, Redis nghẽn hoặc env lệch, đội sẽ biết trong bao lâu và xử lý theo lối nào?"
+    },
+    {
+      "title": "142. Một câu hỏi senior khác về local workflow là gì?",
+      "body": "Người mới vào team có thể tự chạy đúng stack trong thời gian hợp lý mà không phải hỏi bí kíp riêng không?"
+    },
+    {
+      "title": "143. Khi nào có thể nói phần môi trường của app đang khỏe?",
+      "body": "Khi local/staging/prod đủ nhất quán, process rõ, deploy có kỷ luật, rollback có đường lui và observability đủ để không mù khi sự cố tới."
+    },
+    {
+      "title": "144. Rà soát cuối: site devops nên có tối thiểu những mảng nào?",
+      "body": "Ít nhất phải có mindset môi trường, Sail/Docker workflow, `.env`/config/secret, process runtime, deploy/rollback, hạ tầng phụ trợ, monitoring/observability và case production."
+    },
+    {
+      "title": "145. Reverse proxy là gì trong bức tranh deploy Laravel?",
+      "body": "Đó là lớp như Nginx hoặc load balancer đứng trước PHP app để nhận request, terminate TLS, thêm header và chuyển tiếp vào app runtime.",
+      "code": "X-Forwarded-For\nX-Forwarded-Proto\nX-Forwarded-Host",
+      "note": "Nếu trusted proxy hoặc header forwarding sai, app có thể hiểu sai scheme, host hoặc IP thật và sinh ra redirect/login/cookie bug rất khó chịu."
+    },
+    {
+      "title": "146. Vì sao trusted proxy config quan trọng?",
+      "body": "Nếu cấu hình sai, app có thể hiểu nhầm scheme, host hoặc IP thật của client, dẫn tới URL sai, redirect loop hoặc log IP vô nghĩa."
+    },
+    {
+      "title": "147. Lỗi thường gặp khi app ở sau proxy là gì?",
+      "body": "App nghĩ request đang là HTTP dù người dùng truy cập HTTPS, từ đó sinh link sai, cookie sai hoặc CSRF/login loop."
+    },
+    {
+      "title": "148. `APP_URL` quan trọng vì sao trong môi trường thật?",
+      "body": "Nhiều chỗ như signed URL, mail link, asset hoặc package ngoài dựa vào nó để sinh URL tuyệt đối đúng domain."
+    },
+    {
+      "title": "149. Vì sao sai `APP_URL` có thể âm thầm phá app?",
+      "body": "Vì request thường vẫn chạy, nhưng mail verification, reset password, callback hoặc asset URL lại trỏ sang domain cũ hoặc sai scheme."
+    },
+    {
+      "title": "150. File permission trong Laravel thường đụng ở đâu?",
+      "body": "Chủ yếu ở `storage/`, `bootstrap/cache/` và các thư mục mà web process hoặc worker cần ghi."
+    },
+    {
+      "title": "151. Vì sao không nên fix permission kiểu chmod 777 cho xong?",
+      "body": "Nó che mất gốc rễ ownership và tạo ra một môi trường bừa bãi, khó audit và có thể nguy hiểm về bảo mật."
+    },
+    {
+      "title": "152. Deploy user là gì và vì sao nên để ý?",
+      "body": "Là user hệ thống dùng để release code hoặc chạy process. Chọn sai user dễ gây lệch ownership, permission rối và rollback rất mệt."
+    },
+    {
+      "title": "153. Một tip senior về permission là gì?",
+      "body": "Đừng chữa cháy bằng quyền quá rộng. Hãy làm rõ process nào cần đọc, process nào cần ghi và thư mục nào thực sự mutable.",
+      "code": "chown -R www-data:www-data storage bootstrap/cache\nchmod -R ug+rwx storage bootstrap/cache",
+      "note": "Đây là hướng sửa có chủ đích hơn rất nhiều so với `chmod -R 777`, vốn chỉ che gốc rễ ownership một cách nguy hiểm."
+    },
+    {
+      "title": "154. Health endpoint nên kiểm tra tới đâu?",
+      "body": "Tùy mục đích. Có endpoint chỉ xác nhận app boot được, và endpoint sâu hơn kiểm tra DB, Redis, queue backend hoặc storage quan trọng."
+    },
+    {
+      "title": "155. Vì sao health check không nên giả vờ 'xanh' khi dependency chết?",
+      "body": "Vì như vậy dashboard hoặc load balancer sẽ tiếp tục tin app đang khỏe trong khi chức năng thật đã gãy."
+    },
+    {
+      "title": "156. Có nên tách liveness và readiness không?",
+      "body": "Rất nên khi hạ tầng đủ phức tạp. Liveness trả lời app còn sống không, còn readiness trả lời app đã sẵn sàng nhận traffic chưa.",
+      "code": "Route::get('/health/live', fn () => response()->json(['status' => 'ok']));\n\nRoute::get('/health/ready', function () {\n    DB::select('select 1');\n\n    return response()->json(['status' => 'ready']);\n});",
+      "note": "Nếu readiness đi qua dependency quan trọng còn liveness chỉ xác nhận process đang sống, hệ thống sẽ cho bạn tín hiệu vận hành thật hơn nhiều."
+    },
+    {
+      "title": "157. Trong môi trường container, graceful shutdown quan trọng vì sao?",
+      "body": "Vì khi worker hoặc web process bị dừng, chúng cần thời gian hoàn tất request hoặc job dang dở để tránh mất trạng thái nửa chừng."
+    },
+    {
+      "title": "158. Nếu restart container quá gắt thì chuyện gì xảy ra?",
+      "body": "Request giữa chừng có thể fail, job có thể bị retry không sạch và người dùng thấy lỗi ngắt quãng khó tái hiện."
+    },
+    {
+      "title": "159. Artifact-based deploy đáng học vì sao?",
+      "body": "Vì nó giúp release cùng một gói build đã được kiểm thử, thay vì build lại mỗi nơi một kiểu và tự tạo drift giữa CI với production.",
+      "code": "artifact/\n  app/\n  vendor/\n  public/build/\n  bootstrap/cache/\n  release.json",
+      "note": "Ý chính không phải đúng cây thư mục này, mà là release nên có hình dạng lặp lại được thay vì mỗi lần lên server lại build theo cảm hứng."
+    },
+    {
+      "title": "160. Một release artifact trong app Laravel thường chứa gì?",
+      "body": "Code ứng dụng, dependency PHP, asset build sẵn, config template cần thiết và metadata version để truy vết deploy."
+    },
+    {
+      "title": "161. Vì sao không nên vừa kéo code vừa build tay trên server production nếu tránh được?",
+      "body": "Vì bước đó làm release khó lặp lại, phụ thuộc tình trạng server lúc đó và mở rộng cửa cho khác biệt ngẫu nhiên.",
+      "code": "git pull\ncomposer install\nnpm install\nnpm run build",
+      "note": "Chuỗi này nhìn quen nhưng rất dễ tạo drift: package registry khác thời điểm, asset khác môi trường, dependency khác cache local của server."
+    },
+    {
+      "title": "162. Secret rotation nên được nghĩ từ sớm như thế nào?",
+      "body": "Thiết kế sao cho secret có thể thay đổi có kiểm soát, có thời gian chuyển tiếp nếu cần và không buộc deploy hoảng loạn giữa đêm."
+    },
+    {
+      "title": "163. Một lỗi thật khi rotate secret là gì?",
+      "body": "App web đã dùng secret mới nhưng worker hoặc scheduler còn chạy config cũ, khiến webhook verify sai hoặc job gọi API ngoài bị từ chối."
+    },
+    {
+      "title": "164. Backup schedule tốt chưa đủ, còn phải có gì nữa?",
+      "body": "Phải có kiểm tra backup thành công, kiểm tra restore được và biết rõ ai chịu trách nhiệm khi phát hiện backup hỏng."
+    },
+    {
+      "title": "165. Restore drill nên làm thế nào để có giá trị?",
+      "body": "Hãy thử phục hồi vào môi trường cô lập, đo thời gian, kiểm tra tính toàn vẹn và viết lại những bước thực sự cần thay vì tin vào trí nhớ."
+    },
+    {
+      "title": "166. Vì sao nhiều đội tưởng có backup là đủ nhưng vẫn thua khi sự cố đến?",
+      "body": "Vì lúc khôi phục mới phát hiện file thiếu, key sai, dump lỗi, thời gian restore quá lâu hoặc không ai biết trình tự thật."
+    },
+    {
+      "title": "167. Trước release, checklist ngắn nên có gì?",
+      "body": "Kiểm tra env thay đổi, migration impact, queue/scheduler impact, asset build, secret liên quan, rollback path, smoke test và người theo dõi sau release.",
+      "code": "- env nào đổi?\n- migration có phá compatibility không?\n- queue worker cần restart không?\n- asset đã build đúng chưa?\n- rollback path là gì?\n- ai sẽ theo dõi sau release?",
+      "note": "Checklist ngắn nhưng rõ vẫn tốt hơn trí nhớ mơ hồ, nhất là với release có DB change hoặc thay secret/config."
+    },
+    {
+      "title": "168. Sau release, checklist ngắn nên có gì?",
+      "body": "Nhìn error rate, latency, worker health, failed job, scheduler tick, DB signal, external API signal và xác nhận các flow sản phẩm quan trọng.",
+      "code": "- health endpoint còn xanh không?\n- queue lag / failed jobs có tăng không?\n- auth, upload, checkout hoặc flow critical có chạy tay lại chưa?\n- log có lỗi mới bất thường không?",
+      "note": "Sau release, vài phút quan sát có kỷ luật thường rẻ hơn rất nhiều so với chờ user báo bug rồi mới phản ứng."
+    },
+    {
+      "title": "169. Một playbook thực chiến khi production có vẻ 'không ổn' sau deploy là gì?",
+      "body": "Đừng đổi bừa nhiều thứ cùng lúc. Hãy xác nhận version vừa release, xem log và metric đầu tiên, đối chiếu migration/env/cache/worker rồi mới quyết định rollback hay fix tiếp.",
+      "code": "1. Xác nhận version vừa release\n2. Kiểm tra error rate / health endpoint / queue lag\n3. So env, config cache, migration, worker restart\n4. Chọn rollback hay fix-forward\n5. Ghi lại incident note sau khi ổn định",
+      "note": "Playbook tốt giúp đội tránh phản xạ nguy hiểm như clear hết cache, restart bừa mọi process và vô tình che mất tín hiệu gốc."
+    },
+    {
+      "title": "170. Ví dụ vài lệnh Sail và Docker local tối thiểu nên thuộc mặt",
+      "body": "Đây là phần command-line rất đáng để người học tự chạy, không chỉ đọc mô tả.",
+      "code": "./vendor/bin/sail up -d\n./vendor/bin/sail artisan migrate\n./vendor/bin/sail composer install\n./vendor/bin/sail npm run dev\n./vendor/bin/sail down",
+      "bullets": [
+        "`up -d` bật stack nền mà không khóa terminal.",
+        "Chạy Artisan, Composer hoặc npm qua Sail giúp bám đúng runtime container của dự án.",
+        "`down` dọn stack local khi không cần nữa."
+      ]
+    },
+    {
+      "title": "171. Ví dụ sequence deploy Laravel tối thiểu theo tư duy kỷ luật",
+      "body": "Thực tế mỗi team khác nhau, nhưng sequence kiểu này giúp người mới hiểu deploy không chỉ là kéo code rồi cầu nguyện.",
+      "code": "php artisan down\ncomposer install --no-dev --optimize-autoloader\nphp artisan migrate --force\nnpm run build\nphp artisan config:cache\nphp artisan route:cache\nphp artisan queue:restart\nphp artisan up",
+      "note": "Không phải hệ nào cũng dùng đúng chuỗi này, nhưng nó cho thấy deploy đụng cả dependency, migration, asset, cache và worker lifecycle."
+    },
+    {
+      "title": "172. Ví dụ health endpoint tối thiểu để môi trường có tín hiệu sống",
+      "body": "Ngay cả một endpoint đơn giản cũng tốt hơn việc đoán mò production đang còn thở hay không.",
+      "code": "Route::get('/health', function () {\n    return response()->json([\n        'app' => 'ok',\n        'db' => DB::select('select 1') ? 'ok' : 'fail',\n    ]);\n});",
+      "note": "Thực tế nên tách liveness và readiness kỹ hơn, nhưng ví dụ này đủ để người học hiểu health signal không phải khái niệm mơ hồ."
+    },
+    {
+      "title": "173. Đánh giá cuối sau khi rà soát: site devops đã đủ chi tiết chưa?",
+      "body": "Ở mức portal học tập thì phần này đã khá đầy: có Sail, Docker, env, secret, process, queue, scheduler, deploy, rollback, proxy, permission, backup, observability và playbook production. Nếu còn đào sâu nữa thì hợp lý nhất là tách riêng site con cho CI/CD pipeline, Nginx/PHP-FPM operations và backup-restore incident drills."
+    }
+  ]
+}

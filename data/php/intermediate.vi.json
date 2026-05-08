@@ -1,0 +1,514 @@
+{
+  "anchor": "php-intermediate",
+  "badge": "Cấp 2",
+  "actionLabel": "Mở cấp độ trung bình",
+  "title": "Cấp 2: Code thực dụng, request-response và backend nền",
+  "summary": "Cấp độ này đưa bạn từ cú pháp rời rạc sang code backend có luồng rõ ràng: mảng, hàm, file, request, response, cookie, upload, JSON, logging, database, service ngoài và các thói quen tổ chức code dễ debug hơn.",
+  "highlights": [
+    "Đây là giai đoạn cú pháp bắt đầu biến thành luồng xử lý thật: nhận input, làm sạch dữ liệu, validate, gọi file, gọi DB và trả response.",
+    "Bạn sẽ gặp nhiều mảnh rất sát backend như `session`, `cookie`, `header()`, `http_response_code()`, import-export, JSON error handling và gọi service ngoài.",
+    "Phần này cũng bắt đầu đưa bạn vào tư duy tổ chức code: tách file, tách hàm, gom boundary, đọc stack trace và debug theo luồng dữ liệu.",
+    "Mục tiêu của cấp 2 là khiến PHP thuần đủ thực dụng để khi đọc controller, service hay flow Laravel, bạn nhận ra cấu trúc của chúng."
+  ],
+  "modules": [
+    {
+      "title": "Biến và kiểu dữ liệu",
+      "description": "Biến dùng để lưu giá trị và trong PHP luôn bắt đầu bằng ký hiệu `$`.",
+      "bullets": [
+        "Các kiểu phổ biến: string, int, float, bool, array, null.",
+        "Nên đặt tên rõ nghĩa như `$userName` thay vì `$x`.",
+        "Cần hiểu gán giá trị, nối chuỗi và so sánh kiểu cơ bản."
+      ]
+    },
+    {
+      "title": "Mảng và cách duyệt dữ liệu",
+      "description": "Mảng xuất hiện rất nhiều trong PHP vì nó mang danh sách, cấu hình, dữ liệu form và cả kết quả từ database.",
+      "bullets": [
+        "Dùng indexed array cho danh sách có thứ tự, và associative array cho dữ liệu có tên trường.",
+        "Ưu tiên `foreach` khi duyệt mảng vì thường dễ đọc hơn `for` trong trường hợp này.",
+        "Tip: nếu mỗi phần tử mảng đại diện cho cùng một khái niệm như user hoặc product, hãy giữ key nhất quán giữa các phần tử.",
+        "Khi quen hơn, bạn sẽ gặp `array_map`, `array_filter` và `array_reduce` để biến đổi dữ liệu gọn hơn."
+      ]
+    },
+    {
+      "title": "Điều kiện và luồng quyết định",
+      "description": "Logic điều kiện quyết định nhánh code nào sẽ chạy.",
+      "bullets": [
+        "Dùng `if`, `elseif` và `else` để rẽ nhánh.",
+        "Dùng toán tử so sánh như `===`, `!==`, `>`, `<`, `>=`, `<=`.",
+        "Ưu tiên điều kiện rõ ràng thay vì mẹo viết ngắn nhưng khó đọc.",
+        "Tip: nếu điều kiện quá dài, hãy tách từng ý thành biến boolean có tên rõ ràng như `$isActiveUser` hoặc `$canCheckout`."
+      ]
+    },
+    {
+      "title": "Vòng lặp và lặp lại công việc",
+      "description": "Vòng lặp giúp xử lý công việc lặp trên mảng hoặc dãy số.",
+      "bullets": [
+        "Dùng `for` khi bạn kiểm soát chỉ số.",
+        "Dùng `foreach` khi duyệt mảng.",
+        "Dùng `while` cho trường hợp chưa biết trước số lần lặp nhưng phải cẩn thận vòng lặp vô hạn.",
+        "Tip: luôn đọc vòng lặp theo thứ tự: giá trị bắt đầu, điều kiện dừng, bước cập nhật, rồi mới tới thân vòng lặp."
+      ]
+    },
+    {
+      "title": "Hàm",
+      "description": "Hàm đóng gói logic thành các đơn vị có thể tái sử dụng.",
+      "bullets": [
+        "Hàm có thể nhận tham số và trả về giá trị.",
+        "Chọn tên mô tả hành vi như `calculateTotal`.",
+        "Khi có thể, hãy giữ một hàm chỉ làm một nhiệm vụ.",
+        "Một hàm vừa validate, vừa lưu database, vừa gửi mail, vừa render output thì thường đang ôm quá nhiều việc."
+      ]
+    },
+    {
+      "title": "Include, require và tách file",
+      "description": "Khi script bắt đầu dài hơn, bạn sẽ không thể để mọi thứ trong một file mãi. PHP có sẵn các công cụ rất sớm để tách code ra.",
+      "bullets": [
+        "Dùng `require` khi file được nạp là bắt buộc để script chạy được.",
+        "Dùng `include` khi file đó mang tính tùy chọn hoặc không quá quan trọng.",
+        "Dùng `require_once` hoặc `include_once` khi bạn muốn tránh nạp trùng cùng một file helper hoặc config.",
+        "Tip: nếu script không thể chạy bình thường khi thiếu file đó, hãy nghiêng về `require` hoặc `require_once` thay vì `include`."
+      ]
+    },
+    {
+      "title": "Hash, password và so sánh dữ liệu nhạy cảm",
+      "description": "Ở mức trung bình, bạn nên tách bạch hash chung với cách xử lý password an toàn.",
+      "bullets": [
+        "`hash()` hữu ích khi bạn cần fingerprint hoặc checksum cho dữ liệu theo một thuật toán cụ thể.",
+        "Với mật khẩu, ưu tiên `password_hash` và `password_verify` thay vì tự nghĩ một flow hash riêng.",
+        "Tip: khi so sánh token hoặc secret, hãy để ý tới các helper như `hash_equals` nếu ngữ cảnh phù hợp."
+      ]
+    },
+    {
+      "title": "switch, match và rẽ nhánh dễ đọc hơn",
+      "description": "Không phải lúc nào chuỗi `if / elseif` dài cũng là công cụ rẽ nhánh dễ đọc nhất.",
+      "bullets": [
+        "`switch` hợp với trường hợp nhiều nhánh phụ thuộc vào cùng một giá trị đầu vào.",
+        "`match` trong PHP hiện đại gọn hơn và không bị fall-through như `switch`.",
+        "Tip: hãy chọn công cụ rẽ nhánh giúp người đọc quét nhanh nhất, không chỉ công cụ trông ngắn."
+      ]
+    },
+    {
+      "title": "Scope và trạng thái dùng chung",
+      "description": "Người học ở mức trung bình nên hiểu biến đang sống ở đâu và vì sao có giá trị dùng được ở chỗ này nhưng lại không dùng được ở chỗ khác.",
+      "bullets": [
+        "Biến cục bộ chỉ tồn tại trong hàm hoặc block nơi nó được tạo ra.",
+        "Global state rất dễ bị lạm dụng, nên ưu tiên truyền dữ liệu qua tham số khi có thể.",
+        "Tip: nếu một hàm cần quá nhiều biến global mới chạy được, đó thường là dấu hiệu thiết kế có thể sạch hơn."
+      ]
+    },
+    {
+      "title": "Input handling và superglobals",
+      "description": "PHP thường đọc dữ liệu từ `$_GET`, `$_POST`, `$_SERVER`, `$_FILES` và `$_SESSION`.",
+      "bullets": [
+        "Hãy xem mọi input đi vào là chưa đáng tin cho tới khi validate xong.",
+        "Nên normalize dữ liệu sớm bằng `trim` hoặc ép kiểu rõ ràng khi phù hợp.",
+        "Tip: đọc dữ liệu từ superglobal ở gần rìa script, sau đó truyền giá trị đã làm sạch vào sâu hơn trong logic.",
+        "Các hàm như `header()` và `http_response_code()` cũng thường xuất hiện ở rìa response thay vì nằm lẫn giữa business logic."
+      ]
+    },
+    {
+      "title": "Session, cookie và trạng thái người dùng",
+      "description": "Khi ứng dụng bắt đầu có đăng nhập hoặc ghi nhớ hành vi, bạn sẽ chạm tới `session` và `cookie`.",
+      "bullets": [
+        "`$_SESSION` thường dùng để giữ trạng thái phía server như user đã đăng nhập hay chưa.",
+        "Cookie được gửi qua trình duyệt nên chỉ nên lưu dữ liệu thật sự phù hợp để ở client.",
+        "Hãy sớm biết tới `setcookie` và các ý như thời gian sống, `HttpOnly`, `Secure` và `SameSite`.",
+        "Tip: đừng nhét dữ liệu nhạy cảm hoặc quá nhiều logic vào cookie chỉ vì nó tiện."
+      ]
+    },
+    {
+      "title": "Các helper đọc dữ liệu hằng ngày",
+      "description": "Ở backend thực tế, rất nhiều đoạn code sống nhờ những helper nhỏ hơn là nhờ kỹ thuật phức tạp.",
+      "bullets": [
+        "`isset`, `empty` và `??` giúp bạn đọc dữ liệu không chắc chắn đỡ lỗi hơn.",
+        "`trim`, `explode`, `implode`, `strtolower` và `filter_var` xuất hiện rất thường khi làm sạch hoặc biến đổi input.",
+        "Tip: nếu một helper xuất hiện lặp lại nhiều nơi, hãy hiểu nó thật chắc thay vì chỉ copy theo thói quen."
+      ]
+    },
+    {
+      "title": "File và thư mục ở mức thực dụng",
+      "description": "PHP rất hay đụng tới việc đọc file cấu hình, ghi log, upload file hoặc tạo export nhỏ.",
+      "bullets": [
+        "Biết các thao tác cơ bản như đọc file, kiểm tra tồn tại và tạo đường dẫn an toàn là rất hữu ích.",
+        "Khi xử lý upload, cần kiểm tra tên file, kích thước và loại file trước khi lưu.",
+        "Tip: hãy tách rõ chỗ nhận file, chỗ validate file và chỗ ghi file để debug đỡ khổ hơn."
+      ]
+    },
+    {
+      "title": "Lỗi backend thường gặp và cách nhìn ra",
+      "description": "Ở mức trung bình, bạn nên bắt đầu nhận ra các lỗi backend không chỉ là `syntax error` mà còn là lỗi dữ liệu, lỗi trạng thái và lỗi luồng xử lý.",
+      "bullets": [
+        "Lỗi hay gặp là quên validate input, dẫn tới dữ liệu bẩn đi sâu vào business logic hoặc database.",
+        "Một lỗi khác là code tưởng rằng dữ liệu luôn tồn tại, trong khi thực tế có thể `null`, rỗng hoặc sai định dạng.",
+        "Tip: khi backend lỗi, đừng nhìn mỗi dòng báo lỗi. Hãy nhìn cả request, input, output và trạng thái dữ liệu liên quan."
+      ]
+    },
+    {
+      "title": "Kết nối database và service ngoài",
+      "description": "PHP không chỉ làm việc với HTML. Nó còn thường phải nói chuyện với database, mail service, storage service hoặc API ngoài.",
+      "bullets": [
+        "Database thường được truy cập qua `PDO` hoặc abstraction của framework như Laravel query builder hoặc Eloquent.",
+        "Service ngoài có thể là gửi mail, lưu file cloud, gọi payment gateway hoặc đồng bộ dữ liệu với API khác.",
+        "Tip: phần kết nối ra ngoài nên được gom lại thành hàm, class hoặc service rõ ràng, thay vì gọi rải rác khắp nơi trong view hoặc controller."
+      ]
+    },
+    {
+      "title": "Import, export và dữ liệu bảng",
+      "description": "Một backend PHP thực dụng rất hay phải đọc hoặc xuất dữ liệu từ `csv`, `json`, `txt` và đôi khi là Excel.",
+      "bullets": [
+        "Với dữ liệu bảng cơ bản, `csv` thường là lựa chọn nhẹ và dễ xử lý hơn Excel.",
+        "Với `json`, điều quan trọng là hiểu shape dữ liệu và kiểm tra lỗi khi `json_decode` hoặc `json_encode`.",
+        "Excel thường đi cùng thư viện như `PhpSpreadsheet`, nên ở mức trung bình bạn nên hiểu bài toán import-export trước, rồi mới học tool cụ thể.",
+        "Tip: với dữ liệu import, hãy validate từng dòng thay vì tin rằng toàn bộ file đều sạch.",
+        "Khi đọc JSON, hãy biết thêm các dấu hiệu kiểm tra lỗi như `json_last_error()` hoặc cách phản ứng nếu decode thất bại."
+      ]
+    },
+    {
+      "title": "Response, redirect và mã trạng thái",
+      "description": "Backend không chỉ tính toán dữ liệu, nó còn phải trả phản hồi đúng hình dạng cho trình duyệt hoặc client khác.",
+      "bullets": [
+        "`header()` thường dùng để set header hoặc redirect.",
+        "`http_response_code()` giúp bạn trả mã như `200`, `302`, `400`, `404`, `422` một cách rõ ràng hơn.",
+        "Tip: response nên được quyết định có chủ đích ở cuối luồng xử lý, thay vì rải rác nhiều chỗ khó kiểm soát."
+      ]
+    },
+    {
+      "title": "CSRF, XSS và SQL injection theo góc nhìn người học backend",
+      "description": "Đây là ba cái tên bạn nên sớm quen mặt vì chúng xuất hiện liên tục khi học backend web.",
+      "bullets": [
+        "XSS liên quan tới việc dữ liệu người dùng bị in ra giao diện mà không escape đúng cách.",
+        "SQL injection liên quan tới việc input bị nối trực tiếp vào câu query thay vì dùng prepare hoặc binding an toàn.",
+        "CSRF liên quan tới việc một hành động thay đổi dữ liệu bị gửi đi mà không có bằng chứng đủ mạnh rằng nó đến từ phiên hợp lệ.",
+        "Tip: chưa cần học quá học thuật ở giai đoạn này, nhưng nên nhận diện được rủi ro và biết phản xạ cơ bản để tránh."
+      ]
+    },
+    {
+      "title": "Logging và theo dõi hành vi code",
+      "description": "Khi code bắt đầu dài hơn, in tạm bằng `echo` không còn đủ nữa. Lúc này bạn cần hiểu cách ghi log để lần lại hành vi backend.",
+      "bullets": [
+        "Log giúp bạn biết request nào đi vào, dữ liệu nào gây lỗi và backend dừng ở bước nào.",
+        "Một log tốt thường có ngữ cảnh như user, route, id bản ghi hoặc trạng thái xử lý liên quan.",
+        "Tip: đừng log dữ liệu nhạy cảm bừa bãi chỉ để debug nhanh, nhất là token, password hoặc thông tin cá nhân."
+      ]
+    },
+    {
+      "title": "Thói quen debug ở mức trung bình",
+      "description": "Từ giai đoạn này trở đi, debug nên là một kỹ năng có chủ đích chứ không chỉ là phản ứng khi code lỗi.",
+      "bullets": [
+        "Dùng `var_dump`, `print_r` hoặc logging tạm để nhìn đúng shape của dữ liệu.",
+        "Khi kẹt ở `if` hoặc `for`, hãy in ra các biến quyết định nhánh chạy thay vì chỉ đọc đi đọc lại code.",
+        "Tip: debug phần nhỏ nhất trước, sau đó mới mở rộng dần khi hành vi cục bộ đã đúng."
+      ]
+    },
+    {
+      "title": "try, catch và thất bại có tổ chức hơn",
+      "description": "Đến mức này, bạn nên bắt đầu hiểu rằng không phải lỗi nào cũng nên để hệ thống đổ sập một cách mù mờ.",
+      "bullets": [
+        "`try/catch` giúp bạn gom chỗ có thể nổ lỗi và quyết định phản ứng phù hợp hơn.",
+        "Nó đặc biệt hữu ích khi gọi database, đọc file quan trọng hoặc nói chuyện với service ngoài.",
+        "Tip: đừng bắt exception chỉ để nuốt nó đi im lặng. Nếu catch, hãy log hoặc chuyển nó thành phản hồi có nghĩa."
+      ]
+    },
+    {
+      "title": "Mail, storage, HTTP API và các service liên quan",
+      "description": "Ở backend thực tế, PHP hiếm khi chỉ chạy một mình. Nó thường phải nối với mail, lưu file, cache, queue hoặc API của hệ thống khác.",
+      "bullets": [
+        "Mail service thường dùng cho email xác thực, reset password, hóa đơn hoặc thông báo nền.",
+        "Storage service có thể là local disk, S3 hoặc một lớp trừu tượng của framework để quản lý file upload và export.",
+        "HTTP API thường dùng để nói chuyện với CRM, payment gateway, shipping, AI service hoặc hệ thống nội bộ khác.",
+        "Tip: mỗi kết nối ra ngoài nên có timeout, log lỗi và một chỗ gọi tập trung thay vì rải khắp codebase."
+      ]
+    },
+    {
+      "title": "Đọc stack trace và báo lỗi cho đỡ hoảng",
+      "description": "Khi code dài hơn, người học cần biết đọc lỗi theo ngữ cảnh thay vì chỉ nhìn một dòng đỏ rồi đoán.",
+      "bullets": [
+        "Hãy tìm thông báo chính trước: lỗi là gì, ở file nào, dòng nào.",
+        "Nếu có stack trace, hãy xem call chain để biết hàm nào gọi hàm nào trước khi lỗi nổ ra.",
+        "Tip: đừng nhảy vào sửa file cuối cùng trong trace ngay lập tức. Nhiều khi lỗi thực sự bắt đầu ở input sai hoặc ở một hàm gọi trước đó."
+      ]
+    },
+    {
+      "title": "Chia tầng code đơn giản để đỡ rối",
+      "description": "Bạn chưa cần kiến trúc quá to, nhưng nên sớm tập tách chỗ nhận input, chỗ xử lý và chỗ gọi tài nguyên ngoài.",
+      "bullets": [
+        "Một file controller hoặc entry script nên đọc request và điều phối là chính.",
+        "Phần xử lý business nên tách thành hàm hoặc class riêng để test và debug dễ hơn.",
+        "Các chỗ gọi database, mail, file storage hoặc HTTP API nên được gom thành boundary rõ ràng."
+      ]
+    },
+    {
+      "title": "Authentication, session và luồng đăng nhập",
+      "description": "Ngay khi bắt đầu làm backend thật, bạn sẽ đụng tới việc người dùng đăng nhập, giữ trạng thái và đăng xuất.",
+      "bullets": [
+        "Luồng cơ bản là: nhận credential, kiểm tra đúng sai, lưu trạng thái đăng nhập, rồi đọc lại trạng thái đó ở request sau.",
+        "`session` thường là nơi giữ thông tin đăng nhập phía server ở mức nhập môn và trung bình.",
+        "Tip: đừng trộn việc kiểm tra password, tạo session và render response trong một đống code dài. Tách từng bước sẽ dễ đọc hơn nhiều."
+      ]
+    },
+    {
+      "title": "Upload file an toàn hơn",
+      "description": "Upload file trông đơn giản nhưng là nơi rất dễ phát sinh lỗi bảo mật và dữ liệu bẩn.",
+      "bullets": [
+        "Kiểm tra kích thước file, extension và khi cần thì cả MIME type.",
+        "Đừng tin hoàn toàn tên file từ phía client; hãy tự đặt tên lưu trữ hoặc chuẩn hóa nó.",
+        "Tip: lưu metadata riêng và tách rõ chỗ validate file với chỗ ghi file để sau này debug và đổi storage dễ hơn."
+      ]
+    },
+    {
+      "title": "Pagination, filter và sort",
+      "description": "Khi dữ liệu bắt đầu nhiều, bạn không thể trả tất cả trong một response hoặc render tất cả trong một view mãi.",
+      "bullets": [
+        "Pagination giúp chia dữ liệu thành từng trang nhỏ để backend và UI nhẹ hơn.",
+        "Filter và sort nên được kiểm soát bằng danh sách trường hợp lệ thay vì nhận mọi thứ từ query string rồi dùng thẳng.",
+        "Tip: các tham số như `page`, `limit`, `sort` nên được validate sớm vì đây là chỗ người dùng nhập rất tự do."
+      ]
+    },
+    {
+      "title": "Reset password và luồng email cơ bản",
+      "description": "Ngay sau auth cơ bản, một luồng rất thực tế là quên mật khẩu và gửi link đặt lại.",
+      "bullets": [
+        "Luồng thường gồm tạo token, lưu hoặc ký token, gửi email, nhận link và cho phép đổi password.",
+        "Đây là chỗ bạn bắt đầu thấy rõ vai trò của mail service, input validation và expiration time.",
+        "Tip: dù chưa build đầy đủ, hãy hiểu luồng dữ liệu đi qua từng bước trước khi viết code."
+      ]
+    }
+  ],
+  "examplesTitle": "Ví dụ trung bình",
+  "examples": [
+    {
+      "title": "Biến và điều kiện",
+      "description": "Một script nhỏ kiểm tra tuổi và in ra thông báo.",
+      "code": "<?php\n$age = 20;\n\nif ($age >= 18) {\n    echo \"Adult\";\n} else {\n    echo \"Under 18\";\n}\n"
+    },
+    {
+      "title": "Vòng lặp và hàm",
+      "description": "Dùng hàm cùng với vòng lặp `foreach`.",
+      "code": "<?php\nfunction greet(string $name): string\n{\n    return \"Hello, {$name}\";\n}\n\n$names = [\"Lan\", \"Minh\", \"Alex\"];\n\nforeach ($names as $name) {\n    echo greet($name) . PHP_EOL;\n}\n"
+    },
+    {
+      "title": "Associative array và `foreach`",
+      "description": "Một cách khá dễ đọc để đi qua dữ liệu có key đặt tên.",
+      "code": "<?php\n$user = [\n    'name' => 'Lan',\n    'role' => 'admin',\n    'active' => true,\n];\n\nforeach ($user as $key => $value) {\n    echo $key . ': ' . var_export($value, true) . PHP_EOL;\n}\n"
+    },
+    {
+      "title": "`require_once` cho file helper",
+      "description": "Ví dụ nhỏ cho thấy cách nạp helper một lần an toàn.",
+      "code": "<?php\nrequire_once __DIR__ . '/helpers.php';\n\necho formatCurrency(150000) . PHP_EOL;\n"
+    },
+    {
+      "title": "Đọc và validate input form",
+      "description": "Đọc từ `$_POST`, normalize rồi kiểm tra trước khi dùng tiếp.",
+      "code": "<?php\n$email = trim($_POST['email'] ?? '');\n\nif ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {\n    echo \"Please enter a valid email address\";\n    return;\n}\n\necho \"Ready to continue with: \" . $email;\n"
+    },
+    {
+      "title": "Session đơn giản cho đăng nhập",
+      "description": "Ví dụ nhỏ cho thấy cách giữ trạng thái user sau khi kiểm tra thành công.",
+      "code": "<?php\nsession_start();\n\nif ($email === 'lan@example.com') {\n    $_SESSION['user_email'] = $email;\n    echo \"Logged in\";\n}\n"
+    },
+    {
+      "title": "Đặt một cookie nhỏ",
+      "description": "Ví dụ nhập môn để thấy cookie thường mang dữ liệu nhỏ ở phía trình duyệt.",
+      "code": "<?php\nsetcookie('preferred_language', 'vi', [\n    'expires' => time() + 86400 * 30,\n    'path' => '/',\n    'httponly' => true,\n    'samesite' => 'Lax',\n]);\n\necho 'Cookie has been queued';\n"
+    },
+    {
+      "title": "Kiểm tra file trước khi dùng",
+      "description": "Một kiểm tra thực dụng trước khi đọc file cấu hình hoặc file export.",
+      "code": "<?php\n$path = __DIR__ . '/data.txt';\n\nif (!file_exists($path)) {\n    echo \"File not found\";\n    return;\n}\n\n$content = file_get_contents($path);\necho $content;\n"
+    },
+    {
+      "title": "Gọi API ngoài bằng HTTP",
+      "description": "Ví dụ đơn giản để hình dung PHP có thể gọi service khác chứ không chỉ tự xử lý một mình.",
+      "code": "<?php\n$context = stream_context_create([\n    'http' => [\n        'method' => 'GET',\n        'timeout' => 5,\n    ],\n]);\n\n$response = file_get_contents('https://api.example.com/status', false, $context);\necho $response;\n"
+    },
+    {
+      "title": "Đọc dữ liệu từ JSON",
+      "description": "Ví dụ nhỏ để thấy cách backend nạp dữ liệu cấu trúc từ file vào mảng PHP.",
+      "code": "<?php\n$content = file_get_contents(__DIR__ . '/users.json');\n$users = json_decode($content, true);\n\nif (!is_array($users)) {\n    echo 'Invalid JSON';\n    return;\n}\n\nprint_r($users);\n"
+    },
+    {
+      "title": "Ghi log ra file",
+      "description": "Ví dụ nhỏ để thấy cách backend để lại dấu vết xử lý khi cần debug.",
+      "code": "<?php\n$message = '[' . date('Y-m-d H:i:s') . '] user import started' . PHP_EOL;\nfile_put_contents(__DIR__ . '/app.log', $message, FILE_APPEND);\n"
+    },
+    {
+      "title": "Đọc file CSV theo từng dòng",
+      "description": "Ví dụ nhỏ để hiểu cách import dữ liệu bảng mà không cần chạm database ngay.",
+      "code": "<?php\n$handle = fopen(__DIR__ . '/users.csv', 'r');\n\nif ($handle === false) {\n    echo 'Cannot open csv file';\n    return;\n}\n\nwhile (($row = fgetcsv($handle)) !== false) {\n    print_r($row);\n}\n\nfclose($handle);\n"
+    },
+    {
+      "title": "Gom chỗ gọi service ngoài vào một hàm",
+      "description": "Ví dụ nhỏ cho thấy ngay cả một lời gọi HTTP đơn giản cũng nên được đặt trong một nơi rõ ràng.",
+      "code": "<?php\nfunction fetchCustomerProfile(string $url): string\n{\n    $response = file_get_contents($url);\n\n    if ($response === false) {\n        throw new RuntimeException('Unable to reach customer service');\n    }\n\n    return $response;\n}\n"
+    },
+    {
+      "title": "Pagination từ query string",
+      "description": "Ví dụ nhỏ cho thấy cách lấy `page` và `limit` rồi chuẩn hóa trước khi dùng.",
+      "code": "<?php\n$page = max(1, (int) ($_GET['page'] ?? 1));\n$limit = min(100, max(1, (int) ($_GET['limit'] ?? 20)));\n$offset = ($page - 1) * $limit;\n\necho \"page={$page}, limit={$limit}, offset={$offset}\";\n"
+    },
+    {
+      "title": "Kiểm tra file upload nhập môn",
+      "description": "Ví dụ ngắn cho thấy nên kiểm tra lỗi và kích thước trước khi làm bước tiếp theo.",
+      "code": "<?php\n$file = $_FILES['avatar'] ?? null;\n\nif ($file === null || $file['error'] !== UPLOAD_ERR_OK) {\n    echo 'Upload failed';\n    return;\n}\n\nif ($file['size'] > 2 * 1024 * 1024) {\n    echo 'File is too large';\n    return;\n}\n\necho 'Upload looks valid';\n"
+    },
+    {
+      "title": "`require_once` cho config bắt buộc",
+      "description": "Ví dụ nhỏ cho thấy một file config bắt buộc thường nên được nạp đúng một lần.",
+      "code": "<?php\nrequire_once __DIR__ . '/config/app.php';\n\necho APP_NAME;\n"
+    },
+    {
+      "title": "Hash dữ liệu và kiểm tra password",
+      "description": "Ví dụ ngắn để phân biệt hash chung và password hash đúng hướng.",
+      "code": "<?php\n$fingerprint = hash('sha256', 'order-123');\n$passwordHash = password_hash('secret-123', PASSWORD_DEFAULT);\n\nif (password_verify('secret-123', $passwordHash)) {\n    echo $fingerprint;\n}\n"
+    },
+    {
+      "title": "Dùng `array_map` để đổi shape dữ liệu",
+      "description": "Ví dụ ngắn để thấy khi nào mảng có thể được biến đổi gọn hơn bằng helper.",
+      "code": "<?php\n$prices = [100, 200, 300];\n$formatted = array_map(function (int $price): string {\n    return number_format($price) . ' VND';\n}, $prices);\n\nprint_r($formatted);\n"
+    },
+    {
+      "title": "Redirect và response code cơ bản",
+      "description": "Ví dụ ngắn để thấy backend có thể điều khiển phản hồi thay vì chỉ `echo` text.",
+      "code": "<?php\nif ($user === null) {\n    http_response_code(404);\n    echo 'User not found';\n    return;\n}\n\nheader('Location: /dashboard.php');\nexit;\n"
+    },
+    {
+      "title": "Kiểm tra lỗi JSON sau khi decode",
+      "description": "Ví dụ ngắn để không coi `json_decode` là lúc nào cũng thành công.",
+      "code": "<?php\n$data = json_decode($payload, true);\n\nif (json_last_error() !== JSON_ERROR_NONE) {\n    echo 'Invalid JSON payload';\n    return;\n}\n\nprint_r($data);\n"
+    },
+    {
+      "title": "match cơ bản",
+      "description": "Ví dụ ngắn để thấy `match` có thể trả về giá trị rất gọn.",
+      "code": "<?php\n$status = 'paid';\n$label = match ($status) {\n    'draft' => 'Draft order',\n    'paid' => 'Paid order',\n    default => 'Unknown status',\n};\n\necho $label;\n"
+    },
+    {
+      "title": "Flow reset password rất nhỏ",
+      "description": "Ví dụ ý tưởng để thấy token reset thường được tạo rồi gửi đi như thế nào.",
+      "code": "<?php\n$email = trim($_POST['email'] ?? '');\n$token = bin2hex(random_bytes(16));\n\n// save token with expiration in database or storage\n// send token by mail service\n\necho 'Password reset token created for ' . $email;\n"
+    },
+    {
+      "title": "Dùng `array_filter` để giữ lại item hợp lệ",
+      "description": "Ví dụ ngắn để lọc bỏ các giá trị yếu trước khi xử lý sâu hơn.",
+      "code": "<?php\n$emails = ['lan@example.com', '', 'minh@example.com'];\n$validEmails = array_filter($emails, function (string $email): bool {\n    return $email !== '';\n});\n\nprint_r($validEmails);\n"
+    },
+    {
+      "title": "Dùng `array_reduce` để cộng dồn",
+      "description": "Ví dụ ngắn cho cách gom nhiều giá trị thành một kết quả tổng.",
+      "code": "<?php\n$items = [100, 200, 300];\n$total = array_reduce($items, function (int $carry, int $price): int {\n    return $carry + $price;\n}, 0);\n\necho $total;\n"
+    },
+    {
+      "title": "Đọc file với `try/catch`",
+      "description": "Ví dụ ngắn để thấy cách gom phản ứng khi một bước đọc dữ liệu thất bại.",
+      "code": "<?php\ntry {\n    $content = file_get_contents(__DIR__ . '/config.json');\n\n    if ($content === false) {\n        throw new RuntimeException('Cannot read config file');\n    }\n\n    echo $content;\n} catch (RuntimeException $exception) {\n    echo 'Please check the config file';\n}\n"
+    }
+  ],
+  "questionsTitle": "Câu hỏi và đáp án mức trung bình",
+  "questions": [
+    {
+      "tag": "Tip",
+      "question": "Nên làm gì khi một chuỗi `if / elseif` bắt đầu khó đọc?",
+      "answer": "Hãy kiểm tra xem có phần điều kiện nào lặp lại và tách nó thành các biến boolean có tên rõ nghĩa như `isAdmin`, `hasVerifiedEmail` hoặc `canPublish` hay không. Nếu các nhánh vẫn còn dày, bước tiếp theo là tách logic ra thành các hàm nhỏ để mỗi nhánh chỉ diễn tả một quyết định rõ ràng."
+    },
+    {
+      "tag": "Tip",
+      "question": "Làm sao để đỡ lạc trong một vòng `for`?",
+      "answer": "Hãy đọc vòng lặp thành bốn lượt: giá trị khởi đầu, điều kiện dừng, bước cập nhật, rồi mới tới thân vòng lặp. Nếu vẫn thấy rối, hãy in biến đếm ở mỗi vòng để xác nhận nó đang thay đổi đúng như bạn nghĩ."
+    },
+    {
+      "tag": "Trap",
+      "question": "Một lỗi thường gặp với helper function ở mức trung bình là gì?",
+      "answer": "Lỗi rất hay gặp là biến helper thành nơi chứa đủ thứ: đọc global, chạm database, format output và xử lý business rule trong cùng một chỗ. Helper chỉ thật sự hữu ích khi nó có phạm vi hẹp và nhận dữ liệu qua tham số thay vì kéo quá nhiều thứ từ bên ngoài."
+    },
+    {
+      "tag": "Practice",
+      "question": "Khi nào nên dùng `foreach` thay vì `for`?",
+      "answer": "Hãy ưu tiên `foreach` khi bạn đang duyệt qua array và thứ bạn quan tâm là từng phần tử chứ không phải chỉ số số học. Dùng `for` khi biến đếm tự nó có ý nghĩa, khi cần phép tính theo index, hoặc khi đang lặp qua một dãy số rõ ràng."
+    },
+    {
+      "tag": "Tip",
+      "question": "Một mẹo tốt khi đọc dữ liệu từ `$_POST` hoặc `$_GET` là gì?",
+      "answer": "Đừng để superglobal đi thẳng vào giữa business logic. Hãy đọc dữ liệu ở đầu request, `trim` hoặc normalize nó, validate xong rồi mới truyền các giá trị sạch vào phần logic phía sau. Cách này giúp code dễ test và dễ tìm lỗi hơn nhiều."
+    },
+    {
+      "tag": "Trap",
+      "question": "Sai lầm phổ biến khi xử lý upload file ở mức trung bình là gì?",
+      "answer": "Sai lầm thường gặp là tin ngay tên file hoặc loại file do phía client gửi lên. Thói quen tốt hơn là kiểm tra kích thước, extension, MIME type nếu cần, và tự quyết định nơi lưu thay vì dùng nguyên mọi thứ từ request."
+    },
+    {
+      "tag": "Backend",
+      "question": "Một lưu ý lớn khi học backend bằng PHP là gì?",
+      "answer": "Hãy tập nhìn code như một luồng đầy đủ chứ không phải các dòng rời rạc. Bạn nên biết request vào từ đâu, dữ liệu được validate chỗ nào, database được gọi khi nào, và response được trả ra ở đâu. Khi hiểu luồng này, việc đọc framework như Laravel cũng dễ hơn rất nhiều."
+    },
+    {
+      "tag": "Service",
+      "question": "Vì sao không nên gọi database hoặc service ngoài rải rác khắp nơi trong code?",
+      "answer": "Vì nó làm luồng xử lý khó theo dõi, khó test và khó thay đổi. Khi việc gọi database, mail, cache hoặc HTTP API được gom vào một chỗ rõ ràng, bạn sẽ dễ kiểm soát lỗi, đổi implementation và debug hành vi hơn."
+    },
+    {
+      "tag": "Logging",
+      "question": "Khi backend bắt đầu phức tạp hơn thì vì sao logging quan trọng?",
+      "answer": "Vì đến lúc đó bạn không còn chỉ debug bằng mắt trên vài dòng code nhỏ nữa. Log giúp bạn lần lại request, dữ liệu vào, bước xử lý hiện tại và trạng thái lỗi, nhất là khi sự cố chỉ xuất hiện ở server hoặc xảy ra không đều."
+    },
+    {
+      "tag": "Refactor",
+      "question": "Khi nào nên tách một hàm lớn thành nhiều hàm nhỏ hơn?",
+      "answer": "Khi một hàm bắt đầu làm nhiều việc khác loại như đọc input, validate, gọi database, format output và gửi mail trong cùng một luồng. Hãy tách theo trách nhiệm để mỗi hàm trả lời được một câu hỏi rõ ràng: hàm này đang kiểm tra gì, biến đổi gì, hay gọi boundary nào."
+    },
+    {
+      "tag": "Service",
+      "question": "Một nguyên tắc thực tế khi kết nối mail, storage hoặc API ngoài là gì?",
+      "answer": "Đừng giả định service ngoài luôn phản hồi nhanh và đúng. Hãy chuẩn bị cho timeout, dữ liệu trả về thiếu trường, request lỗi tạm thời và cả trường hợp cần retry có kiểm soát. Kỹ năng backend tốt không nằm ở chỗ gọi thành công một lần, mà ở chỗ biết hệ thống sẽ phản ứng thế nào khi mọi thứ không thuận lợi."
+    },
+    {
+      "tag": "Debug",
+      "question": "Khi một bug backend nhìn như lỗi logic nhưng không hiện đỏ, nên bắt đầu từ đâu?",
+      "answer": "Hãy truy dấu dữ liệu ở từng chặng nhỏ: request vào mang gì, dữ liệu sau khi `trim` hoặc validate còn lại gì, hàm nào đổi shape của nó, và trước khi trả response thì giá trị cuối cùng là gì. Rất nhiều bug backend không nằm ở câu lệnh hỏng, mà nằm ở giả định sai về dữ liệu đầu vào hoặc trạng thái hiện tại."
+    },
+    {
+      "tag": "Auth",
+      "question": "Một lưu ý quan trọng khi học luồng đăng nhập bằng session là gì?",
+      "answer": "Hãy tách rõ ba việc: kiểm tra thông tin đăng nhập, lưu trạng thái sau khi đăng nhập, và đọc trạng thái đó ở các request sau. Nhiều người mới bị rối vì trộn cả ba việc vào một file dài rồi không biết bug nằm ở bước xác thực hay ở bước session."
+    },
+    {
+      "tag": "Cookie",
+      "question": "Một nguyên tắc nền khi dùng cookie là gì?",
+      "answer": "Hãy xem cookie là dữ liệu đi qua trình duyệt, không phải két sắt bí mật. Chỉ lưu thứ thật sự phù hợp ở client, đặt thời gian sống rõ ràng, và sớm làm quen với `HttpOnly`, `Secure`, `SameSite` thay vì chỉ biết mỗi `setcookie`."
+    },
+    {
+      "tag": "Response",
+      "question": "Vì sao nên sớm học `header()` và `http_response_code()`?",
+      "answer": "Vì backend không chỉ trả text thành công. Nó còn phải redirect đúng chỗ, trả đúng mã lỗi, và giao tiếp rõ ràng với browser hoặc client khác. Hiểu response sớm giúp bạn đọc controller và API code dễ hơn nhiều."
+    },
+    {
+      "tag": "Security",
+      "question": "Một cách nhớ ngắn gọn về XSS, SQL injection và CSRF là gì?",
+      "answer": "XSS là dữ liệu bẩn đi ra giao diện, SQL injection là dữ liệu bẩn chui thẳng vào query, còn CSRF là request thay đổi dữ liệu nhưng không có xác nhận đủ tin cậy từ phiên người dùng. Ba cái tên khác nhau, nhưng cùng nhắc bạn phải kiểm soát input, output và hành động nhạy cảm một cách có ý thức."
+    },
+    {
+      "tag": "Arrays",
+      "question": "Khi nào nên dùng `array_map`, `array_filter` hoặc `array_reduce`?",
+      "answer": "Dùng `array_map` khi bạn muốn biến đổi từng phần tử sang shape mới, `array_filter` khi muốn giữ lại các phần tử đạt điều kiện, còn `array_reduce` khi muốn gom cả danh sách thành một kết quả như tổng tiền hoặc summary."
+    },
+    {
+      "tag": "Pagination",
+      "question": "Vì sao pagination và filter nên được validate sớm?",
+      "answer": "Vì đây là nhóm input người dùng thay đổi rất thoải mái qua query string. Nếu không chuẩn hóa sớm, bạn dễ tạo ra query nặng, tham số vô lý hoặc bug sort theo trường không hợp lệ."
+    },
+    {
+      "tag": "Require",
+      "question": "Khi nào nên nghiêng về `require_once` thay vì `include`?",
+      "answer": "Khi file đó là nền tảng để script chạy bình thường như config, helper cốt lõi hoặc bootstrap nhỏ, và bạn cũng muốn tránh nạp lặp lại. `include` hợp hơn với thứ thật sự tùy chọn hoặc vắng mặt mà không làm hỏng cả luồng."
+    },
+    {
+      "tag": "Hash",
+      "question": "Vì sao `password_hash` nên được ưu tiên hơn việc tự gọi `hash('sha256', $password)` cho mật khẩu?",
+      "answer": "Vì `password_hash` được thiết kế riêng cho password và phù hợp hơn cho việc lưu trữ, kiểm tra sau này. Một cách hash tự nghĩ đơn giản thường bỏ sót nhiều chi tiết an toàn mà bạn sẽ phải tự gánh."
+    },
+    {
+      "tag": "Mail Flow",
+      "question": "Khi học reset password hoặc email flow, nên tập trung nhìn điều gì trước?",
+      "answer": "Hãy nhìn luồng dữ liệu trước khi nhìn framework helper. Token được tạo ở đâu, lưu ở đâu, sống bao lâu, được gửi qua kênh nào, và được kiểm tra lại ở bước đổi password ra sao. Khi hiểu luồng đó, việc dùng thư viện hay tính năng Laravel sẽ dễ hơn nhiều."
+    }
+  ]
+}

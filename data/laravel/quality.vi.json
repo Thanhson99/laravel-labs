@@ -1,0 +1,761 @@
+{
+  "anchor": "laravel-quality",
+  "type": "list",
+  "heading": "Testing, debug và chất lượng code: từ code chạy được tới code đáng tin",
+  "intro": "Site này tổng hợp toàn bộ phần testing, debug và chất lượng code trong Laravel theo hướng thực chiến. Mục tiêu không chỉ là biết viết vài test hoặc dùng `dd()`, mà là hiểu test để bảo vệ điều gì, debug theo luồng nào, log ra sao, dùng fake/mock khi nào, static analysis giúp gì, code review nên nhìn gì và làm thế nào để đội giữ được tốc độ phát triển mà không đánh đổi độ tin cậy của hệ thống.",
+  "breaks": [
+    {
+      "start": 1,
+      "title": "I. Tư Duy Testing, Debug Và Chất Lượng",
+      "description": "Bắt đầu từ câu hỏi vì sao phải test, vì sao debug là kỹ năng cốt lõi và chất lượng code là chuyện của cả hệ thống chứ không chỉ style.",
+      "tone": "amber"
+    },
+    {
+      "start": 19,
+      "title": "II. Pest, PHPUnit Và Các Tầng Test",
+      "description": "Unit, feature, integration, database test, test pyramid, test naming và cách chọn loại test phù hợp cho từng bài toán.",
+      "tone": "copper"
+    },
+    {
+      "start": 45,
+      "title": "III. Database, HTTP, Queue, Mail, Event Và Fake/Mock",
+      "description": "Test flow thật của Laravel: DB, API, queue, notification, event, storage, external service và cách fake/mock sao cho vừa đủ.",
+      "tone": "sand"
+    },
+    {
+      "start": 73,
+      "title": "IV. Debugging, Logging, Exception Và Cách Điều Tra Bug",
+      "description": "Tư duy lần bug, log có ích, Telescope, query debug, production incident, correlation id và chiến lược tìm nguyên nhân gốc.",
+      "tone": "amber"
+    },
+    {
+      "start": 99,
+      "title": "V. Static Analysis, Style, Refactor Safety Và Review",
+      "description": "Pint, PHPStan, Rector, typing, dead code, code smell, code review và chất lượng kỹ thuật vượt ra ngoài chuyện format.",
+      "tone": "copper"
+    },
+    {
+      "start": 121,
+      "title": "VI. CI, Quality Gate, Flaky Test Và Độ Tin Cậy Của Bộ Test",
+      "description": "Pipeline tự động, test song song, flaky test, quarantine mindset, branch protection và các ngưỡng chất lượng thực dụng.",
+      "tone": "sand"
+    },
+    {
+      "start": 141,
+      "title": "VII. Production Quality, Observability Và Supportability",
+      "description": "Khi test không bắt hết, observability và support tooling sẽ cứu hệ thống ra sao, và làm thế nào để code 'dễ đỡ' khi sự cố đến.",
+      "tone": "amber"
+    },
+    {
+      "start": 159,
+      "title": "VIII. Case Thực Chiến, Anti-Pattern Và Đánh Giá Cuối",
+      "description": "Những lỗi điển hình của test yếu, debug tệ, review nông và tiêu chí để biết một codebase Laravel đang khỏe hay chỉ đang may mắn.",
+      "tone": "copper"
+    }
+  ],
+  "items": [
+    {
+      "title": "1. Vì sao testing quan trọng trong app Laravel?",
+      "body": "Vì nó giúp bạn thay đổi code, nâng version, refactor và deploy với mức tự tin cao hơn thay vì chỉ dựa vào cảm giác.",
+      "code": "it('allows an authenticated user to update profile', function () {\n    $user = User::factory()->create();\n\n    $this->actingAs($user)\n        ->patch('/profile', [\n            'name' => 'New Name',\n        ])\n        ->assertRedirect();\n\n    expect($user->fresh()->name)->toBe('New Name');\n});",
+      "note": "Sai lầm thường gặp: nghĩ test là việc thêm sau cho đẹp. Cách sửa là xem test như safety net để dám sửa code thật."
+    },
+    {
+      "title": "2. Test có phải để đạt coverage đẹp không?",
+      "body": "Không. Coverage có thể hữu ích, nhưng mục tiêu chính của test là bảo vệ behavior quan trọng và giảm regressions."
+    },
+    {
+      "title": "3. Debug có phải là việc làm khi đã có bug không?",
+      "body": "Debug là kỹ năng hiểu hệ thống trong lúc nó sai, nhưng cũng là kỹ năng quan sát hệ thống ngay từ lúc chưa sai để phát hiện tín hiệu bất thường."
+    },
+    {
+      "title": "4. Chất lượng code là gì trong ngữ cảnh Laravel app thật?",
+      "body": "Là khả năng code dễ hiểu, dễ sửa, dễ test, ít bug hơn, ít bất ngờ hơn và bền hơn khi app lớn dần."
+    },
+    {
+      "title": "5. Một app chạy được có đồng nghĩa code quality ổn không?",
+      "body": "Không. Có app vẫn chạy vì chưa ai chạm tới phần nguy hiểm của nó."
+    },
+    {
+      "title": "6. Vì sao team hay né viết test?",
+      "body": "Vì áp lực deadline, cảm giác test làm chậm, codebase cũ khó test hoặc chưa có thói quen viết code theo hướng testable."
+    },
+    {
+      "title": "7. Vì sao không có test lại làm team chậm hơn về lâu dài?",
+      "body": "Vì mỗi thay đổi nhỏ đều trở thành canh bạc, bug quay lại, refactor đáng sợ và deploy tốn năng lượng tâm lý hơn rất nhiều."
+    },
+    {
+      "title": "8. Test, debug và code quality liên kết với nhau thế nào?",
+      "body": "Test tốt làm refactor an toàn, code quality tốt làm test dễ viết hơn, còn debug tốt giúp hiểu hệ thống và viết test sát lỗi thật hơn."
+    },
+    {
+      "title": "9. Tư duy đúng về testing là gì?",
+      "body": "Không test mọi thứ như máy móc, mà test nơi behavior quan trọng, nơi dễ regress và nơi business đau nhất nếu sai."
+    },
+    {
+      "title": "10. Tư duy đúng về debugging là gì?",
+      "body": "Không đoán mò, mà thu thập tín hiệu, tái hiện vấn đề, thu hẹp phạm vi và xác minh nguyên nhân từng bước.",
+      "code": "1. tái hiện bug\n2. xác định request / job / command liên quan\n3. thêm log có context\n4. thu hẹp lớp gây lỗi\n5. viết reproduction note hoặc test trước khi sửa mạnh tay",
+      "note": "Sai lầm thường gặp: thấy bug là sửa theo linh cảm. Cách sửa là luôn giữ một chuỗi điều tra có thứ tự."
+    },
+    {
+      "title": "11. Tư duy đúng về code quality là gì?",
+      "body": "Không chỉ nhìn code style, mà nhìn khả năng đọc, đổi, test, vận hành và bảo trì của cả flow."
+    },
+    {
+      "title": "12. Một tip senior về chất lượng là gì?",
+      "body": "Code tốt không phải code khiến người viết thấy thông minh, mà là code khiến người sau ít bị bất ngờ nhất."
+    },
+    {
+      "title": "13. Test yếu thường biểu hiện như thế nào?",
+      "body": "PR nào cũng sợ merge, bug cũ quay lại, upgrade kéo dài và team phải test tay quá nhiều cho những flow lặp."
+    },
+    {
+      "title": "14. Debug tệ thường biểu hiện như thế nào?",
+      "body": "Mọi người đổi code lung tung, thêm `dd()` khắp nơi, restart service ngẫu nhiên và vẫn không rõ nguyên nhân gốc."
+    },
+    {
+      "title": "15. Code quality tệ thường biểu hiện như thế nào?",
+      "body": "Controller quá to, logic rải rác, naming mơ hồ, test khó viết, review khó hiểu và chạm đâu cũng lan bug."
+    },
+    {
+      "title": "16. Nền tảng quan trọng nhất khi học nhóm này là gì?",
+      "body": "Hiểu rằng độ tin cậy của app là tài sản sản phẩm, không phải chỉ là chuyện của dev perfectionism."
+    },
+    {
+      "title": "17. Một hệ thống 'đáng tin' thường cho cảm giác gì?",
+      "body": "Thay đổi có kiểm soát, bug ít bất ngờ, log đủ dùng, deploy đỡ sợ và người mới có thể đọc rồi lần ra luồng chính."
+    },
+    {
+      "title": "18. Kết luận ngắn của phần mindset là gì?",
+      "body": "Testing, debug và code quality không làm app 'xịn' về hình thức, mà làm app bớt phản chủ khi lớn lên."
+    },
+    {
+      "title": "19. PHPUnit là gì trong Laravel?",
+      "body": "Là nền tảng test lâu đời trong PHP mà Laravel hỗ trợ rất tốt để viết các loại test khác nhau."
+    },
+    {
+      "title": "20. Pest là gì?",
+      "body": "Là framework test mượt hơn về cú pháp, xây trên PHPUnit, giúp nhiều đội thấy test dễ đọc và ít ceremony hơn."
+    },
+    {
+      "title": "21. Chọn Pest hay PHPUnit có phải quyết định sống còn không?",
+      "body": "Không. Điều quan trọng hơn là đội viết test nhất quán, đọc được và giữ chất lượng test tốt."
+    },
+    {
+      "title": "22. Unit test là gì?",
+      "body": "Là test một đơn vị logic nhỏ với ít dependency ngoài, thường nhanh và tập trung vào behavior cụ thể."
+    },
+    {
+      "title": "23. Feature test là gì trong Laravel?",
+      "body": "Là test flow ở mức ứng dụng hơn, thường đi qua HTTP, middleware, controller, validation, DB và response.",
+      "code": "it('creates a post', function () {\n    $user = User::factory()->create();\n\n    $this->actingAs($user)\n        ->post('/posts', [\n            'title' => 'Hello',\n            'body' => 'World',\n        ])\n        ->assertRedirect();\n\n    $this->assertDatabaseHas('posts', ['title' => 'Hello']);\n});",
+      "note": "Feature test tốt bảo vệ flow người dùng thật hơn là chỉ kiểm tra một method nội bộ được gọi."
+    },
+    {
+      "title": "24. Integration test khác gì feature test?",
+      "body": "Ranh giới có thể linh hoạt, nhưng integration test thường nhấn mạnh việc nhiều thành phần thật tương tác với nhau đúng cách."
+    },
+    {
+      "title": "25. End-to-end test là gì?",
+      "body": "Là test gần trải nghiệm người dùng thật nhất, thường đi qua browser hoặc hệ tích hợp thật hơn nhiều so với feature test.",
+      "code": "$browser->visit('/login')\n    ->type('email', 'admin@example.com')\n    ->type('password', 'secret')\n    ->press('Log in')\n    ->assertPathIs('/dashboard');",
+      "note": "E2E test đắt hơn nhưng rất đáng cho các flow sống còn như login, checkout hoặc permission quan trọng."
+    },
+    {
+      "title": "26. Test pyramid là gì?",
+      "body": "Là tư duy cân bằng nhiều test nhỏ, nhanh và ít test nặng hơn ở tầng cao để tối ưu tốc độ và độ tin cậy."
+    },
+    {
+      "title": "27. Có nên chỉ viết unit test mà không có feature test không?",
+      "body": "Không nên nếu app có nhiều HTTP flow, auth, middleware, validation và DB interaction quan trọng."
+    },
+    {
+      "title": "28. Có nên chỉ viết feature test mà bỏ hết unit test không?",
+      "body": "Cũng không lý tưởng. Nhiều logic nhỏ có thể được bảo vệ rẻ hơn và rõ hơn bằng unit test."
+    },
+    {
+      "title": "29. Test nào nên viết trước?",
+      "body": "Nên bắt đầu từ flow business quan trọng và dễ regress nhất, không cần giáo điều test mọi thứ cùng lúc."
+    },
+    {
+      "title": "30. Naming test tốt trông thế nào?",
+      "body": "Nó nên mô tả hành vi mong đợi rõ ràng, ví dụ ai làm gì trong điều kiện nào thì kết quả gì xảy ra."
+    },
+    {
+      "title": "31. Một test tốt nên có đặc điểm gì?",
+      "body": "Rõ ràng, đáng tin, dễ đọc, ít phụ thuộc implementation detail và fail theo cách giúp chẩn đoán nhanh."
+    },
+    {
+      "title": "32. Một test tệ thường như thế nào?",
+      "body": "Khó đọc, assert mơ hồ, phụ thuộc thứ tự chạy, ngẫu nhiên fail, setup quá dài và không nói rõ behavior nào đang được bảo vệ."
+    },
+    {
+      "title": "33. Test nhỏ và nhanh có lợi gì?",
+      "body": "Chúng tạo feedback loop ngắn, giúp dev chạy thường xuyên và giữ thói quen kiểm tra liên tục."
+    },
+    {
+      "title": "34. Test quá integration-heavy có mặt trái gì?",
+      "body": "Chạy chậm, khó khoanh vùng lỗi và dễ tạo cảm giác bộ test như một tảng đá không ai muốn chạm."
+    },
+    {
+      "title": "35. TDD có bắt buộc để có test tốt không?",
+      "body": "Không bắt buộc, nhưng tư duy nghĩ behavior trước code có thể giúp thiết kế dễ test hơn."
+    },
+    {
+      "title": "36. Một tip thực chiến với test layering là gì?",
+      "body": "Đừng biến mọi bài toán thành browser-level test. Nhiều thứ bảo vệ tốt hơn ở tầng feature hoặc unit."
+    },
+    {
+      "title": "37. Có nên snapshot mọi response lớn không?",
+      "body": "Cần cẩn thận. Snapshot tiện nhưng dễ che mờ ý nghĩa test nếu không chọn đúng phạm vi."
+    },
+    {
+      "title": "38. Assertion nên càng nhiều càng tốt không?",
+      "body": "Không phải cứ nhiều là tốt. Quan trọng là assert đúng những tín hiệu chứng minh behavior quan trọng."
+    },
+    {
+      "title": "39. Một mùi code xấu thể hiện qua test là gì?",
+      "body": "Muốn test một behavior đơn giản mà phải setup nửa ứng dụng, chứng tỏ thiết kế có thể đang quá dính và khó tách."
+    },
+    {
+      "title": "40. Test suite tốt có thể giúp upgrade framework ra sao?",
+      "body": "Nó cho bạn safety net để bump version, sửa breaking change và tự tin hơn khi deploy."
+    },
+    {
+      "title": "41. Khi nào test coverage metric hữu ích?",
+      "body": "Khi dùng như tín hiệu phụ để phát hiện vùng không được bảo vệ, chứ không phải mục tiêu tối thượng."
+    },
+    {
+      "title": "42. Khi nào coverage trở thành anti-pattern?",
+      "body": "Khi team viết test hời hợt chỉ để tăng phần trăm mà không bảo vệ behavior có ý nghĩa."
+    },
+    {
+      "title": "43. Một câu hỏi senior khi đọc test là gì?",
+      "body": "Nếu test này fail, nó có giúp tôi biết ngay behavior nào hỏng và nên nhìn vào đâu không?"
+    },
+    {
+      "title": "44. Kết luận ngắn về các tầng test là gì?",
+      "body": "Cần cân bằng: đủ thấp để nhanh, đủ cao để phản ánh flow thật."
+    },
+    {
+      "title": "45. Database test trong Laravel thường bảo vệ điều gì?",
+      "body": "Chúng bảo vệ migration, relationship, query behavior, transaction, state change và các flow business gắn chặt với DB."
+    },
+    {
+      "title": "46. `RefreshDatabase` giúp gì?",
+      "body": "Nó giúp đảm bảo test có trạng thái DB sạch, tránh ảnh hưởng lẫn nhau.",
+      "code": "uses(RefreshDatabase::class);\n\nit('shows dashboard', function () {\n    $this->get('/dashboard')->assertRedirect('/login');\n});",
+      "note": "Nếu test phụ thuộc dữ liệu còn sót từ test khác, flaky test sẽ xuất hiện rất nhanh."
+    },
+    {
+      "title": "47. Factory quan trọng với test ra sao?",
+      "body": "Factory giúp tạo dữ liệu test nhanh, rõ ý định và ít ceremony hơn rất nhiều so với setup tay."
+    },
+    {
+      "title": "48. Seeder có nên dùng trong test không?",
+      "body": "Có thể trong một số case, nhưng đa số test nên tạo đúng dữ liệu cần thiết thay vì kéo nguyên một thế giới seed nặng."
+    },
+    {
+      "title": "49. HTTP test trong Laravel mạnh ở đâu?",
+      "body": "Nó rất tốt để kiểm tra route, middleware, auth, validation, response, session, redirect và state change xuyên qua ứng dụng.",
+      "code": "$response = $this->postJson('/api/posts', []);\n\n$response->assertStatus(422)\n    ->assertJsonValidationErrors(['title']);",
+      "bullets": [
+        "HTTP test rất hợp để bảo vệ validation, auth, redirect và response contract.",
+        "Đây là tầng test nhiều Laravel team dùng nhất vì sát flow thật mà vẫn đủ nhanh."
+      ]
+    },
+    {
+      "title": "50. JSON API test nên assert gì?",
+      "body": "Status code, shape dữ liệu, validation error, authorization behavior và side effect business quan trọng."
+    },
+    {
+      "title": "51. Có nên assert từng field JSON quá chi li không?",
+      "body": "Tùy case. Assert quá mịn vào implementation detail dễ làm test giòn hơn cần thiết."
+    },
+    {
+      "title": "52. Queue fake dùng để làm gì?",
+      "body": "Nó cho phép kiểm tra job nào được dispatch mà không cần chạy worker thật trong test."
+    },
+    {
+      "title": "53. Mail fake giúp gì?",
+      "body": "Nó giúp xác nhận mail nào được gửi mà không đụng mail provider thật."
+    },
+    {
+      "title": "54. Notification fake giúp gì?",
+      "body": "Nó kiểm tra notification được phát đúng recipient và đúng loại mà không phải gửi thật."
+    },
+    {
+      "title": "55. Event fake có ích ở đâu?",
+      "body": "Nó hữu ích khi bạn muốn xác nhận event được dispatch mà không cần chạy toàn bộ side effect phía sau."
+    },
+    {
+      "title": "56. Storage fake giúp gì?",
+      "body": "Nó giúp test upload, xóa file, path và side effect liên quan storage mà không chạm file system thật."
+    },
+    {
+      "title": "57. Mock khác fake ở đâu trong tư duy?",
+      "body": "Fake thường thay cả hệ bằng phiên bản test-friendly, còn mock kiểm soát hành vi và kỳ vọng trên một dependency cụ thể.",
+      "code": "// fake\nMail::fake();\n\n// mock\n$gateway = Mockery::mock(PaymentGateway::class);\n$gateway->shouldReceive('charge')->once()->andReturnTrue();",
+      "note": "Nếu bạn mock quá nhiều, test rất dễ xanh mà chẳng chứng minh được flow thật nào của app."
+    },
+    {
+      "title": "58. Có nên mock mọi thứ không?",
+      "body": "Không. Mock quá nhiều làm test xa rời behavior thật và bám chặt vào implementation detail."
+    },
+    {
+      "title": "59. Khi nào mock đáng dùng?",
+      "body": "Khi dependency ngoài khó kiểm soát, chậm, ngẫu nhiên hoặc bạn cần kiểm tra interaction rất cụ thể."
+    },
+    {
+      "title": "60. External API test nên làm thế nào?",
+      "body": "Thường nên fake HTTP client, test mapping, timeout path, error path và giữ contract đủ rõ thay vì gọi provider thật mọi lúc."
+    },
+    {
+      "title": "61. Contract test với integration ngoài có đáng không?",
+      "body": "Có nếu provider quan trọng và team muốn bắt drift sớm hơn trước khi production vỡ."
+    },
+    {
+      "title": "62. Test queue job nên dừng ở dispatch hay test cả `handle()`?",
+      "body": "Nên có cả hai lớp: một test orchestration dispatch, một test logic thực thi nếu job mang nghiệp vụ đáng kể."
+    },
+    {
+      "title": "63. Test event listener nên nhìn gì?",
+      "body": "Listener có phản ứng đúng event không, side effect nào phải xảy ra và failure path có được xử lý hợp lý không."
+    },
+    {
+      "title": "64. Test file upload cần cẩn thận gì?",
+      "body": "Validation, lưu file, lưu metadata, cleanup và đường lỗi chứ không chỉ `200 OK`."
+    },
+    {
+      "title": "65. Browser test có nên có trong Laravel app không?",
+      "body": "Có thể rất giá trị cho flow UI sống còn, nhưng không nên thay thế mọi tầng test khác."
+    },
+    {
+      "title": "66. Test async flow có khó hơn sync không?",
+      "body": "Khó hơn vì có queue, trạng thái pending, retry và side effect đến muộn hơn request gốc."
+    },
+    {
+      "title": "67. Một tip thực chiến với fake/mock là gì?",
+      "body": "Fake dependency ngoài để kiểm flow app, nhưng đừng fake tới mức bạn không còn test được hành vi thật nào nữa."
+    },
+    {
+      "title": "68. Mùi test xấu ở integration layer là gì?",
+      "body": "Mọi thứ đều bị mock, test xanh nhưng production vẫn fail ngay khi chạm service thật hoặc serialization thật."
+    },
+    {
+      "title": "69. Có nên có test seed data thật lớn không?",
+      "body": "Một số case đáng có dataset lớn hoặc gần thật để bắt query path tệ, nhưng không phải toàn bộ suite đều nên nặng như vậy."
+    },
+    {
+      "title": "70. Tại sao test database còn giúp refactor query tốt hơn?",
+      "body": "Vì nó cho phép bạn thay implementation Eloquent/query builder mà vẫn giữ contract business."
+    },
+    {
+      "title": "71. API permission test có đáng đầu tư không?",
+      "body": "Rất đáng, vì authorization bug thường nguy hiểm hơn bug UI thuần."
+    },
+    {
+      "title": "72. Một câu hỏi senior về test integration là gì?",
+      "body": "Test này đang chứng minh behavior thật của hệ thống, hay chỉ chứng minh một phiên bản giả lập quá thân thiện?"
+    },
+    {
+      "title": "73. Debugging tốt bắt đầu từ đâu?",
+      "body": "Từ việc tái hiện được vấn đề hoặc ít nhất thu được tín hiệu đủ cụ thể để thu hẹp phạm vi.",
+      "code": "Log::info('Checkout start', [\n    'order_id' => $order->id,\n    'user_id' => $user->id,\n    'step' => 'before-charge',\n]);",
+      "note": "Debug tốt không bắt đầu bằng sửa bừa. Nó bắt đầu bằng tín hiệu đủ tốt để đặt giả thuyết đúng."
+    },
+    {
+      "title": "74. Vì sao `dd()` vừa hữu ích vừa nguy hiểm?",
+      "body": "Nó giúp nhìn nhanh state cục bộ, nhưng nếu lạm dụng sẽ làm flow debug rời rạc, thủ công và dễ bỏ sót nguyên nhân gốc."
+    },
+    {
+      "title": "75. Log tốt khác log nhiều ở điểm nào?",
+      "body": "Log tốt có ngữ cảnh, giúp điều tra. Log nhiều nhưng mơ hồ chỉ tạo noise."
+    },
+    {
+      "title": "76. `storage/logs` nên được xem như gì?",
+      "body": "Là một nguồn tín hiệu nền tảng, nhưng không phải nơi duy nhất. Production-quality debugging cần nhiều tín hiệu hơn log file đơn lẻ."
+    },
+    {
+      "title": "77. Exception handling giúp quality ra sao?",
+      "body": "Nó cho phép lỗi được biểu diễn đúng, log đủ ngữ cảnh và tránh để bug biến thành hành vi mơ hồ hoặc silent failure."
+    },
+    {
+      "title": "78. Correlation id hữu ích khi nào?",
+      "body": "Khi request chạm nhiều lớp như API, queue, provider ngoài hoặc nhiều service. Nó giúp nối các dấu vết lại thành một câu chuyện."
+    },
+    {
+      "title": "79. Telescope giúp gì cho debug Laravel?",
+      "body": "Nó cho bạn nhìn request, query, job, event, cache, mail và nhiều tín hiệu runtime rất hữu ích cho local hoặc môi trường debug phù hợp."
+    },
+    {
+      "title": "80. Query debug nên nhìn gì ngoài thời gian query?",
+      "body": "Số lượng query, query lặp, relation vô tình load thêm và kế hoạch thực thi thực tế."
+    },
+    {
+      "title": "81. Dump biến trong production có nên không?",
+      "body": "Rất cẩn thận hoặc thường tránh. Nó có thể lộ dữ liệu nhạy cảm, phá response hoặc làm hành vi hệ thống xấu đi."
+    },
+    {
+      "title": "82. Một bug khó debug thường có đặc điểm gì?",
+      "body": "Không tái hiện ổn định, phụ thuộc timing, data production, queue, cache hoặc tích hợp ngoài."
+    },
+    {
+      "title": "83. Vì sao reproduction là bước vàng trong debug?",
+      "body": "Nếu tái hiện được có kiểm soát, bạn có thể thử giả thuyết, chứng minh nguyên nhân và xác nhận fix rõ ràng hơn rất nhiều."
+    },
+    {
+      "title": "84. Root cause khác symptom thế nào?",
+      "body": "Symptom là biểu hiện thấy được, còn root cause là nguyên nhân sâu làm hệ thống lệch. Chữa symptom mà bỏ root cause sẽ làm bug quay lại."
+    },
+    {
+      "title": "85. Có nên sửa bug ngay khi mới nghi ra nguyên nhân không?",
+      "body": "Nên xác minh giả thuyết đủ chắc trước. Sửa quá sớm dễ tạo patch may rủi mà không hiểu bug thật."
+    },
+    {
+      "title": "86. Debug production có gì khác local?",
+      "body": "Có dữ liệu thật, traffic thật, queue thật, cache thật và rủi ro người dùng thật. Bạn phải ít xâm lấn hơn và dựa nhiều vào observability."
+    },
+    {
+      "title": "87. Feature flag có giúp debug không?",
+      "body": "Có. Nó cho phép cô lập behavior mới, so sánh với behavior cũ hoặc tắt nhanh một vùng nghi vấn."
+    },
+    {
+      "title": "88. Shadow logging là gì?",
+      "body": "Là log thêm tín hiệu tạm thời để đối chiếu behavior mà chưa đổi logic sản phẩm ngay."
+    },
+    {
+      "title": "89. Playbook debug nên có gì?",
+      "body": "Bước tái hiện, log nào xem trước, dashboard nào kiểm tra, ai sở hữu hệ đó, cách rollback tạm và cách xác nhận fix.",
+      "code": "1. Reproduce bug with known input\n2. Check request log / job log / provider log\n3. Verify DB state and queue state\n4. Confirm hypothesis with one targeted change\n5. Add regression test after fix",
+      "note": "Playbook giúp đội không phải debug theo cảm hứng mỗi lần sự cố quay lại."
+    },
+    {
+      "title": "90. Một tip thực chiến với debug là gì?",
+      "body": "Mỗi khi bạn định thử sửa ngẫu nhiên, hãy dừng lại và viết rõ giả thuyết mình đang định chứng minh là gì."
+    },
+    {
+      "title": "91. Mùi debug tệ là gì?",
+      "body": "Mọi người restart, clear cache, retry queue, sửa code lung tung và cuối cùng 'hết lỗi' mà không ai biết vì sao."
+    },
+    {
+      "title": "92. Supportability liên quan gì tới debug?",
+      "body": "Code và hệ thống dễ support sẽ để lại đủ state, log, id, admin tool hoặc runbook để bug được điều tra nhanh."
+    },
+    {
+      "title": "93. Có nên log payload đầy đủ mọi request không?",
+      "body": "Không nên mặc định. Cần cân bằng giữa giá trị debug, bảo mật, PII và chi phí lưu trữ."
+    },
+    {
+      "title": "94. Structured logging có giá trị gì?",
+      "body": "Nó giúp log dễ lọc, dễ truy vấn và dễ nối theo request id, user id, tenant id, job id hoặc domain event hơn log text tự do."
+    },
+    {
+      "title": "95. Production incident tốt nên để lại gì cho test suite?",
+      "body": "Ít nhất một test hoặc guard mới để lỗi cùng loại khó quay lại."
+    },
+    {
+      "title": "96. Một câu hỏi senior về debug là gì?",
+      "body": "Nếu bug này quay lại tuần sau, đội có biết nhìn vào đâu ngay không?"
+    },
+    {
+      "title": "97. Kết luận ngắn về debugging là gì?",
+      "body": "Debug tốt là quá trình điều tra có kỷ luật, không phải nghệ thuật đoán trúng."
+    },
+    {
+      "title": "98. Static analysis là gì?",
+      "body": "Là dùng công cụ phân tích code mà không chạy chương trình để phát hiện bug tiềm ẩn, type issue, dead code hoặc smell kỹ thuật."
+    },
+    {
+      "title": "99. PHPStan giúp gì trong Laravel app?",
+      "body": "Nó giúp phát hiện lỗi type, nullability, method call, contract mismatch và nhiều vấn đề dễ lọt qua review tay."
+    },
+    {
+      "title": "100. Laravel Pint dùng để làm gì?",
+      "body": "Pint giúp chuẩn hóa code style, giảm tranh cãi format và giữ codebase gọn gàng hơn."
+    },
+    {
+      "title": "101. Rector có vai trò gì?",
+      "body": "Rector hỗ trợ refactor tự động hoặc hiện đại hóa cú pháp trong một số trường hợp, rất hữu ích trong nâng cấp hoặc cleanup có kiểm soát."
+    },
+    {
+      "title": "102. Code style có phải là code quality không?",
+      "body": "Không hoàn toàn. Style chỉ là một lớp nhỏ, còn chất lượng thật nằm ở design, readability, testability và correctness."
+    },
+    {
+      "title": "103. Type clarity giúp bảo trì ra sao?",
+      "body": "Type rõ giúp IDE, static analysis và người đọc hiểu dữ liệu đang đi qua hệ như thế nào, giảm đoán mò."
+    },
+    {
+      "title": "104. Dead code là gì và vì sao đáng dọn?",
+      "body": "Là code không còn được dùng nhưng vẫn tồn tại, làm người đọc mất thời gian và tăng rủi ro chạm nhầm."
+    },
+    {
+      "title": "105. Code smell có nghĩa là gì?",
+      "body": "Là dấu hiệu code có thể đang thiết kế kém hoặc tích lũy nợ kỹ thuật, dù chưa chắc lập tức là bug.",
+      "code": "public function store(Request $request)\n{\n    // validate\n    // charge payment\n    // send mail\n    // write audit log\n    // sync ERP\n    // return response\n}",
+      "note": "Một controller ôm quá nhiều trách nhiệm chưa chắc lỗi ngay, nhưng đó là mùi rất mạnh của nợ kỹ thuật."
+    },
+    {
+      "title": "106. Một số smell phổ biến trong Laravel là gì?",
+      "body": "Controller béo, model quá thông minh, helper vô chủ, query trong view, service khổng lồ và logic quyền rải rác."
+    },
+    {
+      "title": "107. Static analysis mạnh ở đâu so với test?",
+      "body": "Nó nhanh, rộng và bắt được một số bug kiểu type/contract mà test không chắc đã bao phủ."
+    },
+    {
+      "title": "108. Static analysis có thay thế test không?",
+      "body": "Không. Nó không xác nhận flow business thật hay side effect thực tế."
+    },
+    {
+      "title": "109. Code review tốt nên tập trung vào gì trước tiên?",
+      "body": "Bug, security, regression risk, design clarity, missing tests và impact vận hành trước khi bàn tới style nhỏ."
+    },
+    {
+      "title": "110. Review chỉ bắt lỗi cú pháp có đủ không?",
+      "body": "Không. Review có giá trị khi nó nhìn hành vi, intent và rủi ro lâu dài."
+    },
+    {
+      "title": "111. PR nhỏ có lợi gì cho quality?",
+      "body": "Dễ review hơn, dễ test hơn và dễ rollback hơn. PR maintenance quá lớn rất dễ lọt bug."
+    },
+    {
+      "title": "112. Một tip thực chiến với review là gì?",
+      "body": "Nếu reviewer không mô tả lại được flow thay đổi sau vài phút đọc, PR có thể đang quá khó hiểu."
+    },
+    {
+      "title": "113. Refactor safety liên quan static tool ra sao?",
+      "body": "Khi test và static analysis cùng khỏe, bạn có hai lớp safety net bổ sung rất mạnh.",
+      "code": "./vendor/bin/pint\n./vendor/bin/phpstan analyse\nphp artisan test",
+      "bullets": [
+        "Pint giữ format nhất quán.",
+        "PHPStan bắt lỗi type/contract sớm.",
+        "Test xác nhận flow business vẫn đúng."
+      ]
+    },
+    {
+      "title": "114. Có nên áp PHPStan level cao ngay cho codebase cũ không?",
+      "body": "Thường nên nâng dần. Ép quá nhanh dễ làm đội phản kháng hoặc sinh ra nhiều suppress thiếu ý thức."
+    },
+    {
+      "title": "115. Suppress warning có nguy hiểm không?",
+      "body": "Có nếu làm bừa. Mỗi suppression nên có lý do rõ, vì nó là một khoản nợ chất lượng."
+    },
+    {
+      "title": "116. Một anti-pattern ở code style tool là gì?",
+      "body": "Dành quá nhiều năng lượng cho khoảng trắng và format trong khi bug, naming tệ và query sai vẫn còn nguyên."
+    },
+    {
+      "title": "117. Một câu hỏi senior khi đánh giá code quality là gì?",
+      "body": "Nếu đổi người maintain khu vực này tuần sau, họ có hiểu đủ nhanh để sửa an toàn không?"
+    },
+    {
+      "title": "118. Kết luận ngắn về static quality là gì?",
+      "body": "Tool tốt giúp giảm lỗi cơ học và nâng mặt bằng code, nhưng không thay tư duy thiết kế và review sâu."
+    },
+    {
+      "title": "119. CI quality gate là gì?",
+      "body": "Là tập hợp các kiểm tra tự động phải qua trước khi code được merge hoặc deploy, như test, lint, static analysis và build."
+    },
+    {
+      "title": "120. Vì sao CI quan trọng với Laravel team?",
+      "body": "Nó giữ một chuẩn tối thiểu ổn định, tránh phụ thuộc hoàn toàn vào việc dev nhớ chạy tool ở local."
+    },
+    {
+      "title": "121. Test chạy song song có lợi gì?",
+      "body": "Nó giảm thời gian feedback nếu suite đủ lớn, giúp đội không ngại chạy test thường xuyên.",
+      "code": "php artisan test --parallel",
+      "note": "Bộ test tốt mà chạy quá chậm sẽ dần bị đội né tránh. Tốc độ feedback là một phần của chất lượng."
+    },
+    {
+      "title": "122. Flaky test là gì?",
+      "body": "Là test lúc pass lúc fail dù code không đổi, thường do timing, thứ tự chạy, dữ liệu chia sẻ hoặc dependency không ổn định.",
+      "code": "it('sends the welcome email', function () {\n    Mail::fake();\n\n    UserRegistered::dispatch($user);\n\n    Mail::assertSent(WelcomeMail::class);\n});",
+      "note": "Một test kiểu này sẽ dễ flaky nếu event, queue hoặc mail không được fake/đồng bộ hóa rõ. Flaky test thường là tín hiệu flow test đang phụ thuộc timing mơ hồ."
+    },
+    {
+      "title": "123. Vì sao flaky test nguy hiểm?",
+      "body": "Vì nó làm đội mất niềm tin vào suite. Khi test fail không còn đáng tin, mọi người bắt đầu ignore tín hiệu thật."
+    },
+    {
+      "title": "124. Quarantine mindset với flaky test là gì?",
+      "body": "Là cô lập test không ổn định có kiểm soát để sửa dần, thay vì để nó đầu độc toàn bộ niềm tin vào CI."
+    },
+    {
+      "title": "125. Có nên tạm skip test fail để merge cho kịp không?",
+      "body": "Chỉ cực kỳ cẩn thận và có kế hoạch trả nợ rất rõ. Skip bừa là cách nhanh nhất để quality gate mục nát."
+    },
+    {
+      "title": "126. Branch protection giúp gì?",
+      "body": "Nó ép các check quan trọng phải xanh trước khi merge, giữ standard tối thiểu cho cả đội."
+    },
+    {
+      "title": "127. Một CI pipeline tốt nên có gì?",
+      "body": "Test, lint/style, static analysis, đôi khi security audit và build step đủ để phát hiện lỗi integration sớm.",
+      "code": "composer install\n./vendor/bin/pint --test\n./vendor/bin/phpstan analyse\nphp artisan test",
+      "note": "CI tốt không cần quá cầu kỳ ngay từ đầu. Quan trọng là có vài check thật sự chặn được lỗi cơ bản trước khi code chạm production."
+    },
+    {
+      "title": "128. Pipeline quá chậm có hại gì?",
+      "body": "Dev ít chạy hơn, feedback chậm, context bị mất và chất lượng giảm vì mọi người ngại chờ."
+    },
+    {
+      "title": "129. Có nên chạy toàn bộ browser test cho mọi PR không?",
+      "body": "Tùy quy mô, nhưng nhiều đội tách browser test nặng khỏi nhịp kiểm tra nhanh để giữ CI thực dụng."
+    },
+    {
+      "title": "130. Coverage gate có nên cứng nhắc không?",
+      "body": "Cần thận trọng. Gating coverage quá máy móc dễ khuyến khích test vô nghĩa."
+    },
+    {
+      "title": "131. Một tip thực chiến với CI là gì?",
+      "body": "Pipeline phải đủ nghiêm để chặn lỗi thật, nhưng đủ nhanh và đủ tin cậy để dev không ghét nó."
+    },
+    {
+      "title": "132. Cache CI hoặc dependency cache có hữu ích không?",
+      "body": "Có thể giảm thời gian build đáng kể, nhưng phải cẩn thận để không tạo trạng thái cũ khó debug."
+    },
+    {
+      "title": "133. Một mùi CI xấu là gì?",
+      "body": "Check nào cũng đỏ ngẫu nhiên, mất nhiều phút nhưng không ai tin kết quả và merge vẫn diễn ra bằng ngoại lệ.",
+      "code": "# anti-pattern\n- flaky browser test fail ngẫu nhiên\n- dev rerun CI 3 lần mới xanh\n- merge vẫn force vì 'CI vốn hay lỗi'",
+      "note": "Khi CI mất uy tín, nó không còn là quality gate nữa mà chỉ là một nghi thức tốn thời gian."
+    },
+    {
+      "title": "134. Release confidence liên quan test suite thế nào?",
+      "body": "Đội càng tin suite, họ càng dám deploy đều. Đội không tin suite sẽ trì hoãn mọi thay đổi."
+    },
+    {
+      "title": "135. Một câu hỏi senior về CI là gì?",
+      "body": "Nếu pipeline xanh, chúng ta thật sự yên tâm thêm được bao nhiêu phần trăm cho flow quan trọng?"
+    },
+    {
+      "title": "136. Kết luận ngắn về quality gate là gì?",
+      "body": "Gate tốt không phải gate nhiều nhất, mà là gate chặn đúng lỗi quan trọng với chi phí hợp lý."
+    },
+    {
+      "title": "137. Vì sao production quality không thể dựa hoàn toàn vào test?",
+      "body": "Vì production có data thật, traffic thật, timing thật, provider thật và lỗi hiếm mà local hoặc CI không tái hiện hết.",
+      "code": "Log::warning('Webhook retry mismatch', [\n    'provider' => 'stripe',\n    'event_id' => $payload['id'] ?? null,\n    'request_id' => request()->header('X-Request-Id'),\n]);",
+      "note": "Test bảo vệ được rất nhiều, nhưng observability mới cho bạn mắt để nhìn những gì chỉ production mới bộc lộ."
+    },
+    {
+      "title": "138. Observability giúp chất lượng code ra sao?",
+      "body": "Nó biến production thành nơi có tín hiệu học được, thay vì một hộp đen chỉ biết 'khách báo lỗi'."
+    },
+    {
+      "title": "139. Support tooling có liên quan gì tới code quality?",
+      "body": "Code dễ support hơn là code chất lượng hơn trong đời thực, vì bug được điều tra, tái hiện và xử lý nhanh hơn."
+    },
+    {
+      "title": "140. Admin tool hoặc diagnostic endpoint có đáng có không?",
+      "body": "Có, nếu thiết kế an toàn. Chúng giúp support và dev nhìn trạng thái cần thiết mà không phải chọc DB thô."
+    },
+    {
+      "title": "141. Runbook incident giúp gì cho debug quality?",
+      "body": "Nó chuẩn hóa điều tra sự cố, giảm phụ thuộc cá nhân và giúp đội phản ứng ít cảm tính hơn."
+    },
+    {
+      "title": "142. Một app dễ support thường có đặc điểm gì?",
+      "body": "Request id rõ, log có ngữ cảnh, queue/job traceable, state visible và flow chính có tài liệu đủ dùng."
+    },
+    {
+      "title": "143. Một app khó support thường có đặc điểm gì?",
+      "body": "Lỗi rơi vào im lặng, state ẩn, queue mù, không có correlation id và debug phải dựa vào đoán hoặc sửa thẳng DB."
+    },
+    {
+      "title": "144. Chất lượng code có liên quan tới on-call stress không?",
+      "body": "Rất nhiều. Hệ thống khó debug và khó support làm mọi ca sự cố mệt hơn hẳn."
+    },
+    {
+      "title": "145. Một tip cuối về production quality là gì?",
+      "body": "Nếu bug production xảy ra mà đội không biết bắt đầu nhìn từ đâu, vấn đề không chỉ là thiếu log mà còn là thiếu kiến trúc supportable."
+    },
+    {
+      "title": "146. Một bug production kinh điển do test yếu là gì?",
+      "body": "Refactor nhỏ làm vỡ auth, validation hoặc queue flow vì không có test nào bảo vệ path đó."
+    },
+    {
+      "title": "147. Một bug kinh điển do debug kém là gì?",
+      "body": "Bug biến mất tạm sau khi clear cache hoặc restart worker, rồi quay lại sau vài giờ vì root cause chưa từng được hiểu."
+    },
+    {
+      "title": "148. Một bug kinh điển do review nông là gì?",
+      "body": "PR nhìn 'đúng' về style nhưng vô tình mở lỗ hổng quyền truy cập, N+1 hoặc stale cache."
+    },
+    {
+      "title": "149. Anti-pattern lớn nhất ở testing là gì?",
+      "body": "Viết test cho có, không ai tin suite và mọi người vẫn phải test tay gần như toàn bộ trước merge."
+    },
+    {
+      "title": "150. Anti-pattern lớn nhất ở debugging là gì?",
+      "body": "Sửa theo linh cảm mà không chứng minh nguyên nhân, khiến bug cùng loại quay lại mãi."
+    },
+    {
+      "title": "151. Anti-pattern lớn nhất ở code quality là gì?",
+      "body": "Đồng nhất code quality với format, trong khi readability, testability và correctness bị bỏ quên."
+    },
+    {
+      "title": "152. Một câu hỏi senior trước khi chốt fix bug là gì?",
+      "body": "Chúng ta đã chứng minh đây là root cause chưa, hay chỉ vừa làm symptom biến mất?"
+    },
+    {
+      "title": "153. Một câu hỏi senior trước khi merge PR là gì?",
+      "body": "Nếu thay đổi này vỡ ở production, log, test và support tool hiện tại có đủ để cứu đội nhanh không?",
+      "code": "// Checklist ngắn trước khi merge:\n// - Có test cho flow chính chưa?\n// - Log/alert có đủ để lần lỗi không?\n// - Nếu rollback cần, có dễ làm không?\n// - Side effect nào có thể ảnh hưởng production?",
+      "note": "Đây là kiểu câu hỏi kéo review từ mức 'nhìn code ổn' lên mức 'sống được ngoài production không'."
+    },
+    {
+      "title": "154. Khi nào có thể nói một codebase Laravel đang khỏe ở mảng này?",
+      "body": "Khi test đủ đáng tin, debug có kỷ luật, static tool hỗ trợ tốt, CI có giá trị, review đủ sâu và production bug không khiến cả đội mù."
+    },
+    {
+      "title": "155. Mutation testing mindset có giá trị gì?",
+      "body": "Nó buộc bạn tự hỏi test có thật sự bắt được thay đổi sai về logic không, hay chỉ đang chạy qua code mà không chứng minh nhiều."
+    },
+    {
+      "title": "156. Ownership của flaky test quan trọng vì sao?",
+      "body": "Nếu test flaky không có owner rõ, cả suite sẽ bị bào mòn niềm tin dần dần mà không ai chịu trách nhiệm sửa."
+    },
+    {
+      "title": "157. Reproduction note discipline là gì?",
+      "body": "Khi điều tra bug khó, ghi lại cách tái hiện, data cần thiết, giả thuyết đã thử và tín hiệu đã thấy giúp đội không phải debug lại từ đầu nhiều lần."
+    },
+    {
+      "title": "158. Snapshot abuse là gì?",
+      "body": "Là khi snapshot được dùng quá rộng đến mức test chỉ so một khối output lớn mà không còn nói rõ behavior quan trọng nào đang được bảo vệ."
+    },
+    {
+      "title": "159. Postmortem-to-test loop quan trọng ra sao?",
+      "body": "Sau một incident thật, nếu không biến nó thành test, log guard hoặc runbook tốt hơn thì đội rất dễ trả học phí lần nữa cho cùng kiểu lỗi."
+    },
+    {
+      "title": "160. Ví dụ feature test cơ bản cho một route bảo vệ bằng auth",
+      "body": "Đây là kiểu test rất thực dụng và nên có sớm trong hầu hết project Laravel.",
+      "code": "it('redirects guests away from dashboard', function () {\n    $this->get('/dashboard')\n        ->assertRedirect('/login');\n});",
+      "note": "Feature test kiểu này bảo vệ hành vi nhìn từ phía user hoặc client, không chỉ bảo vệ implementation nội bộ."
+    },
+    {
+      "title": "161. Ví dụ fake queue trong test để không dispatch job thật",
+      "body": "Khi test flow dispatch job, bạn thường không cần worker chạy thật mới xác nhận được intent.",
+      "code": "Queue::fake();\n\n$this->post('/orders', $payload)\n    ->assertRedirect();\n\nQueue::assertPushed(SendInvoiceMail::class);",
+      "bullets": [
+        "`Queue::fake()` giúp test nhanh và tách khỏi runtime queue thật.",
+        "Bạn đang test rằng app quyết định dispatch đúng job, không phải test mail provider ở đây.",
+        "Nếu cần test sâu hơn, hãy thêm test riêng cho job hoặc integration layer."
+      ]
+    },
+    {
+      "title": "162. Ví dụ debug nhanh bằng log có ngữ cảnh",
+      "body": "Debug tốt không chỉ là `dd()`. Với bug khó tái hiện, log có context giữ giá trị lâu hơn nhiều.",
+      "code": "Log::info('Checkout failed', [\n    'order_id' => $order->id,\n    'user_id' => $user->id,\n    'gateway' => 'stripe',\n]);",
+      "note": "Context tốt giúp bạn nối log với request, job hoặc incident sau này. Đây là nền quan trọng của supportability."
+    },
+    {
+      "title": "163. Đánh giá sau rà soát: phần quality đã đủ chi tiết chưa?",
+      "body": "Ở mức portal học tập thì phần này đã khá đầy: có testing mindset, test layers, fake/mock, debug discipline, static quality, CI reliability, observability và case production. Nếu muốn đi sâu hơn nữa sau này, hướng tách riêng tốt nhất là một site con cho advanced testing strategy, một site cho debugging and incident response và một site cho review/static analysis governance."
+    }
+  ]
+}

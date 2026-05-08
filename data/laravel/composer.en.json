@@ -1,0 +1,331 @@
+{
+  "anchor": "laravel-composer",
+  "type": "list",
+  "heading": "Composer, packages, and the vendor folder: not glamorous, but deeply practical",
+  "intro": "This site is more useful when learned from the angle of real project work instead of only tool definitions. In real Laravel projects, you will clone codebases, install dependencies, hit version conflicts, miss PHP extensions, discover there is no `vendor/` folder yet, break autoloading, or need custom behavior without editing package code directly.",
+  "breaks": [
+    {
+      "start": 1,
+      "title": "Composer Foundations",
+      "description": "What Composer is, how `composer.json` differs from `composer.lock`, and why both directly affect clone, deploy, and teamwork.",
+      "tone": "amber"
+    },
+    {
+      "start": 4,
+      "title": "Clone Flow and Early Bootstrap",
+      "description": "What normally happens right after cloning a Laravel project: `vendor/`, `install`, `key:generate`, environment setup, and install failures.",
+      "tone": "copper"
+    },
+    {
+      "start": 9,
+      "title": "Autoload, Vendor, and Package Customization",
+      "description": "How to understand `autoload`, why editing `vendor/` is a trap, and when to wrap, fork, or extract package-related logic.",
+      "tone": "olive"
+    },
+    {
+      "start": 13,
+      "title": "Practical Composer Commands",
+      "description": "From `install`, `update`, and `require` to `dump-autoload`, `show`, `why-not`, `audit`, and the commands that explain the dependency graph.",
+      "tone": "ocean"
+    },
+    {
+      "start": 22,
+      "title": "Long-Term Dependency Thinking",
+      "description": "How to read a project's personality through `composer.json`, understand package families, and make better package decisions over time.",
+      "tone": "slate"
+    }
+  ],
+  "items": [
+    {
+      "title": "What Composer really is inside a Laravel project",
+      "body": "Composer is not only a command for installing libraries. It is the dependency manager for the whole PHP project. `composer.json` describes what the app needs. `composer.lock` freezes the solved versions. `vendor/` contains the actual package code required for the app to run."
+    },
+    {
+      "title": "What is the real difference between `composer.json` and `composer.lock`?",
+      "body": "`composer.json` is the declaration of what the project wants: which packages it needs, which version ranges are acceptable, how autoloading works, which scripts run after install, and which development packages exist. `composer.lock` is the concrete solved result from a specific moment: which exact versions Composer selected, which transitive dependencies came with them, and the locked state needed to reproduce the environment. In short: `composer.json` is intention, `composer.lock` is the locked dependency state.",
+      "bullets": [
+        "`composer.json`: the team says 'this is what the project wants'.",
+        "`composer.lock`: Composer says 'this is the exact dependency set I already solved'.",
+        "When cloning a project, `composer install` primarily trusts `composer.lock` instead of resolving everything from scratch again."
+      ],
+      "code": "{\n  \"require\": {\n    \"laravel/framework\": \"^11.0\",\n    \"spatie/laravel-permission\": \"^6.0\"\n  }\n}\n\n{\n  \"packages\": [\n    {\n      \"name\": \"laravel/framework\",\n      \"version\": \"v11.x.x\"\n    }\n  ]\n}",
+      "note": "If `composer.json` changes but `composer.lock` is not updated correctly, different machines can end up with different dependency states."
+    },
+    {
+      "title": "How do those two files affect cloning, deployment, and teamwork?",
+      "body": "They affect a lot. In a Laravel application, `composer.lock` helps developer A, developer B, CI, and production install the same dependency set instead of each environment resolving a slightly different one. If only `composer.json` is used without a reliable lock file, the same install command at different times can yield different packages and create hard-to-explain bugs.",
+      "bullets": [
+        "Clone project: you need `composer.lock` to rebuild the same dependency environment as the team.",
+        "Deploy: prefer `composer install` so production follows the lock file exactly.",
+        "Code review: if `composer.lock` changes, the project's dependency graph changed too."
+      ],
+      "note": "For an application like a Laravel app, both `composer.json` and `composer.lock` should usually be committed. That is different from some pure libraries, where the tradeoff can be more flexible."
+    },
+    {
+      "title": "If you clone a project and there is no `vendor/`, what should you do?",
+      "body": "That is normal. Most teams do not commit `vendor/` because it is large, reproducible, and should not live in version control. After cloning, the first steps are usually: read the `README`, verify the required PHP version, and run `composer install` so dependencies are restored from `composer.lock`.",
+      "bullets": [
+        "Check whether the project also expects Node, a database, `.env`, queues, or extra services.",
+        "If `.env` does not exist yet, you will often need to copy it from `.env.example`.",
+        "If the project has a frontend layer, Composer is often followed by `npm install`."
+      ],
+      "code": "git clone <repo-url>\ncd <project-folder>\ncomposer install\ncp .env.example .env\nphp artisan key:generate",
+      "note": "Run `composer install` because you want the exact dependency state already locked by the project, not an accidental dependency upgrade.",
+      "links": [
+        {
+          "href": "./php-commands.html",
+          "label": "Open the PHP & Artisan commands topic",
+          "desc": "It explains why `php artisan key:generate`, `migrate`, `serve`, and cache commands appear right after dependency setup."
+        }
+      ]
+    },
+    {
+      "title": "Why does `php artisan key:generate` often come right after `composer install`?",
+      "body": "Because many Laravel apps need a valid `APP_KEY` for encrypted sessions, cookies, signed values, and other framework encryption features. When you copy `.env.example` into `.env`, that key is often missing or still a placeholder. `php artisan key:generate` creates a proper key and writes it into `.env`, preventing errors such as 'No application encryption key has been specified'.",
+      "bullets": [
+        "Not every `php artisan` command is related to Composer, but many of them are the next bootstrap step after dependencies are installed.",
+        "`key:generate` solves an application configuration requirement, not a package installation requirement.",
+        "Many projects also need `php artisan migrate`, `storage:link`, `config:clear`, or `optimize:clear` depending on the repo state."
+      ],
+      "code": "cp .env.example .env\nphp artisan key:generate\nphp artisan migrate",
+      "links": [
+        {
+          "href": "./php-commands.html",
+          "label": "Read the dedicated `php` commands site",
+          "desc": "This topic groups setup, database, cache, queue, and debugging commands by the job they do."
+        }
+      ]
+    },
+    {
+      "title": "What is the difference between `composer install` and `composer update`?",
+      "body": "`composer install` installs the exact versions pinned in `composer.lock`, which is ideal for cloned projects and deployments because environments stay aligned. `composer update` resolves versions again from the constraints in `composer.json`, which can pull newer releases and rewrite `composer.lock`. Real projects need that difference to stay explicit.",
+      "code": "composer install\ncomposer update\ncomposer update spatie/laravel-permission",
+      "bullets": [
+        "`install`: rebuild the team's current dependency state.",
+        "`update`: resolve dependency versions again and potentially change behavior.",
+        "`update <package>`: upgrade one package in a more controlled way."
+      ],
+      "note": "If you only want the cloned project to run, `composer install` is almost always the correct first move."
+    },
+    {
+      "title": "When should `composer.lock` change and when should it not?",
+      "body": "The lock file should change when you intentionally add a package, remove one, update dependencies, or otherwise alter the dependency graph. If you only edited application code in `app/` and `composer.lock` suddenly changed, that is a signal to inspect what command actually ran. In review, lock file changes deserve attention because they affect every environment.",
+      "bullets": [
+        "Add a package: `composer.json` changes and `composer.lock` should change too.",
+        "Update a package: the lock file will change to pin the new solved versions.",
+        "No dependency work but lock file changed anyway: verify what happened before committing."
+      ]
+    },
+    {
+      "title": "How to read `composer.json` quickly in an unfamiliar repo",
+      "body": "Do not stop at `require`. Also read `require-dev`, `autoload`, `autoload-dev`, `scripts`, `config`, `extra`, and `repositories`. In a few minutes, this tells you the framework version, testing style, quality tooling, whether internal packages exist, and which post-install scripts the project will trigger automatically."
+    },
+    {
+      "title": "Common errors when running `composer install`",
+      "body": "Frequent failures include: wrong PHP version, missing extensions such as `ext-mbstring`, `ext-zip`, or `ext-bcmath`, conflicting packages, a lock file solved under a very different environment, or packages that do not support the Laravel version in use. The right habit is to read the first real error carefully instead of guessing.",
+      "bullets": [
+        "`Your lock file does not contain a compatible set of packages` often points to PHP version or package conflicts.",
+        "Missing `ext-*` means your local PHP setup lacks a required extension.",
+        "Post-install script failures may come from `post-autoload-dump` hooks or artisan commands triggered after Composer finishes."
+      ],
+      "code": "php -v\ncomposer check-platform-reqs\nphp --ini\ncomposer install -vvv",
+      "note": "`composer install -vvv` is useful when you need more diagnostic output to see where Composer actually fails."
+    },
+    {
+      "title": "Autoloading, PSR-4, and why classes in `app/` are found automatically",
+      "body": "Composer manages autoloading for the project. With `PSR-4`, namespaces map to directories. If Laravel cannot see a newly created class, common causes are wrong namespaces, wrong file names, or the need to run `composer dump-autoload` so Composer refreshes the autoload map.",
+      "code": "composer dump-autoload\ncomposer dump-autoload -o",
+      "bullets": [
+        "`dump-autoload`: refresh the autoload map.",
+        "`dump-autoload -o`: optimize the autoload map, commonly more useful in production or when cleaning up class resolution."
+      ],
+      "note": "If a class is not loading, check its namespace and file path before blaming Composer itself."
+    },
+    {
+      "title": "Do not edit code inside `vendor/` unless you fully understand the cost",
+      "body": "This is a critical rule. `vendor/` is regenerated from dependencies. If you patch code there directly, the change will disappear after the next install or update. Other teammates also will not receive that change by cloning. If behavior must change, prefer official extension points, configuration, macros, container bindings, provider overrides, or a controlled package fork.",
+      "code": "php artisan vendor:publish\ncomposer update <package-name>",
+      "bullets": [
+        "`vendor:publish` is the right path when a package allows config, views, migrations, or assets to be copied out for safe customization.",
+        "If the package has no supported hook, then wrappers, binding overrides, or a fork become the next real options."
+      ],
+      "note": "Editing `vendor/` is often a panic move. In long-term team work it almost always comes back to hurt you."
+    },
+    {
+      "title": "If a package does not behave the way you want, how should you customize it?",
+      "body": "A healthier order of thinking is: check for package configuration, documented hooks, extension points, replaceable interfaces, wrappers, or adapters. If the package truly blocks you, consider forking it or isolating your own logic into a service or local package instead of hacking inside `vendor/`.",
+      "bullets": [
+        "Light customization: config, published views, event listeners, macros, container bindings.",
+        "Medium customization: wrapper services, adapters, dedicated facades, subclasses.",
+        "Heavy customization: a package fork, local package, or a deliberate rewrite of the relevant behavior."
+      ]
+    },
+    {
+      "title": "When should you create your own library, internal package, or shared module?",
+      "body": "If a block of logic is large enough, reused across projects, clearly bounded, and does not belong mixed into `app/`, that is a good moment to consider a local package or internal library. But do not split too early just to make the structure look sophisticated. Split when reuse, isolation, or versioning actually matter.",
+      "code": "\"autoload\": {\n  \"psr-4\": {\n    \"App\\\\\": \"app/\",\n    \"Domain\\\\Shared\\\\\": \"src/Domain/Shared/\"\n  }\n}",
+      "note": "Before extracting a real package, many teams first isolate shared logic inside the project with a clean namespace to prove that it is stable enough."
+    },
+    {
+      "title": "`composer install`: the default dependency restore command for clones and deploys",
+      "body": "This is almost always the first Composer command after cloning a Laravel app or preparing a fresh environment. It reads `composer.lock` and installs the exact locked dependency set, which keeps different machines from silently resolving different package versions.",
+      "code": "composer install\ncomposer install --no-dev --optimize-autoloader",
+      "bullets": [
+        "Use it right after cloning, in CI, on staging, or during deployment.",
+        "Use it because you want the team's current dependency state, not a newly resolved one.",
+        "`--no-dev` is commonly used in production to skip development-only packages.",
+        "`--optimize-autoloader` is a common deployment-oriented optimization."
+      ],
+      "note": "If the goal is simply to run the existing project, think `install` before `update`."
+    },
+    {
+      "title": "`composer update`: only when you intentionally want to change dependencies",
+      "body": "This command resolves versions again from the constraints in `composer.json`, so it can pull newer package versions and rewrite `composer.lock`. It is not the default command for 'trying to run the project'.",
+      "code": "composer update\ncomposer update spatie/laravel-permission",
+      "bullets": [
+        "Use it when you want to upgrade packages or intentionally refresh the dependency graph.",
+        "Use `composer update <package-name>` when you want a narrower, more controlled change.",
+        "After updating, inspect the `composer.lock` diff and rerun tests."
+      ],
+      "note": "A surprising number of environment bugs start when someone runs `composer update` casually and commits the new lock file."
+    },
+    {
+      "title": "`composer require` and `composer require --dev`: add packages in the right bucket",
+      "body": "When the project needs a new library, this is the proper way to add it and update both `composer.json` and `composer.lock`. The `--dev` variant is for packages only needed in development or testing.",
+      "code": "composer require spatie/laravel-permission\ncomposer require --dev barryvdh/laravel-debugbar",
+      "bullets": [
+        "Use `require` for packages that belong in the running application.",
+        "Use `require --dev` for debugging, testing, code style, or local-only tooling.",
+        "After requiring a Laravel package, read the docs to see whether config publish, migrations, or extra setup is needed."
+      ]
+    },
+    {
+      "title": "`composer remove`: remove a package cleanly instead of half-removing it by hand",
+      "body": "If a package is no longer needed, use `composer remove` so the dependency is removed cleanly and both manifest and lock file stay consistent.",
+      "code": "composer remove laravel/sanctum",
+      "bullets": [
+        "Use it when the package should truly leave the project.",
+        "After removal, review config, providers, migrations, imports, and onboarding docs tied to that package."
+      ]
+    },
+    {
+      "title": "`composer dump-autoload` and `composer dump-autoload -o`: fix autoload metadata or optimize it",
+      "body": "When you add classes, change namespaces, move files, or suspect stale autoload metadata, this command is a strong next step. The `-o` variant generates an optimized class map and is common in production-oriented builds.",
+      "code": "composer dump-autoload\ncomposer dump-autoload -o",
+      "bullets": [
+        "Use it when you hit `Class not found` even though the code looks correct.",
+        "Use it after namespace or directory changes that affect PSR-4 mapping.",
+        "If the issue remains, go back and verify namespaces, file paths, and the `autoload` section in `composer.json`."
+      ]
+    },
+    {
+      "title": "`composer show`, `why`, and `why-not`: the commands that explain the dependency graph",
+      "body": "These commands are excellent when you want to understand what is installed, which package pulled another one in, or why a given version cannot be installed.",
+      "code": "composer show\ncomposer show spatie/laravel-permission\ncomposer why symfony/console\ncomposer why-not laravel/framework 12.0",
+      "bullets": [
+        "`show`: inspect the full installed set or one specific package.",
+        "`why`: answer 'who requires this package?'.",
+        "`why-not`: answer 'why can this version or package not be installed right now?'."
+      ],
+      "note": "When debugging dependency conflicts, `why` and `why-not` save far more time than guessing."
+    },
+    {
+      "title": "`composer outdated`: see what is old before planning upgrades",
+      "body": "This gives you a quick view of which packages have newer versions available. It is especially useful before a cleanup pass, a dependency review, or a Laravel upgrade effort.",
+      "code": "composer outdated",
+      "bullets": [
+        "Use it when you want an upgrade plan instead of blind updating.",
+        "Pair it with changelog review and your test suite before changing versions."
+      ]
+    },
+    {
+      "title": "`composer check-platform-reqs`: confirm whether the current machine satisfies package requirements",
+      "body": "Many Composer failures are really environment failures: wrong PHP version, missing extensions such as `mbstring`, `zip`, `bcmath`, `intl`, or missing database-related extensions. This command confirms whether the platform actually matches what the dependency set expects.",
+      "code": "composer check-platform-reqs",
+      "bullets": [
+        "Use it when a cloned project fails to install in a confusing way.",
+        "Very useful after switching machines, Docker images, or CI environments."
+      ]
+    },
+    {
+      "title": "`composer validate`, `composer audit`, and `composer clear-cache`: less frequent, but worth knowing",
+      "body": "These are not the commands you run every hour, but they are valuable in the right situations: checking your manifest, reviewing known security advisories, and clearing Composer cache when it behaves strangely.",
+      "code": "composer validate\ncomposer audit\ncomposer clear-cache",
+      "bullets": [
+        "`validate`: check whether `composer.json` is structurally valid and free of obvious warnings.",
+        "`audit`: review whether installed packages have known security advisories.",
+        "`clear-cache`: useful when stale cache or broken metadata seems to be causing odd Composer behavior."
+      ]
+    },
+    {
+      "title": "Read `composer.json` to understand the personality of a project",
+      "body": "A single `composer.json` tells you a lot: framework version, auth packages, testing tools, code-quality tooling, install scripts, and whether the project uses path repositories or internal packages. In many codebases, reading this file already reveals a large part of the project's technical maturity."
+    },
+    {
+      "title": "Common package families in Laravel and how to think about them",
+      "body": "Beyond core packages like `laravel/sanctum` or `laravel/tinker`, you will often see groups such as `spatie/*`, `barryvdh/*`, `maatwebsite/excel`, `livewire/livewire`, `inertiajs/*`, and tools around debugging, permissions, media, admin work, or activity logs. Do not memorize them as a flat list. Group them by problem domain instead."
+    },
+    {
+      "title": "Package selection mindset: fewer, but more intentional",
+      "body": "Only add a package when you understand the problem, the tradeoff, and how you would remove it later if necessary. Check whether it is still maintained, whether the docs are clear, whether it is tightly coupled to a specific Laravel version, whether it introduces security risk, and whether it makes the app depend too heavily on a custom API."
+    },
+    {
+      "title": "What Composer starts to mean after several real projects",
+      "body": "In your first one or two projects, Composer may look like a library installer. After more real project work, it becomes a tool for environment consistency, dependency-graph control, upgrade safety, version discipline, and keeping the codebase from depending carelessly on external packages."
+    },
+    {
+      "title": "274. Why is the `scripts` section in `composer.json` worth reading?",
+      "body": "Many projects hook post-install or post-update behavior into `post-autoload-dump`, `post-install-cmd`, or `post-update-cmd`. If you never read that section, you will wonder why Composer just triggered extra app behavior."
+    },
+    {
+      "title": "275. Real case: merge conflicts in `composer.lock` should not be fixed by guessing",
+      "body": "The lock file is a resolved dependency graph, not an ordinary text file. If the conflict is complex, the safer path is usually to understand which branch changed which packages and let Composer resolve again in a controlled way."
+    },
+    {
+      "title": "276. When do `minimum-stability` and `prefer-stable` become important?",
+      "body": "When a project pulls alpha, beta, dev branches, or internal packages that are not fully stable. Beginners rarely touch this area, but real projects sometimes need it for compatibility or custom package work."
+    },
+    {
+      "title": "277. Real case: local installs work but CI or production fails because of platform requirements",
+      "body": "A package may need a PHP extension, a specific PHP version, or another runtime dependency that exists locally but not in CI. So correct dependencies are not only about package names; they are also about the platform those packages expect."
+    },
+    {
+      "title": "278. If you absolutely must patch a third-party package, think of controlled patching before editing `vendor/`",
+      "body": "Forks, path repositories, patch packages, or custom wrappers are much more durable than editing `vendor/` directly. The important thing is that the next team can still see where and why you customized behavior."
+    },
+    {
+      "title": "279. Extra tip: good dependencies are not the most dependencies, but the dependencies your team still dares to upgrade",
+      "body": "Some projects add packages very quickly at the beginning and a few years later nobody dares to update anything. That is a strong sign the package ecosystem has grown beyond the team's control."
+    },
+    {
+      "title": "280. Example of a common first-run flow for a Laravel project that uses Composer",
+      "body": "This is a very typical command sequence right after you clone a Laravel repository.",
+      "code": "composer install\ncp .env.example .env\nphp artisan key:generate\nphp artisan migrate\nnpm install\nnpm run dev",
+      "bullets": [
+        "`composer install` installs the exact dependencies from `composer.lock`.",
+        "Copying `.env` gives the app a minimal runtime configuration.",
+        "`php artisan key:generate` creates `APP_KEY` so sessions, encryption, and other features work correctly.",
+        "`php artisan migrate` builds the required database schema.",
+        "If the repo has a frontend layer, you still need npm packages and assets."
+      ]
+    },
+    {
+      "title": "281. Example of common Composer commands and real contexts",
+      "body": "Once you are inside a project, you will see these commands more often than you expect.",
+      "code": "composer require laravel/sanctum\ncomposer require --dev pestphp/pest\ncomposer remove vendor/package\ncomposer dump-autoload\ncomposer why laravel/framework\ncomposer why-not laravel/framework 12.0",
+      "bullets": [
+        "`require` adds a real runtime dependency to the application.",
+        "`require --dev` adds a development or test-only tool.",
+        "`remove` cleans out a package you no longer need.",
+        "`dump-autoload` is useful after namespace or autoloadable file changes.",
+        "`why` and `why-not` are excellent when debugging conflicts or preparing an upgrade."
+      ]
+    },
+    {
+      "title": "282. Example `composer.json` section and the practical meaning of each block",
+      "body": "Being able to read this file helps you understand what the project depends on and how its runtime is bootstrapped.",
+      "code": "{\n  \"require\": {\n    \"php\": \"^8.2\",\n    \"laravel/framework\": \"^11.0\"\n  },\n  \"require-dev\": {\n    \"pestphp/pest\": \"^2.0\"\n  },\n  \"autoload\": {\n    \"psr-4\": {\n      \"App\\\\\": \"app/\"\n    }\n  },\n  \"scripts\": {\n    \"post-autoload-dump\": [\n      \"Illuminate\\\\Foundation\\\\ComposerScripts::postAutoloadDump\",\n      \"@php artisan package:discover --ansi\"\n    ]\n  }\n}",
+      "note": "`require` describes what the app needs to run, `require-dev` describes what the team needs to develop it, `autoload` defines the namespace map, and `scripts` describe Composer lifecycle hooks."
+    }
+  ]
+}

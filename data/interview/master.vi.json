@@ -1,0 +1,456 @@
+{
+  "heading": "Master",
+  "intro": "Bộ câu hỏi `master` không còn xoay quanh việc bạn code một feature hay xử lý một incident riêng lẻ nữa, mà xoay quanh cách bạn dẫn dắt hệ thống và dẫn dắt kỹ thuật ở quy mô lớn hơn. Ở level này, người phỏng vấn muốn thấy bạn xử lý được sự mơ hồ, điều phối nhiều ràng buộc cùng lúc, nhìn được hậu quả dài hạn của quyết định, và tạo ra nền tảng để nhiều người khác làm việc hiệu quả hơn.",
+  "questionNumbered": true,
+  "questionStyle": "interview",
+  "breaks": [
+    {
+      "start": 1,
+      "title": "Tư Duy Hệ Thống Và Quyết Định Kiến Trúc",
+      "description": "Nhóm câu hỏi về cách bạn nhìn kiến trúc ở quy mô lớn, quản lý complexity và dẫn dắt quyết định kỹ thuật có tác động dài hạn.",
+      "tone": "amber"
+    },
+    {
+      "start": 12,
+      "title": "Data Evolution, Reliability Và Distributed Tradeoff",
+      "description": "Tập trung vào data lifecycle, dirty data, distributed consistency, migration strategy và operational correctness ở hệ thống sống lâu.",
+      "tone": "coral"
+    },
+    {
+      "start": 22,
+      "title": "Platform, Performance, Scaling Và Nền Tảng Dùng Chung",
+      "description": "Đào sâu vào platform thinking, shared infrastructure, scale path, cost control và cách biến kinh nghiệm thành năng lực tổ chức.",
+      "tone": "amber"
+    },
+    {
+      "start": 32,
+      "title": "Security, Governance, Incident Và Organizational Learning",
+      "description": "Nhóm này hỏi về trust boundary, governance, postmortem, auditability và cách một tổ chức học từ sự cố thay vì chỉ vá từng lần.",
+      "tone": "coral"
+    },
+    {
+      "start": 42,
+      "title": "Influence, Strategy, Mentoring Và Long-Term Technical Leadership",
+      "description": "Phần cuối nhìn cách bạn nâng hệ thống và nâng con người cùng lúc, tạo tiêu chuẩn, tạo context và giữ kỹ thuật gắn với mục tiêu tổ chức.",
+      "tone": "amber"
+    }
+  ],
+  "items": [
+    {
+      "title": "Điều gì làm một quyết định kỹ thuật ở level `master` khác với level `senior`?",
+      "body": "Ở level `master`, quyết định không chỉ tối ưu một service hay một codebase, mà tối ưu cách nhiều hệ thống, nhiều team và nhiều quý tiếp theo cùng vận hành được. Bạn không chỉ nhìn correctness hay maintainability cục bộ, mà nhìn cost of coordination, cognitive load, deployment surface, org learning và khả năng scale con người cùng với scale hệ thống.",
+      "bullets": [
+        "Đây là câu để mở ra phạm vi ảnh hưởng của level này.",
+        "Master-level thinking thường đi xa hơn feature và xa hơn một team đơn lẻ."
+      ],
+      "tip": "Một câu mạnh là: `ở level này em không chỉ hỏi giải pháp đúng, mà hỏi giải pháp nào còn đúng khi thêm nhiều team và nhiều thay đổi nữa`."
+    },
+    {
+      "title": "Khi nào bạn quyết định xây nền tảng dùng chung thay vì để từng team tự giải quyết?",
+      "body": "Khi bạn thấy cùng một loại đau xuất hiện lặp lại ở nhiều team, chi phí lặp đang lớn hơn chi phí chuẩn hóa, và có đủ hiểu biết về variation thật sự của nhu cầu. Nếu xây platform quá sớm, bạn sẽ đóng băng sai abstraction; nếu quá muộn, tổ chức sẽ trả nợ lặp lại quá nhiều lần.",
+      "bullets": [
+        "Đây là câu về timing và pattern recognition.",
+        "Master-level judgment nằm ở chỗ biết pain nào đủ lặp và đủ ổn định để platform hóa."
+      ]
+    },
+    {
+      "title": "Bạn nhìn `golden path` hay `paved road` trong tổ chức kỹ thuật như thế nào?",
+      "body": "Đây là cách tạo một con đường mặc định đủ tốt để phần lớn team đi theo mà không phải tự phát minh lại mọi thứ. Giá trị của nó nằm ở tốc độ, safety, compliance, observability và onboarding; nguy cơ của nó là cứng nhắc nếu không cho phép escape hatch có kiểm soát.",
+      "bullets": [
+        "Master-level answers nên nói được cả upside lẫn danger.",
+        "Con đường chuẩn chỉ tốt khi nó thực sự giảm tải tư duy cho số đông."
+      ]
+    },
+    {
+      "title": "Làm sao tránh biến shared platform thành bottleneck của tổ chức?",
+      "body": "Cần có API hoặc contract rõ, ownership rõ, self-service đủ tốt, documentation đủ thật, metric adoption, và cơ chế escape hatch hợp lý. Nếu mọi thay đổi đều phải chờ một team nền tảng nhỏ, platform sẽ giết tốc độ thay vì tăng tốc độ.",
+      "bullets": [
+        "Đây là câu rất đúng tầm organizational design.",
+        "Nền tảng tốt là nền tảng giảm dependency không cần thiết chứ không tạo thêm dependency."
+      ]
+    },
+    {
+      "title": "Bạn phân biệt thế nào giữa complexity cần thiết và complexity tự tạo?",
+      "body": "Complexity cần thiết đến từ domain, scale, compliance, latency, reliability, business process. Complexity tự tạo đến từ abstraction sớm, tool sprawl, ownership mơ hồ, và việc chạy theo giải pháp nổi tiếng hơn là giải bài toán thật. Level `master` phải phân loại được hai thứ này trước khi can thiệp.",
+      "bullets": [
+        "Đây là nền của nhiều quyết định chiến lược.",
+        "Không phải hệ thống khó hiểu nào cũng vì business khó; nhiều hệ thống khó vì tổ chức tự làm khó mình."
+      ]
+    },
+    {
+      "title": "Nếu nhiều team cùng muốn autonomy rất cao, bạn giữ consistency toàn tổ chức bằng gì?",
+      "body": "Thường không thể giữ bằng việc ép mọi người cùng một code style thuần túy. Cần có guardrail ở những lớp quan trọng như security, observability, deployment, data contract, incident process và compliance, còn các lớp ít rủi ro hơn có thể mở rộng quyền tự quyết. Master-level leadership nằm ở việc chọn đúng nơi cần chuẩn hóa.",
+      "bullets": [
+        "Autonomy và consistency luôn có tension.",
+        "Câu này đánh giá khả năng thiết kế governance không bóp nghẹt tốc độ."
+      ]
+    },
+    {
+      "title": "Khi nào một kiến trúc 'đẹp' lại là kiến trúc sai cho tổ chức hiện tại?",
+      "body": "Khi nó đòi vận hành, kỹ năng, monitoring, review discipline hoặc staffing mà tổ chức hiện chưa có. Một kiến trúc đúng về lý thuyết nhưng vượt quá năng lực vận hành hiện tại có thể là quyết định tệ hơn giải pháp kém đẹp nhưng sống được lâu và ổn định hơn.",
+      "bullets": [
+        "Master-level answers luôn gắn architecture với organizational capacity.",
+        "Đây là điểm phân biệt sâu với quyết định thuần kỹ thuật."
+      ],
+      "note": "Một quyết định trưởng thành không chỉ hỏi `có tối ưu không`, mà hỏi `tổ chức này có tiêu hóa nổi không`."
+    },
+    {
+      "title": "Bạn quyết định giữ monolith, modular monolith hay tách service dựa trên những tín hiệu nào?",
+      "body": "Hãy nhìn rate of change, coupling thực, blast radius của deploy, data ownership, scaling need, team boundaries, compliance boundary và khả năng vận hành. Master-level không tách service vì xu hướng; họ tách khi tổ chức thật sự bắt đầu cần biên giới vận hành hoặc tốc độ phát triển khác nhau.",
+      "bullets": [
+        "Đây là câu rất mạnh để đánh giá mức chín của system design judgment.",
+        "Câu trả lời tốt thường nói cả lợi ích lẫn chi phí runtime và org coordination."
+      ]
+    },
+    {
+      "title": "Bạn nhìn `cognitive load` của developer như thế nào trong thiết kế hệ thống?",
+      "body": "Một hệ thống có thể chạy được nhưng vẫn tệ nếu người mới phải nhớ quá nhiều quy ước ẩn, quá nhiều service, quá nhiều escape hatch, hoặc quá nhiều bước thủ công để ship an toàn. Master-level engineering cố giảm tải nhận thức cho số đông để chất lượng không phụ thuộc quá mạnh vào người giỏi nhất.",
+      "bullets": [
+        "Đây là tư duy platform và architecture rất quan trọng.",
+        "Cognitive load cao làm tốc độ, quality và onboarding cùng giảm."
+      ]
+    },
+    {
+      "title": "Nếu tổ chức có nhiều stack khác nhau, khi nào nên chuẩn hóa và khi nào nên chấp nhận đa dạng?",
+      "body": "Chuẩn hóa đáng giá khi lợi ích từ shared knowledge, tooling, hiring, security review và incident response lớn hơn lợi ích của sự đa dạng. Nhưng nếu bài toán quá khác nhau hoặc legacy quá lớn, ép chuẩn hóa quá nhanh có thể làm tổn thất nặng hơn lợi ích.",
+      "bullets": [
+        "Đây là câu đánh giá tradeoff ở quy mô tổ chức chứ không còn ở mức team.",
+        "Master-level answers cần cân nhắc cả năng lực tuyển dụng và vận hành."
+      ]
+    },
+    {
+      "title": "Khi làm decision record hoặc RFC, điều gì là quan trọng nhất?",
+      "body": "Không phải viết thật dài, mà là làm rõ bối cảnh, mục tiêu, constraint, phương án đã cân nhắc, tradeoff, rủi ro, và điều kiện để xem lại quyết định đó trong tương lai. Một RFC tốt giúp quyết định sống được sau khi người viết rời đi.",
+      "bullets": [
+        "Đây là organizational memory, không chỉ paperwork.",
+        "Master-level engineers dùng tài liệu để giảm loss of context theo thời gian."
+      ],
+      "code": "Context -> Goals -> Constraints -> Options -> Tradeoffs -> Decision -> Rollout -> Metrics -> Revisit triggers"
+    },
+    {
+      "title": "Bạn nâng cấp Laravel hoặc PHP version như thế nào cho an toàn ở quy mô lớn hơn một app nhỏ?",
+      "body": "Không chỉ đọc upgrade guide. Cần dependency inventory, `composer why-not`, impact map giữa web/worker/CLI path, compatibility window, rehearsal environment, smoke test, canary hoặc phased rollout, và rollback plan. Ở level này, upgrade là một chương trình thay đổi chứ không chỉ là một nhánh code.",
+      "bullets": [
+        "Master-level thinking thêm vào stakeholder, risk segmentation và operational readiness.",
+        "Bạn cũng nên nói tới worker restart, config drift, package owner và business freeze window nếu cần."
+      ],
+      "code": "composer why-not laravel/framework 12.0\nphp artisan about\nphp artisan test\nphp artisan queue:restart"
+    },
+    {
+      "title": "Bạn xử lý dirty data và migration production nhiều bước ra sao khi hệ thống đã chạy lâu năm?",
+      "body": "Cần tách schema change, backfill, compatibility window, read/write path chuyển tiếp và kế hoạch rollback dữ liệu ở mức thực tế. Master-level không xem production như local có thêm traffic; họ xem production là một hệ sinh thái sống với dữ liệu không hoàn hảo và hành vi người dùng thật.",
+      "bullets": [
+        "Dirty data là organizational reality, không phải lỗi hiếm.",
+        "Kế hoạch thay đổi dữ liệu phải tính tới support, reporting, job đang chạy và downstream consumer."
+      ]
+    },
+    {
+      "title": "Bạn nhìn `data contract` giữa các service hoặc giữa backend và analytics như thế nào?",
+      "body": "Đó là một loại API nhưng thường bị xem nhẹ hơn HTTP API. Khi schema event, log field, enum hoặc semantic thay đổi mà không có contract discipline, hậu quả sẽ lan vào dashboard, fraud rule, billing, audit hoặc machine learning downstream. Level `master` phải nhìn được blast radius ngoài app chính.",
+      "bullets": [
+        "Đây là góc nhìn rất quan trọng ở hệ thống trưởng thành.",
+        "Data contract thường hỏng vì semantic drift chứ không chỉ vì field bị thiếu."
+      ]
+    },
+    {
+      "title": "Nếu business hỏi 'vì sao phải đầu tư vào data governance', bạn sẽ trả lời sao?",
+      "body": "Vì dữ liệu không chỉ phục vụ tính năng hiện tại mà còn phục vụ billing, legal, fraud, support, analytics và các quyết định tương lai. Khi dữ liệu không đáng tin, toàn bộ tổ chức bắt đầu tối ưu theo ảo giác. Data governance là nền của việc ra quyết định đúng, không chỉ là sở thích kỹ thuật.",
+      "bullets": [
+        "Master-level trả lời được bằng ngôn ngữ business, không chỉ ngôn ngữ schema.",
+        "Đây là câu nối kỹ thuật với chiến lược tổ chức."
+      ]
+    },
+    {
+      "title": "Bạn nhìn consistency ở hệ thống phân tán như thế nào để không hứa điều sai với business?",
+      "body": "Điều quan trọng là định nghĩa rõ source of truth, trạng thái trung gian, eventual consistency window, duplicate semantics và reconciliation responsibility. Master-level không hứa 'đồng bộ tuyệt đối mọi nơi ngay lập tức' nếu hệ thống thực tế không thể làm được, mà chuyển cuộc nói chuyện sang semantics mà business thật sự cần.",
+      "bullets": [
+        "Đây là chỗ kỹ thuật gặp product expectation và legal expectation.",
+        "Một câu trả lời mạnh thường nói rõ `what guarantees are real`."
+      ],
+      "note": "Master-level leadership thường nằm ở việc tránh tạo kỳ vọng sai cho tổ chức."
+    },
+    {
+      "title": "Khi nào bạn quyết định đầu tư hẳn vào outbox, saga hoặc reconciliation framework dùng chung?",
+      "body": "Khi lỗi consistency không còn là case lẻ mà trở thành pattern lặp ở nhiều flow quan trọng như payment, fulfillment, invoice, entitlement hoặc notification chain. Lúc đó, giải pháp ad-hoc từng chỗ sẽ làm tổ chức trả nợ lãi kép. Tuy nhiên đầu tư framework chung cũng cần đủ maturity để không overbuild.",
+      "bullets": [
+        "Đây là timing problem rất đúng level `master`.",
+        "Framework chỉ có giá trị khi pain lặp đã rõ và boundary đủ ổn định."
+      ]
+    },
+    {
+      "title": "Nếu một tổ chức có nhiều queue, nhiều scheduler và nhiều worker path, reliability strategy nên được nghĩ ở mức nào?",
+      "body": "Ở level hệ sinh thái, không chỉ từng job lẻ. Cần có taxonomy job, retry policy nhất quán, dead-letter strategy, ownership rõ cho queue lag, alert meaningful, backpressure handling và khả năng drill failure. Master-level answers nên nói được reliability như một capability chung của tổ chức.",
+      "bullets": [
+        "Đây không còn là câu về `ShouldQueue` nữa.",
+        "Nó là câu về operating model cho async systems."
+      ]
+    },
+    {
+      "title": "Bạn nhìn performance strategy như thế nào ở quy mô nhiều team?",
+      "body": "Không thể chỉ dựa vào từng team tự tối ưu. Cần có standard metric, SLO hoặc ít nhất agreed latency target, profiling path chung, cache ownership rõ, load testing strategy, và ritual review cho các đường critical path. Performance ở quy mô này là sản phẩm của governance và platform, không chỉ của micro-optimization.",
+      "bullets": [
+        "Đây là chỗ performance trở thành một discipline tổ chức.",
+        "Master-level cần đưa được conversation từ 'query này chậm' lên 'năng lực hiệu năng của tổ chức'."
+      ]
+    },
+    {
+      "title": "Nếu cloud bill tăng nhanh nhưng chưa rõ team nào chịu trách nhiệm, bạn tiếp cận thế nào?",
+      "body": "Trước hết cần cost visibility: service nào, queue nào, database nào, CDN nào, traffic pattern nào. Sau đó mới phân tích unit economics, hotspot, và ownership. Không có visibility thì cost optimization sẽ chỉ là cắt bừa và dễ phá reliability.",
+      "bullets": [
+        "Đây là kỹ năng platform và business-aware engineering.",
+        "Master-level engineers phải nhìn được cost như một metric sản phẩm và vận hành."
+      ]
+    },
+    {
+      "title": "Khi nào nên xây internal developer platform thay vì chỉ viết thêm docs và script?",
+      "body": "Khi pain lặp đã quá lớn, script rời rạc không còn đáng tin, onboarding quá chậm, release path quá phụ thuộc vào trí nhớ, và tổ chức có đủ năng lực duy trì một platform như một product. Platform không chỉ là tập hợp script; nó cần owner, roadmap, UX và adoption thinking.",
+      "bullets": [
+        "Đây là sự khác biệt giữa tool pile và platform.",
+        "Không phải tổ chức nào cũng đủ điều kiện để xây platform tốt ngay."
+      ]
+    },
+    {
+      "title": "Bạn đánh giá thành công của một nền tảng dùng chung bằng gì?",
+      "body": "Không chỉ bằng số repository dùng nó, mà bằng time-to-first-success, onboarding speed, failure rate reduction, deploy safety, incident reduction, adoption without coercion, và mức độ team tự phục vụ được mà không phải ping owner liên tục.",
+      "bullets": [
+        "Metric adoption một mình chưa đủ.",
+        "Một nền tảng tốt phải giảm pain thật của người dùng nội bộ."
+      ],
+      "tip": "Một góc nhìn mạnh là: `platform thành công khi nó làm hành vi tốt trở thành hành vi dễ nhất`."
+    },
+    {
+      "title": "Bạn nghĩ gì về multi-region hoặc DR strategy ở level tổ chức?",
+      "body": "Không phải lúc nào cũng cần, nhưng nếu business continuity, legal risk hoặc revenue risk đủ lớn thì cần bàn nghiêm túc. Master-level answers nên nói tới RPO, RTO, data replication semantics, failover drill, runbook quality và chi phí duy trì readiness, chứ không chỉ nói `backup là đủ`.",
+      "bullets": [
+        "Disaster recovery là capability phải được tập chứ không chỉ được mô tả.",
+        "Đây là câu nối architecture với business resilience."
+      ]
+    },
+    {
+      "title": "Bạn nhìn security strategy ở level `master` khác `senior` ở đâu?",
+      "body": "Khác ở chỗ security không còn là chuyện team app nhớ rule, mà là chuyện trust boundary của cả tổ chức, secret lifecycle, dependency governance, auditability, least privilege, incident readiness, training, review process và capability phản ứng sau compromise. Master-level nhìn security như một hệ điều hành của tổ chức kỹ thuật.",
+      "bullets": [
+        "Đây là góc nhìn hệ sinh thái về security.",
+        "Bạn nên nói được cả prevention, detection, response và learning."
+      ]
+    },
+    {
+      "title": "Nếu có security incident, điều gì phân biệt tổ chức trưởng thành với tổ chức chỉ biết chữa cháy?",
+      "body": "Tổ chức trưởng thành có playbook, evidence handling, clear owner, communication path, token rotation discipline, audit trail, post-incident learning và follow-through. Tổ chức chữa cháy chỉ fix symptom và quay về bình thường mà không tăng sức đề kháng cho lần sau.",
+      "bullets": [
+        "Đây là câu organizational resilience rất mạnh.",
+        "Master-level answers nên nhắc tới institutional learning."
+      ]
+    },
+    {
+      "title": "Bạn tổ chức postmortem thế nào để không biến nó thành nghi thức vô ích?",
+      "body": "Postmortem cần bám timeline, contributing factors, detection gap, decision quality, action item owner và review follow-up. Nó phải đi tới thay đổi cụ thể trong tooling, runbook, training, architecture hoặc process; nếu chỉ kể lại sự kiện thì nó không tạo ra học tập tổ chức.",
+      "bullets": [
+        "Không blame cá nhân, nhưng cũng không mơ hồ tới mức không có accountability.",
+        "Đây là nơi kỹ thuật gặp văn hóa tổ chức."
+      ],
+      "code": "Timeline -> What happened -> Why detection was late -> Why safeguards failed -> What changes now -> Who owns each change"
+    },
+    {
+      "title": "Khi nào compliance hoặc audit requirement bắt đầu làm thay đổi kiến trúc?",
+      "body": "Khi tracking, retention, access control, traceability và approval flow không còn là phần phụ mà trở thành điều kiện pháp lý hoặc doanh thu. Master-level cần hiểu rằng có những kiến trúc hợp lý về tốc độ nhưng không sống nổi trong môi trường có audit obligation nặng.",
+      "bullets": [
+        "Đây là chỗ business context thay đổi technical optimum.",
+        "Không thể nhìn architecture tách rời regulatory surface."
+      ]
+    },
+    {
+      "title": "Bạn phân biệt governance tốt với bureaucracy tệ như thế nào?",
+      "body": "Governance tốt làm rõ risk, owner, and guardrail để người khác đi nhanh hơn mà an toàn hơn. Bureaucracy tệ thêm bước phê duyệt, thêm form, thêm ritual nhưng không giảm risk thật hoặc không tăng clarity. Level `master` là biết thiết kế governance có leverage thay vì có hình thức.",
+      "bullets": [
+        "Đây là câu rất quan trọng trong vai trò kỹ thuật cấp cao.",
+        "Không phải mọi process đều xấu; chỉ process không tạo giá trị mới xấu."
+      ]
+    },
+    {
+      "title": "Nếu nhiều team liên tục tái phạm cùng một loại lỗi, bạn xử lý ở cấp tổ chức thế nào?",
+      "body": "Đừng chỉ mở thêm một buổi nhắc nhở. Hãy xem lỗi đó có nên được chặn bằng tooling, lint, template, scaffold, check trong CI, reusable component, contract test hay runbook tốt hơn không. Master-level tìm cách làm cho lỗi khó tái diễn về mặt hệ thống.",
+      "bullets": [
+        "Đây là tư duy giảm lỗi bằng thiết kế môi trường.",
+        "Giải pháp tốt thường ít phụ thuộc vào trí nhớ từng cá nhân."
+      ]
+    },
+    {
+      "title": "Bạn nhìn mentoring ở level `master` khác `senior` thế nào?",
+      "body": "Ở level này, bạn không chỉ mentor từng người, mà tạo cấu trúc để nhiều người khác mentor tốt hơn: review rubric, learning path, RFC practice, incident review culture, docs chuẩn, oncall shadowing và decision vocabulary chung. Bạn scale cách học của tổ chức, không chỉ hỗ trợ từng cá nhân.",
+      "bullets": [
+        "Đây là khác biệt rất lớn về phạm vi ảnh hưởng.",
+        "Master-level leadership là nhân hệ số cho người khác."
+      ]
+    },
+    {
+      "title": "Nếu một team luôn đòi ngoại lệ khỏi standard chung, bạn phản ứng thế nào?",
+      "body": "Hãy tách xem ngoại lệ đó là legitimate need hay local preference. Nếu là legitimate, standard có thể cần tiến hóa; nếu là preference, cần làm rõ cost mà tổ chức phải gánh nếu mỗi team đi riêng. Master-level answers cân bằng giữa adaptation và consistency, không cực đoan theo một phía.",
+      "bullets": [
+        "Đây là governance through context, không phải governance through force.",
+        "Ngoại lệ tốt là ngoại lệ làm standard tốt lên, không chỉ làm một team thoải mái hơn."
+      ]
+    },
+    {
+      "title": "Bạn đưa technical strategy gắn với business strategy như thế nào?",
+      "body": "Bằng cách nối kỹ thuật với time-to-market, reliability target, cost, compliance, experimentation speed, và khả năng mở rộng tổ chức. Nếu technical strategy chỉ nói tool và pattern mà không nối được với đòn bẩy business, nó sẽ bị xem như sở thích kỹ sư hơn là chiến lược.",
+      "bullets": [
+        "Đây là câu rất quan trọng để phân biệt level cao thật.",
+        "Master-level engineers dịch được kỹ thuật thành ngôn ngữ điều hành."
+      ],
+      "tip": "Một câu rất mạnh là: `technical strategy chỉ có ý nghĩa khi nó đổi được khả năng kinh doanh hoặc khả năng vận hành của tổ chức`."
+    },
+    {
+      "title": "Nếu bạn phải ưu tiên giữa reliability, speed of delivery và cost efficiency trong 6 tháng tới, bạn sẽ quyết định dựa trên gì?",
+      "body": "Dựa trên bối cảnh kinh doanh hiện tại, maturity của hệ thống, nợ kỹ thuật, vị trí trong vòng đời sản phẩm, SLA/SLO kỳ vọng, áp lực cạnh tranh và hậu quả của sự cố. Không có thứ tự đúng tuyệt đối; điều quan trọng là làm rõ cái giá của từng hướng và ai chấp nhận rủi ro đó.",
+      "bullets": [
+        "Đây là câu đỉnh cao về tradeoff multi-axis.",
+        "Master-level answer cần có context, không có ranking cứng."
+      ]
+    },
+    {
+      "title": "Bạn đánh giá thế nào xem mình đã thật sự ở level `master` chưa?",
+      "body": "Không phải bằng việc biết nhiều công nghệ hơn, mà bằng việc bạn có thể tạo ra quyết định, nền tảng, quy ước và môi trường làm việc khiến nhiều team cùng tốt lên, ít lỗi lặp hơn, ship an toàn hơn và học nhanh hơn. Ảnh hưởng của bạn không chỉ nằm trong code bạn trực tiếp viết nữa.",
+      "bullets": [
+        "Đây là câu tự soi rất mạnh ở level cao.",
+        "Master-level thường được nhìn qua leverage, not only individual execution."
+      ],
+      "note": "Nếu thành công của bạn vẫn chủ yếu đo bằng số dòng code trực tiếp viết ra, có thể bạn chưa thật sự dịch lên level này."
+    },
+    {
+      "title": "Nếu có hai kỹ sư rất mạnh nhưng liên tục kéo team theo hai hướng kiến trúc khác nhau, bạn xử lý thế nào?",
+      "body": "Master-level không nên để tranh luận kéo dài thành chiến tuyến cá nhân. Cần kéo cuộc nói chuyện về problem statement, success metric, constraint, thử nghiệm nào đủ rẻ để giảm bất định, và decision owner là ai. Nếu cần, chốt bằng reversible decision trước rồi hẹn thời điểm đánh giá lại bằng dữ liệu thật.",
+      "bullets": [
+        "Đây là câu hóc búa về influence hơn là về code.",
+        "Khả năng giữ người mạnh vẫn cộng tác được là kỹ năng rất cấp cao."
+      ],
+      "tip": "Một khung rất mạnh là: `disagree on idea, align on metric, decide owner, define revisit point`."
+    },
+    {
+      "title": "Nếu bạn tin một quyết định là đúng nhưng phần lớn team phản đối vì nó làm chậm trước mắt, bạn làm gì?",
+      "body": "Trước hết phải kiểm tra xem mình có đang thiên về purity hay không. Nếu vẫn tin quyết định đó đúng, hãy nói rõ cái giá của phương án nhanh, ai sẽ trả giá đó, và có cách rollout trung gian nào không. Master-level influence không phải ép bằng authority, mà làm rõ tradeoff đến mức team thấy vì sao quyết định khó nhưng cần thiết.",
+      "bullets": [
+        "Đây là câu rất giống tình huống ở công ty lớn.",
+        "Nhiều quyết định đúng thất bại vì được trình bày sai."
+      ]
+    },
+    {
+      "title": "Khi nào bạn chọn rewrite, và khi nào chọn `strangler` hoặc cải tiến dần?",
+      "body": "Rewrite chỉ đáng khi boundary cũ đã hỏng quá nặng, chi phí giữ compatibility quá cao, và tổ chức có đủ khả năng vừa xây mới vừa vận hành cũ an toàn. Còn phần lớn thời gian, `strangler` hoặc incremental replacement giúp giảm risk tốt hơn. Master-level nên nói được điều kiện để mỗi hướng hợp lý, không thần thánh hóa rewrite hay legacy preservation.",
+      "bullets": [
+        "Đây là câu kinh điển ở level rất cao.",
+        "Decision tốt phụ thuộc vào business window, staffing, observability và rollback reality."
+      ],
+      "code": "Legacy entry point -> facade route -> new path for one use case -> compare metrics -> expand coverage gradually"
+    },
+    {
+      "title": "Nếu cần sunset một hệ thống cũ mà nhiều team vẫn đang phụ thuộc, bạn quản trị thay đổi đó ra sao?",
+      "body": "Cần dependency map, usage visibility, migration plan theo nhóm người dùng, deprecation communication, support window, fallback path và executive sponsorship nếu cần. Sunset hệ thống là một bài toán xã hội-kỹ thuật; thất bại thường đến từ dependency ẩn và communication yếu hơn là từ code.",
+      "bullets": [
+        "Đây là câu rất hay để đo khả năng dẫn dắt thay đổi lớn.",
+        "Master-level answers nên nhắc cả technical inventory lẫn organizational buy-in."
+      ]
+    },
+    {
+      "title": "Nếu sau một incident lớn, team muốn sửa rất nhiều thứ cùng lúc, bạn ưu tiên remediation thế nào?",
+      "body": "Ưu tiên theo risk reduction thực, detection gap lớn nhất, blast radius, recurrence probability và cost of inaction. Không phải action item nào xuất hiện sau postmortem cũng nên làm ngay. Master-level phải biến năng lượng sau sự cố thành danh sách thay đổi có leverage, không phải danh sách hoạt động cho yên tâm.",
+      "bullets": [
+        "Đây là khác biệt giữa phản ứng cảm xúc và chiến lược cải thiện.",
+        "Tổ chức mạnh không bị drown trong quá nhiều action item noise."
+      ]
+    },
+    {
+      "title": "Nếu executive hỏi 'vì sao chúng ta cứ gặp loại incident này lặp lại?', bạn nên trả lời ở mức nào?",
+      "body": "Cần trả lời ở mức pattern hệ thống: guardrail nào thiếu, ownership nào mờ, incentive nào đẩy team tối ưu sai, dữ liệu nào chưa đủ, quy trình review nào vô hiệu, hay nền tảng nào chưa giúp hành vi an toàn trở thành mặc định. Master-level trả lời nguyên nhân gốc ở cấp hệ thống, không dừng ở một bug cụ thể.",
+      "bullets": [
+        "Đây là câu rất gần với cách lãnh đạo cấp cao thật sự hỏi.",
+        "Nếu chỉ kể lỗi gần nhất, bạn đang trả lời ở level quá thấp."
+      ],
+      "note": "Một câu mạnh thường bắt đầu bằng `đây không còn là lỗi đơn lẻ, mà là một failure mode lặp`."
+    },
+    {
+      "title": "Nếu một tổ chức bắt đầu mất tốc độ vì quá nhiều quy trình an toàn, làm sao gỡ mà không phá reliability?",
+      "body": "Master-level nên tìm chỗ automation có thể thay manual gate, chỗ nào dùng risk-based policy thay blanket policy, chỗ nào có thể self-service tốt hơn, và chỗ nào đang có ritual không còn tạo giá trị. Mục tiêu là giữ guardrail thật, bỏ friction giả.",
+      "bullets": [
+        "Đây là một trong những bài toán khó nhất ở tổ chức trưởng thành.",
+        "Tốc độ và an toàn không phải lúc nào cũng đối nghịch; nhiều khi vấn đề là guardrail thiết kế kém."
+      ]
+    },
+    {
+      "title": "Nếu bạn cần thuyết phục lãnh đạo đầu tư cho reliability hoặc platform mà doanh thu ngắn hạn chưa thấy ngay, bạn làm sao?",
+      "body": "Hãy nối investment đó với chi phí incident, tốc độ ra feature, khả năng mở rộng team, support burden, compliance risk hoặc cloud waste. Ở level này, bạn cần biến reliability và platform thành câu chuyện năng lực kinh doanh, không chỉ câu chuyện kỹ sư muốn làm cho đẹp.",
+      "bullets": [
+        "Đây là bài test rõ về strategic communication.",
+        "Master-level influence phải đi qua ngôn ngữ của người ra quyết định ngân sách."
+      ],
+      "tip": "Một khung tốt là: `chi phí hiện tại -> rủi ro tương lai -> năng lực mới có được nếu đầu tư`."
+    },
+    {
+      "title": "Nếu tổ chức phải chuyển dữ liệu sang database mới mà gần như không được downtime, điều gì làm bài toán này trở thành bài toán cấp `master` chứ không chỉ cấp `devops`?",
+      "body": "Vì đây không còn là chuyện kỹ thuật đổi connection string. Nó chạm data ownership, backward compatibility, cutover semantics, rollback reality, business tolerance cho inconsistency, support readiness, analytics downstream, compliance, và coordination giữa nhiều team. Đây là một chương trình thay đổi tổ chức-kỹ thuật, không phải một ticket migration.",
+      "bullets": [
+        "Đây là câu rất đúng chất level cao.",
+        "Master-level answers nên nói được cả technical plan lẫn org plan."
+      ]
+    },
+    {
+      "title": "Khi nào bạn chọn replication + cutover, và khi nào phải nghĩ tới `dual-write` hoặc `change data capture`?",
+      "body": "Replication + cutover hợp khi mô hình đủ tương thích và source/target gần nhau về semantics. `Dual-write` hoặc CDC trở nên đáng cân nhắc khi có migration dài, format dữ liệu đổi nhiều, hoặc cần giữ hai hệ thống cùng sống trong một thời gian. Nhưng mỗi lựa chọn kéo theo một kiểu complexity và verification khác nhau.",
+      "bullets": [
+        "Đây là câu về migration strategy chứ không chỉ tooling.",
+        "Master-level answers thường nói `what failure mode each approach creates`."
+      ]
+    },
+    {
+      "title": "Nếu phải thiết kế chiến lược zero-downtime migration cho DB mới, bạn xác định success criteria bằng gì?",
+      "body": "Không chỉ bằng việc app vẫn trả `200`. Cần nhìn data correctness, write loss bằng không hoặc trong ngưỡng rõ, reconciliation lag, latency impact, downstream consumer stability, rollback window còn an toàn, và support team có biết phát hiện drift hay không.",
+      "bullets": [
+        "Success ở level này phải đa chiều.",
+        "Nếu chỉ nhìn uptime, bạn rất dễ bỏ sót data corruption âm thầm."
+      ],
+      "note": "Một migration 'không downtime' nhưng làm sai data vẫn là thất bại nặng."
+    },
+    {
+      "title": "Nếu chuyển từ local file storage sang S3/CDN ở quy mô lớn, điều gì cần được nhìn như một năng lực nền tảng chứ không chỉ một feature?",
+      "body": "Bạn phải nghĩ tới naming convention, public/private policy, signed URL, lifecycle, cost visibility, object cleanup, metadata consistency, tenant isolation, compliance, region strategy và runbook khi storage hoặc CDN có sự cố. Ở quy mô lớn, file storage không còn là implementation detail nữa.",
+      "bullets": [
+        "Đây là nơi storage chạm security, cost và platform.",
+        "Master-level answers nên nói cả org policy và operational ownership."
+      ]
+    },
+    {
+      "title": "Nếu analytics, billing và app chính dùng chung dữ liệu nhưng mỗi bên hiểu một field khác nhau, bạn xử lý ở cấp tổ chức thế nào?",
+      "body": "Đây là bài toán semantic contract chứ không chỉ schema contract. Cần định nghĩa owner cho từng meaning, tạo glossary hoặc canonical definition, versioning khi meaning đổi, và review thay đổi ở nơi tạo dữ liệu chứ không chỉ ở nơi tiêu thụ dữ liệu. Nếu không, cùng một field có thể đúng về mặt kỹ thuật nhưng sai về mặt kinh doanh ở ba nơi khác nhau.",
+      "bullets": [
+        "Đây là loại lỗi rất đắt nhưng khó thấy sớm.",
+        "Master-level answers nên nhìn data như product của nhiều consumer, không chỉ của một app."
+      ]
+    },
+    {
+      "title": "Nếu cần quyết định giữa một database chuyên biệt mới và việc kéo dài tuổi thọ database hiện tại, bạn cân bằng ra sao?",
+      "body": "Cần nhìn cost of change, team skill, operational burden, observability maturity, vendor lock-in, migration complexity, latency target và complexity mà công nghệ mới thật sự giải quyết được. Công nghệ mới không chỉ có feature tốt hơn; nó còn có chi phí nhận nuôi dài hạn.",
+      "bullets": [
+        "Đây là câu chiến lược công nghệ rất điển hình ở level cao.",
+        "Master-level answers nên nói được total cost of ownership chứ không chỉ feature matrix."
+      ]
+    },
+    {
+      "title": "Nếu hai team lớn bất đồng về database strategy hoặc storage strategy, bạn tạo tiến trình ra quyết định thế nào để không thành politics?",
+      "body": "Bạn cần đưa quyết định về tiêu chí chung: workload shape, risk, migration cost, staffing, compliance, incident history, reversibility và measurement plan. Khi có tiêu chí rõ và owner rõ, cuộc tranh luận bớt biến thành 'team tôi thích cái này hơn'.",
+      "bullets": [
+        "Đây là governance của technical decision ở quy mô lớn.",
+        "Master-level influence mạnh ở chỗ làm được fairness trong ra quyết định."
+      ],
+      "tip": "Một câu rất mạnh là: `em cố biến preference war thành criteria-based decision`."
+    },
+    {
+      "title": "Nếu một sự cố lớn cho thấy hệ thống đang phụ thuộc quá nhiều vào một component trung tâm, bạn quyết định tách dần hay chấp nhận củng cố nó?",
+      "body": "Không phải lúc nào cũng phải tách. Có lúc component trung tâm đáng được đầu tư mạnh hơn về reliability, observability và ownership thay vì vội chia nhỏ. Master-level judgment là biết khi nào decomposition thật sự giảm risk, và khi nào nó chỉ phân tán complexity sang nhiều nơi hơn.",
+      "bullets": [
+        "Đây là câu rất hóc búa vì không có đáp án mặc định.",
+        "Nhiều tổ chức tách hệ thống quá sớm rồi đổi một single point of failure thành nhiều distributed failure modes."
+      ],
+      "note": "Một hệ thống trung tâm không phải lúc nào cũng xấu; đôi khi cái xấu là nó chưa được đầu tư đúng mức."
+    }
+  ]
+}

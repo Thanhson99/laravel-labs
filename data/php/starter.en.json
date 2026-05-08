@@ -1,0 +1,761 @@
+{
+  "anchor": "php-starter",
+  "badge": "Level 1",
+  "actionLabel": "Open starter level",
+  "title": "Level 1: PHP foundations, syntax, and first data flow",
+  "summary": "This level moves from the smallest PHP concepts into syntax, variables, conditions, functions, files, JSON, input, and the first safety habits you need before moving into more practical backend work.",
+  "highlights": [
+    "You move from understanding what PHP is into how files run, how output appears, and how to read tiny scripts without getting lost.",
+    "This level now goes beyond opening syntax and also covers variables, data types, operators, conditions, loops, small helpers, and early debugging habits.",
+    "You also meet real-code pieces early, including `require_once`, `password_hash`, `json_encode`, `file_get_contents`, `htmlspecialchars`, and basic input validation.",
+    "The goal of level 1 is to give you enough foundation that databases, backend flow, and frameworks stop feeling like black boxes later."
+  ],
+  "phases": [
+    {
+      "badge": "Step 1",
+      "title": "What PHP Is",
+      "intro": "Start with the smallest possible definition before syntax. This step explains what PHP is and what kind of work it usually does.",
+      "topics": [
+        { "term": "Programming language", "body": "PHP is a programming language mainly used for server-side web development.", "note": "It helps the server create the content that users finally see." },
+        { "term": "PHP files", "body": "PHP code usually lives inside files with the `.php` extension.", "note": "When you see `.php`, that file can contain executable PHP code." },
+        { "term": "Dynamic output", "body": "PHP can build output from logic and data instead of sending only fixed HTML.", "note": "This is why one page can show different content for different users or data." }
+      ],
+      "examples": [
+        {
+          "title": "A minimal PHP file",
+          "description": "The smallest useful example is one instruction that prints text.",
+          "code": "<?php\necho \"Hello, PHP!\";\n"
+        }
+      ]
+    },
+    {
+      "badge": "Step 2",
+      "title": "Name, Founder, and Background",
+      "intro": "These look like small details, but they make beginner documentation much easier to understand.",
+      "topics": [
+        { "term": "Meaning of PHP", "body": "PHP stands for `PHP: Hypertext Preprocessor`.", "note": "This is the official name you will see in documentation and tooling." },
+        { "term": "Founder", "body": "PHP was started by Rasmus Lerdorf in the mid-1990s.", "note": "This is the main name beginners should remember from PHP history." },
+        { "term": "Early purpose", "body": "It began as practical tools for dynamic web pages and website tracking.", "note": "PHP came from real web needs rather than from a purely academic design." },
+        { "term": "Why it stayed", "body": "PHP remained popular because it is practical, widely supported, and easy to start with.", "note": "Its longevity comes from being useful, easy to host, and strongly supported." }
+      ]
+    },
+    {
+      "badge": "Step 3",
+      "title": "Where PHP Runs",
+      "intro": "Before reading many scripts, know where PHP actually runs and who receives the result.",
+      "topics": [
+        { "term": "Server-side execution", "body": "PHP runs on the server before the browser receives the final content.", "note": "The browser usually sees the result produced by PHP, not the original PHP code itself." },
+        { "term": "CLI mode", "body": "You can run PHP directly in the terminal with commands such as `php hello.php`.", "note": "CLI is often the easiest way to test very small beginner files." },
+        { "term": "Web mode", "body": "A web server passes `.php` content to PHP, then PHP returns HTML or another response.", "note": "The basic flow is browser request -> server -> PHP -> rendered result." },
+        { "term": "Output target", "body": "In CLI the output is terminal text. In web mode the output is often HTML.", "note": "The language is the same, but the place where the result appears is different." }
+      ],
+      "examples": [
+        {
+          "title": "CLI output",
+          "description": "A tiny example that prints multiple terminal lines.",
+          "code": "<?php\necho \"PHP is running\" . PHP_EOL;\necho \"This line appears below the first one\" . PHP_EOL;\n"
+        }
+      ]
+    },
+    {
+      "badge": "Step 4",
+      "title": "Syntax Foundations",
+      "intro": "This is the real start of reading PHP code. The goal is not complexity yet, only clean and predictable structure.",
+      "topics": [
+        { "term": "Opening tag", "body": "PHP code commonly starts with `<?php`." },
+        { "term": "Statements", "body": "Most PHP statements end with a semicolon." },
+        { "term": "Comments", "body": "Use `//` for one line or `/* ... */` for multiple lines." },
+        { "term": "Small files", "body": "Keep one learning idea per file while you are still at the basic stage." }
+      ],
+      "examples": [
+        {
+          "title": "Opening tag and one statement",
+          "description": "A tiny syntax pattern worth memorizing early.",
+          "code": "<?php\necho \"Learning starts here\";\n"
+        },
+        {
+          "title": "Comment styles",
+          "description": "Two common comment forms used in beginner files.",
+          "code": "<?php\n// Single-line comment\n/* Multi-line\n   comment */\necho \"Comments do not execute\";\n"
+        }
+      ]
+    },
+    {
+      "badge": "Step 5",
+      "title": "Output, Strings, and First Variables",
+      "intro": "Before conditions and loops, become comfortable with printing text and storing the simplest values.",
+      "topics": [
+        { "term": "Output", "body": "Output is the visible result produced after PHP runs." },
+        { "term": "echo and print", "body": "Both can output text, but `echo` is the more common beginner habit." },
+        { "term": "Strings", "body": "Strings are text values such as `\"Hello\"`." },
+        { "term": "Variables", "body": "A variable stores a value and starts with `$`, for example `$name`." }
+      ],
+      "examples": [
+        {
+          "title": "echo and print",
+          "description": "Both forms can send text to the output.",
+          "code": "<?php\necho \"Using echo\" . PHP_EOL;\nprint \"Using print\" . PHP_EOL;\n"
+        },
+        {
+          "title": "First variable",
+          "description": "A simple stored value printed back to the screen.",
+          "code": "<?php\n$name = \"Lan\";\necho \"Hello, \" . $name . PHP_EOL;\n"
+        }
+      ]
+    },
+    {
+      "badge": "Step 6",
+      "title": "Reading Small Files Correctly",
+      "intro": "The last beginner step is not about new syntax. It is about reading flow correctly and not getting lost in tiny files.",
+      "topics": [
+        { "term": "Top-to-bottom reading", "body": "Read a file in the same order PHP executes it." },
+        { "term": "Whitespace", "body": "Keep spacing and indentation clean so mistakes stay visible." },
+        { "term": "PHP with HTML", "body": "A `.php` file can contain normal HTML and PHP in the same file." },
+        { "term": "Review habit", "body": "Before moving on, make sure you can predict the output of a five-line script." }
+      ],
+      "examples": [
+        {
+          "title": "PHP inside HTML",
+          "description": "A tiny example showing PHP mixed into markup.",
+          "code": "<h1>My first PHP page</h1>\n<?php\necho \"Rendered by PHP\";\n?>\n"
+        },
+        {
+          "title": "Simple file flow",
+          "description": "A small script read from top to bottom.",
+          "code": "<?php\n// Step 1: print a heading\necho \"Start learning PHP\" . PHP_EOL;\n\n// Step 2: print another line\necho \"Read the file from top to bottom\" . PHP_EOL;\n"
+        }
+      ]
+    },
+    {
+      "badge": "Step 7",
+      "title": "Values and Basic Data Types",
+      "intro": "Once you can print text, the next step is understanding the kinds of values PHP can store. This is the foundation for every later topic.",
+      "topics": [
+        { "term": "Integer", "body": "An integer is a whole number such as `1`, `25`, or `2026`.", "note": "Use integers when you do not need decimal places." },
+        { "term": "Float", "body": "A float is a number with a decimal point such as `3.14` or `99.5`.", "note": "Floats are useful for prices, averages, or measurements, but be careful with precision in money calculations." },
+        { "term": "String", "body": "A string stores text like names, labels, messages, and HTML fragments.", "note": "Strings are one of the most common values in beginner PHP files." },
+        { "term": "Boolean", "body": "A boolean is either `true` or `false`.", "note": "Booleans are the values that drive conditions such as `if` and `else`." },
+        { "term": "Array", "body": "An array groups multiple values together.", "note": "You will use arrays heavily once you start loops and data handling." },
+        { "term": "Null", "body": "`null` means a variable currently has no value.", "note": "This is common when something has not been set yet." }
+      ],
+      "examples": [
+        {
+          "title": "Several basic values",
+          "description": "A short file that stores multiple kinds of values.",
+          "code": "<?php\n$age = 25;\n$price = 19.99;\n$name = \"Lan\";\n$isAdmin = false;\n$tags = [\"php\", \"basic\", \"practice\"];\n$middleName = null;\n"
+        }
+      ]
+    },
+    {
+      "badge": "Step 8",
+      "title": "Operators and Comparisons",
+      "intro": "After values come the actions you perform on them. Operators help you combine, compare, and update data.",
+      "topics": [
+        { "term": "Assignment", "body": "Use `=` to assign a value to a variable.", "note": "This is different from comparison operators such as `==` or `===`." },
+        { "term": "Math operators", "body": "PHP supports `+`, `-`, `*`, `/`, and `%` for arithmetic.", "note": "Start with simple calculations before putting them inside larger expressions." },
+        { "term": "Concatenation", "body": "Use `.` to join strings together.", "note": "This is the operator beginners use most often when printing text with variables." },
+        { "term": "Comparison", "body": "Use operators like `>`, `<`, `>=`, `<=`, `==`, and `===` to compare values.", "note": "In beginner code, prefer `===` when you want both value and type to match." },
+        { "term": "Logical operators", "body": "Use `&&`, `||`, and `!` to combine true or false conditions.", "note": "These become very important once `if` blocks start growing." }
+      ],
+      "examples": [
+        {
+          "title": "Math and string operators",
+          "description": "A short example that adds numbers and joins text.",
+          "code": "<?php\n$total = 8 + 4;\n$name = \"Lan\";\necho \"Hello, \" . $name . PHP_EOL;\necho \"Total: \" . $total . PHP_EOL;\n"
+        },
+        {
+          "title": "Comparing values",
+          "description": "A tiny check that returns a boolean result.",
+          "code": "<?php\n$age = 20;\n$isAdult = $age >= 18;\nvar_dump($isAdult);\n"
+        }
+      ]
+    },
+    {
+      "badge": "Step 8B",
+      "title": "Constants and fixed values",
+      "intro": "Besides variables, PHP also provides constants for values that should stay stable.",
+      "topics": [
+        { "term": "Constants", "body": "A constant is a named value that should not be reassigned after declaration.", "note": "Use constants when the meaning should stay fixed, such as app labels, shared defaults, or internal modes." },
+        { "term": "`const` and `define`", "body": "You will see both `const` and `define()` in PHP codebases.", "note": "At the beginner stage it is enough to know that both create fixed named values." },
+        { "term": "Why they help", "body": "Constants reduce repeated magic values and make intent easier to read.", "note": "A named value is easier to understand than a repeated raw string or number." }
+      ],
+      "examples": [
+        {
+          "title": "A tiny constant example",
+          "description": "A small example showing a value that should stay fixed.",
+          "code": "<?php\nconst APP_NAME = 'Laravel Labs';\necho APP_NAME;\n"
+        }
+      ]
+    },
+    {
+      "badge": "Step 8C",
+      "title": "Small helpers you use all the time",
+      "intro": "A lot of PHP files are not hard because of big ideas. They are hard because you are not yet comfortable with a few tiny helpers that appear constantly.",
+      "topics": [
+        { "term": "`isset`", "body": "Use `isset()` to check whether a variable or key exists and is not `null`.", "note": "This appears constantly when reading `$_GET`, `$_POST`, config arrays, or API data." },
+        { "term": "`empty`", "body": "Use `empty()` when you want a practical check for whether a value is empty.", "note": "It is convenient, but you should still know which values your code is treating as empty." },
+        { "term": "Null coalescing `??`", "body": "The `??` operator uses the left value if it exists, otherwise it falls back to the right-side default.", "note": "This is extremely common when reading user input or configuration." },
+        { "term": "`trim`", "body": "`trim()` removes extra whitespace from the beginning and end of a string.", "note": "A small habit that pays off quickly when reading names, emails, or pasted form data." },
+        { "term": "`explode` and `implode`", "body": "`explode()` splits a string into an array, while `implode()` joins an array into a string.", "note": "These two helpers form a natural bridge between text and list-shaped data." }
+      ],
+      "examples": [
+        {
+          "title": "A default value with `??`",
+          "description": "A tiny example for reading input without breaking when the key is missing.",
+          "code": "<?php\n$name = $_GET['name'] ?? 'Guest';\necho 'Hello, ' . $name;\n"
+        },
+        {
+          "title": "Split and join a string",
+          "description": "A tiny example showing how `explode` and `implode` appear naturally in real code.",
+          "code": "<?php\n$tags = 'php,laravel,backend';\n$parts = explode(',', $tags);\necho implode(' | ', $parts);\n"
+        }
+      ]
+    },
+    {
+      "badge": "Step 9",
+      "title": "Conditions and Loops Without Fear",
+      "intro": "This is where many beginners start feeling pressure. The trick is not to write clever code. The trick is to write code that is easy to predict line by line.",
+      "topics": [
+        { "term": "if / else", "body": "Use `if` when code should run only when a condition is true, and `else` for the fallback case.", "note": "Ask yourself one question first: what exact condition am I checking?" },
+        { "term": "elseif", "body": "Use `elseif` when you have multiple specific branches.", "note": "If you have too many branches, it is often a sign the logic should be split into smaller pieces." },
+        { "term": "for loop", "body": "A `for` loop is useful when you know how many times something should run.", "note": "Always read a `for` loop in three parts: start, stop condition, and step." },
+        { "term": "foreach loop", "body": "Use `foreach` to go through each item in an array.", "note": "For beginners, `foreach` is usually easier to read than `for` when working with lists." },
+        { "term": "Ternary operator", "body": "The ternary form `condition ? value_if_true : value_if_false` is a short way to express one simple decision.", "note": "Use it only when the expression stays short and readable. Do not pack long business logic into it." },
+        { "term": "Avoiding confusion", "body": "When a condition or loop feels confusing, write the variables on separate lines and print them while debugging.", "note": "Small temporary `var_dump` or `echo` checks can save a lot of time while learning." }
+      ],
+      "examples": [
+        {
+          "title": "A simple if / else",
+          "description": "Start with one condition and one fallback.",
+          "code": "<?php\n$score = 75;\n\nif ($score >= 50) {\n    echo \"Pass\";\n} else {\n    echo \"Fail\";\n}\n"
+        },
+        {
+          "title": "A small for loop",
+          "description": "Read it slowly: start at 1, continue while less than or equal to 3, then increase by 1.",
+          "code": "<?php\nfor ($i = 1; $i <= 3; $i++) {\n    echo \"Current value: \" . $i . PHP_EOL;\n}\n"
+        },
+        {
+          "title": "A beginner-friendly foreach",
+          "description": "This is often the easiest loop to read when working with arrays.",
+          "code": "<?php\n$names = [\"Lan\", \"Minh\", \"An\"];\n\nforeach ($names as $name) {\n    echo \"Hello, \" . $name . PHP_EOL;\n}\n"
+        },
+        {
+          "title": "A short ternary example",
+          "description": "Use it when you only need to choose between two simple values.",
+          "code": "<?php\n$age = 20;\n$message = $age >= 18 ? 'Adult' : 'Under 18';\necho $message;\n"
+        },
+        {
+          "title": "A basic switch",
+          "description": "When many branches depend on the same input value, `switch` can be easier to scan.",
+          "code": "<?php\n$role = 'editor';\n\nswitch ($role) {\n    case 'admin':\n        echo 'Full access';\n        break;\n    case 'editor':\n        echo 'Edit content';\n        break;\n    default:\n        echo 'Read only';\n}\n"
+        }
+      ]
+    },
+    {
+      "badge": "Step 10",
+      "title": "Tips, Traps, and Early Debugging Habits",
+      "intro": "A lot of beginner frustration does not come from PHP itself. It comes from small habits that make code hard to read. This step focuses on recognition and prevention.",
+      "topics": [
+        { "term": "When `if / else` gets messy", "body": "If one `if` block contains another `if`, and then another one, stop and ask whether part of the condition can be moved into a variable with a clear name.", "note": "Named booleans such as `$hasPermission` or `$isActiveUser` make conditions much easier to read." },
+        { "term": "When `for` loops feel confusing", "body": "Check the loop in this order: initial value, stop condition, update step, then body.", "note": "Many loop bugs come from a wrong stop condition or forgetting how the counter changes." },
+        { "term": "When to prefer `foreach`", "body": "If you are looping through an array and you do not need the numeric index, `foreach` is often cleaner than `for`.", "note": "Choose the loop that matches your data structure, not the loop that looks more advanced." },
+        { "term": "Early debugging habit", "body": "Use `var_dump`, `print_r`, or short `echo` statements to inspect values while learning.", "note": "Seeing the current value is often better than guessing what the code probably did." },
+        { "term": "Callback-style nesting", "body": "Classic JavaScript-style callback hell is less common in plain PHP, but nested anonymous functions and deeply nested closures can still make code unpleasant.", "note": "If a function contains too many nested callbacks or closures, move pieces into small named functions or methods." },
+        { "term": "Readability over cleverness", "body": "At the beginner stage, clear code beats short code.", "note": "A few extra lines are fine if they make the logic easier to understand." }
+      ],
+      "examples": [
+        {
+          "title": "A condition made easier to read",
+          "description": "Breaking a long condition into named booleans often helps more than writing one giant `if` line.",
+          "code": "<?php\n$hasEmail = true;\n$isActive = true;\n$hasPermission = true;\n\n$canSendWelcomeMessage = $hasEmail && $isActive && $hasPermission;\n\nif ($canSendWelcomeMessage) {\n    echo \"Send message\";\n}\n"
+        },
+        {
+          "title": "A nested callback-style example to avoid",
+          "description": "PHP can become hard to read when too many nested anonymous functions are placed inside each other.",
+          "code": "<?php\n$numbers = [1, 2, 3];\n\n$result = array_map(function ($number) {\n    return array_map(function ($inner) use ($number) {\n        return $number + $inner;\n    }, [10, 20]);\n}, $numbers);\n\nprint_r($result);\n"
+        },
+        {
+          "title": "The same idea, split into clearer steps",
+          "description": "Moving pieces into a named function usually reads better than stacking anonymous functions too deeply.",
+          "code": "<?php\nfunction addOffsets(int $number, array $offsets): array\n{\n    $result = [];\n\n    foreach ($offsets as $offset) {\n        $result[] = $number + $offset;\n    }\n\n    return $result;\n}\n\n$numbers = [1, 2, 3];\n$output = [];\n\nforeach ($numbers as $number) {\n    $output[] = addOffsets($number, [10, 20]);\n}\n\nprint_r($output);\n"
+        }
+      ]
+    },
+    {
+      "badge": "Step 11",
+      "title": "Comments, Function Names, and Docblocks",
+      "intro": "Writing code is not only about making it run. It is also about making it understandable for the next person, including your future self.",
+      "topics": [
+        { "term": "When to write comments", "body": "Write comments when the reason behind a piece of code is not obvious, not when the code already explains itself.", "note": "A comment should explain why, not repeat what a clear line of code already says." },
+        { "term": "Avoid noisy comments", "body": "Do not write comments like `// assign value to name` above `$name = \"Lan\";`.", "note": "Those comments create clutter and make the file feel heavier without adding meaning." },
+        { "term": "Function names", "body": "A function name should describe the action it performs, such as `sendWelcomeEmail`, `calculateTotal`, or `loadUserProfile`.", "note": "A clear function name often removes the need for an extra comment." },
+        { "term": "Docblocks", "body": "Docblocks are useful when a function or class needs extra explanation about parameters, return values, side effects, or intent.", "note": "You do not need a docblock for every tiny function, but they help a lot when the behavior is not obvious." },
+        { "term": "Typed code first", "body": "Modern PHP type hints already explain a lot, so use types before relying on long comments.", "note": "If `function add(int $a, int $b): int` is already clear, the docblock can stay minimal or be skipped." }
+      ],
+      "examples": [
+        {
+          "title": "A comment that adds real value",
+          "description": "The comment explains the reason for the rule instead of describing the syntax.",
+          "code": "<?php\n// We trim the input because users often paste names with extra spaces.\n$name = trim($inputName);\n"
+        },
+        {
+          "title": "A small function with a useful name",
+          "description": "A good function name often explains the purpose without needing much extra text.",
+          "code": "<?php\nfunction calculateFinalPrice(float $basePrice, float $discount): float\n{\n    return $basePrice - $discount;\n}\n"
+        },
+        {
+          "title": "A docblock that is actually helpful",
+          "description": "This kind of docblock is useful because it explains the meaning of the output, not only the syntax.",
+          "code": "<?php\n/**\n * Build the display name shown in the profile header.\n * Returns a fallback label when the user has no public name yet.\n */\nfunction buildDisplayName(?string $name): string\n{\n    return $name ?: \"Guest\";\n}\n"
+        }
+      ]
+    },
+    {
+      "badge": "Step 12",
+      "title": "Functions, Splitting Logic, and Reuse",
+      "intro": "One of the biggest jumps in programming skill happens when you stop putting everything in one file or one giant block and start splitting logic into small reusable pieces.",
+      "topics": [
+        { "term": "What a function is", "body": "A function is a named block of code that performs one job and can be called again later.", "note": "Functions help you avoid copy-paste and reduce long scripts." },
+        { "term": "One responsibility", "body": "Try to keep one function focused on one task.", "note": "If a function validates input, writes to the database, sends email, and returns HTML, it is probably doing too much." },
+        { "term": "Parameters", "body": "Parameters are the inputs a function receives.", "note": "Use parameters instead of making a function depend on too many outside variables." },
+        { "term": "Return values", "body": "A return value is what a function gives back after finishing its work.", "note": "Returning data is often cleaner than printing inside every helper function." },
+        { "term": "Small steps", "body": "When a piece of code feels long, first split it into named steps before trying to optimize it.", "note": "Readable decomposition usually solves confusion faster than clever refactors." }
+      ],
+      "examples": [
+        {
+          "title": "A simple reusable function",
+          "description": "This function can be called many times with different input values.",
+          "code": "<?php\nfunction greetUser(string $name): string\n{\n    return \"Hello, \" . $name;\n}\n\necho greetUser(\"Lan\") . PHP_EOL;\necho greetUser(\"Minh\") . PHP_EOL;\n"
+        },
+        {
+          "title": "Split a task into smaller functions",
+          "description": "Separating steps usually reads better than one large block doing everything at once.",
+          "code": "<?php\nfunction normalizeEmail(string $email): string\n{\n    return strtolower(trim($email));\n}\n\nfunction isCompanyEmail(string $email): bool\n{\n    return str_ends_with($email, \"@company.com\");\n}\n\n$email = normalizeEmail(\"  DEV@company.com \");\n\nif (isCompanyEmail($email)) {\n    echo \"Internal account\";\n}\n"
+        }
+      ]
+    },
+    {
+      "badge": "Step 13",
+      "title": "Reading, Writing, and Flat Files",
+      "intro": "Before databases, you should understand how PHP works with files. This is a natural bridge between beginner syntax and real data handling.",
+      "topics": [
+        { "term": "Reading text files", "body": "PHP can read content from files such as `.txt`, `.json`, or `.csv` with functions like `file_get_contents`.", "note": "This is often the first step in understanding how data moves from a file into your code." },
+        { "term": "Writing files", "body": "You can write or append content to files with `file_put_contents`.", "note": "Small file logging is a practical beginner way to understand raw persistence before databases." },
+        { "term": "TXT and simple logs", "body": "A `.txt` file is great for beginner practice such as notes, tiny logs, or toy data.", "note": "It is easy to inspect because you can open it and read the result immediately." },
+        { "term": "CSV and tabular data", "body": "When data has a simple table shape, `csv` is a natural step before learning databases or Excel handling.", "note": "CSV is lightweight, easy to create, and useful for many practice exercises." },
+        { "term": "Basic JSON", "body": "JSON is commonly used for structured data exchange between files, APIs, and PHP code.", "note": "Once you understand PHP arrays, learning `json_encode` and `json_decode` becomes much easier." },
+        { "term": "Excel files", "body": "Excel files are usually not handled with a few tiny built-in functions. They are commonly processed through libraries such as `PhpSpreadsheet`.", "note": "At the beginner stage, learn the table-data mindset through `csv` first, then move to Excel." },
+        { "term": "Checking file existence", "body": "Before reading a file, check it with `file_exists` or validate the path.", "note": "This is a small habit, but it prevents many silly backend errors early." }
+      ],
+      "examples": [
+        {
+          "title": "Read a basic `.txt` file",
+          "description": "A small example to see how PHP reads content from a file.",
+          "code": "<?php\n$path = __DIR__ . '/notes.txt';\n\nif (!file_exists($path)) {\n    echo 'File not found';\n    return;\n}\n\necho file_get_contents($path);\n"
+        },
+        {
+          "title": "Append one log line",
+          "description": "Appending to a file helps you understand raw storage before learning databases.",
+          "code": "<?php\n$line = 'User opened the page at ' . date('Y-m-d H:i:s') . PHP_EOL;\nfile_put_contents(__DIR__ . '/app.log', $line, FILE_APPEND);\n"
+        },
+        {
+          "title": "Read rows from a CSV file",
+          "description": "A practical example before moving toward more complex tabular data.",
+          "code": "<?php\n$rows = file(__DIR__ . '/users.csv', FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);\n\nforeach ($rows as $row) {\n    $columns = str_getcsv($row);\n    print_r($columns);\n}\n"
+        },
+        {
+          "title": "Turn a PHP array into JSON",
+          "description": "A small example showing how structured data can be packaged into JSON text.",
+          "code": "<?php\n$user = [\n    'name' => 'Lan',\n    'role' => 'admin',\n];\n\necho json_encode($user, JSON_PRETTY_PRINT);\n"
+        }
+      ]
+    },
+    {
+      "badge": "Step 14",
+      "title": "Database, Input, and Real-World Safety Basics",
+      "intro": "Even at the beginner stage, it helps to know where PHP usually goes next in real work: user input, configuration, and databases. You do not need deep theory yet, but you should know the main safety rules.",
+      "topics": [
+        { "term": "User input is untrusted", "body": "Anything coming from forms, query strings, files, or APIs should be treated as untrusted input.", "note": "Never assume user input is already clean or valid." },
+        { "term": "Validate before using", "body": "Check that input has the right format, required fields, and allowed values before you use it.", "note": "Validation should happen before saving data, sending mail, or making business decisions." },
+        { "term": "Escape output", "body": "When showing user-provided content in HTML, escape it before rendering.", "note": "This helps prevent cross-site scripting problems later." },
+        { "term": "Database connection", "body": "PHP often connects to databases through tools such as PDO or framework abstractions.", "note": "At a beginner level, learn that database access should be separate from display code when possible." },
+        { "term": "Prepared statements", "body": "Do not build SQL by concatenating raw user input directly into the query string.", "note": "Prepared statements are a basic habit for avoiding SQL injection." },
+        { "term": "Basic XSS awareness", "body": "If you print user input into HTML without escaping it, you may allow unwanted code to run in the browser.", "note": "At the beginner level, remember one rule: user data rendered into HTML should be escaped correctly." },
+        { "term": "Basic CSRF awareness", "body": "A form that changes data usually needs a way to prove the request really came from the user session that owns it.", "note": "Once you move into frameworks such as Laravel, CSRF tokens appear very early." },
+        { "term": "Hashing", "body": "Hashing turns data into a one-way representative string for checking or storing things more safely.", "note": "Hashing is not the same as encryption, and a proper hash is usually not meant to be reversed." },
+        { "term": "Passwords and hashes", "body": "Passwords should not be stored in plain text. PHP provides `password_hash` and `password_verify` for this.", "note": "This is a basic non-negotiable habit once authentication becomes real." },
+        { "term": "Configuration", "body": "Values like database host, username, password, and API keys should live in configuration or environment files, not hardcoded in random scripts.", "note": "This becomes critical once a project grows or moves between local, staging, and production." },
+        { "term": "Related services", "body": "After databases, PHP also commonly connects to mail services, storage services, payment gateways, or external APIs.", "note": "Treat these as natural backend extensions of PHP rather than as separate worlds." }
+      ],
+      "examples": [
+        {
+          "title": "A tiny validation check",
+          "description": "Validate simple input before doing anything else with it.",
+          "code": "<?php\n$email = trim($_POST['email'] ?? '');\n\nif ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {\n    echo \"Invalid email\";\n    return;\n}\n\necho \"Email looks valid\";\n"
+        },
+        {
+          "title": "A beginner PDO example",
+          "description": "This shows the shape of a database connection and a prepared query.",
+          "code": "<?php\n$pdo = new PDO('mysql:host=127.0.0.1;dbname=app', 'user', 'secret');\n\n$stmt = $pdo->prepare('SELECT * FROM users WHERE email = :email');\n$stmt->execute(['email' => $email]);\n$user = $stmt->fetch();\n"
+        },
+        {
+          "title": "Password hashing in the right direction",
+          "description": "A beginner example showing that passwords should be hashed before storage.",
+          "code": "<?php\n$password = 'secret-123';\n$hashedPassword = password_hash($password, PASSWORD_DEFAULT);\n\nif (password_verify('secret-123', $hashedPassword)) {\n    echo 'Password is valid';\n}\n"
+        },
+        {
+          "title": "A very basic escaped output example",
+          "description": "A small reminder that raw user input should not be printed straight into HTML.",
+          "code": "<?php\n$name = $_POST['name'] ?? '';\necho htmlspecialchars($name, ENT_QUOTES, 'UTF-8');\n"
+        }
+      ]
+    }
+  ],
+  "questionsTitle": "Beginner Notes and Short Answers",
+  "questions": [
+    {
+      "tag": "Tip",
+      "question": "What is one important habit when you are just starting to learn PHP?",
+      "answer": "Do not try to memorize all syntax in one reading. Learn in small loops: read an example, predict the output, run it, and then change exactly one detail such as a variable, condition, or loop so you can see how the behavior changes."
+    },
+    {
+      "tag": "Helper",
+      "question": "When should you use `isset`, `empty`, or `??`?",
+      "answer": "Use them when you are reading data that may not exist yet, such as form input, query parameters, config values, or nested arrays. `??` is great for compact default values, `isset` is useful when you want to know whether a key exists and is not `null`, and `empty` is practical when you need a quick check for empty-looking values."
+    },
+    {
+      "tag": "Tip",
+      "question": "Why do beginners get confused quickly with `for` loops or `if` statements?",
+      "answer": "Because they often read the whole block as one long paragraph instead of splitting it into parts. For `if`, read the condition first and then the branch. For `for`, read the starting value, the stop condition, the update step, and only then the loop body."
+    },
+    {
+      "tag": "Mistake",
+      "question": "What is a common beginner mistake when learning backend code?",
+      "answer": "A common mistake is focusing only on syntax and forgetting the data flow. When learning backend work, always ask: where did the request come from, where does PHP process it, where does the data come from, and who receives the final output?"
+    },
+    {
+      "tag": "Tip",
+      "question": "What should a beginner do when they hit a `syntax error`?",
+      "answer": "Do not rewrite the whole file in panic. Read the reported line, inspect the 3 to 5 lines around it, and check the smallest details first: missing `;`, missing quotes, missing brackets, or unbalanced opening and closing blocks. For beginners, syntax errors are usually caused by tiny structural mistakes, not by big ideas."
+    },
+    {
+      "tag": "Mindset",
+      "question": "Why is it useful to learn file reading and writing before relying too early on a database?",
+      "answer": "Because files let you see data in its simplest raw form. Once you understand text files, `csv`, `json`, logging, and file existence checks, databases become far less mysterious. You start seeing a database as a structured storage system instead of a magical black box."
+    },
+    {
+      "tag": "Security",
+      "question": "At the beginner level, what should you remember about XSS and SQL injection?",
+      "answer": "Keep two core reflexes: when user data is rendered into HTML, escape it correctly to reduce XSS risk; when user data reaches SQL, do not concatenate raw strings into the query and prefer prepared statements to reduce SQL injection risk."
+    }
+  ],
+  "modules": [
+    {
+      "title": "Small beginner lessons that matter",
+      "description": "These ideas sound simple, but they often separate shallow copying from real learning.",
+      "bullets": [
+        "Do not memorize code samples by copying them unchanged. Rename a variable, change a string, or flip a condition and run the file again to see what truly changes.",
+        "If a 10-line example still feels foggy, cut it down to 3 to 5 lines and learn the smaller slice first.",
+        "Beginners who improve steadily usually ask very concrete questions such as `what does this variable hold right now` or `why did the else branch run`."
+      ]
+    },
+    {
+      "title": "From files and raw data to real backend thinking",
+      "description": "Long before databases enter the story, PHP is already strong at handling files and plain data. That makes file work a natural bridge into backend thinking.",
+      "bullets": [
+        "You can read `txt`, `json`, and `csv` files to understand input and output before deeper database work.",
+        "Writing logs to files is one of the earliest and most useful backend debugging habits.",
+        "People who become comfortable with files and raw data usually learn databases, APIs, and queues faster because the data-flow mindset is already there."
+      ]
+    },
+    {
+      "title": "How to read errors without panic",
+      "description": "Errors are a normal part of learning. The goal is not to avoid them completely, but to read them in a stable way.",
+      "bullets": [
+        "Read the error name first, then look at the file and line number.",
+        "For syntax errors, inspect small structural characters such as `;`, `{}`, `()`, quotes, or unfinished comments.",
+        "If the output is wrong but there is no red error message, use `echo` or `var_dump` to inspect what the code currently thinks."
+      ]
+    },
+    {
+      "title": "Small core pieces people often skip too long",
+      "description": "Many beginners meet these later than they should, even though they appear often in real code.",
+      "bullets": [
+        "`const`, `define`, `switch`, `require`, `include`, `require_once`, and `include_once` are worth learning early.",
+        "`password_hash` and `password_verify` are the most basic pair once user accounts or auth enter the picture.",
+        "Whenever a helper or config file is loaded in multiple places, ask whether it should really be `require_once` or `include_once`.",
+        "`isset`, `empty`, `??`, `trim`, `explode`, and `implode` are tiny helpers that stay with you for a very long time in real PHP code."
+      ]
+    },
+    {
+      "title": "PHP Is a Programming Language",
+      "description": "At the smallest beginner level, start with the plain answer: PHP is a programming language used mostly for web development on the server side.",
+      "bullets": [
+        "PHP is written as code inside `.php` files.",
+        "It helps create dynamic pages instead of only fixed HTML files.",
+        "It is often used to process requests, build HTML, and work with data."
+      ]
+    },
+    {
+      "title": "What the Name PHP Means",
+      "description": "Even this detail matters for beginners because the language name appears everywhere in documentation and commands.",
+      "bullets": [
+        "PHP stands for `PHP: Hypertext Preprocessor`.",
+        "This is a recursive acronym, which means the name includes itself.",
+        "Older beginner material may also mention the language history before this modern naming settled."
+      ]
+    },
+    {
+      "title": "Language Identity",
+      "description": "Start with the big picture before syntax. PHP is a scripting language focused on web development and strong ecosystem support.",
+      "bullets": [
+        "Server-side execution means PHP runs before the page is sent to the browser.",
+        "It can generate HTML, process forms, talk to databases, and build APIs.",
+        "Modern PHP also supports OOP, packages through Composer, and testing workflows."
+      ]
+    },
+    {
+      "title": "Founder and Background",
+      "description": "A little history helps you understand why PHP became so tied to practical web work.",
+      "bullets": [
+        "PHP was started by Rasmus Lerdorf in the mid-1990s.",
+        "Rasmus first built tools for tracking visits to his personal website.",
+        "Its early goal was simple dynamic web pages, but the language kept growing.",
+        "Today PHP powers many content systems, business apps, and frameworks such as Laravel."
+      ]
+    },
+    {
+      "title": "Why People Use PHP",
+      "description": "Beginners should know the simple reason PHP stayed popular for so long.",
+      "bullets": [
+        "It is practical for web work and easy to start with simple files.",
+        "It has a long history, large community, and a huge amount of learning material.",
+        "Frameworks such as Laravel make modern PHP development much more organized."
+      ]
+    },
+    {
+      "title": "Where PHP Usually Lives",
+      "description": "A beginner should know where PHP appears in real work so the language does not feel abstract.",
+      "bullets": [
+        "Standalone `.php` files can render HTML directly.",
+        "CLI scripts can automate tasks and local checks.",
+        "Frameworks like Laravel organize PHP into routes, controllers, models, services, and commands."
+      ]
+    },
+    {
+      "title": "How a PHP File Executes",
+      "description": "A request reaches the server, the server passes `.php` to the PHP runtime, and the runtime returns output.",
+      "bullets": [
+        "A PHP file contains instructions for the PHP interpreter.",
+        "In CLI mode you can run `php file.php` directly.",
+        "In web mode the server resolves the request and PHP returns rendered output.",
+        "Syntax errors stop execution, so learning the basic file format matters early."
+      ]
+    },
+    {
+      "title": "CLI Mode and Web Mode",
+      "description": "These two execution styles are both important, but they feel different when you learn.",
+      "bullets": [
+        "CLI mode prints output in the terminal and often uses `PHP_EOL` for line breaks.",
+        "Web mode returns HTML to the browser and line breaks are usually handled with HTML tags.",
+        "The same PHP syntax can appear in both modes even though the output target changes."
+      ]
+    },
+    {
+      "title": "Basic Syntax Building Blocks",
+      "description": "These are the first rules every beginner needs before learning variables or conditions.",
+      "bullets": [
+        "Opening tag: `<?php`",
+        "Statements usually end with a semicolon.",
+        "Use `//` or `/* ... */` for comments.",
+        "Use `echo` to send text to the output."
+      ]
+    },
+    {
+      "title": "The `<?php` Opening Tag",
+      "description": "This tiny detail is one of the first things every beginner sees in PHP code.",
+      "bullets": [
+        "The `<?php` tag tells the file that PHP code starts here.",
+        "Everything inside the PHP block is interpreted as PHP instructions.",
+        "Outside the PHP block, the file can return to plain HTML."
+      ]
+    },
+    {
+      "title": "Why Semicolons Matter",
+      "description": "Many beginner syntax errors come from missing semicolons.",
+      "bullets": [
+        "A semicolon usually marks the end of one PHP statement.",
+        "If it is missing, PHP may report a parse error.",
+        "Build the habit early so longer files stay easier to debug."
+      ]
+    },
+    {
+      "title": "File Names and Basic Structure",
+      "description": "A tiny amount of file discipline helps you avoid confusion in the earliest stage.",
+      "bullets": [
+        "Use the `.php` extension for executable PHP files.",
+        "Keep one small learning idea per file while practicing.",
+        "Save the file, run it, read the output, then change one thing at a time."
+      ]
+    },
+    {
+      "title": "Running PHP from the Command Line",
+      "description": "The CLI is the easiest place to test tiny scripts while learning.",
+      "bullets": [
+        "Create a file such as `hello.php`.",
+        "Run it with `php hello.php`.",
+        "Fix one syntax issue at a time when the interpreter reports an error."
+      ]
+    },
+    {
+      "title": "What Output Means",
+      "description": "Output is simply the visible result PHP sends somewhere after the code runs.",
+      "bullets": [
+        "In the terminal, output appears as text lines.",
+        "In the browser, output often becomes HTML content.",
+        "When beginners use `echo`, they are creating output."
+      ]
+    },
+    {
+      "title": "Output and Text Rendering",
+      "description": "Before logic becomes complex, you should be comfortable sending strings and simple values to the output.",
+      "bullets": [
+        "Use `echo` for the most common output pattern.",
+        "Use double quotes when you want variable interpolation later.",
+        "Use `PHP_EOL` in CLI scripts when you want a new line."
+      ]
+    },
+    {
+      "title": "echo and print",
+      "description": "Both are used to send output, but beginners usually start with `echo` because it is the more common habit in modern examples.",
+      "bullets": [
+        "`echo` is commonly used to output one or more strings.",
+        "`print` also outputs text, but it behaves more like an expression and is less common in modern beginner examples.",
+        "At the basic level, choose one style and stay consistent. `echo` is the simplest default."
+      ]
+    },
+    {
+      "title": "Strings and Quotation Marks",
+      "description": "Even before variables, you should understand how text is written inside PHP.",
+      "bullets": [
+        "Strings are pieces of text such as `\"Hello\"`.",
+        "Single quotes and double quotes both create strings, but double quotes matter more later when variables are inserted inside text.",
+        "Beginners should focus first on writing clean readable output."
+      ]
+    },
+    {
+      "title": "A Very First Look at Variables",
+      "description": "Variables belong to the next stage in depth, but the basic stage should at least introduce what they are.",
+      "bullets": [
+        "A variable stores a value and begins with `$` in PHP.",
+        "Example: `$name = \"Lan\";`",
+        "You do not need advanced rules yet, only the idea that values can be stored and reused."
+      ]
+    },
+    {
+      "title": "Whitespace and Readability",
+      "description": "Readable code matters early because most beginner errors are simple and visual.",
+      "bullets": [
+        "Indent blocks consistently.",
+        "Leave small spaces around operators when examples become longer.",
+        "Do not cram too many statements into one line while learning."
+      ]
+    },
+    {
+      "title": "Mixing PHP with HTML",
+      "description": "One reason PHP became popular is that it can sit directly inside HTML templates.",
+      "bullets": [
+        "A `.php` file can contain both HTML and PHP.",
+        "PHP sections start with `<?php` and then return to normal HTML outside that block.",
+        "This matters later when you study Blade in Laravel."
+      ]
+    },
+    {
+      "title": "Comments and Code Reading Habits",
+      "description": "Beginner PHP should stay readable, because most early mistakes come from not understanding execution order.",
+      "bullets": [
+        "Comments are notes for humans, not instructions for PHP to run.",
+        "Comment only when a line needs context, not for obvious statements.",
+        "Read scripts from top to bottom and ask what each statement outputs.",
+        "Keep each early file small so you can see the entire flow at once."
+      ]
+    },
+    {
+      "title": "Beginner Review Checklist",
+      "description": "Use this small mental checklist before moving from pure basics into variables, conditions, and loops.",
+      "bullets": [
+        "Can you explain what PHP is in one short sentence?",
+        "Can you create a `.php` file and run it in the terminal?",
+        "Can you use `echo`, comments, and the `<?php` opening tag correctly?",
+        "Can you read a five-line beginner script and predict its output?"
+      ]
+    },
+    {
+      "title": "Practice habits that help memory stick",
+      "description": "Beginners often improve faster by repeating small variations instead of only reading theory.",
+      "bullets": [
+        "Take an existing example and change one variable, one condition, or one string so you can watch the output change.",
+        "Create tiny files such as `echo-test.php`, `if-test.php`, and `array-test.php` so each file teaches one idea.",
+        "If you learn one new statement today, use it in at least two or three slightly different examples."
+      ]
+    }
+  ],
+  "examplesTitle": "Starter Examples",
+  "examples": [
+    {
+      "title": "Hello from PHP",
+      "description": "The smallest script that outputs a string.",
+      "code": "<?php\necho \"Hello, PHP!\";\n"
+    },
+    {
+      "title": "The Opening Tag and One Statement",
+      "description": "A tiny example that shows where PHP starts and where a statement ends.",
+      "code": "<?php\necho \"Learning starts here\";\n"
+    },
+    {
+      "title": "Comment Styles",
+      "description": "Two common comment formats used in beginner files.",
+      "code": "<?php\n// Single-line comment\n/* Multi-line\n   comment */\necho \"Comments do not execute\";\n"
+    },
+    {
+      "title": "echo and print",
+      "description": "A small example showing that both forms can send text to the output.",
+      "code": "<?php\necho \"Using echo\" . PHP_EOL;\nprint \"Using print\" . PHP_EOL;\n"
+    },
+    {
+      "title": "CLI Output with New Line",
+      "description": "A tiny script that prints multiple lines in a terminal-friendly way.",
+      "code": "<?php\necho \"PHP is running\" . PHP_EOL;\necho \"This line appears below the first one\" . PHP_EOL;\n"
+    },
+    {
+      "title": "First Variable",
+      "description": "A beginner glimpse of how a value can be stored and then printed.",
+      "code": "<?php\n$name = \"Lan\";\necho \"Hello, \" . $name . PHP_EOL;\n"
+    },
+    {
+      "title": "PHP Inside HTML",
+      "description": "A simple example of PHP mixed into a page structure.",
+      "code": "<h1>My first PHP page</h1>\n<?php\necho \"Rendered by PHP\";\n?>\n"
+    },
+    {
+      "title": "Missing Semicolon Idea",
+      "description": "A correct example that reminds beginners each statement usually ends with a semicolon.",
+      "code": "<?php\necho \"First line\";\necho \"Second line\";\n"
+    },
+    {
+      "title": "A Simple File Flow",
+      "description": "This example shows how PHP reads one statement after another in order.",
+      "code": "<?php\n// Step 1: print a heading\necho \"Start learning PHP\" . PHP_EOL;\n\n// Step 2: print another line\necho \"Read the file from top to bottom\" . PHP_EOL;\n"
+    },
+    {
+      "title": "The smallest useful validation guard",
+      "description": "A tiny example showing that invalid input should stop early.",
+      "code": "<?php\n$name = trim($_POST['name'] ?? '');\n\nif ($name === '') {\n    echo 'Name is required';\n    return;\n}\n\necho 'Hello, ' . $name;\n"
+    },
+    {
+      "title": "Inspecting data with var_dump",
+      "description": "When you are not sure what a variable holds, print it instead of guessing.",
+      "code": "<?php\n$items = [\"php\", \"html\", \"css\"];\nvar_dump($items);\n"
+    }
+  ]
+}

@@ -1,0 +1,484 @@
+{
+  "anchor": "php-advanced",
+  "badge": "Level 3",
+  "actionLabel": "Open advanced level",
+  "title": "Level 3: Architecture, testing, integration, and production thinking",
+  "summary": "This stage moves into modern PHP and deeper backend concerns: clearer OOP, PHPUnit, queues, webhooks, transactions, cache, deployment, observability, system boundaries, and the kind of production thinking that helps code survive outside tutorial conditions.",
+  "highlights": [
+    "Advanced PHP is no longer mainly about syntax. It is about boundaries, failure modes, performance, testability, and how the system behaves in real conditions.",
+    "You now touch `enum`, `readonly`, traits, dependency injection, middleware, webhook signatures, queues, retries, transactions, and production safety.",
+    "The testing section now includes both mindset and concrete `PHPUnit` examples so plain PHP code connects naturally to deliberate verification habits.",
+    "The goal of level 3 is not only to write code that runs, but to explain tradeoffs, debug with context, protect the system, and defend the design shape you chose."
+  ],
+  "modules": [
+    {
+      "title": "Modern PHP Topics",
+      "description": "These topics appear often in current tutorials, teams, and package code.",
+      "bullets": [
+        "Namespaces and PSR-4 autoloading",
+        "Classes, interfaces, abstract classes, and traits",
+        "Exceptions, error handling, and defensive programming",
+        "Type declarations, nullable types, and return types",
+        "Composer packages and dependency management",
+        "`enum`, `readonly`, `final`, and newer language features that make data models more explicit",
+        "Tools such as `static` methods or `static` properties should also be understood in context instead of overused"
+      ]
+    },
+    {
+      "title": "final, readonly, and deliberate constraints",
+      "description": "Modern PHP does not only give you more power. It also gives you clearer ways to place boundaries around code.",
+      "bullets": [
+        "`final` helps prevent a class or method from being overridden in ways you do not want.",
+        "`readonly` makes it clear that a value should be assigned once and then stay stable.",
+        "Tip: good limiting keywords usually make intent clearer, not just the code more modern-looking."
+      ]
+    },
+    {
+      "title": "static and when to be careful",
+      "description": "`static` has valid uses, but it is also an easy path toward rigid code if you lean on it too much.",
+      "bullets": [
+        "`static` methods can fit pure helpers that do not need object state.",
+        "`static` properties may feel convenient, but they can quietly reintroduce global-state-like coupling.",
+        "Tip: if you reach for `static`, ask whether you are clarifying the responsibility or only avoiding a cleaner object design."
+      ]
+    },
+    {
+      "title": "Architecture and Boundaries",
+      "description": "Advanced PHP work usually becomes more about code shape than raw syntax.",
+      "bullets": [
+        "Separate transport concerns, business rules, persistence, and presentation where possible.",
+        "Avoid classes that know too much or do too much because they become painful to test and change.",
+        "Tip: if one class needs many unrelated dependencies, the design probably wants to be split."
+      ]
+    },
+    {
+      "title": "Exceptions and Error Strategy",
+      "description": "Strong PHP code handles failure intentionally rather than sprinkling `false` returns everywhere.",
+      "bullets": [
+        "Use exceptions for exceptional flows that need structured handling.",
+        "Use clear return values when failure is expected and simple to model.",
+        "Tip: decide early which layer is allowed to catch and translate exceptions into user-facing messages."
+      ]
+    },
+    {
+      "title": "Performance and Memory Awareness",
+      "description": "You do not need premature optimization, but advanced developers know the shape of expensive code.",
+      "bullets": [
+        "Repeated database queries inside loops often hurt more than small syntax choices.",
+        "Large arrays, repeated transformations, and unnecessary file loading can increase memory pressure.",
+        "Tip: profile bottlenecks before rewriting half the codebase for speed."
+      ]
+    },
+    {
+      "title": "Testing and Confidence",
+      "description": "At higher levels, correctness is not only what you believe. It is what you can verify.",
+      "bullets": [
+        "Unit tests help isolate business rules and small computations.",
+        "Integration tests help confirm database, HTTP, and framework behavior.",
+        "Tip: test the contract and intent of the code, not every private implementation detail."
+      ]
+    },
+    {
+      "title": "PHPUnit from a beginner-friendly angle",
+      "description": "PHPUnit is the most common testing tool in the PHP world. You do not need every feature at once, but you should understand the basic shape of a readable test early.",
+      "bullets": [
+        "A good test usually has three parts: prepare data, call the behavior, then `assert` the result.",
+        "A test name should express behavior, for example `it_calculates_total_price` or `test_it_rejects_invalid_email`.",
+        "Start with straightforward assertions such as `assertSame`, `assertTrue`, `assertFalse`, and `assertCount` before jumping into heavy mocking.",
+        "Tip: if code feels extremely hard to test, the problem may be less about PHPUnit and more about a class carrying too many responsibilities or too many rigid dependencies."
+      ]
+    },
+    {
+      "title": "Unit tests versus integration tests",
+      "description": "People hear these two names very early, but the line between them is often still fuzzy at first.",
+      "bullets": [
+        "A unit test focuses on one small function or class and tries to verify logic in a narrow, fast scope.",
+        "An integration test verifies multiple parts working together such as a database, an HTTP layer, a queue, or framework glue.",
+        "Tip: if a test is slow, setup-heavy, or touches too many external resources, it is probably drifting toward integration rather than unit."
+      ]
+    },
+    {
+      "title": "Cache, Queues, and System-Level Work",
+      "description": "As applications grow, many hard problems stop being about PHP syntax and start being about how the system behaves under load and background work.",
+      "bullets": [
+        "Cache helps avoid recomputing or requerying expensive data unnecessarily.",
+        "Queues move slow work such as email sending, image processing, or external sync into the background.",
+        "Tip: before adding cache or queues, identify the exact bottleneck you are trying to relieve."
+      ]
+    },
+    {
+      "title": "N+1 Queries and How to Notice Them",
+      "description": "This is one of the classic performance problems in PHP backends, especially when working with ORMs or relational data access.",
+      "bullets": [
+        "`N+1` often happens when you load a list and then trigger one more query for each item inside a loop.",
+        "A familiar symptom is that the page still works correctly but becomes much slower as record counts grow.",
+        "Tip: inspect query logs or query counts whenever a loop touches related data instead of only reading the PHP code at the surface level."
+      ]
+    },
+    {
+      "title": "Data Boundaries and Service Integration",
+      "description": "At the advanced level, you should treat databases, caches, mail, queues, and HTTP APIs as system boundaries rather than as small implementation details.",
+      "bullets": [
+        "Each boundary has its own latency, failure modes, and retry or timeout behavior.",
+        "Outbound service code should live in a concentrated place so you can manage logs, timeouts, retries, and fallbacks consistently.",
+        "Tip: when an external service is slow or failing, what matters is how your system reacts, not only where the call is located."
+      ]
+    },
+    {
+      "title": "Webhooks, Retries, and Uncertain Flows",
+      "description": "Once a system starts communicating both ways with external services, you meet webhooks, timeouts, retries, duplicate deliveries, and late events.",
+      "bullets": [
+        "A webhook is data pushed back into your system by an external service after an event happens.",
+        "Retries can rescue temporary failures, but they can also create duplicate handling if the design is careless.",
+        "Tip: webhook flows should usually be designed to be `idempotent`, meaning the same event can arrive again without corrupting data."
+      ]
+    },
+    {
+      "title": "Observability and Production Investigation",
+      "description": "At the advanced level, debugging is no longer about printing a few variables. You need enough traces to investigate the real behavior of the system under production conditions.",
+      "bullets": [
+        "Logs, metrics, and traces help you inspect the system from multiple angles instead of guessing.",
+        "A good production error trail should answer: which request, which user, which service, where it slowed down, and where it failed.",
+        "Tip: if production breaks and you do not know where to start looking, your observability is probably still too weak."
+      ]
+    },
+    {
+      "title": "Deploy, Environments, and Configuration",
+      "description": "A strong PHP developer understands that the same code behaves differently across local, staging, and production when configuration is not controlled carefully.",
+      "bullets": [
+        "Separate configuration by environment instead of hardcoding it into random files.",
+        "Know how to manage migrations, secrets, and config caches during deployment.",
+        "Tip: environment bugs often come from config or data drift rather than from one isolated PHP statement."
+      ]
+    },
+    {
+      "title": "Problem-Solving Direction",
+      "description": "At this level, solve small but meaningful problems rather than memorizing keywords.",
+      "bullets": [
+        "Refactor repeated logic into functions or classes.",
+        "Choose data structures that match the problem.",
+        "Explain tradeoffs instead of only writing code.",
+        "When you propose a solution, also explain what complexity or maintenance cost it introduces."
+      ]
+    },
+    {
+      "title": "Transactions, consistency, and multi-step updates",
+      "description": "When one action touches multiple records or tables, the important question is no longer a single PHP statement but the consistency of the entire update flow.",
+      "bullets": [
+        "Transactions let several updates succeed or fail as one unit.",
+        "If you save an order, decrease stock, and write an audit record, you need to know which steps must roll back together when one step fails.",
+        "Tip: a transaction does not fix every design problem, but it is a core tool when multiple data changes must stay in sync."
+      ]
+    },
+    {
+      "title": "Do not abstract too early",
+      "description": "Advanced learners start seeing more patterns, but knowing many patterns does not mean every one of them belongs in the codebase.",
+      "bullets": [
+        "A good abstraction clarifies responsibilities, reduces duplication, and improves testability.",
+        "A bad abstraction only pushes the real problem further away and forces readers to jump across too many files for no real gain.",
+        "Tip: before adding another service, repository, or adapter, ask which real pain point it solves today."
+      ]
+    },
+    {
+      "title": "Concurrency, retries, and uncertain state",
+      "description": "Many difficult bugs do not come from syntax. They come from two processes touching the same data or from work being retried.",
+      "bullets": [
+        "If a job can run twice, the system needs to know whether that duplicates or corrupts data.",
+        "A good retry story usually needs `idempotent` handling or a clear business key.",
+        "Tip: when thinking about production safety, imagine duplicate requests, retried jobs, and timeouts in the middle of a flow."
+      ]
+    },
+    {
+      "title": "Queues, background jobs, and async work",
+      "description": "As systems grow, many tasks should move into the background instead of forcing the request to wait for everything.",
+      "bullets": [
+        "Queues are useful for mail sending, report generation, image resizing, data synchronization, and other slow work.",
+        "A solid job needs progress logging, controlled retries, and protection against duplicate processing.",
+        "Tip: do not push everything into a queue just because it sounds advanced. Use it when it truly solves latency or load separation."
+      ]
+    },
+    {
+      "title": "Rate limiting and API safety",
+      "description": "When the system exposes APIs or sensitive endpoints, you need to think about resource protection against abuse.",
+      "bullets": [
+        "Rate limiting restricts request volume by user, IP, token, or action.",
+        "Endpoints such as login, OTP, webhook handlers, or export routes are common candidates for early limits.",
+        "Tip: rate limiting is not only about attacks. It also helps the system survive burst traffic and buggy clients."
+      ]
+    },
+    {
+      "title": "Schedulers, cron, and timed tasks",
+      "description": "Not every task is triggered by a user request. Many backend jobs run on a schedule.",
+      "bullets": [
+        "Common examples include log cleanup, periodic reports, nightly sync, token expiration cleanup, or temporary file deletion.",
+        "Schedulers usually need logging, alerting, and safe rerun behavior when earlier jobs fail.",
+        "Tip: for every scheduled task, ask what happens if it runs late, twice, or in parallel."
+      ]
+    },
+    {
+      "title": "Cache invalidation and stale data",
+      "description": "Cache makes systems faster, but stale data is the price you need to manage.",
+      "bullets": [
+        "Whenever source data changes, you should know which cache entries need to be cleared or refreshed.",
+        "Cache is not only about storing values. It is also about deciding how old data is allowed to become.",
+        "Tip: if you still do not know when cache should expire or be cleared, do not cache too early."
+      ]
+    }
+  ],
+  "examplesTitle": "Advanced Examples",
+  "examples": [
+    {
+      "title": "An interface and two implementations",
+      "description": "A small example that shows `interface` as a contract and classes as concrete implementations.",
+      "code": "<?php\ninterface PaymentGateway\n{\n    public function charge(int $amount): bool;\n}\n\nclass StripeGateway implements PaymentGateway\n{\n    public function charge(int $amount): bool\n    {\n        return true;\n    }\n}\n\nclass FakeGateway implements PaymentGateway\n{\n    public function charge(int $amount): bool\n    {\n        return true;\n    }\n}\n"
+    },
+    {
+      "title": "Catching and translating exceptions",
+      "description": "One layer throws a technical exception, another layer decides how to present failure.",
+      "code": "<?php\nfunction loadUser(PDO $pdo, int $id): array\n{\n    $stmt = $pdo->prepare('SELECT * FROM users WHERE id = :id');\n    $stmt->execute(['id' => $id]);\n    $user = $stmt->fetch();\n\n    if (!$user) {\n        throw new RuntimeException('User not found');\n    }\n\n    return $user;\n}\n\ntry {\n    $user = loadUser($pdo, 10);\n} catch (RuntimeException $exception) {\n    echo 'Unable to load that user right now.';\n}\n"
+    },
+    {
+      "title": "A tiny key-based cache example",
+      "description": "A small example to show the idea of avoiding repeated expensive work.",
+      "code": "<?php\n$cache = [];\n\nfunction getReport(array &$cache, string $key): string\n{\n    if (isset($cache[$key])) {\n        return $cache[$key];\n    }\n\n    $cache[$key] = 'expensive-report-data';\n\n    return $cache[$key];\n}\n\necho getReport($cache, 'weekly');\n"
+    },
+    {
+      "title": "An easy-to-see `N+1` example",
+      "description": "This is the risky pattern where each item in a list triggers one more query.",
+      "code": "<?php\n$users = $pdo->query('SELECT id, name FROM users')->fetchAll();\n\nforeach ($users as $user) {\n    $stmt = $pdo->prepare('SELECT * FROM posts WHERE user_id = :user_id');\n    $stmt->execute(['user_id' => $user['id']]);\n    $posts = $stmt->fetchAll();\n\n    echo $user['name'] . ' has ' . count($posts) . ' posts' . PHP_EOL;\n}\n"
+    },
+    {
+      "title": "A wrapper for an external service call",
+      "description": "A small example showing that grouping API call logic makes timeout and failure handling easier.",
+      "code": "<?php\nfunction fetchStatus(string $url): string\n{\n    $context = stream_context_create([\n        'http' => [\n            'method' => 'GET',\n            'timeout' => 3,\n        ],\n    ]);\n\n    $response = @file_get_contents($url, false, $context);\n\n    if ($response === false) {\n        throw new RuntimeException('Service is unavailable');\n    }\n\n    return $response;\n}\n"
+    },
+    {
+      "title": "A tiny webhook handler",
+      "description": "This example is only meant to show the basic shape of receiving JSON from an external service.",
+      "code": "<?php\n$payload = file_get_contents('php://input');\n$data = json_decode($payload, true);\n\nif (!is_array($data)) {\n    http_response_code(400);\n    echo 'Invalid payload';\n    return;\n}\n\necho 'Webhook received';\n"
+    },
+    {
+      "title": "A simple transaction with rollback",
+      "description": "A short example showing that a multi-step flow may need rollback when one step fails.",
+      "code": "<?php\ntry {\n    $pdo->beginTransaction();\n\n    $pdo->exec(\"UPDATE wallets SET balance = balance - 100 WHERE id = 1\");\n    $pdo->exec(\"UPDATE wallets SET balance = balance + 100 WHERE id = 2\");\n\n    $pdo->commit();\n} catch (Throwable $exception) {\n    $pdo->rollBack();\n    throw $exception;\n}\n"
+    },
+    {
+      "title": "A tiny duplicate-processing guard",
+      "description": "A very small example of checking whether an event was already handled before running again.",
+      "code": "<?php\n$eventId = $payload['event_id'] ?? null;\n\nif ($eventId === null) {\n    throw new RuntimeException('Missing event id');\n}\n\nif (in_array($eventId, $processedEventIds, true)) {\n    return;\n}\n\n$processedEventIds[] = $eventId;\n"
+    },
+    {
+      "title": "A tiny rate-limit guard",
+      "description": "An idea-level example of blocking an action that is called too many times in one window.",
+      "code": "<?php\n$key = 'login:' . $userId;\n$attempts = $cache[$key] ?? 0;\n\nif ($attempts >= 5) {\n    throw new RuntimeException('Too many attempts');\n}\n\n$cache[$key] = $attempts + 1;\n"
+    },
+    {
+      "title": "A tiny scheduled cleanup task",
+      "description": "An idea-level example for a periodic cleanup task.",
+      "code": "<?php\nfunction cleanupExpiredTokens(PDO $pdo): void\n{\n    $stmt = $pdo->prepare('DELETE FROM password_resets WHERE expires_at < NOW()');\n    $stmt->execute();\n}\n"
+    },
+    {
+      "title": "A tiny `enum` example",
+      "description": "A short example showing when a fixed set of states deserves a clearer model.",
+      "code": "<?php\nenum OrderStatus: string\n{\n    case Draft = 'draft';\n    case Paid = 'paid';\n    case Cancelled = 'cancelled';\n}\n\necho OrderStatus::Paid->value;\n"
+    },
+    {
+      "title": "A tiny `readonly` class",
+      "description": "A short example showing when data should stay stable after construction.",
+      "code": "<?php\nreadonly class Money\n{\n    public function __construct(\n        public int $amount,\n        public string $currency,\n    ) {}\n}\n\n$price = new Money(150000, 'VND');\n"
+    },
+    {
+      "title": "A tiny `static` helper",
+      "description": "A short example for a pure helper that does not need object state.",
+      "code": "<?php\nclass SlugHelper\n{\n    public static function make(string $text): string\n    {\n        return strtolower(str_replace(' ', '-', trim($text)));\n    }\n}\n\necho SlugHelper::make('Laravel Labs');\n"
+    },
+    {
+      "title": "A tiny PHPUnit test",
+      "description": "A beginner-friendly example showing the basic shape of a test class and one clear assertion.",
+      "code": "<?php\nuse PHPUnit\\Framework\\TestCase;\n\nfinal class PriceCalculatorTest extends TestCase\n{\n    public function test_it_calculates_total_price(): void\n    {\n        $calculator = new PriceCalculator();\n\n        $total = $calculator->total([100, 200, 300]);\n\n        $this->assertSame(600, $total);\n    }\n}\n"
+    },
+    {
+      "title": "A small service that is easy to test",
+      "description": "This pairs nicely with PHPUnit because the class has one clear job and very few dependencies.",
+      "code": "<?php\nfinal class PriceCalculator\n{\n    public function total(array $prices): int\n    {\n        return array_sum($prices);\n    }\n}\n"
+    },
+    {
+      "title": "A test that expects an exception",
+      "description": "A short example showing that tests can check failure behavior, not only successful values.",
+      "code": "<?php\nuse PHPUnit\\Framework\\TestCase;\n\nfinal class UserInputTest extends TestCase\n{\n    public function test_it_rejects_empty_email(): void\n    {\n        $validator = new UserInputValidator();\n\n        $this->expectException(InvalidArgumentException::class);\n        $validator->validateEmail('');\n    }\n}\n"
+    },
+    {
+      "title": "A small trait for reusable log formatting",
+      "description": "A short example showing that a trait fits small repeated behavior shared across classes.",
+      "code": "<?php\ntrait WritesLogMessage\n{\n    public function formatLog(string $message): string\n    {\n        return '[' . date('H:i:s') . '] ' . $message;\n    }\n}\n\nclass ImportJob\n{\n    use WritesLogMessage;\n}\n"
+    },
+    {
+      "title": "A tiny dependency injection example",
+      "description": "A short example showing a service receiving its dependency from the outside instead of creating it internally.",
+      "code": "<?php\nclass ReportService\n{\n    public function __construct(private PDO $pdo) {}\n\n    public function loadUsers(): array\n    {\n        return $this->pdo->query('SELECT id, name FROM users')->fetchAll();\n    }\n}\n"
+    },
+    {
+      "title": "A tiny middleware example",
+      "description": "An idea-level example of a layer that checks a request before the main logic runs.",
+      "code": "<?php\nclass EnsureAuthenticated\n{\n    public function handle(array $request, callable $next)\n    {\n        if (($request['user_id'] ?? null) === null) {\n            http_response_code(401);\n            echo 'Unauthorized';\n            return null;\n        }\n\n        return $next($request);\n    }\n}\n"
+    },
+    {
+      "title": "A tiny webhook signature check",
+      "description": "An idea-level example for confirming that a payload really came from the expected external service.",
+      "code": "<?php\n$payload = file_get_contents('php://input');\n$signature = $_SERVER['HTTP_X_SIGNATURE'] ?? '';\n$expected = hash_hmac('sha256', $payload, $secret);\n\nif (!hash_equals($expected, $signature)) {\n    http_response_code(401);\n    echo 'Invalid signature';\n    return;\n}\n"
+    }
+  ],
+  "questionsTitle": "Practice Questions with Answers",
+  "questions": [
+    {
+      "tag": "Hot Topic",
+      "question": "What is the difference between an interface and a trait in PHP?",
+      "answer": "An interface defines a contract that a class must implement, while a trait provides reusable method implementations that can be inserted into multiple classes."
+    },
+    {
+      "tag": "Hot Topic",
+      "question": "Why is `===` usually safer than `==` in PHP?",
+      "answer": "Because `===` compares both value and type, so it avoids implicit type juggling that can create surprising bugs."
+    },
+    {
+      "tag": "Modern PHP",
+      "question": "When is `enum` worth learning and using?",
+      "answer": "When your system has a fixed set of meaningful states such as `draft`, `paid`, `cancelled`, `active`, or `inactive`. `enum` reduces scattered raw strings, improves readability, and lowers the chance of accidental typos in state values."
+    },
+    {
+      "tag": "Modern PHP",
+      "question": "When is `readonly` genuinely useful?",
+      "answer": "When you have objects that carry data which should not be mutated casually after construction, such as money values, config snapshots, or DTOs for already-read data. `readonly` makes that intention explicit and reduces accidental state changes."
+    },
+    {
+      "tag": "Design",
+      "question": "What is one caution when using `static`?",
+      "answer": "Do not use `static` only because it is easy to call. It fits pure helpers or utilities without state, but if overused it can make code rigid, hard to mock, and too close to hidden global state."
+    },
+    {
+      "tag": "PHPUnit",
+      "question": "Where should you start when first learning PHPUnit?",
+      "answer": "Start with a very small class, very few dependencies, and one clear assertion. Do not begin with heavy mocks or a deep framework feature. A test that prepares data, calls one method, and finishes with `assertSame` is usually the best first step."
+    },
+    {
+      "tag": "PHPUnit",
+      "question": "What does a good test name look like?",
+      "answer": "A good test name communicates behavior, not only a method name. Names such as `test_it_calculates_total_price` or `test_it_rejects_invalid_email` let the reader understand intent without opening the implementation file."
+    },
+    {
+      "tag": "PHPUnit",
+      "question": "When should you suspect that code is harder to test than it should be?",
+      "answer": "When a tiny behavior needs many dependencies, a real database, real HTTP calls, or a long setup just to be verified. That usually points to a class carrying too many concerns or boundaries that are still too tangled."
+    },
+    {
+      "tag": "OOP",
+      "question": "When should you think about an `abstract class` instead of only an interface or a trait?",
+      "answer": "When several classes need not only a contract but also a meaningful shared base behavior or shared state. An interface defines the contract, a trait shares a small behavior slice, and an abstract class fits a real base type with common logic."
+    },
+    {
+      "tag": "Architecture",
+      "question": "Why is dependency injection important at an advanced level?",
+      "answer": "Because it makes a class explicit about what it needs, reduces hard-coded internal construction, and makes testing or swapping implementations much easier. It is one of the core habits behind clearer boundaries."
+    },
+    {
+      "tag": "Middleware",
+      "question": "What kind of problem does middleware solve well?",
+      "answer": "Middleware fits cross-cutting concerns shared by many endpoints, such as authentication, logging, rate limiting, locale checks, or early request validation. It prevents the same guard logic from being repeated across many controllers or handlers."
+    },
+    {
+      "tag": "Webhook",
+      "question": "Why is webhook signature verification worth learning early?",
+      "answer": "Because receiving JSON and trusting it immediately is too weak. Signature verification gives you better evidence that the payload was actually signed by the external service, reducing the chance of fake or invalid requests entering your system."
+    },
+    {
+      "tag": "Practice",
+      "question": "How would you improve a file full of repeated validation checks?",
+      "answer": "Move the repeated rules into reusable functions or classes, keep naming explicit, and centralize the rule set so updates happen in one place."
+    },
+    {
+      "tag": "Practice",
+      "question": "When should you use exceptions instead of returning false?",
+      "answer": "Use exceptions when failure is exceptional and the caller needs structured error handling, especially when multiple layers of code must react differently."
+    },
+    {
+      "tag": "Tradeoff",
+      "question": "Why is putting database queries inside a loop often a red flag?",
+      "answer": "Because the code may trigger an extra query for every item in the loop, which can turn a simple page into a slow `N+1` style problem. The safer habit is to ask whether the required data can be loaded in fewer queries before the loop starts."
+    },
+    {
+      "tag": "Architecture",
+      "question": "How do you recognize that a class is doing too much?",
+      "answer": "A class is usually overloaded when it has many unrelated reasons to change, many dependencies, or methods that belong to different concerns such as validation, persistence, formatting, and orchestration all at once. A strong refactor often begins by naming those separate concerns explicitly."
+    },
+    {
+      "tag": "Tip",
+      "question": "What is a good advanced habit when discussing a refactor?",
+      "answer": "Do not only describe the cleaner code shape. Also explain the tradeoff: whether the refactor improves readability, testability, or boundaries, and whether it adds indirection, more files, or more abstraction than the team actually needs."
+    },
+    {
+      "tag": "Systems",
+      "question": "When should you think about caching instead of only optimizing PHP syntax?",
+      "answer": "Think about caching when the same data or computed result is read repeatedly, changes infrequently, and costs a meaningful amount to rebuild. Tiny syntax optimizations rarely solve the real bottleneck if the deeper problem is I/O, database access, or background work."
+    },
+    {
+      "tag": "Deploy",
+      "question": "Why do production bugs sometimes fail to reproduce locally even when the code looks the same?",
+      "answer": "Because production also depends on environment configuration, secrets, real data, caches, service versions, and live traffic patterns. Many bugs that look like code bugs are actually caused by environment drift or incorrect assumptions about real-world data."
+    },
+    {
+      "tag": "Performance",
+      "question": "What is an important warning when working with ORMs or relational backend code?",
+      "answer": "Do not assume that clean-looking application code means the query pattern is also efficient. A loop that touches related data can quietly create an `N+1 query` problem and slow the page dramatically as data grows. Build the habit of checking query logs, query counts, and which code paths cross data boundaries."
+    },
+    {
+      "tag": "Service",
+      "question": "What should you keep in mind when PHP connects to external services such as payment, mail, or HTTP APIs?",
+      "answer": "Always think about timeout behavior, retries, error logging, and fallbacks instead of only the success path. External services are common sources of network failures, slow responses, and contract changes, so integration code should be grouped and treated as a separate boundary in the system."
+    },
+    {
+      "tag": "Webhook",
+      "question": "Why do webhooks and retries often make backend systems harder than they first appear?",
+      "answer": "Because they introduce uncertain situations such as late arrivals, duplicate deliveries, and out-of-order events. If the code only assumes the ideal success path, data bugs become very easy to create. That is why inbound event flows usually need clear validation, logging, and `idempotent` design."
+    },
+    {
+      "tag": "Observability",
+      "question": "What is a sign that a production backend is still hard to operate?",
+      "answer": "A clear sign is when an error happens and you do not know which log, request, service, or data context to inspect first. That usually means the system is missing the right observability signals or the right concentration of context around important boundaries."
+    },
+    {
+      "tag": "Consistency",
+      "question": "When should transactions become your default line of thought?",
+      "answer": "When one business action touches multiple data changes that must succeed together to keep the system consistent. If one step can succeed while another fails and the half-finished state would be unacceptable, you should immediately think about a transaction or another explicit consistency strategy."
+    },
+    {
+      "tag": "Mindset",
+      "question": "What is one important advanced-level lesson worth remembering?",
+      "answer": "Strong code is not code that only uses more impressive keywords. It is code with clear boundaries, visible failure modes, explainable data flow, and tradeoffs that can be spoken out loud. When you can explain why the system chose this shape instead of another one, you are moving beyond syntax study."
+    },
+    {
+      "tag": "Production",
+      "question": "What is one question worth asking before backend code goes to production?",
+      "answer": "Ask what happens if the request runs again, the external service times out, or a middle step succeeds while the final step fails. That single question often exposes the real need for transactions, retries, duplicate handling, logging, and alerting."
+    },
+    {
+      "tag": "Queue",
+      "question": "When should a task move to a queue instead of running inside the request?",
+      "answer": "When the task is slow, does not need to return an immediate result to the user, or would otherwise block the request, such as mail sending, report generation, image resizing, or data sync. The important point is understanding the real gain: lower request latency and better load separation."
+    },
+    {
+      "tag": "API Safety",
+      "question": "Why is rate limiting part of backend design and not only an infrastructure detail?",
+      "answer": "Because it directly shapes the durability and behavior of an endpoint. An API without sensible limits is much easier to spam, brute-force, burst, or accidentally flood by buggy clients. Thinking about rate limiting early means thinking about how the system protects itself."
+    },
+    {
+      "tag": "Scheduler",
+      "question": "What is one important warning when designing scheduled tasks?",
+      "answer": "Do not only imagine the happy case where the task runs on time and succeeds once. Think about late runs, duplicate runs, deployment in the middle of execution, and collisions with normal requests over the same data. That mindset makes schedulers much less fragile."
+    },
+    {
+      "tag": "Cache",
+      "question": "Why is cache invalidation considered difficult?",
+      "answer": "Because you are not only saving a fast value, you are also deciding when that value is no longer trustworthy. If you do not define refresh or eviction rules clearly, the system can become very fast while returning stale data in the wrong context."
+    }
+  ]
+}
