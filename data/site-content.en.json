@@ -1851,6 +1851,362 @@
       "subtitle": "Turn static notes into mini tasks, bug labs, and repeatable case studies so the knowledge does not stop at passive reading.",
       "sections": [
         {
+          "type": "workbenches",
+          "heading": "Read Code While You Learn",
+          "intro": "Use these runnable Laravel Hub workbenches as the bridge between static reading and real application code. Start with the page, read the listed files, then run the command and change one small behavior.",
+          "items": [
+            {
+              "track": "PHP Foundation",
+              "title": "Name normalizer workbench",
+              "body": "Practice a plain PHP class through a Laravel page and API. This is the smallest loop for learning typed methods, array cleanup, guard clauses, and testable behavior.",
+              "concepts": [
+                "`declare(strict_types=1)` and typed PHP methods",
+                "Single-purpose class under `app/Practice`",
+                "Feature test plus unit-level behavior"
+              ],
+              "files": [
+                "hub/app/Practice/Php/NameNormalizer.php",
+                "hub/app/Http/Controllers/Practice/Workbench/NameNormalizerController.php",
+                "hub/resources/views/practice/workbench/name-normalizer.blade.php",
+                "hub/tests/Feature/NameNormalizerWorkbenchTest.php"
+              ],
+              "commands": [
+                "php artisan test --filter NameNormalizer",
+                "vendor\\bin\\pint --test"
+              ],
+              "href": "{{HUB_BASE_URL}}/workbench/name-normalizer",
+              "action": "Open runnable workbench"
+            },
+            {
+              "track": "API + Validation",
+              "title": "Practice topic intake workbench",
+              "body": "Submit a real JSON request, trigger Laravel validation, and read how the controller delegates response construction to a service instead of holding business logic.",
+              "concepts": [
+                "API route and named route lookup",
+                "Form Request validation",
+                "Thin controller and service orchestration",
+                "JSON response shape and validation errors"
+              ],
+              "files": [
+                "hub/routes/api/practice-actions.php",
+                "hub/app/Http/Requests/Api/StorePracticeTopicRequest.php",
+                "hub/app/Http/Controllers/Api/PracticeTopicController.php",
+                "hub/app/Services/Practice/PracticeTopicIntakeService.php",
+                "hub/resources/views/practice/workbench/topic-intake.blade.php",
+                "hub/tests/Feature/PracticeTopicApiTest.php"
+              ],
+              "commands": [
+                "php artisan test --filter PracticeTopic",
+                "php artisan route:list --path=api/practice/topics",
+                "vendor\\bin\\pint --test"
+              ],
+              "href": "{{HUB_BASE_URL}}/workbench/topic-intake",
+              "action": "Open API validation workbench"
+            },
+            {
+              "track": "Laravel HTTP",
+              "title": "HTTP request-flow workbench",
+              "body": "Trace a request through Laravel route matching, validation, controller orchestration, service logic, and response formatting. This is the code-reading map for every Laravel feature you build later.",
+              "concepts": [
+                "Route files as URL maps",
+                "Form Request validation boundary",
+                "Thin controller orchestration",
+                "Service-owned workflow logic"
+              ],
+              "files": [
+                "hub/routes/web/workbench.php",
+                "hub/routes/api/practice-actions.php",
+                "hub/app/Http/Requests/Api/TraceHttpRequestFlowRequest.php",
+                "hub/app/Http/Controllers/Api/HttpRequestFlowTraceController.php",
+                "hub/app/Services/Practice/HttpRequestFlowTracerService.php",
+                "hub/resources/views/practice/workbench/http-request-flow.blade.php"
+              ],
+              "commands": [
+                "php artisan test --filter HttpRequestFlowWorkbenchTest",
+                "php artisan route:list --path=workbench",
+                "php artisan route:list --path=api/practice/http-request-flow"
+              ],
+              "href": "{{HUB_BASE_URL}}/workbench/http-request-flow",
+              "action": "Open request-flow workbench"
+            },
+            {
+              "track": "Testing + Quality",
+              "title": "Quality gate workbench",
+              "body": "Evaluate whether a practice task is actually ready by combining test count, assertion count, failures, and Pint status. This teaches the habit of shipping verified behavior, not just code that looks finished.",
+              "concepts": [
+                "Behavior-focused feature tests",
+                "Unit tests for service rules",
+                "Pint as a style gate",
+                "Readiness decisions from verification data"
+              ],
+              "files": [
+                "hub/routes/api/practice-actions.php",
+                "hub/app/Http/Requests/Api/EvaluateQualityGateRequest.php",
+                "hub/app/Http/Controllers/Api/PracticeQualityGateController.php",
+                "hub/app/Services/Practice/PracticeQualityGateService.php",
+                "hub/tests/Feature/PracticeQualityGateApiTest.php",
+                "hub/tests/Unit/Practice/PracticeQualityGateServiceTest.php"
+              ],
+              "commands": [
+                "php artisan test --filter PracticeQualityGate",
+                "php artisan test --filter QualityGateWorkbenchTest",
+                "vendor\\bin\\pint --test"
+              ],
+              "href": "{{HUB_BASE_URL}}/workbench/quality-gate",
+              "action": "Open quality-gate workbench"
+            },
+            {
+              "track": "Laravel Security",
+              "title": "Blade escaping workbench",
+              "body": "Submit unsafe-looking content, inspect the escaped API response, and read how Laravel validation plus Blade output escaping reduces XSS risk.",
+              "concepts": [
+                "Escaped Blade output with `{{ }}`",
+                "Why raw `{!! !!}` output is dangerous",
+                "Form Request validation before rendering",
+                "Service rules for risky content patterns"
+              ],
+              "files": [
+                "hub/routes/api/practice-actions.php",
+                "hub/app/Http/Requests/Api/PreviewEscapedContentRequest.php",
+                "hub/app/Http/Controllers/Api/SecurityEscapePreviewController.php",
+                "hub/app/Services/Practice/SecurityEscapePreviewService.php",
+                "hub/resources/views/practice/workbench/security-escape-preview.blade.php"
+              ],
+              "commands": [
+                "php artisan test --filter SecurityEscapePreviewWorkbenchTest",
+                "php artisan route:list --path=security-escape-preview",
+                "vendor\\bin\\pint --test"
+              ],
+              "href": "{{HUB_BASE_URL}}/workbench/security-escape-preview",
+              "action": "Open Blade security workbench"
+            },
+            {
+              "track": "Laravel Data",
+              "title": "Collection filter and pagination workbench",
+              "body": "Practice the shape of a Laravel list page using Collection filters before moving the same thinking into Eloquent queries and database pagination.",
+              "concepts": [
+                "Validated filter input",
+                "Collection `when()` pipelines",
+                "Search haystacks and status filters",
+                "Pagination metadata for API/UI"
+              ],
+              "files": [
+                "hub/routes/api/practice-actions.php",
+                "hub/app/Http/Requests/Api/PreviewCollectionFilterRequest.php",
+                "hub/app/Http/Controllers/Api/CollectionFilterPreviewController.php",
+                "hub/app/Services/Practice/CollectionFilterPreviewService.php",
+                "hub/resources/views/practice/workbench/collection-filter-preview.blade.php"
+              ],
+              "commands": [
+                "php artisan test --filter CollectionFilterPreviewWorkbenchTest",
+                "php artisan route:list --path=collection-filter-preview",
+                "vendor\\bin\\pint --test"
+              ],
+              "href": "{{HUB_BASE_URL}}/workbench/collection-filter-preview",
+              "action": "Open list-filter workbench"
+            },
+            {
+              "track": "Laravel Async",
+              "title": "Async job planning workbench",
+              "body": "Plan a queue job before running a worker: job class, payload key, idempotency key, retry attempts, backoff, and queue commands.",
+              "concepts": [
+                "Job class naming",
+                "Payload boundary",
+                "Idempotency before external calls",
+                "Retry policy and worker commands"
+              ],
+              "files": [
+                "hub/routes/api/practice-actions.php",
+                "hub/app/Http/Requests/Api/PlanAsyncJobRequest.php",
+                "hub/app/Http/Controllers/Api/AsyncJobPlanController.php",
+                "hub/app/Services/Practice/AsyncJobPlanService.php",
+                "hub/resources/views/practice/workbench/async-job-plan.blade.php"
+              ],
+              "commands": [
+                "php artisan test --filter AsyncJobPlanWorkbenchTest",
+                "php artisan route:list --path=async-job-plan",
+                "php artisan queue:restart"
+              ],
+              "href": "{{HUB_BASE_URL}}/workbench/async-job-plan",
+              "action": "Open async job workbench"
+            },
+            {
+              "track": "Laravel Events",
+              "title": "Event listener planning workbench",
+              "body": "Plan a domain event and listener pair so side effects like mail, notification, logging, or external sync do not leak into controllers or core services.",
+              "concepts": [
+                "Event names describe facts",
+                "Listeners own side effects",
+                "Queued listeners for slow work",
+                "Event and queue fakes in tests"
+              ],
+              "files": [
+                "hub/routes/api/practice-actions.php",
+                "hub/app/Http/Requests/Api/PlanEventListenerRequest.php",
+                "hub/app/Http/Controllers/Api/EventListenerPlanController.php",
+                "hub/app/Services/Practice/EventListenerPlanService.php",
+                "hub/resources/views/practice/workbench/event-listener-plan.blade.php"
+              ],
+              "commands": [
+                "php artisan test --filter EventListenerPlanWorkbenchTest",
+                "php artisan route:list --path=event-listener-plan",
+                "vendor\\bin\\pint --test"
+              ],
+              "href": "{{HUB_BASE_URL}}/workbench/event-listener-plan",
+              "action": "Open event/listener workbench"
+            },
+            {
+              "track": "Laravel Container",
+              "title": "Service container binding workbench",
+              "body": "Plan an interface, implementation, binding lifetime, and constructor injection target so Laravel can resolve dependencies cleanly.",
+              "concepts": [
+                "Dependency inversion",
+                "Service provider bindings",
+                "`bind` versus `singleton`",
+                "Constructor injection and test doubles"
+              ],
+              "files": [
+                "hub/routes/api/practice-actions.php",
+                "hub/app/Http/Requests/Api/PlanContainerBindingRequest.php",
+                "hub/app/Http/Controllers/Api/ContainerBindingPlanController.php",
+                "hub/app/Services/Practice/ContainerBindingPlanService.php",
+                "hub/resources/views/practice/workbench/container-binding-plan.blade.php"
+              ],
+              "commands": [
+                "php artisan test --filter ContainerBindingPlanWorkbenchTest",
+                "php artisan route:list --path=container-binding-plan",
+                "vendor\\bin\\pint --test"
+              ],
+              "href": "{{HUB_BASE_URL}}/workbench/container-binding-plan",
+              "action": "Open container workbench"
+            },
+            {
+              "track": "Laravel Authorization",
+              "title": "Authorization policy workbench",
+              "body": "Plan a policy class, ability method, controller authorization call, and allowed/forbidden tests before adding access-control logic to a feature.",
+              "concepts": [
+                "Policy class and ability names",
+                "`$this->authorize(...)` in controllers",
+                "HTTP 403 for forbidden actors",
+                "Allowed and forbidden feature tests"
+              ],
+              "files": [
+                "hub/routes/api/practice-actions.php",
+                "hub/app/Http/Requests/Api/PlanAuthorizationPolicyRequest.php",
+                "hub/app/Http/Controllers/Api/AuthorizationPolicyPlanController.php",
+                "hub/app/Services/Practice/AuthorizationPolicyPlanService.php",
+                "hub/resources/views/practice/workbench/authorization-policy-plan.blade.php"
+              ],
+              "commands": [
+                "php artisan test --filter AuthorizationPolicyPlanWorkbenchTest",
+                "php artisan route:list --path=authorization-policy-plan",
+                "vendor\\bin\\pint --test"
+              ],
+              "href": "{{HUB_BASE_URL}}/workbench/authorization-policy-plan",
+              "action": "Open authorization workbench"
+            },
+            {
+              "track": "Laravel Cache",
+              "title": "Cache strategy workbench",
+              "body": "Plan cache keys, TTL, invalidation triggers, and fallback behavior before adding Cache::remember to a read-heavy flow.",
+              "concepts": [
+                "Cache key naming",
+                "TTL and stale-data tolerance",
+                "Invalidation ownership",
+                "Cache miss fallback path"
+              ],
+              "files": [
+                "hub/routes/api/practice-actions.php",
+                "hub/app/Http/Requests/Api/PlanCacheStrategyRequest.php",
+                "hub/app/Http/Controllers/Api/CacheStrategyPlanController.php",
+                "hub/app/Services/Practice/CacheStrategyPlanService.php",
+                "hub/resources/views/practice/workbench/cache-strategy-plan.blade.php"
+              ],
+              "commands": [
+                "php artisan test --filter CacheStrategyPlanWorkbenchTest",
+                "php artisan route:list --path=cache-strategy-plan",
+                "php artisan cache:clear"
+              ],
+              "href": "{{HUB_BASE_URL}}/workbench/cache-strategy-plan",
+              "action": "Open cache workbench"
+            },
+            {
+              "track": "Laravel Files",
+              "title": "File storage planning workbench",
+              "body": "Plan upload validation, disk, visibility, path pattern, and cleanup before accepting real files.",
+              "concepts": [
+                "File validation rules",
+                "Disk and visibility choices",
+                "Scoped storage paths",
+                "Cleanup and replacement lifecycle"
+              ],
+              "files": [
+                "hub/routes/api/practice-actions.php",
+                "hub/app/Http/Requests/Api/PlanFileStorageRequest.php",
+                "hub/app/Http/Controllers/Api/FileStoragePlanController.php",
+                "hub/app/Services/Practice/FileStoragePlanService.php",
+                "hub/resources/views/practice/workbench/file-storage-plan.blade.php"
+              ],
+              "commands": [
+                "php artisan test --filter FileStoragePlanWorkbenchTest",
+                "php artisan route:list --path=file-storage-plan",
+                "php artisan storage:link"
+              ],
+              "href": "{{HUB_BASE_URL}}/workbench/file-storage-plan",
+              "action": "Open file storage workbench"
+            },
+            {
+              "track": "Laravel API Security",
+              "title": "Rate limit planning workbench",
+              "body": "Plan named throttles, actor identity keys, retry windows, and HTTP 429 tests before exposing sensitive or expensive API routes.",
+              "concepts": [
+                "Named rate limiters",
+                "Throttle middleware",
+                "Actor identity keys",
+                "HTTP 429 verification"
+              ],
+              "files": [
+                "hub/routes/api/practice-actions.php",
+                "hub/app/Http/Requests/Api/PlanRateLimitRequest.php",
+                "hub/app/Http/Controllers/Api/RateLimitPlanController.php",
+                "hub/app/Services/Practice/RateLimitPlanService.php",
+                "hub/resources/views/practice/workbench/rate-limit-plan.blade.php"
+              ],
+              "commands": [
+                "php artisan test --filter RateLimitPlanWorkbenchTest",
+                "php artisan route:list --path=rate-limit-plan",
+                "vendor\\bin\\pint --test"
+              ],
+              "href": "{{HUB_BASE_URL}}/workbench/rate-limit-plan",
+              "action": "Open rate-limit workbench"
+            },
+            {
+              "track": "Docker + Runtime",
+              "title": "Runtime smoke-check endpoint",
+              "body": "Compare local PHP and Docker runtime behavior by reading the compose file, environment values, and the smoke-check API that reports whether the app can see its expected runtime configuration.",
+              "concepts": [
+                "Docker Compose environment values",
+                "File cache versus database cache",
+                "Runtime check endpoint for local confidence"
+              ],
+              "files": [
+                "hub/docker-compose.yml",
+                "hub/Dockerfile",
+                "hub/docker/entrypoint.sh",
+                "hub/app/Services/Practice/RuntimeSmokeCheckService.php",
+                "hub/app/Http/Controllers/Api/RuntimeSmokeCheckController.php"
+              ],
+              "commands": [
+                "docker-compose config",
+                "docker-compose up --build --force-recreate",
+                "php artisan test --filter RuntimeSmokeCheck"
+              ],
+              "href": "{{HUB_BASE_URL}}/api/practice/runtime-smoke-check",
+              "action": "Open runtime API"
+            }
+          ]
+        },
+        {
           "type": "cards",
           "heading": "Mini Project Ideas",
           "intro": "Keep these projects intentionally small so each one reinforces a specific Laravel skill.",

@@ -9,6 +9,11 @@ const ROADMAP_COLLAPSE_KEY = "laravel-labs-roadmap-collapsed";
 const CONTENT_PROGRESS_KEY = "laravel-labs-content-progress";
 const SEARCH_INDEX_CACHE = new Map();
 const SITE_ROOT = document.body.dataset.siteRoot || ".";
+const HUB_BASE_URL = normalizeBaseUrl(
+  document.body.dataset.hubBaseUrl ||
+  window.LARAVEL_LABS_HUB_BASE_URL ||
+  ""
+);
 const DEFAULT_LANGUAGE = "en";
 const SUPPORTED_LANGUAGES = ["en", "vi"];
 let currentLanguage = "en";
@@ -21,10 +26,10 @@ const PHP_LEVEL_UI = {
     copiedCode: "✓ Copied"
   },
   vi: {
-    collapseCode: "Thu gọn code",
-    expandCode: "Mở code",
-    copyCode: "Copy",
-    copiedCode: "✓ Đã copy"
+    collapseCode: "Thu gọn mã",
+    expandCode: "Mở mã",
+    copyCode: "Sao chép",
+    copiedCode: "✓ Đã sao chép"
   }
 };
 const PHP_KEYWORD_UI = {
@@ -114,6 +119,15 @@ const PHP_LEVEL_PAGE_MAP = {
   intermediate: PAGE_PATHS["php-intermediate"],
   advanced: PAGE_PATHS["php-advanced"]
 };
+
+function normalizeBaseUrl(value) {
+  return String(value || "").replace(/\/+$/, "");
+}
+
+function resolveConfiguredHref(value) {
+  return String(value || "#").replaceAll("{{HUB_BASE_URL}}", HUB_BASE_URL);
+}
+
 const PHP_HEADER_MENU = {
   en: {
     overview: { label: "Overview", desc: "Roadmap, study flow, and where to continue next." },
@@ -536,7 +550,7 @@ function renderBreadcrumbTrail(data, language, pageKey) {
             <li>
               ${isLast
                 ? `<span aria-current="page">${escapeHtml(entry.label)}</span>`
-                : `<a href="${entry.href}">${escapeHtml(entry.label)}</a>`}
+                : `<a href="${escapeHtml(resolveConfiguredHref(entry.href))}">${escapeHtml(entry.label)}</a>`}
             </li>
           `;
         })
@@ -1039,8 +1053,8 @@ function bindRoadmapFilters(language) {
       undo: "Đánh dấu đang học",
       collapse: "Thu gọn nhánh",
       expand: "Mở nhánh",
-      studyOff: "Study mode",
-      studyOn: "Study mode: chưa xong"
+      studyOff: "Chế độ học",
+      studyOn: "Chế độ học: chưa xong"
     }
   }[language];
 
@@ -2102,12 +2116,14 @@ function bindThemeToggle(data, language, pageKey, render) {
 }
 
 function createCard(item, language) {
+  const href = resolveConfiguredHref(item.href);
+
   return `
     <article class="service-card landing-card">
       <h3>${text(item.title, language)}</h3>
       <p>${text(item.summary, language)}</p>
       <p class="landing-card-action">
-        <a class="btn" href="${item.href}">
+        <a class="btn" href="${escapeHtml(href)}">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 24" aria-hidden="true" focusable="false">
             <path d="m18 0 8 12 10-8-4 20H4L0 4l10 8 8-12z"></path>
           </svg>
@@ -2151,12 +2167,12 @@ function createBulletItem(item, language, index = 0, questionNumbered = false, q
         question: "Câu hỏi",
         answer: "Trả lời",
         keyPoints: "Ý chính",
-        tip: "Tip",
+        tip: "Mẹo",
         note: "Lưu ý",
         markDone: "Đánh dấu xong",
         markUndo: "Bỏ đánh dấu",
-        copy: "Copy",
-        copied: "✓ Đã copy"
+        copy: "Sao chép",
+        copied: "✓ Đã sao chép"
       }
     : {
         question: "Question",
@@ -2197,11 +2213,11 @@ function createBulletItem(item, language, index = 0, questionNumbered = false, q
       <div class="bullet-links">
         ${item.links
           .map((entry) => {
-            const href = entry.href || "#";
+            const href = resolveConfiguredHref(entry.href);
             const label = text(entry.label, language);
             const desc = entry.desc ? `<span>${formatRichText(text(entry.desc, language))}</span>` : "";
             return `
-              <a class="bullet-link-chip" href="${href}">
+              <a class="bullet-link-chip" href="${escapeHtml(href)}">
                 <strong>${label}</strong>
                 ${desc}
               </a>
@@ -2346,14 +2362,51 @@ function createContentCard(item, language) {
 }
 
 function createLinkCard(item, language) {
-  const href = item.href || "#";
+  const href = resolveConfiguredHref(item.href);
   const label = text(item.label, language);
   const description = text(item.description, language);
   return `
     <article class="link-card">
       <h3>${label}</h3>
       <p>${description}</p>
-      <p class="card-action"><a class="text-link" href="${href}" target="_blank" rel="noreferrer">${text(item.action, language)}</a></p>
+      <p class="card-action"><a class="text-link" href="${escapeHtml(href)}" target="_blank" rel="noreferrer">${text(item.action, language)}</a></p>
+    </article>
+  `;
+}
+
+function createWorkbenchCard(item, language) {
+  const href = resolveConfiguredHref(item.href);
+  const files = Array.isArray(item.files) ? item.files : [];
+  const commands = Array.isArray(item.commands) ? item.commands : [];
+  const concepts = Array.isArray(item.concepts) ? item.concepts : [];
+
+  return `
+    <article class="content-card workbench-card">
+      <div class="meta">
+        <span class="badge">${text(item.track, language)}</span>
+      </div>
+      <h3>${text(item.title, language)}</h3>
+      <p>${formatRichText(text(item.body, language))}</p>
+      ${concepts.length ? `
+        <p class="bullet-meta-label">${language === "vi" ? "Khái niệm" : "Concepts"}</p>
+        <ul class="bullet-sublist">
+          ${concepts.map((concept) => `<li>${formatRichText(text(concept, language))}</li>`).join("")}
+        </ul>
+      ` : ""}
+      ${files.length ? `
+        <p class="bullet-meta-label">${language === "vi" ? "Đọc code ở" : "Read code in"}</p>
+        <ul class="bullet-sublist">
+          ${files.map((file) => `<li><code>${escapeHtml(file)}</code></li>`).join("")}
+        </ul>
+      ` : ""}
+      ${commands.length ? `
+        <div class="bullet-code-shell">
+          <pre><code>${escapeHtml(commands.join("\n"))}</code></pre>
+        </div>
+      ` : ""}
+      <p class="card-action">
+        <a class="text-link" href="${escapeHtml(href)}" target="_blank" rel="noreferrer">${text(item.action, language)}</a>
+      </p>
     </article>
   `;
 }
@@ -2369,7 +2422,7 @@ function createMindmapSection(section, language) {
         ${references
           .map(
             (reference) => `
-              <a class="roadmap-reference-link" href="${reference.href}" target="_blank" rel="noreferrer">
+              <a class="roadmap-reference-link" href="${escapeHtml(resolveConfiguredHref(reference.href))}" target="_blank" rel="noreferrer">
                 ${text(reference.label, language)}
               </a>
             `
@@ -2453,7 +2506,7 @@ function createMindmapSection(section, language) {
           <p class="roadmap-filter-summary" id="roadmapFilterSummary"></p>
           <div class="roadmap-filter-action-row">
             <button type="button" class="roadmap-filter-tone roadmap-study-toggle" id="roadmapStudyMode" aria-pressed="false">
-              ${language === "vi" ? "Study mode" : "Study mode"}
+              ${language === "vi" ? "Chế độ học" : "Study mode"}
             </button>
             <button type="button" class="roadmap-filter-clear" id="roadmapFilterClear">${language === "vi" ? "Xóa lọc" : "Clear filters"}</button>
           </div>
@@ -2469,7 +2522,7 @@ function createMindmapSection(section, language) {
           <h3>${text(section.cta.title, language)}</h3>
           <p>${text(section.cta.body, language)}</p>
         </div>
-        <a class="btn" href="${section.cta.href}">${text(section.cta.action, language)}</a>
+        <a class="btn" href="${escapeHtml(resolveConfiguredHref(section.cta.href))}">${text(section.cta.action, language)}</a>
       </article>
     `
     : "";
@@ -3202,6 +3255,18 @@ function renderSection(section, language) {
         <p class="section-copy">${intro}</p>
         <div class="cards content-grid">
           ${section.items.map((item) => createLinkCard(item, language)).join("")}
+        </div>
+      </section>
+    `;
+  }
+
+  if (section.type === "workbenches") {
+    return `
+      <section class="panel detail-section"${sectionId}>
+        <h2>${heading}</h2>
+        <p class="section-copy">${intro}</p>
+        <div class="cards content-grid">
+          ${section.items.map((item) => createWorkbenchCard(item, language)).join("")}
         </div>
       </section>
     `;

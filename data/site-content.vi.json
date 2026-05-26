@@ -1851,6 +1851,362 @@
       "subtitle": "Biến ghi chú tĩnh thành mini task, bug lab và case study có thể lặp lại để kỹ năng không chỉ dừng ở mức đọc hiểu.",
       "sections": [
         {
+          "type": "workbenches",
+          "heading": "Đọc code trong lúc học",
+          "intro": "Dùng các workbench chạy được trong Laravel Hub để nối phần đọc nội dung với code thật. Mở trang, đọc các file được liệt kê, chạy command, rồi sửa một hành vi nhỏ để tự kiểm tra.",
+          "items": [
+            {
+              "track": "PHP Foundation",
+              "title": "Name normalizer workbench",
+              "body": "Luyện một class PHP thuần thông qua trang Laravel và API. Đây là vòng lặp nhỏ nhất để học typed method, xử lý mảng, guard clause và hành vi có thể test.",
+              "concepts": [
+                "`declare(strict_types=1)` và typed PHP method",
+                "Class một trách nhiệm trong `app/Practice`",
+                "Feature test kết hợp kiểm tra hành vi cấp unit"
+              ],
+              "files": [
+                "hub/app/Practice/Php/NameNormalizer.php",
+                "hub/app/Http/Controllers/Practice/Workbench/NameNormalizerController.php",
+                "hub/resources/views/practice/workbench/name-normalizer.blade.php",
+                "hub/tests/Feature/NameNormalizerWorkbenchTest.php"
+              ],
+              "commands": [
+                "php artisan test --filter NameNormalizer",
+                "vendor\\bin\\pint --test"
+              ],
+              "href": "{{HUB_BASE_URL}}/workbench/name-normalizer",
+              "action": "Mở workbench chạy được"
+            },
+            {
+              "track": "API + Validation",
+              "title": "Practice topic intake workbench",
+              "body": "Gửi một JSON request thật, cố ý tạo lỗi validation, rồi đọc cách controller ủy quyền việc tạo response cho service thay vì chứa business logic.",
+              "concepts": [
+                "API route và named route",
+                "Form Request validation",
+                "Controller mỏng và service orchestration",
+                "JSON response shape và validation errors"
+              ],
+              "files": [
+                "hub/routes/api/practice-actions.php",
+                "hub/app/Http/Requests/Api/StorePracticeTopicRequest.php",
+                "hub/app/Http/Controllers/Api/PracticeTopicController.php",
+                "hub/app/Services/Practice/PracticeTopicIntakeService.php",
+                "hub/resources/views/practice/workbench/topic-intake.blade.php",
+                "hub/tests/Feature/PracticeTopicApiTest.php"
+              ],
+              "commands": [
+                "php artisan test --filter PracticeTopic",
+                "php artisan route:list --path=api/practice/topics",
+                "vendor\\bin\\pint --test"
+              ],
+              "href": "{{HUB_BASE_URL}}/workbench/topic-intake",
+              "action": "Mở API validation workbench"
+            },
+            {
+              "track": "Laravel HTTP",
+              "title": "HTTP request-flow workbench",
+              "body": "Trace một request qua route matching, validation, controller orchestration, service logic và response formatting. Đây là bản đồ đọc code cho mọi feature Laravel bạn sẽ build sau này.",
+              "concepts": [
+                "Route file như bản đồ URL",
+                "Ranh giới Form Request validation",
+                "Controller mỏng chỉ orchestration",
+                "Workflow logic nằm trong service"
+              ],
+              "files": [
+                "hub/routes/web/workbench.php",
+                "hub/routes/api/practice-actions.php",
+                "hub/app/Http/Requests/Api/TraceHttpRequestFlowRequest.php",
+                "hub/app/Http/Controllers/Api/HttpRequestFlowTraceController.php",
+                "hub/app/Services/Practice/HttpRequestFlowTracerService.php",
+                "hub/resources/views/practice/workbench/http-request-flow.blade.php"
+              ],
+              "commands": [
+                "php artisan test --filter HttpRequestFlowWorkbenchTest",
+                "php artisan route:list --path=workbench",
+                "php artisan route:list --path=api/practice/http-request-flow"
+              ],
+              "href": "{{HUB_BASE_URL}}/workbench/http-request-flow",
+              "action": "Mở request-flow workbench"
+            },
+            {
+              "track": "Testing + Quality",
+              "title": "Quality gate workbench",
+              "body": "Đánh giá một bài thực hành đã thật sự sẵn sàng chưa bằng test count, assertion count, failures và Pint status. Phần này tạo thói quen ship behavior đã được kiểm chứng, không chỉ ship code trông có vẻ xong.",
+              "concepts": [
+                "Feature test bám behavior",
+                "Unit test cho rule trong service",
+                "Pint như style gate",
+                "Quyết định readiness dựa trên verification data"
+              ],
+              "files": [
+                "hub/routes/api/practice-actions.php",
+                "hub/app/Http/Requests/Api/EvaluateQualityGateRequest.php",
+                "hub/app/Http/Controllers/Api/PracticeQualityGateController.php",
+                "hub/app/Services/Practice/PracticeQualityGateService.php",
+                "hub/tests/Feature/PracticeQualityGateApiTest.php",
+                "hub/tests/Unit/Practice/PracticeQualityGateServiceTest.php"
+              ],
+              "commands": [
+                "php artisan test --filter PracticeQualityGate",
+                "php artisan test --filter QualityGateWorkbenchTest",
+                "vendor\\bin\\pint --test"
+              ],
+              "href": "{{HUB_BASE_URL}}/workbench/quality-gate",
+              "action": "Mở quality-gate workbench"
+            },
+            {
+              "track": "Laravel Security",
+              "title": "Blade escaping workbench",
+              "body": "Gửi nội dung trông không an toàn, xem API response đã escaped, rồi đọc cách Laravel validation kết hợp Blade escaping để giảm rủi ro XSS.",
+              "concepts": [
+                "Escaped Blade output với `{{ }}`",
+                "Vì sao raw `{!! !!}` output nguy hiểm",
+                "Form Request validation trước khi render",
+                "Service rule phát hiện pattern rủi ro"
+              ],
+              "files": [
+                "hub/routes/api/practice-actions.php",
+                "hub/app/Http/Requests/Api/PreviewEscapedContentRequest.php",
+                "hub/app/Http/Controllers/Api/SecurityEscapePreviewController.php",
+                "hub/app/Services/Practice/SecurityEscapePreviewService.php",
+                "hub/resources/views/practice/workbench/security-escape-preview.blade.php"
+              ],
+              "commands": [
+                "php artisan test --filter SecurityEscapePreviewWorkbenchTest",
+                "php artisan route:list --path=security-escape-preview",
+                "vendor\\bin\\pint --test"
+              ],
+              "href": "{{HUB_BASE_URL}}/workbench/security-escape-preview",
+              "action": "Mở Blade security workbench"
+            },
+            {
+              "track": "Laravel Data",
+              "title": "Collection filter and pagination workbench",
+              "body": "Luyện shape của một Laravel list page bằng Collection filter trước khi đưa cùng tư duy đó sang Eloquent query và database pagination.",
+              "concepts": [
+                "Validated filter input",
+                "Collection `when()` pipeline",
+                "Search haystack và status filter",
+                "Pagination metadata cho API/UI"
+              ],
+              "files": [
+                "hub/routes/api/practice-actions.php",
+                "hub/app/Http/Requests/Api/PreviewCollectionFilterRequest.php",
+                "hub/app/Http/Controllers/Api/CollectionFilterPreviewController.php",
+                "hub/app/Services/Practice/CollectionFilterPreviewService.php",
+                "hub/resources/views/practice/workbench/collection-filter-preview.blade.php"
+              ],
+              "commands": [
+                "php artisan test --filter CollectionFilterPreviewWorkbenchTest",
+                "php artisan route:list --path=collection-filter-preview",
+                "vendor\\bin\\pint --test"
+              ],
+              "href": "{{HUB_BASE_URL}}/workbench/collection-filter-preview",
+              "action": "Mở list-filter workbench"
+            },
+            {
+              "track": "Laravel Async",
+              "title": "Async job planning workbench",
+              "body": "Lập kế hoạch queue job trước khi chạy worker: job class, payload key, idempotency key, retry attempts, backoff và queue commands.",
+              "concepts": [
+                "Đặt tên Job class",
+                "Ranh giới payload",
+                "Idempotency trước khi gọi external system",
+                "Retry policy và worker commands"
+              ],
+              "files": [
+                "hub/routes/api/practice-actions.php",
+                "hub/app/Http/Requests/Api/PlanAsyncJobRequest.php",
+                "hub/app/Http/Controllers/Api/AsyncJobPlanController.php",
+                "hub/app/Services/Practice/AsyncJobPlanService.php",
+                "hub/resources/views/practice/workbench/async-job-plan.blade.php"
+              ],
+              "commands": [
+                "php artisan test --filter AsyncJobPlanWorkbenchTest",
+                "php artisan route:list --path=async-job-plan",
+                "php artisan queue:restart"
+              ],
+              "href": "{{HUB_BASE_URL}}/workbench/async-job-plan",
+              "action": "Mở async job workbench"
+            },
+            {
+              "track": "Laravel Events",
+              "title": "Event listener planning workbench",
+              "body": "Lập kế hoạch domain event và listener để các side effect như mail, notification, logging hoặc external sync không bị nhét vào controller hay core service.",
+              "concepts": [
+                "Event name mô tả sự kiện đã xảy ra",
+                "Listener giữ một side effect",
+                "Queued listener cho việc chậm",
+                "Event fake và queue fake trong test"
+              ],
+              "files": [
+                "hub/routes/api/practice-actions.php",
+                "hub/app/Http/Requests/Api/PlanEventListenerRequest.php",
+                "hub/app/Http/Controllers/Api/EventListenerPlanController.php",
+                "hub/app/Services/Practice/EventListenerPlanService.php",
+                "hub/resources/views/practice/workbench/event-listener-plan.blade.php"
+              ],
+              "commands": [
+                "php artisan test --filter EventListenerPlanWorkbenchTest",
+                "php artisan route:list --path=event-listener-plan",
+                "vendor\\bin\\pint --test"
+              ],
+              "href": "{{HUB_BASE_URL}}/workbench/event-listener-plan",
+              "action": "Mở event/listener workbench"
+            },
+            {
+              "track": "Laravel Container",
+              "title": "Service container binding workbench",
+              "body": "Lập kế hoạch interface, implementation, binding lifetime và nơi constructor injection để Laravel resolve dependency rõ ràng hơn.",
+              "concepts": [
+                "Dependency inversion",
+                "Service provider bindings",
+                "`bind` so với `singleton`",
+                "Constructor injection và test doubles"
+              ],
+              "files": [
+                "hub/routes/api/practice-actions.php",
+                "hub/app/Http/Requests/Api/PlanContainerBindingRequest.php",
+                "hub/app/Http/Controllers/Api/ContainerBindingPlanController.php",
+                "hub/app/Services/Practice/ContainerBindingPlanService.php",
+                "hub/resources/views/practice/workbench/container-binding-plan.blade.php"
+              ],
+              "commands": [
+                "php artisan test --filter ContainerBindingPlanWorkbenchTest",
+                "php artisan route:list --path=container-binding-plan",
+                "vendor\\bin\\pint --test"
+              ],
+              "href": "{{HUB_BASE_URL}}/workbench/container-binding-plan",
+              "action": "Mở container workbench"
+            },
+            {
+              "track": "Laravel Authorization",
+              "title": "Authorization policy workbench",
+              "body": "Lập kế hoạch policy class, ability method, controller authorization call và test allowed/forbidden trước khi thêm logic phân quyền vào feature.",
+              "concepts": [
+                "Policy class và ability name",
+                "`$this->authorize(...)` trong controller",
+                "HTTP 403 cho actor bị cấm",
+                "Feature test cho allowed và forbidden case"
+              ],
+              "files": [
+                "hub/routes/api/practice-actions.php",
+                "hub/app/Http/Requests/Api/PlanAuthorizationPolicyRequest.php",
+                "hub/app/Http/Controllers/Api/AuthorizationPolicyPlanController.php",
+                "hub/app/Services/Practice/AuthorizationPolicyPlanService.php",
+                "hub/resources/views/practice/workbench/authorization-policy-plan.blade.php"
+              ],
+              "commands": [
+                "php artisan test --filter AuthorizationPolicyPlanWorkbenchTest",
+                "php artisan route:list --path=authorization-policy-plan",
+                "vendor\\bin\\pint --test"
+              ],
+              "href": "{{HUB_BASE_URL}}/workbench/authorization-policy-plan",
+              "action": "Mở authorization workbench"
+            },
+            {
+              "track": "Laravel Cache",
+              "title": "Cache strategy workbench",
+              "body": "Lập kế hoạch cache key, TTL, invalidation trigger và fallback behavior trước khi thêm Cache::remember vào một flow đọc nhiều.",
+              "concepts": [
+                "Đặt tên cache key",
+                "TTL và mức chấp nhận stale data",
+                "Owner của invalidation",
+                "Fallback path khi cache miss"
+              ],
+              "files": [
+                "hub/routes/api/practice-actions.php",
+                "hub/app/Http/Requests/Api/PlanCacheStrategyRequest.php",
+                "hub/app/Http/Controllers/Api/CacheStrategyPlanController.php",
+                "hub/app/Services/Practice/CacheStrategyPlanService.php",
+                "hub/resources/views/practice/workbench/cache-strategy-plan.blade.php"
+              ],
+              "commands": [
+                "php artisan test --filter CacheStrategyPlanWorkbenchTest",
+                "php artisan route:list --path=cache-strategy-plan",
+                "php artisan cache:clear"
+              ],
+              "href": "{{HUB_BASE_URL}}/workbench/cache-strategy-plan",
+              "action": "Mở cache workbench"
+            },
+            {
+              "track": "Laravel Files",
+              "title": "File storage planning workbench",
+              "body": "Lập kế hoạch upload validation, disk, visibility, path pattern và cleanup trước khi nhận file thật.",
+              "concepts": [
+                "File validation rules",
+                "Lựa chọn disk và visibility",
+                "Scoped storage paths",
+                "Lifecycle cleanup và replace"
+              ],
+              "files": [
+                "hub/routes/api/practice-actions.php",
+                "hub/app/Http/Requests/Api/PlanFileStorageRequest.php",
+                "hub/app/Http/Controllers/Api/FileStoragePlanController.php",
+                "hub/app/Services/Practice/FileStoragePlanService.php",
+                "hub/resources/views/practice/workbench/file-storage-plan.blade.php"
+              ],
+              "commands": [
+                "php artisan test --filter FileStoragePlanWorkbenchTest",
+                "php artisan route:list --path=file-storage-plan",
+                "php artisan storage:link"
+              ],
+              "href": "{{HUB_BASE_URL}}/workbench/file-storage-plan",
+              "action": "Mở file storage workbench"
+            },
+            {
+              "track": "Laravel API Security",
+              "title": "Rate limit planning workbench",
+              "body": "Lập kế hoạch named throttle, actor identity key, retry window và test HTTP 429 trước khi public API route nhạy cảm hoặc tốn tài nguyên.",
+              "concepts": [
+                "Named rate limiter",
+                "Throttle middleware",
+                "Actor identity key",
+                "Kiểm chứng HTTP 429"
+              ],
+              "files": [
+                "hub/routes/api/practice-actions.php",
+                "hub/app/Http/Requests/Api/PlanRateLimitRequest.php",
+                "hub/app/Http/Controllers/Api/RateLimitPlanController.php",
+                "hub/app/Services/Practice/RateLimitPlanService.php",
+                "hub/resources/views/practice/workbench/rate-limit-plan.blade.php"
+              ],
+              "commands": [
+                "php artisan test --filter RateLimitPlanWorkbenchTest",
+                "php artisan route:list --path=rate-limit-plan",
+                "vendor\\bin\\pint --test"
+              ],
+              "href": "{{HUB_BASE_URL}}/workbench/rate-limit-plan",
+              "action": "Mở rate-limit workbench"
+            },
+            {
+              "track": "Docker + Runtime",
+              "title": "Runtime smoke-check endpoint",
+              "body": "So sánh local PHP và Docker runtime bằng cách đọc compose file, env value và API smoke-check để biết app có thấy đúng runtime config không.",
+              "concepts": [
+                "Docker Compose environment values",
+                "File cache thay cho database cache",
+                "Runtime check endpoint để tự tin khi chạy local"
+              ],
+              "files": [
+                "hub/docker-compose.yml",
+                "hub/Dockerfile",
+                "hub/docker/entrypoint.sh",
+                "hub/app/Services/Practice/RuntimeSmokeCheckService.php",
+                "hub/app/Http/Controllers/Api/RuntimeSmokeCheckController.php"
+              ],
+              "commands": [
+                "docker-compose config",
+                "docker-compose up --build --force-recreate",
+                "php artisan test --filter RuntimeSmokeCheck"
+              ],
+              "href": "{{HUB_BASE_URL}}/api/practice/runtime-smoke-check",
+              "action": "Mở runtime API"
+            }
+          ]
+        },
+        {
           "type": "cards",
           "heading": "Ý tưởng mini project",
           "intro": "Giữ các project này nhỏ gọn để mỗi project củng cố một kỹ năng Laravel cụ thể.",

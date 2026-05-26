@@ -1,0 +1,25 @@
+services:
+  hub:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        HUB_INTERNAL_PORT: "${HUB_INTERNAL_PORT:-8088}"
+    ports:
+      - "${HUB_PORT:-8088}:${HUB_INTERNAL_PORT:-8088}"
+    environment:
+      APP_ENV: local
+      APP_DEBUG: "true"
+      APP_URL: "http://localhost:${HUB_PORT:-8088}"
+      HUB_INTERNAL_PORT: "${HUB_INTERNAL_PORT:-8088}"
+      HUB_RUNTIME_BASE_URL: "http://localhost:${HUB_PORT:-8088}"
+      LABS_CONTENT_PATH: /var/www/data
+      SESSION_DRIVER: file
+      CACHE_STORE: file
+      QUEUE_CONNECTION: sync
+      DB_CONNECTION: sqlite
+      DB_DATABASE: /var/www/html/database/database.sqlite
+    volumes:
+      - .:/var/www/html
+      - /var/www/html/vendor
+      - ../data:/var/www/data:ro
