@@ -141,6 +141,7 @@ This area turns passive reading into action:
 - review checklists
 - study rhythm ideas
 - practical next steps after reading theory
+- runnable Hub workbenches that connect static notes to real Laravel code
 
 ---
 
@@ -181,6 +182,7 @@ This repo helps you study across multiple dimensions, not just one stack page at
 - API and webhook workflows
 - Docker / environment / deployment thinking
 - GitHub Pages for the learning portal
+- Laravel Hub for code-first practice and JSON content integration
 
 ### Engineering concepts
 - MVC and beyond MVC
@@ -244,12 +246,22 @@ This portal is intentionally designed around a few principles:
 ## Included Laravel labs
 
 The repository also contains several Laravel projects that support the learning portal and give real code context:
+- `hub` - aggregate Laravel practice app that reads `data/**`, exposes learning/practice pages, and documents environment-driven config through `hub/.env.example`
 - `breeze`
 - `chirper`
 - `jetstream`
 - `sail`
 
 These help connect the theory in the portal to actual Laravel source code, structure, configuration, and behavior.
+
+### Hub configuration notes
+
+The `hub` app keeps environment-specific values out of services, views, and JSON content:
+- `LABS_CONTENT_PATH` points the app to the static portal JSON content.
+- `HUB_RUNTIME_BASE_URL`, `HUB_PORT`, and `HUB_INTERNAL_PORT` control local and Docker runtime URLs/ports.
+- configuration-practice artifact IDs and auth timing values are documented in `hub/.env.example`.
+
+Do not commit `hub/.env`; use `hub/.env.example` as the shareable contract.
 
 ---
 
