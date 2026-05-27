@@ -433,6 +433,18 @@
       "body": "When a flow is clear and independent enough, an action class can be easier to read than an overly generic service.",
       "code": "class CreateOrderAction\n{\n    public function execute(array $data): Order\n    {\n        return DB::transaction(fn () => Order::create($data));\n    }\n}",
       "note": "A name like `CreateOrderAction` communicates the use-case boundary faster than vague names such as `OrderManager`."
+    },
+    {
+      "title": "89. Dependency Injection as a practical dependency-management technique",
+      "body": "Dependency Injection means a class declares what it needs and receives those dependencies from the outside instead of creating every collaborator with `new`. In Laravel, the service container resolves the object graph, so controllers, services, jobs, commands, and listeners can stay focused on behavior instead of construction details.",
+      "bullets": [
+        "The constructor or method signature documents the class dependencies immediately.",
+        "A service provider can bind an interface to a concrete implementation once for the app.",
+        "Tests can replace the dependency with a fake or mock without editing production code.",
+        "Architecture stays easier to change because creation rules live outside business logic."
+      ],
+      "code": "interface ReportExporter\n{\n    public function export(array $rows): string;\n}\n\nfinal class CsvReportExporter implements ReportExporter\n{\n    public function export(array $rows): string\n    {\n        return 'csv-output';\n    }\n}\n\nfinal class ReportController\n{\n    public function __construct(private ReportExporter $exporter)\n    {\n    }\n\n    public function download(SalesReportService $reports): string\n    {\n        return $this->exporter->export($reports->monthly());\n    }\n}",
+      "note": "Common mistake: placing `new CsvReportExporter()` inside the controller or service. That hides the dependency, makes tests harder, and ties the use case to one implementation."
     }
   ]
 }

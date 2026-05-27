@@ -433,6 +433,18 @@
       "body": "Khi một flow đủ rõ và độc lập, action class có thể làm code dễ đọc hơn service quá tổng quát.",
       "code": "class CreateOrderAction\n{\n    public function execute(array $data): Order\n    {\n        return DB::transaction(fn () => Order::create($data));\n    }\n}",
       "note": "Tên kiểu `CreateOrderAction` giúp người đọc hiểu phạm vi use case nhanh hơn những tên mơ hồ như `OrderManager`."
+    },
+    {
+      "title": "89. Dependency Injection là gì trong thực tế?",
+      "body": "Dependency Injection là kỹ thuật quản lý phụ thuộc: một class khai báo nó cần gì và nhận dependency từ bên ngoài, thay vì tự tạo mọi thứ bằng `new`. Trong Laravel, service container resolve object graph giúp controller, service, job, command và listener tập trung vào hành vi thay vì chi tiết khởi tạo.",
+      "bullets": [
+        "Constructor hoặc method signature cho thấy class đang phụ thuộc vào gì.",
+        "Service provider có thể bind interface vào implementation một lần cho toàn app.",
+        "Test có thể thay dependency bằng fake hoặc mock mà không sửa code production.",
+        "Kiến trúc dễ thay đổi hơn vì quy tắc khởi tạo nằm ngoài business logic."
+      ],
+      "code": "interface ReportExporter\n{\n    public function export(array $rows): string;\n}\n\nfinal class CsvReportExporter implements ReportExporter\n{\n    public function export(array $rows): string\n    {\n        return 'csv-output';\n    }\n}\n\nfinal class ReportController\n{\n    public function __construct(private ReportExporter $exporter)\n    {\n    }\n\n    public function download(SalesReportService $reports): string\n    {\n        return $this->exporter->export($reports->monthly());\n    }\n}",
+      "note": "Lỗi thường gặp: đặt `new CsvReportExporter()` ngay trong controller hoặc service. Cách đó giấu dependency, làm test khó hơn và khóa use case vào một implementation."
     }
   ]
 }

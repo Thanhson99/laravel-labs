@@ -70,7 +70,7 @@ Topics include:
 - Blade, components, and server-rendered UI
 - database, Eloquent, queries, and migrations
 - request flow from browser to response
-- container, architecture, and service boundaries
+- Dependency Injection, service container bindings, architecture, and service boundaries
 - auth, security, policies, sessions, Sanctum, and access control
 - API integration, webhooks, retries, and idempotency
 - files, uploads, storage, media handling, and S3 thinking
@@ -142,6 +142,7 @@ This area turns passive reading into action:
 - study rhythm ideas
 - practical next steps after reading theory
 - runnable Hub workbenches that connect static notes to real Laravel code
+- Dependency Injection refactor drills for replacing manual `new` calls with container-resolved collaborators
 
 ---
 
@@ -186,7 +187,7 @@ This repo helps you study across multiple dimensions, not just one stack page at
 
 ### Engineering concepts
 - MVC and beyond MVC
-- dependency injection
+- dependency injection and dependency inversion
 - request lifecycle
 - authorization and trust boundaries
 - idempotency

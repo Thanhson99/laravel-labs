@@ -3109,6 +3109,64 @@ public function __construct(private readonly PaymentGateway $gateway)
 PHP,
         ],
         [
+            'slug' => 'dependency-injection-refactor-drill',
+            'track' => 'laravel-http',
+            'title' => 'Refactor manual dependencies into injection',
+            'objective' => 'Turn manual object creation into constructor injection, a contract binding, and a testable Laravel dependency flow.',
+            'why' => 'This practices Dependency Injection, service-container resolution, dependency inversion, and replacing concrete collaborators in tests.',
+            'steps' => [
+                'Find the controller or service that creates collaborators with manual `new` calls.',
+                'Extract the collaborator behind a small interface that describes the behavior the use case needs.',
+                'Bind the interface to the implementation in a service provider.',
+                'Inject the interface into the controller or service constructor.',
+                'Write a feature or unit test that swaps the dependency with a fake.',
+            ],
+            'files' => [
+                'app/Providers/AppServiceProvider.php',
+                'app/Contracts/ReportExporter.php',
+                'app/Services/CsvReportExporter.php',
+                'app/Http/Controllers/ReportController.php',
+                'tests/Feature/ReportExportTest.php',
+            ],
+            'commands' => [
+                'php artisan test --filter ReportExportTest',
+                'php artisan route:list --path=reports',
+                'vendor/bin/pint --test',
+            ],
+            'workbench' => [
+                'label' => 'Run the container binding workbench',
+                'route' => 'practice.workbench.container-binding-plan',
+            ],
+            'api' => [
+                'method' => 'POST',
+                'path' => '/api/practice/container-binding-plan',
+                'payload' => [
+                    'contract_name' => 'Report Exporter',
+                    'implementation_name' => 'CSV Report Exporter',
+                    'lifetime' => 'bind',
+                    'injection_target' => 'Report Controller',
+                ],
+            ],
+            'acceptance' => [
+                'The controller or service no longer creates the collaborator with manual `new` calls.',
+                'The constructor depends on a contract or focused service type.',
+                'A service provider binding explains which implementation Laravel should resolve.',
+                'A test can swap the dependency with a fake or mock.',
+            ],
+            'starter_code' => <<<'PHP'
+interface ReportExporter
+{
+    public function export(array $rows): string;
+}
+
+$this->app->bind(ReportExporter::class, CsvReportExporter::class);
+
+public function __construct(private readonly ReportExporter $exporter)
+{
+}
+PHP,
+        ],
+        [
             'slug' => 'authorization-policy-plan-workbench',
             'track' => 'laravel-http',
             'title' => 'Plan authorization policies',

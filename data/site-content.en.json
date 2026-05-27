@@ -54,6 +54,12 @@
           "button": "Open Laravel Site"
         },
         {
+          "href": "sites/laravel/container-architecture.html",
+          "title": "Dependency Injection",
+          "summary": "Explore Dependency Injection as a dependency-management technique that keeps Laravel code explicit, testable, and easier to replace.",
+          "button": "Learn Dependency Injection"
+        },
+        {
           "href": "sites/practice/index.html",
           "title": "Practice Projects",
           "summary": "Structured drills and mini-project ideas based on your current Laravel lab folders.",

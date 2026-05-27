@@ -54,6 +54,12 @@
           "button": "Mở site Laravel"
         },
         {
+          "href": "sites/laravel/container-architecture.html",
+          "title": "Dependency Injection là gì?",
+          "summary": "Khám phá Dependency Injection - kỹ thuật giúp quản lý phụ thuộc trong lập trình, giữ code dễ test, dễ thay thế và rõ trách nhiệm hơn.",
+          "button": "Học Dependency Injection"
+        },
+        {
           "href": "sites/practice/index.html",
           "title": "Bài thực hành",
           "summary": "Bài tập có cấu trúc và ý tưởng mini-project dựa trên các lab Laravel hiện có.",
