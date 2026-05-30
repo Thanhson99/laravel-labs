@@ -11,31 +11,37 @@
       "tone": "amber"
     },
     {
-      "start": 8,
+      "start": 9,
+      "title": "Nền Tảng JavaScript Khi Phỏng Vấn",
+      "description": "Closure, hoisting, lexical scope, declaration và những quy tắc JavaScript nhỏ nhưng hay xuất hiện trong phỏng vấn và bug frontend.",
+      "tone": "copper"
+    },
+    {
+      "start": 10,
       "title": "Project Setup và Dependency",
       "description": "Cách đọc `package.json`, giữ kỷ luật với `package-lock.json` và dựng project clone về mà không lệch môi trường.",
       "tone": "copper"
     },
     {
-      "start": 15,
+      "start": 17,
       "title": "Vite, Build và Asset Pipeline",
       "description": "Dev server, build production, `@vite`, manifest, `vite.config` và các lỗi chỉ lộ khi build.",
       "tone": "olive"
     },
     {
-      "start": 23,
+      "start": 25,
       "title": "CSS, UI Stack và Chọn Công Nghệ",
       "description": "Tailwind, Alpine, Livewire, Inertia, Vue/React và cách chọn stack theo độ phức tạp thật của app.",
       "tone": "ocean"
     },
     {
-      "start": 33,
+      "start": 35,
       "title": "Môi Trường, Lỗi và Deploy",
       "description": "Docker, WSL, asset path, cache/CDN, artifact build và các lỗi môi trường frontend lặp đi lặp lại.",
       "tone": "indigo"
     },
     {
-      "start": 41,
+      "start": 43,
       "title": "Checklist, Review và Tư Duy Dài Hạn",
       "description": "Onboarding, review PR, nâng package, anti-pattern và dấu hiệu frontend đã thành một subsystem riêng.",
       "tone": "slate"
@@ -69,6 +75,43 @@
     {
       "title": "Vì sao người học Laravel vẫn nên hiểu một chút frontend theory?",
       "body": "Vì nhiều lỗi 'Laravel không chạy' thật ra không nằm ở route, controller hay database, mà nằm ở asset build, dev server, CSS không compile, JS không load hoặc package frontend lỗi. Nếu không hiểu tối thiểu Node, npm, Vite và asset pipeline, bạn sẽ rất dễ đoán sai hướng khi debug."
+    },
+    {
+      "title": "Closure trong JavaScript là gì và tại sao quan trọng?",
+      "body": "JavaScript closure xảy ra khi một hàm vẫn nhớ được các biến trong lexical scope nơi nó được tạo ra, kể cả khi hàm bên ngoài đã chạy xong. Nó quan trọng vì rất nhiều pattern JavaScript dựa vào việc function mang theo state an toàn: event handler, callback, timer, factory function, private variable, memoization và React hooks.",
+      "bullets": [
+        "Closure không phải cú pháp đặc biệt. Nó là sự kết hợp giữa một function và các biến mà function đó vẫn truy cập được từ scope xung quanh.",
+        "Hàm bên trong giữ tham chiếu tới các biến bên ngoài mà nó dùng, nên các biến đó chưa bị dọn khi closure còn có thể chạy.",
+        "Closure xuất hiện nhiều trong callback, event listener, async code, module pattern, function factory, debounce, throttle, memoization và logic UI có state.",
+        "Phỏng vấn thường hỏi closure qua ví dụ counter, vòng lặp dùng `var` so với `let`, private state, stale closure, debounce, throttle hoặc dependency của React hook."
+      ],
+      "code": "function createCounter() {\n  let count = 0;\n\n  return function increment() {\n    count += 1;\n    return count;\n  };\n}\n\nconst counter = createCounter();\nconsole.log(counter()); // 1\nconsole.log(counter()); // 2",
+      "note": "Câu trả lời phỏng vấn: closure giúp hàm bên trong tiếp tục truy cập biến ở scope bên ngoài nhờ lexical scope, kể cả sau khi hàm bên ngoài return. Điểm quan trọng là function giữ quyền truy cập tới binding của biến, không chỉ copy giá trị một lần.",
+      "links": [
+        {
+          "label": "Mở workbench tối ưu React render",
+          "href": "{{HUB_BASE_URL}}/workbench/react-render-optimization-plan"
+        }
+      ]
+    },
+    {
+      "title": "Giải thích hoisting trong JavaScript một cách dễ hiểu",
+      "body": "Hoisting là cách JavaScript chuẩn bị declaration trước khi chạy từng dòng code. Cách nhớ đơn giản: JavaScript chuẩn bị tên trước, rồi mới thực thi câu lệnh. Function declaration có thể gọi trước dòng khai báo. `var` được tạo trước nhưng ban đầu là `undefined`. `let` và `const` cũng được biết trước, nhưng không được dùng trước dòng khai báo vì đang ở temporal dead zone.",
+      "bullets": [
+        "Hoisting không phải là JavaScript thật sự kéo code của bạn lên đầu file. Nó là cách engine tạo binding trong giai đoạn chuẩn bị trước khi execute.",
+        "`function sayHi() {}` có thể gọi trước vì function declaration được khởi tạo ngay trong giai đoạn setup.",
+        "`var name` bị hoist và khởi tạo là `undefined`, nên đọc sớm không throw lỗi nhưng rất dễ tạo bug.",
+        "`let` và `const` cũng bị hoist, nhưng đọc trước dòng khai báo sẽ bị `ReferenceError` do temporal dead zone.",
+        "Khi phỏng vấn, hãy giải thích hoisting kèm execution context, setup declaration, `var` so với `let/const`, và function declaration so với function expression."
+      ],
+      "code": "sayHi(); // Chạy được vì function declaration được hoist\n\nfunction sayHi() {\n  console.log('Hello from a function declaration');\n}\n\nconsole.log(userName); // undefined, không phải ReferenceError\nvar userName = 'Son';\n\n// console.log(score); // ReferenceError: không thể truy cập trước khi khởi tạo\nlet score = 10;\n\n// run(); // TypeError: run is not a function\nvar run = function () {\n  console.log('Function expression được gán sau');\n};",
+      "note": "Câu trả lời phỏng vấn: hoisting nghĩa là JavaScript đăng ký declaration trước khi execute code. Function declaration được khởi tạo sớm, `var` bắt đầu bằng `undefined`, còn `let`/`const` chưa thể dùng trước dòng khai báo do temporal dead zone. Trong project thực tế, nên khai báo biến trước khi dùng và ưu tiên `let`/`const` để tránh bug khó hiểu.",
+      "links": [
+        {
+          "label": "Mở lab JavaScript hoisting",
+          "href": "{{HUB_BASE_URL}}/workbench/javascript-hoisting-lab"
+        }
+      ]
     },
     {
       "title": "Vì sao Laravel lại cần Node và npm dù nó là framework PHP?",
@@ -313,6 +356,26 @@
       ]
     },
     {
+      "title": "Tối ưu React re-render hiệu quả bằng memo, useMemo và useCallback như thế nào?",
+      "body": "Hãy bắt đầu bằng React Profiler, không phải cảm giác. `React.memo` hữu ích khi child component tốn render và props thường ổn định. `useMemo` hữu ích khi derived value tính toán nặng hoặc khi cần giữ object/array prop ổn định cho child đã memo. `useCallback` hữu ích khi function identity làm child đã memo hoặc hook dependency thay đổi liên tục. Những công cụ này chỉ giảm render không cần thiết khi nguyên nhân thật là prop churn, tính toán nặng hoặc component tree re-render quá rộng.",
+      "bullets": [
+        "`React.memo` bỏ qua render của child khi props shallow-equal, nhưng vô ích nếu props luôn đổi mỗi render.",
+        "`useMemo` memoize giá trị tính toán; không nên dùng cho mọi biểu thức nhỏ.",
+        "`useCallback` memoize identity của function; nó không làm function chạy nhanh hơn.",
+        "Với list rất lớn, virtualization hoặc pagination thường quan trọng hơn memo.",
+        "Nếu state đặt quá cao trong tree, hãy move state xuống hoặc split context trước khi thêm memoization."
+      ],
+      "code": "const Row = React.memo(function Row({ item, onSelect }) {\n  return <button onClick={() => onSelect(item.id)}>{item.name}</button>;\n});\n\nconst visibleItems = useMemo(() => filterItems(items, query), [items, query]);\nconst handleSelect = useCallback((id) => setSelectedId(id), []);",
+      "links": [
+        {
+          "href": "{{HUB_BASE_URL}}/workbench/react-render-optimization-plan",
+          "label": "React render optimization workbench",
+          "desc": "Thực hành chọn React.memo, useMemo, useCallback, state locality, profiler check và tradeoff virtualization."
+        }
+      ],
+      "note": "Câu trả lời phỏng vấn: memoization không phải luật áp mọi nơi. Đo trước, chỉ ổn định props ở nơi có ý nghĩa, và giữ dependency đúng để tối ưu performance không tạo stale UI."
+    },
+    {
       "title": "Một ma trận chọn stack frontend nhanh cho project Laravel",
       "body": "Bạn có thể nghĩ theo mức độ tương tác và kỹ năng team thay vì chọn theo trend.",
       "bullets": [
@@ -531,6 +594,26 @@
       "body": "Frontend pipeline chỉ có ý nghĩa khi asset cuối cùng được gắn lại vào Blade hoặc entry point UI thực sự.",
       "code": "@vite(['resources/css/app.css', 'resources/js/app.js'])",
       "note": "Directive này giúp Laravel biết phải lấy asset từ dev server khi local và từ manifest build khi production. Đây là điểm nối rất quan trọng giữa backend Laravel và frontend toolchain."
+    },
+    {
+      "title": "494. Arrow function x\u1eed l\u00fd `this` kh\u00e1c function th\u01b0\u1eddng ra sao?",
+      "body": "Arrow function kh\u00f4ng t\u1ea1o `this` ri\u00eang. N\u00f3 \u0111\u1ecdc `this` t\u1eeb lexical scope b\u00ean ngo\u00e0i; n\u00f3i theo c\u00e1ch search th\u01b0\u1eddng g\u1eb7p, arrow function this ch\u00ednh l\u00e0 lexical `this`. Function th\u01b0\u1eddng th\u00ec x\u00e1c \u0111\u1ecbnh `this` theo c\u00e1ch n\u00f3 \u0111\u01b0\u1ee3c g\u1ecdi: object method, `call`/`apply`/`bind`, constructor, ho\u1eb7c h\u00e0m th\u01b0\u1eddng.",
+      "code": "const user = {\n  name: 'Son',\n  normal() {\n    return this.name;\n  },\n  arrow: () => {\n    return this.name;\n  },\n};\n\nconsole.log(user.normal()); // 'Son'\nconsole.log(user.arrow());  // thuong la undefined trong module/strict mode\n\nfunction Timer() {\n  this.seconds = 0;\n\n  setInterval(() => {\n    this.seconds += 1; // `this` lay tu Timer ben ngoai\n  }, 1000);\n}",
+      "bullets": [
+        "Arrow function c\u00f3 lexical `this`: khi g\u1ecdi n\u00f3 kh\u00f4ng t\u1ef1 bind `this` m\u1edbi.",
+        "Function th\u01b0\u1eddng c\u00f3 dynamic `this`: ai g\u1ecdi h\u00e0m v\u00e0 g\u1ecdi b\u1eb1ng c\u00e1ch n\u00e0o s\u1ebd quy\u1ebft \u0111\u1ecbnh `this`.",
+        "Arrow function ph\u00f9 h\u1ee3p cho callback trong method, timer, array callback v\u00e0 class code khi mu\u1ed1n gi\u1eef `this` b\u00ean ngo\u00e0i.",
+        "Kh\u00f4ng n\u00ean d\u00f9ng arrow function l\u00e0m object method n\u1ebfu method c\u1ea7n `this` tr\u1ecf v\u1ec1 ch\u00ednh object \u0111\u00f3.",
+        "B\u1eaby ph\u1ecfng v\u1ea5n: `obj.arrow()` kh\u00f4ng l\u00e0m `this` th\u00e0nh `obj`; arrow function \u0111\u00e3 l\u1ea5y `this` t\u1eeb scope b\u00ean ngo\u00e0i t\u1eeb tr\u01b0\u1edbc."
+      ],
+      "tip": "C\u00e2u tr\u1ea3 l\u1eddi ng\u1eafn g\u1ecdn khi ph\u1ecfng v\u1ea5n: arrow function kh\u00f4ng c\u00f3 `this` ri\u00eang; n\u00f3 l\u1ea5y `this` t\u1eeb lexical scope. Function th\u01b0\u1eddng l\u1ea5y `this` theo call site.",
+      "links": [
+        {
+          "href": "{{HUB_BASE_URL}}/practice/technology-code-examples/javascript-closures?language=vi&search=arrow%20function%20this&limit=3",
+          "label": "V\u00ed d\u1ee5 code v\u1ec1 arrow `this`",
+          "desc": "M\u1edf snippet Hub so s\u00e1nh arrow function, function th\u01b0\u1eddng, callback v\u00e0 b\u1eaby ph\u1ecfng v\u1ea5n."
+        }
+      ]
     }
   ]
 }

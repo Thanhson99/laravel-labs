@@ -508,6 +508,249 @@
       "body": "This is a common way to keep permission rules close to the use case without hardcoding checks like `if ($user->is_admin)` directly in views or controller bodies.",
       "code": "class PostPolicy\n{\n    public function update(User $user, Post $post): bool\n    {\n        return $user->id === $post->user_id;\n    }\n}\n\n$this->authorize('update', $post);",
       "note": "Policies do not only make code cleaner. They also make permission rules easier to test, reuse, and keep out of random hardcoded branches."
+    },
+    {
+      "title": "104. Interview answer: should a JWT be stored in localStorage or a cookie?",
+      "body": "There is no universal answer, but for browser-based apps a secure `HttpOnly` cookie is usually safer for long-lived or sensitive tokens because JavaScript cannot read it directly. `localStorage` is simple for attaching bearer tokens, but any successful XSS can read and exfiltrate the token. Cookies reduce token theft through JavaScript, but they require careful CSRF protection, `SameSite`, `Secure`, domain, path, and expiry settings.",
+      "bullets": [
+        "`localStorage`: easy to implement and easy to attach to `Authorization: Bearer`, but exposed to XSS and often forgotten during logout or rotation.",
+        "`HttpOnly` cookie: hidden from JavaScript and better aligned with browser session behavior, but automatically sent by the browser, so CSRF and same-site configuration matter.",
+        "A practical answer is to keep access tokens short-lived, rotate or revoke refresh tokens, avoid storing tokens longer than needed, and match the storage choice to the client type."
+      ],
+      "code": "Set-Cookie: refresh_token=...; HttpOnly; Secure; SameSite=Lax; Path=/auth/refresh\n\nAuthorization: Bearer <short-lived-access-token>",
+      "note": "In an interview, do not answer 'cookie is always best' or 'localStorage is always bad'. Explain the threat model: XSS risk, CSRF risk, token lifetime, revocation, client type, and operational controls.",
+      "links": [
+        {
+          "href": "{{HUB_BASE_URL}}/workbench/jwt-token-storage-plan",
+          "label": "JWT token-storage workbench",
+          "desc": "Practice choosing token storage from a concrete browser/API threat model."
+        }
+      ]
+    },
+    {
+      "title": "105. JWT cannot be revoked before expiry. What should we do?",
+      "body": "A signed JWT is stateless, so the server cannot magically pull it back before `exp`. To revoke it early, the API must check some server-side state: a denylist keyed by `jti`, a user or session token version, or a revoked refresh-token family. In production, combine short-lived access tokens with refresh-token rotation so the risk window stays small.",
+      "bullets": [
+        "Add a unique `jti` claim to each access token and store revoked `jti` values until their `expires_at` time.",
+        "For logout, password change, role downgrade, account lock, or lost device events, revoke the current token and the refresh-token family.",
+        "For user-wide invalidation, store `token_version` or `security_version` on the user/session and reject JWTs whose version is stale.",
+        "Middleware should verify signature and expiry first, then check revocation state, then authorize scopes or policies.",
+        "Prune expired revoked-token records and never log raw bearer tokens."
+      ],
+      "code": "Schema::create('revoked_tokens', function (Blueprint $table) {\n    $table->string('jti')->primary();\n    $table->foreignId('user_id')->index();\n    $table->timestamp('revoked_at');\n    $table->timestamp('expires_at')->index();\n    $table->string('reason')->nullable();\n});\n\nif ($revokedTokens->contains($jwt->jti())) {\n    throw new AuthenticationException('Token has been revoked.');\n}",
+      "note": "Interview answer: JWT is stateless, so early revocation requires a stateful check. The practical design is short-lived access tokens, refresh-token rotation, denylist or token-version checks, and tests proving old tokens stop working.",
+      "links": [
+        {
+          "href": "{{HUB_BASE_URL}}/workbench/jwt-revocation-plan",
+          "label": "JWT revocation workbench",
+          "desc": "Practice designing the API, database, middleware, and tests for revoking JWT access before expiry."
+        }
+      ]
+    },
+    {
+      "title": "106. Why was OAuth2 Implicit Flow removed from modern recommendations?",
+      "body": "Implicit Flow was useful when browser apps could not safely use Authorization Code, but it returns the access token directly through the browser front channel. In real apps, URL fragments and redirects can still leak through browser history, extensions, support screenshots, crash reports, redirect mistakes, logs, or referrer handling. Modern SPAs and mobile apps should use Authorization Code with PKCE instead: the browser receives a short-lived code, not the token, and the token endpoint only exchanges that code when the original code verifier is presented.",
+      "bullets": [
+        "Implicit: `/authorize?response_type=token` returns the access token to the redirect URI, so JavaScript handles the token immediately.",
+        "Authorization Code with PKCE: `/authorize?response_type=code&code_challenge=...` returns a one-time code, then exchanges it with `code_verifier` at the token endpoint.",
+        "Record the decision as an ADR: use Authorization Code with PKCE for public clients and confidential Authorization Code when a backend can keep the secret.",
+        "Compatibility differs by client: SPAs and mobile apps are public clients; server-rendered web apps can exchange codes server-side.",
+        "PKCE protects public clients that cannot keep a client secret, because a stolen code is not enough without the verifier.",
+        "Authorization Code supports short-lived access tokens, refresh-token rotation, state validation, and cleaner server-side controls.",
+        "Token lifetime policy should keep access tokens short-lived and use refresh-token rotation instead of stretching Implicit access-token lifetime.",
+        "Scope consent review should treat `offline_access`, admin, and write scopes as high-risk during migration.",
+        "Authorize requests should harden `response_type`, exact `redirect_uri`, high-entropy `state`, least-privilege `scope`, and S256 `code_challenge` for public clients.",
+        "The token endpoint contract should accept one unused authorization code, verify the same redirect URI, and require either backend `client_secret` or public-client `code_verifier`.",
+        "Frontend cleanup should remove legacy token-fragment parsers, clear callback URL state, delete old storage keys, redact telemetry, and clear PKCE verifier state after every outcome.",
+        "If OpenID Connect ID tokens are used, validate `iss`, `aud`, `exp`, `iat`, and `nonce` before trusting identity claims.",
+        "Callback code should reject token-bearing URLs, validate `state`, verify the redirect URI, and require the PKCE verifier for public clients.",
+        "A PKCE checklist should generate a high-entropy `code_verifier`, derive an S256 `code_challenge`, store it only until callback, then clear it after exchange.",
+        "Before migrating, verify provider capabilities: PKCE S256, state validation, front-channel token blocking, and refresh-token rotation.",
+        "Rollout should happen in phases: inventory legacy clients, enable Authorization Code side by side, enforce callback rejection rules, then remove Implicit parsing.",
+        "Client cutover should replace the authorize URL, store the PKCE verifier only for the login attempt, reject legacy token callbacks, and verify end-to-end login before broad rollout.",
+        "During rollout, track authorize request types, rejected callbacks, failed token exchanges, token-bearing callbacks, and refresh-token reuse.",
+        "Common failure modes are state mismatch, missing PKCE verifier, token-bearing callback, redirect URI drift, and refresh-token reuse.",
+        "If token-bearing callbacks are detected, treat it as an incident: triage where tokens appeared, contain by blocking implicit callbacks, recover by rotating or revoking risky sessions, then harden tests.",
+        "A deprecation policy should block new Implicit clients, require owners for legacy exceptions, require PKCE for public clients, and treat token-bearing callbacks as security events.",
+        "A security test matrix should cover front-channel token blocking, state validation, PKCE verifier failure, authorization-code reuse or expiry, and refresh-token reuse.",
+        "A practical migration blocks `response_type=token`, adds PKCE, validates `state`, rejects callback URLs containing tokens, and tests code reuse, state mismatch, and missing verifier cases."
+      ],
+      "code": "GET /authorize?response_type=token&client_id=spa&redirect_uri=https://app.example/callback\n\nGET /authorize?response_type=code&client_id=spa&redirect_uri=https://app.example/callback&code_challenge=...&code_challenge_method=S256\n\nawait fetch('/oauth/token', {\n  method: 'POST',\n  headers: { 'Content-Type': 'application/json' },\n  body: JSON.stringify({\n    grant_type: 'authorization_code',\n    code,\n    redirect_uri,\n    client_id,\n    code_verifier\n  })\n});",
+      "note": "Interview answer: Implicit is not mainly rejected because OAuth is bad; it is rejected because token-in-URL delivery is a weaker browser pattern now that Authorization Code with PKCE is broadly available.",
+      "links": [
+        {
+          "href": "{{HUB_BASE_URL}}/workbench/oauth-flow-plan",
+          "label": "OAuth flow workbench",
+          "desc": "Practice comparing Implicit Flow with Authorization Code plus PKCE and planning a migration."
+        }
+      ]
+    },
+    {
+      "title": "107. SQL Injection: interview answer and practical prevention",
+      "body": "SQL Injection happens when user input changes the structure or logic of a SQL query instead of being treated as data. A classic payload such as `' OR 1=1 --` tries to turn a narrow lookup into a condition that matches everything. The practical defense is parameterized queries: keep the SQL structure fixed and pass user values separately as bindings.",
+      "bullets": [
+        "Do not concatenate request input into SQL strings.",
+        "Use Eloquent or the query builder for normal queries because values are bound for you.",
+        "If raw SQL is necessary, use positional or named bindings.",
+        "Escaping strings is not the main defense; binding parameters is the safer habit.",
+        "Dynamic table names, column names, and sort directions need allowlists because identifiers cannot be value-bound.",
+        "Test with payloads such as `' OR 1=1 --` and unsafe sort strings to prove the input stays data."
+      ],
+      "code": "// Unsafe\n$sql = \"select * from users where email = '\".$request->input('email').\"'\";\n\n// Safer raw SQL with binding\n$users = DB::select(\n    'select * from users where email = ?',\n    [$request->input('email')]\n);\n\n// Safer query builder\n$user = User::query()\n    ->where('email', $request->string('email'))\n    ->first();",
+      "note": "Interview answer: SQL Injection is not only a database topic; it is a boundary topic. User input must never be allowed to become SQL logic.",
+      "links": [
+        {
+          "href": "{{HUB_BASE_URL}}/workbench/sql-injection-defense-plan",
+          "label": "SQL Injection defense workbench",
+          "desc": "Practice risk scoring, parameterized query examples, allowlist review, malicious payload tests, and an interview-ready answer."
+        }
+      ]
+    },
+    {
+      "title": "108. Quick CSRF understanding and prevention",
+      "body": "CSRF happens when an attacker tricks a logged-in user's browser into sending a state-changing request to your app. The browser may automatically attach session cookies, so the server can see an authenticated request even though the user did not intend the action. Laravel's CSRF token ties the request back to the real app flow, while SameSite cookies reduce when cookies are sent cross-site.",
+      "bullets": [
+        "CSRF is mainly a browser-and-cookie risk: the victim is already logged in and the browser sends eligible cookies automatically.",
+        "State-changing routes should use POST, PUT, PATCH, or DELETE, not GET.",
+        "Blade forms should include `@csrf`; stateful JavaScript flows should send the correct XSRF header or Sanctum CSRF cookie flow.",
+        "SameSite=Lax is a useful default for many web apps, Strict is stronger but can affect external redirects, and None requires Secure plus stronger review.",
+        "SameSite reduces exposure, but it does not replace CSRF token validation for sensitive state changes.",
+        "Tests should prove missing or stale tokens fail and no server state changes."
+      ],
+      "code": "<form method=\"POST\" action=\"{{ route('profile.update') }}\">\n    @csrf\n    @method('PATCH')\n    <input name=\"name\" value=\"{{ old('name', $user->name) }}\">\n    <button type=\"submit\">Save</button>\n</form>\n\n// Sanctum-style SPA bootstrap\nawait axios.get('/sanctum/csrf-cookie', { withCredentials: true });\nawait axios.post('/login', payload, { withCredentials: true });",
+      "note": "Interview answer: CSRF is not about stealing the cookie; it is about abusing the browser's habit of sending cookies. The defense is a valid token tied to the session, deliberate SameSite cookie settings, safe HTTP method boundaries, and tests for missing or stale tokens.",
+      "links": [
+        {
+          "href": "{{HUB_BASE_URL}}/workbench/csrf-protection-plan",
+          "label": "CSRF protection workbench",
+          "desc": "Practice risk scoring, token controls, SameSite review, Sanctum/browser flow reasoning, and feature tests for CSRF failures."
+        }
+      ]
+    },
+    {
+      "title": "109. Clear XSS understanding and prevention",
+      "body": "XSS happens when untrusted data reaches the browser as executable script or unsafe HTML. Reflected XSS comes back immediately from a request, stored XSS is saved and shown later to other users, and DOM-based XSS is created by unsafe client-side rendering. Laravel helps because Blade escapes `{{ }}` by default, but XSS is still possible when teams render raw HTML, inject data into JavaScript, trust rich text, or build DOM with unsafe browser APIs.",
+      "bullets": [
+        "Treat XSS as an output-context problem: HTML text, HTML attributes, JavaScript, URLs, and CSS need different handling.",
+        "Use Blade `{{ }}` for normal text and avoid `{!! !!}` unless the HTML is sanitized and owned by a clear trust boundary.",
+        "Never place untrusted data directly inside inline JavaScript; serialize with safe JSON helpers and keep data separate from code.",
+        "For rich text, sanitize on input or before render with an allowlist of tags and attributes.",
+        "Add Content Security Policy as a defense-in-depth layer, not as a replacement for escaping.",
+        "Test reflected, stored, and DOM rendering paths with payloads that should appear as text, not execute."
+      ],
+      "code": "// Safer Blade text output\n<p>{{ $comment->body }}</p>\n\n// Risky: only use for trusted or sanitized HTML\n{!! $trustedHtml !!}\n\n// Safer data handoff into JavaScript\n<script>\n  window.pageData = @json($viewModel);\n</script>",
+      "note": "Interview answer: XSS is not only about `<script>alert(1)</script>`. The real issue is untrusted data crossing into an executable browser context. The defense is context-aware output escaping, safe rich-text sanitization, strict rendering boundaries, and tests that prove payloads render as text.",
+      "links": [
+        {
+          "href": "{{HUB_BASE_URL}}/workbench/security-escape-preview",
+          "label": "XSS escape preview workbench",
+          "desc": "Practice seeing unsafe input become escaped output, review Blade rendering choices, and explain why raw HTML needs a trusted boundary."
+        }
+      ]
+    },
+    {
+      "title": "110. What is Client Credentials Flow?",
+      "body": "Client Credentials Flow is the OAuth2 flow for machine-to-machine access. There is no human user login screen. A confidential client such as a backend service, worker, cron job, or internal microservice authenticates to the authorization server with its own client ID and secret or private key, then receives an access token for its own service identity.",
+      "bullets": [
+        "Use Client Credentials when the caller is a trusted server-side application acting as itself, not on behalf of a user.",
+        "The client sends `grant_type=client_credentials` to the token endpoint and authenticates with a secret, mTLS, private key JWT, or another confidential-client method.",
+        "Scopes should be service-scoped and least-privilege, such as `orders.read` or `billing.write`, not broad user permissions.",
+        "The resource server validates issuer, audience, expiry, signature, and scopes before trusting the token.",
+        "In microservices, this flow is useful for service-to-service calls, background jobs, scheduled syncs, and internal APIs.",
+        "Do not use Client Credentials for browser SPAs or mobile apps because they cannot keep a client secret.",
+        "Operational review should cover secret rotation, short token lifetime, audit logs, rate limits, service ownership, and what happens if a client secret leaks."
+      ],
+      "code": "POST /oauth/token\nContent-Type: application/x-www-form-urlencoded\nAuthorization: Basic base64(client_id:client_secret)\n\ngrant_type=client_credentials&scope=orders.read\n\n// Resource server check\nif (! $token->hasAudience('orders-api') || ! $token->hasScope('orders.read')) {\n    throw new AuthorizationException('Service token is not allowed to read orders.');\n}",
+      "note": "Interview answer: Client Credentials Flow is not a user login flow. It is service identity. The important points are confidential client authentication, least-privilege scopes, audience validation, short-lived tokens, secret rotation, and clear microservice ownership.",
+      "links": [
+        {
+          "href": "{{HUB_BASE_URL}}/workbench/oauth-flow-plan",
+          "label": "OAuth flow workbench",
+          "desc": "Practice choosing OAuth flows, validating token boundaries, and explaining when Client Credentials is appropriate for service-to-service access."
+        }
+      ]
+    },
+    {
+      "title": "111. What is PKCE, and when should it be used?",
+      "body": "PKCE, or Proof Key for Code Exchange, is an OAuth 2.0 protection for Authorization Code flow. The client creates a one-time `code_verifier`, sends only a derived `code_challenge` in the authorize request, then must present the original verifier when exchanging the authorization code for tokens. This keeps a stolen authorization code from being useful by itself.",
+      "bullets": [
+        "Use PKCE for public clients such as SPAs, mobile apps, desktop apps, CLI tools, or any client that cannot safely keep a client secret.",
+        "Prefer `code_challenge_method=S256`; do not rely on plain challenge mode unless a legacy provider leaves no safer option.",
+        "PKCE does not replace `state`, redirect URI validation, token lifetime policy, or refresh-token rotation; it protects the code exchange specifically.",
+        "A backend confidential client may still use Authorization Code with a client secret, but many teams enable PKCE there too as defense in depth.",
+        "Store the verifier only for the login attempt, clear it after success or failure, and never log it."
+      ],
+      "code": "const codeVerifier = generateHighEntropyString();\nconst codeChallenge = base64url(sha256(codeVerifier));\n\nGET /authorize?response_type=code&client_id=spa&redirect_uri=https://app.example/callback&code_challenge=${codeChallenge}&code_challenge_method=S256&state=${state}\n\nPOST /oauth/token\ngrant_type=authorization_code&code=AUTH_CODE&redirect_uri=https://app.example/callback&client_id=spa&code_verifier=${codeVerifier}",
+      "note": "Interview answer: use Authorization Code with PKCE when the OAuth client cannot keep a secret. PKCE binds the authorization code to the original login attempt, so intercepting the code is not enough to get tokens.",
+      "links": [
+        {
+          "href": "{{HUB_BASE_URL}}/workbench/oauth-flow-plan",
+          "label": "OAuth flow workbench",
+          "desc": "Practice the PKCE sequence, public-client decision, callback validation, and migration away from Implicit Flow."
+        }
+      ]
+    },
+    {
+      "title": "112. Common Security Misconfiguration",
+      "body": "Security Misconfiguration happens when an app, framework, server, cloud service, proxy, storage bucket, header policy, or environment setting is deployed in an unsafe state. It is common because the bug is often not in one controller; it lives in defaults, copied config, debug flags, open admin tools, permissive CORS, exposed secrets, missing security headers, stale packages, or production settings that still look like local development.",
+      "bullets": [
+        "Classic examples are `APP_DEBUG=true` in production, leaked `.env` files, public storage buckets, default admin credentials, directory listing, and verbose error pages.",
+        "Web examples include missing HTTPS enforcement, weak cookie flags, overly broad CORS, missing security headers, and trusting proxy headers without controlling the proxy boundary.",
+        "Laravel-specific checks should include `APP_ENV`, `APP_DEBUG`, `APP_KEY`, `SESSION_SECURE_COOKIE`, `SESSION_DOMAIN`, trusted proxies, log exposure, config cache, storage symlinks, and package update status.",
+        "Prevention is mostly disciplined configuration review: secure defaults, environment-specific checklists, automated tests, secret scanning, least privilege, hardening headers, and deployment smoke checks.",
+        "In interviews, explain one concrete failure path and one verification method instead of only saying 'configure the server correctly'."
+      ],
+      "code": "APP_ENV=production\nAPP_DEBUG=false\nSESSION_SECURE_COOKIE=true\nSESSION_SAME_SITE=lax\n\n# Deployment checks\nphp artisan config:cache\nphp artisan route:list --path=practice\n# Verify no .env, debug toolbar, storage bucket, or admin panel is publicly exposed.",
+      "note": "Interview answer: Security Misconfiguration is unsafe setup, not unsafe business logic. I would look for dangerous defaults, exposed secrets, debug output, permissive network or browser policy, weak headers, and production config drift, then prove the fix with automated checks and deployment smoke tests.",
+      "links": [
+        {
+          "href": "{{HUB_BASE_URL}}/practice/configuration-readiness",
+          "label": "Configuration readiness lab",
+          "desc": "Practice reading app/auth configuration as a runtime contract, then turn risky settings into review evidence, tests, and release checks."
+        }
+      ]
+    },
+    {
+      "title": "113. Understand IDOR through a real API example",
+      "body": "IDOR, or Insecure Direct Object Reference, happens when an API trusts a user-controlled object ID such as `/api/invoices/42` without proving that the authenticated user is allowed to access that exact object. The attacker does not need SQL Injection or XSS; they only change an ID and wait for the backend to leak another user's data.",
+      "bullets": [
+        "The vulnerable pattern is usually `Invoice::findOrFail($id)` followed by returning the record without a policy or tenant scope.",
+        "A realistic attack is logging in as user A, requesting `/api/orders/1001`, then changing the ID to `/api/orders/1002` that belongs to user B.",
+        "IDOR is an authorization failure, not an authentication failure: the attacker may be logged in with a valid account.",
+        "Strong defenses include policies, scoped queries, tenant/team ownership checks, route model binding with authorization, and tests using two users.",
+        "Do not rely on hidden frontend buttons or random-looking IDs as the main control.",
+        "Interview answer: IDOR is direct object access without object-level authorization. I prevent it by checking ownership or permission for every object read, update, delete, download, or export."
+      ],
+      "code": "// Risky: authenticated, but not authorized for this invoice\nRoute::get('/api/invoices/{invoice}', function (Invoice $invoice) {\n    return new InvoiceResource($invoice);\n});\n\n// Safer: policy and tenant ownership are checked\nRoute::get('/api/invoices/{invoice}', function (Invoice $invoice) {\n    Gate::authorize('view', $invoice);\n\n    return new InvoiceResource($invoice);\n});\n\nclass InvoicePolicy\n{\n    public function view(User $user, Invoice $invoice): bool\n    {\n        return $user->tenant_id === $invoice->tenant_id;\n    }\n}",
+      "note": "Teduco Labs mental model: every object ID in an API is a door handle. Authentication proves who is holding the handle; authorization decides whether that person may open this exact door.",
+      "links": [
+        {
+          "href": "{{HUB_BASE_URL}}/workbench/idor-access-review",
+          "label": "IDOR access review workbench",
+          "desc": "Practice attacker ID swapping, object-level authorization checks, Laravel policy placement, tenant scoping, tests, and interview-ready IDOR prevention."
+        }
+      ]
+    },
+    {
+      "title": "114. Common Broken Authentication Mistakes",
+      "body": "Broken authentication happens when the system can no longer trust that a request really belongs to the correct user, session, device, or login flow. It is not only a bad password form. It includes weak session handling, unsafe reset links, missing rate limits, predictable tokens, no session rotation, weak MFA recovery, leaked remember-me cookies, and token flows that cannot be revoked.",
+      "bullets": [
+        "A common mistake is checking only whether login succeeds, while ignoring session fixation, logout invalidation, password reset expiry, remember-me token rotation, and suspicious login detection.",
+        "In API and SPA systems, broken authentication often appears as long-lived bearer tokens in unsafe storage, refresh tokens that never rotate, missing device/session inventory, or token revocation that is not enforced.",
+        "Real attack path: attacker guesses or steals credentials, reuses an old session, abuses a reset token, or brute-forces login because the app has no throttling, lockout, MFA challenge, or anomaly alert.",
+        "Laravel defenses include rate limiting login attempts, rotating session ID after login, invalidating sessions on logout or password change, hashing passwords with modern defaults, expiring reset tokens, using secure cookies, and testing failure flows.",
+        "Do not confuse authentication with authorization: authentication proves identity, while authorization still decides what the authenticated user may access.",
+        "Interview answer: broken authentication is any weakness that lets the wrong person become, stay, or act as a user. I prevent it with secure session lifecycle, password reset controls, MFA/recovery review, token revocation, throttling, logging, and tests for failure paths."
+      ],
+      "code": "// Risky: login succeeds but the session lifecycle is not reviewed\nRoute::post('/login', function (Request $request) {\n    if (Auth::attempt($request->only('email', 'password'))) {\n        return redirect('/dashboard');\n    }\n\n    return back()->withErrors(['email' => 'Invalid credentials']);\n});\n\n// Safer: regenerate the session after authentication\nRoute::post('/login', function (Request $request) {\n    $request->validate([\n        'email' => ['required', 'email'],\n        'password' => ['required', 'string'],\n    ]);\n\n    if (! Auth::attempt($request->only('email', 'password'))) {\n        RateLimiter::hit('login:'.$request->ip());\n        return back()->withErrors(['email' => 'Invalid credentials']);\n    }\n\n    $request->session()->regenerate();\n\n    return redirect()->intended('/dashboard');\n});",
+      "note": "Teduco Labs mental model: authentication is a lifecycle, not a button. Review how identity is created, kept, refreshed, recovered, revoked, logged, and challenged when behavior looks risky.",
+      "links": [
+        {
+          "href": "{{HUB_BASE_URL}}/workbench/authorization-policy-plan",
+          "label": "Authorization policy workbench",
+          "desc": "Practice separating identity checks from access decisions, then document where Laravel auth, policy, throttling, and tests prove the security boundary."
+        }
+      ]
     }
   ]
 }

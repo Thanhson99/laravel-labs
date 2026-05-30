@@ -17,11 +17,6 @@
   font-weight: 800;
 }
 
-.detail-section {
-  display: grid;
-  gap: 18px;
-}
-
 .php-keyword-hint {
   margin: 0;
   color: color-mix(in srgb, var(--muted) 90%, var(--text) 10%);
@@ -446,8 +441,11 @@ body[data-theme="dark"] .php-resume-card {
 .php-question-block {
   display: grid;
   gap: 14px;
-  padding: 0 0 18px;
-  border-bottom: 1px solid var(--section-line);
+  padding: 24px 28px;
+  border: 1px solid color-mix(in srgb, var(--accent) 12%, var(--line));
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow: 0 18px 34px rgba(73, 40, 19, 0.055);
 }
 
 .level-shell,
@@ -473,25 +471,29 @@ body[data-theme="dark"] .php-resume-card {
   animation: phpJumpPulseExact 2.6s ease;
 }
 
-.php-phase:last-child,
-.php-note-block:last-child,
-.php-example-block:last-child,
-.php-question-block:last-child {
-  padding-bottom: 0;
-  border-bottom: 0;
-}
-
 .php-phase-head {
   display: grid;
-  gap: 10px;
+  gap: 8px;
+}
+
+.php-phase h3,
+.php-note-block h3,
+.php-example-block h3,
+.php-question-block h3 {
+  margin: 0;
+  max-width: 920px;
+  color: color-mix(in srgb, var(--text) 88%, var(--accent-deep) 12%);
+  font-size: 1.18rem;
+  line-height: 1.35;
 }
 
 .php-phase-topics,
 .php-note-points {
   display: grid;
   gap: 10px;
-  padding: 0;
+  padding: 0 0 0 18px;
   margin: 0;
+  border-left: 3px solid color-mix(in srgb, var(--accent) 42%, transparent);
   list-style: none;
 }
 
@@ -499,24 +501,35 @@ body[data-theme="dark"] .php-resume-card {
 .php-note-points li {
   display: grid;
   gap: 5px;
-  padding-left: 18px;
-  border-left: 3px solid color-mix(in srgb, var(--accent) 42%, transparent);
+  padding-left: 0;
+  border-left: 0;
   color: var(--muted);
   line-height: 1.7;
 }
 
+@media (max-width: 760px) {
+  .php-phase,
+  .php-note-block,
+  .php-example-block,
+  .php-question-block {
+    padding: 20px;
+    border-radius: 18px;
+  }
+}
+
 .php-phase-topic strong,
-.php-phase h3,
-.php-note-block h3,
-.php-example-block h3,
-.php-question-block h3 {
-  color: var(--text);
+.php-note-points strong {
+  color: color-mix(in srgb, var(--text) 88%, var(--accent-deep) 12%);
+  font-size: 0.98rem;
+  line-height: 1.45;
 }
 
 .php-note-copy {
   margin: 0;
-  max-width: 860px;
-  color: var(--muted);
+  max-width: 900px;
+  color: color-mix(in srgb, var(--muted) 84%, var(--text) 16%);
+  font-size: 1rem;
+  line-height: 1.75;
 }
 
 .inline-keyword {
@@ -607,10 +620,11 @@ body[data-theme="dark"] .php-resume-card {
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.16);
 }
 
-.php-example-block pre {
+.php-example-block pre,
+.php-note-block .php-code-shell pre {
   overflow-x: auto;
   margin: 0;
-  padding: 54px 18px 16px;
+  padding: 18px 128px 16px 18px;
   border-radius: 14px;
   background: var(--code-bg);
   color: var(--code-text);
@@ -624,7 +638,8 @@ body[data-theme="dark"] .php-resume-card {
   color: #f4fffc;
 }
 
-.php-example-block code {
+.php-example-block code,
+.php-note-block .php-code-shell code {
   display: block;
   white-space: pre-wrap;
   word-break: break-word;
@@ -639,8 +654,12 @@ body[data-theme="dark"] .php-resume-card {
   display: none;
 }
 
-body[data-theme="dark"] .php-example-block {
+body[data-theme="dark"] .php-phase,
+body[data-theme="dark"] .php-note-block,
+body[data-theme="dark"] .php-example-block,
+body[data-theme="dark"] .php-question-block {
   background: linear-gradient(180deg, rgba(28, 34, 37, 0.98), rgba(20, 26, 29, 0.98));
+  box-shadow: 0 18px 34px rgba(0, 0, 0, 0.18);
 }
 
 body[data-theme="dark"] .php-code-toggle {
@@ -658,8 +677,68 @@ body[data-theme="dark"] .php-keyword-search input {
 }
 
 body[data-theme="dark"] .php-level-switcher-select {
-  background: rgba(22, 29, 32, 0.92);
+  border-color: rgba(223, 132, 89, 0.22);
+  background: rgba(22, 29, 32, 0.94);
   color: var(--text);
+}
+
+body[data-theme="dark"] .php-level-switcher-label span,
+body[data-theme="dark"] .laravel-topic-switcher-label span {
+  color: rgba(230, 215, 201, 0.86);
+}
+
+body[data-theme="dark"] .laravel-topic-switcher {
+  border-color: rgba(223, 132, 89, 0.2);
+  background:
+    radial-gradient(circle at top right, rgba(223, 132, 89, 0.12), transparent 34%),
+    linear-gradient(180deg, rgba(28, 35, 38, 0.98), rgba(18, 24, 27, 0.98));
+  box-shadow:
+    0 20px 42px rgba(0, 0, 0, 0.24),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+body[data-theme="dark"] .laravel-topic-switcher .level-tag {
+  background: rgba(223, 132, 89, 0.16);
+  color: #ffc3a7;
+}
+
+body[data-theme="dark"] .laravel-topic-switcher-copy strong {
+  color: #ffb18e;
+}
+
+body[data-theme="dark"] .laravel-topic-switcher-copy span:not(.level-tag) {
+  color: rgba(230, 215, 201, 0.78);
+}
+
+body[data-theme="dark"] .laravel-topic-switcher-link.disabled {
+  border-color: rgba(230, 215, 201, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(230, 215, 201, 0.48);
+  opacity: 1;
+}
+
+body[data-theme="dark"] .php-roadmap-link {
+  border-bottom-color: rgba(230, 215, 201, 0.1);
+}
+
+body[data-theme="dark"] .php-roadmap-title {
+  color: #ffb18e;
+}
+
+body[data-theme="dark"] .php-roadmap-copy span {
+  color: rgba(230, 215, 201, 0.74);
+}
+
+body[data-theme="dark"] .php-roadmap-link:hover,
+body[data-theme="dark"] .php-roadmap-link:focus-visible,
+body[data-theme="dark"] .php-roadmap-link.active {
+  border-bottom-color: rgba(223, 132, 89, 0.34);
+}
+
+body[data-theme="dark"] .php-roadmap-link:hover .php-roadmap-title,
+body[data-theme="dark"] .php-roadmap-link:focus-visible .php-roadmap-title,
+body[data-theme="dark"] .php-roadmap-link.active .php-roadmap-title {
+  color: #ffd1bd;
 }
 
 body[data-theme="dark"] .site-nav-submenu {

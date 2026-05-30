@@ -30,6 +30,7 @@
         <div class="topbar">
             <h2>{{ $qualityPlan['meta']['quality_plan_count'] }} quality plans: {{ $qualityPlan['meta']['minimum_status'] }}</h2>
             <a class="button" href="{{ route('api.practice.technology-quality-plan', request()->query()) }}">Open quality API</a>
+            <a class="button" href="{{ route('practice.technology-taxonomy') }}">Open taxonomy</a>
             <a class="button" href="{{ route('practice.technology-pipelines', request()->query()) }}">Open pipelines</a>
         </div>
 
@@ -43,6 +44,9 @@
                     </div>
                     <h3>{{ $item['technology'] }} verification baseline</h3>
                     <p>{{ $item['risk_note'] }}</p>
+                    @if ($item['related_workbench'] && $item['related_workbench']['route_name'])
+                        <a class="button primary" href="{{ route($item['related_workbench']['route_name']) }}">{{ $item['related_workbench']['label'] }}</a>
+                    @endif
 
                     <h4>Commands</h4>
                     <ul>
@@ -54,6 +58,13 @@
                     <h4>Acceptance checks</h4>
                     <ul>
                         @foreach ($item['acceptance_checks'] as $check)
+                            <li>{{ $check }}</li>
+                        @endforeach
+                    </ul>
+
+                    <h4>Evidence checks</h4>
+                    <ul>
+                        @foreach ($item['evidence_checks'] as $check)
                             <li>{{ $check }}</li>
                         @endforeach
                     </ul>

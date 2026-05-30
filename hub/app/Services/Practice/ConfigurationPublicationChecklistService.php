@@ -35,6 +35,11 @@ final class ConfigurationPublicationChecklistService
                     'proof_required' => 'Archive id, readiness route, quality-gate status, and incident recovery source key.',
                 ],
                 [
+                    'name' => 'Security review',
+                    'output' => 'Publish a release-review note that names Security Misconfiguration blockers and their smoke evidence.',
+                    'proof_required' => 'Unsafe signal, release blocker, owner, rollback action, and fail-closed smoke check.',
+                ],
+                [
                     'name' => 'Interview',
                     'output' => 'Rehearse the two-minute explanation with one config key, one route, and one command.',
                     'proof_required' => 'Talking point plus source key from the proof table.',
@@ -48,11 +53,13 @@ final class ConfigurationPublicationChecklistService
             'pre_publish_checks' => [
                 'Portfolio review score is at least 90.',
                 'Every claim in the artifact has a source key or route.',
+                'Security Misconfiguration claims name release blockers and fail-closed smoke evidence.',
                 'Incident recovery proof cites the postmortem id.',
                 'Quality-gate status is ready.',
             ],
             'do_not_publish_if' => [
                 'The artifact explains configuration without naming app/auth behavior.',
+                'Security Misconfiguration is described without an unsafe signal, owner, rollback action, or smoke check.',
                 'The proof table omits incident recovery evidence.',
                 'Quality status is not ready.',
                 'The learner cannot answer the interview prompt without rereading the page.',

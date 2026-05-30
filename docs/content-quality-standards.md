@@ -78,6 +78,19 @@ For substantial topics, prefer this shape:
 
 Do not force every small item into this full structure. Use it when writing a full section or topic.
 
+## Renderer-Friendly Structure Rule
+
+Content should be written so the existing renderer can present it cleanly without one-off CSS fixes.
+
+- Use default card sections for independent related concepts.
+- Use `type: "list"` for sequences, checklists, grouped notes, Q&A, and progress-trackable learning items.
+- Use `links` sections for references instead of putting bare URLs in prose.
+- Use PHP `modules` or `phases` for PHP level content so related title, description, bullets, examples, and questions stay inside the designed white blocks.
+- Keep parent titles concise and descriptive; put explanation in `body`, `description`, `intro`, or `summary`.
+- Keep nested bullets as supporting details, not full standalone sections.
+- Avoid raw HTML, inline style instructions, visual spacer text, or fake headings inside content fields.
+- If new content looks like it needs a new visual layout, update the shared renderer/component docs and CSS rather than patching a single page.
+
 ## Bilingual Quality Rules
 
 The portal uses English and Vietnamese.

@@ -40,6 +40,12 @@
                     <li><code>{{ $key }}</code></li>
                 @endforeach
             </ul>
+            <h3>Reuse targets</h3>
+            <ul>
+                @foreach ($pipeline['archive']['reuse_targets'] as $target)
+                    <li>{{ $target }}</li>
+                @endforeach
+            </ul>
         </article>
     </section>
 @endsection

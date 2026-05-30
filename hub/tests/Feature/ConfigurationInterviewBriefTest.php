@@ -34,7 +34,11 @@ final class ConfigurationInterviewBriefTest extends TestCase
         $response
             ->assertOk()
             ->assertJsonPath('data.questions.0.question', 'How did you treat Laravel configuration as a runtime contract?')
+            ->assertJsonPath('data.questions.3.question', 'How would you explain Security Misconfiguration in this Laravel configuration workflow?')
+            ->assertJsonPath('data.questions.3.answer_outline.1', 'Name debug mode, exposed secrets, broad CORS, missing headers, weak cookies, public storage, and proxy drift as concrete risks.')
             ->assertJsonPath('data.evidence_to_cite.1.label', '/practice/configuration-readiness')
+            ->assertJsonPath('data.evidence_to_cite.3.source', 'Security Misconfiguration review focus')
+            ->assertJsonPath('data.rehearsal_checklist.3', 'Explain how Security Misconfiguration controls fail closed before production release.')
             ->assertJsonPath('data.quality_gate.status', 'ready')
             ->assertJsonStructure([
                 'data' => [

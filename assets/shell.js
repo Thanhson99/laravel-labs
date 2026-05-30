@@ -47,6 +47,11 @@ async function loadPageShell() {
     document.body.prepend(host);
   }
   host.innerHTML = markup;
+
+  const backLink = host.querySelector("#backLink");
+  if (backLink) {
+    backLink.setAttribute("href", `${SHELL_SITE_ROOT}/index.html`);
+  }
 }
 
 window.__shellReady = loadPageShell().catch((error) => {

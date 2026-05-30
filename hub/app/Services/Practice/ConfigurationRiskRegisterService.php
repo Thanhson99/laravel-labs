@@ -77,6 +77,14 @@ final class ConfigurationRiskRegisterService
                 'owner_route' => '/practice/configuration-change-checklist',
             ],
             [
+                'key' => 'security-misconfiguration-release-blocker',
+                'severity' => 'high',
+                'area' => 'Security Misconfiguration',
+                'signal' => 'Debug output, exposed secrets, broad CORS, missing headers, weak cookies, proxy drift, or public storage exposure is not tied to a fail-closed smoke check.',
+                'mitigation' => 'Map the unsafe signal to a readiness control, release blocker, owner, rollback action, and deployment smoke check before release.',
+                'owner_route' => '/practice/configuration-readiness',
+            ],
+            [
                 'key' => 'release-evidence-missing',
                 'severity' => $dashboard['status']['passed'] ? 'medium' : 'high',
                 'area' => 'Release evidence',

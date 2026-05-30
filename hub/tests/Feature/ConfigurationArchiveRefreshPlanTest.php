@@ -35,7 +35,9 @@ final class ConfigurationArchiveRefreshPlanTest extends TestCase
             ->assertOk()
             ->assertJsonPath('data.archive_id', 'configuration-contract-promote-100-session-debrief')
             ->assertJsonPath('data.refresh_status', 'scheduled')
+            ->assertJsonPath('data.refresh_triggers.1', 'A Security Misconfiguration control, release blocker, or smoke check changes.')
             ->assertJsonPath('data.refresh_tasks.0.current_status', 'captured')
+            ->assertJsonPath('data.remediation_triggers.2', 'Security Misconfiguration release blockers no longer map to an owner, rollback action, and smoke check.')
             ->assertJsonPath('data.quality_gate.status', 'ready')
             ->assertJsonStructure([
                 'data' => [

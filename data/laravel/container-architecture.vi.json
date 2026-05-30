@@ -444,7 +444,33 @@
         "Kiến trúc dễ thay đổi hơn vì quy tắc khởi tạo nằm ngoài business logic."
       ],
       "code": "interface ReportExporter\n{\n    public function export(array $rows): string;\n}\n\nfinal class CsvReportExporter implements ReportExporter\n{\n    public function export(array $rows): string\n    {\n        return 'csv-output';\n    }\n}\n\nfinal class ReportController\n{\n    public function __construct(private ReportExporter $exporter)\n    {\n    }\n\n    public function download(SalesReportService $reports): string\n    {\n        return $this->exporter->export($reports->monthly());\n    }\n}",
-      "note": "Lỗi thường gặp: đặt `new CsvReportExporter()` ngay trong controller hoặc service. Cách đó giấu dependency, làm test khó hơn và khóa use case vào một implementation."
+      "note": "Lỗi thường gặp: đặt `new CsvReportExporter()` ngay trong controller hoặc service. Cách đó giấu dependency, làm test khó hơn và khóa use case vào một implementation.",
+      "links": [
+        {
+          "label": "Mở DI refactor workbench",
+          "href": "{{HUB_BASE_URL}}/workbench/dependency-injection-refactor",
+          "desc": "Thực hành chuyển manual dependency thành contract, binding, constructor injection và test fake."
+        }
+      ]
+    },
+    {
+      "title": "90. Clean Architecture P6: Layered Architecture khÃ´ng pháº£i lÃºc nÃ o cÅ©ng Ä‘Ãºng",
+      "body": "Layered Architecture cÃ³ Ã­ch khi má»—i layer báº£o vá»‡ má»™t boundary tháº­t: input HTTP, workflow á»©ng dá»¥ng, business rule, persistence, integration hoáº·c presentation. NÃ³ trá»Ÿ nÃªn háº¡i khi team táº¡o layer chá»‰ vÃ¬ diagram nÃ³i request nÃ o cÅ©ng pháº£i Ä‘i qua cÃ¹ng má»™t chuá»—i.",
+      "bullets": [
+        "DÃ¹ng layer khi nÃ³ giáº£m coupling, lÃ m test rÃµ hÆ¡n, hoáº·c báº£o vá»‡ business rule khá»i chi tiáº¿t framework.",
+        "TrÃ¡nh layer khi nÃ³ chá»‰ chuyá»ƒn data tá»« controller sang service sang repository mÃ  khÃ´ng cÃ³ decision hay boundary tháº­t.",
+        "Vá»›i mÃ n CRUD nhá», Form Request, controller, model/query vÃ  view/resource cÃ³ thá»ƒ Ä‘Ã£ Ä‘á»§.",
+        "Vá»›i workflow phá»©c táº¡p, action, service, policy, job, event vÃ  repository cÃ³ thá»ƒ táº¡o boundary há»¯u Ã­ch.",
+        "CÃ¢u há»i khÃ´ng pháº£i 'Ä‘Ã£ Ä‘á»§ layer chÆ°a?' mÃ  lÃ  'má»—i layer cÃ³ trÃ¡ch nhiá»‡m tháº­t khÃ´ng?'"
+      ],
+      "note": "Clean Architecture pháº£i lÃ m thay Ä‘á»•i an toÃ n hÆ¡n. Náº¿u nÃ³ chá»‰ thÃªm file, thÃªm ma sÃ¡t Ä‘áº·t tÃªn vÃ  thÃªm nháº£y context, Ä‘Ã³ lÃ  architecture theater.",
+      "links": [
+        {
+          "label": "Má»Ÿ bÃ i Clean Architecture P6",
+          "href": "{{HUB_BASE_URL}}/workbench/layered-architecture-decision",
+          "desc": "Thá»±c hÃ nh quyáº¿t Ä‘á»‹nh khi nÃ o feature Laravel nÃªn giá»¯ Ä‘Æ¡n giáº£n vÃ  khi nÃ o layer bá»• sung tháº­t sá»± Ä‘Ã¡ng giÃ¡."
+        }
+      ]
     }
   ]
 }

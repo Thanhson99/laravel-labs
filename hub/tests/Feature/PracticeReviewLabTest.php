@@ -69,4 +69,22 @@ final class PracticeReviewLabTest extends TestCase
 
         $response->assertNotFound();
     }
+
+    /**
+     * JavaScript closure review labs check closure evidence, not generic Laravel behavior.
+     */
+    public function test_javascript_closure_review_lab_uses_scope_checklist(): void
+    {
+        $response = $this->getJson('/api/practice/review-lab?record_id=laravel-frontend-en-json-item-8&technology=javascript-closures');
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('data.technology', 'javascript-closures')
+            ->assertJsonPath('data.review_items.2.label', 'Evidence boundary')
+            ->assertJsonPath('data.review_items.4.label', 'Closure behavior');
+
+        $this->assertStringContainsString('closure evidence shape', $response->json('data.review_items.1.question'));
+        $this->assertStringContainsString('lexical scope', $response->json('data.review_items.4.question'));
+        $this->assertStringContainsString('stale-closure evidence drifts', $response->json('data.review_items.5.question'));
+    }
 }

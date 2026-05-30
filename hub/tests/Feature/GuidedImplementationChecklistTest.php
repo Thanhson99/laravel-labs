@@ -63,4 +63,63 @@ final class GuidedImplementationChecklistTest extends TestCase
 
         $response->assertNotFound();
     }
+
+    /**
+     * JavaScript closure guided checklists use closure evidence steps.
+     */
+    public function test_javascript_closure_guided_checklist_uses_scope_steps(): void
+    {
+        $response = $this->getJson('/api/practice/guided-checklist?record_id=laravel-frontend-en-json-item-8&technology=javascript-closures');
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('data.blueprint.drill.technology', 'javascript-closures')
+            ->assertJsonPath('data.items.0.label', 'Read closure source record')
+            ->assertJsonPath('data.items.1.label', 'Write failing closure test')
+            ->assertJsonPath('data.items.2.label', 'Define evidence payload')
+            ->assertJsonPath('data.items.4.label', 'Move closure logic to service');
+
+        $this->assertStringContainsString('captured binding', $response->json('data.items.1.detail'));
+        $this->assertStringContainsString('createCounter()', $response->json('data.items.2.detail'));
+    }
+
+    /**
+     * Arrow-function this guided checklists use lexical-this evidence steps.
+     */
+    public function test_arrow_this_guided_checklist_uses_lexical_this_steps(): void
+    {
+        $response = $this->getJson('/api/practice/guided-checklist?record_id=laravel-frontend-en-json-item-62&technology=javascript-closures');
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('data.blueprint.drill.technology', 'javascript-closures')
+            ->assertJsonPath('data.items.0.label', 'Read arrow-this source record')
+            ->assertJsonPath('data.items.1.label', 'Write failing arrow-this test')
+            ->assertJsonPath('data.items.2.label', 'Define this-binding evidence')
+            ->assertJsonPath('data.items.4.label', 'Move this-binding logic to service');
+
+        $this->assertStringContainsString('lexical `this`', $response->json('data.items.1.detail'));
+        $this->assertStringContainsString('call/apply/bind limitation', $response->json('data.items.2.detail'));
+    }
+
+    /**
+     * IDOR guided checklists use object authorization steps.
+     */
+    public function test_idor_guided_checklist_uses_object_authorization_steps(): void
+    {
+        $response = $this->getJson('/api/practice/guided-checklist?record_id=laravel-auth-security-en-json-item-113&technology=idor-access-control');
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('data.blueprint.drill.technology', 'idor-access-control')
+            ->assertJsonPath('data.items.0.label', 'Read IDOR source record')
+            ->assertJsonPath('data.items.1.label', 'Write failing ID-swap test')
+            ->assertJsonPath('data.items.2.label', 'Inventory object surface')
+            ->assertJsonPath('data.items.3.label', 'Add scoped lookup evidence')
+            ->assertJsonPath('data.items.4.label', 'Add object authorization check');
+
+        $this->assertStringContainsString('second user or tenant', $response->json('data.items.1.detail'));
+        $this->assertStringContainsString('downloads, exports', $response->json('data.items.2.detail'));
+        $this->assertStringContainsString('policy, Gate', $response->json('data.items.4.detail'));
+    }
 }

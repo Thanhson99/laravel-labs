@@ -25,6 +25,18 @@
       ]
     },
     {
+      "title": "Abstract class or interface?",
+      "description": "Both are abstraction tools, but they solve different design problems. The interview answer should explain intent, not only syntax.",
+      "bullets": [
+        "Use an interface when you need a contract that many unrelated classes can implement, such as `Logger`, `PaymentGateway`, or `ReportExporter`.",
+        "Use an abstract class when child classes share meaningful base behavior, protected helpers, or state that belongs to the same family of objects.",
+        "A class can implement multiple interfaces, but it can extend only one abstract class.",
+        "In Laravel-style architecture, interfaces are common for swappable integrations; abstract classes are more appropriate when there is a real base type with shared logic.",
+        "Interview answer: interface defines what a class must do, abstract class can define what children share and may also include partial implementation."
+      ],
+      "code": "interface Notifier\n{\n    public function send(string $message): void;\n}\n\nabstract class FileReport\n{\n    public function __construct(protected string $path)\n    {\n    }\n\n    abstract public function rows(): array;\n\n    protected function read(): string\n    {\n        return file_get_contents($this->path) ?: '';\n    }\n}"
+    },
+    {
       "title": "final, readonly, and deliberate constraints",
       "description": "Modern PHP does not only give you more power. It also gives you clearer ways to place boundaries around code.",
       "bullets": [
@@ -68,6 +80,18 @@
         "Large arrays, repeated transformations, and unnecessary file loading can increase memory pressure.",
         "Tip: profile bottlenecks before rewriting half the codebase for speed."
       ]
+    },
+    {
+      "title": "Stack memory versus heap memory",
+      "description": "This is a runtime mental model, not something you manually allocate in normal PHP code. It helps you explain why call depth, object lifetime, and large data structures behave differently.",
+      "bullets": [
+        "The stack is tied to function calls: each call gets a frame for local variables, parameters, return addresses, and temporary execution state.",
+        "The heap is used for data that can outlive a single function frame, such as objects, arrays, strings, and structures referenced from multiple places.",
+        "Stack memory is usually fast and automatically unwinds when a function returns, but deep recursion can exhaust it.",
+        "Heap memory is more flexible, but long-lived references, large arrays, and object graphs can increase memory pressure until garbage collection or reference cleanup releases them.",
+        "Interview answer: stack is for short-lived call frames; heap is for dynamically allocated data with more flexible lifetime. In PHP, you mostly manage this indirectly by limiting deep recursion, large arrays, leaked references, and long-running worker state."
+      ],
+      "code": "<?php\nfunction total(array $numbers): int\n{\n    $sum = 0; // Local variable in the current call frame.\n\n    foreach ($numbers as $number) {\n        $sum += $number;\n    }\n\n    return $sum;\n}\n\n$items = range(1, 100000); // Large array data increases heap pressure.\n$result = total($items);\n\nunset($items); // Release the reference when the data is no longer needed.\n"
     },
     {
       "title": "Testing and Confidence",
@@ -336,6 +360,11 @@
       "answer": "An interface defines a contract that a class must implement, while a trait provides reusable method implementations that can be inserted into multiple classes."
     },
     {
+      "tag": "OOP",
+      "question": "Abstract class or interface: how should you answer this in an interview?",
+      "answer": "Say that an interface is best when you want a pure contract that unrelated classes can implement, while an abstract class fits a family of related classes that share base behavior or state. Then add the practical tradeoff: a class can implement many interfaces but extend only one abstract class, so interfaces are usually better for swappable dependencies and abstract classes are better for shared base logic."
+    },
+    {
       "tag": "Hot Topic",
       "question": "Why is `===` usually safer than `==` in PHP?",
       "answer": "Because `===` compares both value and type, so it avoids implicit type juggling that can create surprising bugs."
@@ -429,6 +458,11 @@
       "tag": "Performance",
       "question": "What is an important warning when working with ORMs or relational backend code?",
       "answer": "Do not assume that clean-looking application code means the query pattern is also efficient. A loop that touches related data can quietly create an `N+1 query` problem and slow the page dramatically as data grows. Build the habit of checking query logs, query counts, and which code paths cross data boundaries."
+    },
+    {
+      "tag": "Runtime",
+      "question": "What is the difference between stack memory and heap memory?",
+      "answer": "Stack memory is tied to function calls: parameters, local variables, and temporary call-frame state are created and unwound as calls enter and return. Heap memory holds data with a more flexible lifetime, such as objects, arrays, strings, and structures referenced from different places. In PHP you usually do not allocate stack or heap manually, but the model helps explain deep recursion, large arrays, object graphs, garbage collection, and memory leaks in long-running workers."
     },
     {
       "tag": "Service",

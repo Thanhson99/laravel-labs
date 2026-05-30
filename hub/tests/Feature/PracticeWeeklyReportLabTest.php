@@ -58,4 +58,32 @@ final class PracticeWeeklyReportLabTest extends TestCase
                 ],
             ]);
     }
+
+    /**
+     * Predictive AI weekly reports attach AI type evidence.
+     */
+    public function test_predictive_generative_ai_weekly_report_uses_ai_type_evidence(): void
+    {
+        $this->getJson('/api/practice/weekly-report-lab?family=vibe-coding&language=en&search=Predictive%20AI&phase_limit=1&tasks_per_phase=1&days=3')
+            ->assertOk()
+            ->assertJsonPath('data.technology_coverage.0', 'llm-foundations')
+            ->assertJsonPath('data.daily_outputs.0.evidence_to_attach', 'AI type comparison table, metric choices, and source record.')
+            ->assertJsonPath('data.daily_outputs.1.evidence_to_attach', 'Checkpoint output-contract, metric, and failure-mode evidence.')
+            ->assertJsonPath('data.evidence_checklist.0', 'AI type comparison table for each AI-focused coding day.')
+            ->assertJsonPath('data.blockers_prompt.0', 'Which source record was hardest to classify as prediction, generation, or both?');
+    }
+
+    /**
+     * JavaScript closure weekly reports attach closure-specific evidence.
+     */
+    public function test_javascript_closure_weekly_report_uses_scope_evidence(): void
+    {
+        $this->getJson('/api/practice/weekly-report-lab?family=laravel&language=en&search=JavaScript%20closure&phase_limit=1&tasks_per_phase=1&days=3')
+            ->assertOk()
+            ->assertJsonPath('data.technology_coverage.0', 'javascript-closures')
+            ->assertJsonPath('data.daily_outputs.0.evidence_to_attach', 'Closure lexical-scope trace, createCounter() output, and source record.')
+            ->assertJsonPath('data.daily_outputs.1.evidence_to_attach', 'Checkpoint captured-binding, var-versus-let, and stale-closure evidence.')
+            ->assertJsonPath('data.evidence_checklist.0', 'Lexical-scope trace for each closure-focused coding day.')
+            ->assertJsonPath('data.blockers_prompt.1', 'Which captured binding, var versus let, or stale-closure example was weakest?');
+    }
 }

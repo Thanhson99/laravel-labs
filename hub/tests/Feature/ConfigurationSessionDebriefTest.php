@@ -35,7 +35,10 @@ final class ConfigurationSessionDebriefTest extends TestCase
             ->assertOk()
             ->assertJsonPath('data.archive_id', 'configuration-contract-promote-100')
             ->assertJsonPath('data.session_result', 'completed')
+            ->assertJsonPath('data.completed_outputs.1', 'One Security Misconfiguration release-blocker proof was checked when security review was selected.')
             ->assertJsonPath('data.evidence_review.0.status', 'captured')
+            ->assertJsonPath('data.blockers.2', 'If Security Misconfiguration proof lacked a fail-closed smoke check, return to the deployment plan.')
+            ->assertJsonPath('data.next_actions.1', 'Promote the strongest security-review output into the publication checklist evidence.')
             ->assertJsonPath('data.quality_gate.status', 'ready')
             ->assertJsonStructure([
                 'data' => [

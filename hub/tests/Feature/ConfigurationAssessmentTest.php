@@ -36,6 +36,10 @@ final class ConfigurationAssessmentTest extends TestCase
             ->assertJsonPath('data.score', 100)
             ->assertJsonPath('data.result', 'ready')
             ->assertJsonPath('data.rubric.0.criterion', 'Scope control')
+            ->assertJsonPath('data.rubric.4.criterion', 'Security misconfiguration evidence')
+            ->assertJsonPath('data.rubric.4.max_points', 0)
+            ->assertJsonPath('data.readiness_signals.3', 'Security Misconfiguration release blockers have readiness, deployment, rollback, and smoke-check evidence.')
+            ->assertJsonPath('data.improvement_tasks.2', 'Attach one failed-closed Security Misconfiguration smoke-check example before marking release evidence reusable.')
             ->assertJsonPath('data.status.quality', 'ready')
             ->assertJsonStructure([
                 'data' => [

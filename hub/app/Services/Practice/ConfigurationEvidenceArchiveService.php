@@ -28,6 +28,8 @@ final class ConfigurationEvidenceArchiveService
             'archive_id' => config('labs.configuration.archive_prefix').'-'.$review['decision'].'-'.$review['score'],
             'retrieval_keys' => [
                 'config app auth readiness',
+                'security misconfiguration release blockers',
+                'fail closed deployment smoke checks',
                 'quality gate ready needs-work',
                 'configuration rollback smoke checks',
                 'config env contract interview',
@@ -43,12 +45,14 @@ final class ConfigurationEvidenceArchiveService
             'proof_bundle' => $this->proofBundle($review),
             'reuse_targets' => [
                 'Portfolio note about treating Laravel configuration as a runtime contract.',
+                'Security Misconfiguration note about debug, secrets, CORS, headers, cookies, proxies, storage, and fail-closed release blockers.',
                 'Interview answer about validating auth configuration before building protected progress.',
                 'Review checklist for config cache, rollback, and quality-gate consistency.',
                 'Incident recovery note about diagnosing configuration drift before changing controllers.',
             ],
             'retrieval_prompts' => [
                 'What route proves the current config contract is ready?',
+                'Which Security Misconfiguration release blocker would stop deployment even when feature tests pass?',
                 'Which command proves style checks are part of the quality gate?',
                 'What rollback action protects an auth provider change?',
                 'How would you explain config() versus env() in this project?',

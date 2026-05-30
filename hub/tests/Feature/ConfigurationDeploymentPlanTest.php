@@ -20,6 +20,9 @@ final class ConfigurationDeploymentPlanTest extends TestCase
             ->assertSee('Configuration Deployment Plan')
             ->assertSee('php artisan config:clear')
             ->assertSee('Smoke Checks')
+            ->assertSee('Security Misconfiguration Controls')
+            ->assertSee('Release Blockers')
+            ->assertSee('Production debug guard')
             ->assertSee('Rollback')
             ->assertSee('Open deployment API');
     }
@@ -35,6 +38,9 @@ final class ConfigurationDeploymentPlanTest extends TestCase
             ->assertOk()
             ->assertJsonPath('data.deploy_steps.1.command', 'php artisan config:clear')
             ->assertJsonPath('data.smoke_checks.0.endpoint', '/practice/configuration-readiness')
+            ->assertJsonPath('data.smoke_checks.3.expected', 'Production debug guard: Block deploy and restore the last known-good environment file or secret set.')
+            ->assertJsonPath('data.security_misconfiguration_controls.0.area', 'Runtime environment')
+            ->assertJsonPath('data.release_blockers.1', 'Any production debug, secret exposure, broad CORS, missing header, weak cookie, proxy drift, or public storage signal blocks release.')
             ->assertJsonPath('data.rollback_steps.1.area', 'Authentication contract')
             ->assertJsonPath('data.quality_gate.status', 'ready')
             ->assertJsonStructure([
@@ -45,6 +51,8 @@ final class ConfigurationDeploymentPlanTest extends TestCase
                     'preflight',
                     'deploy_steps',
                     'smoke_checks',
+                    'security_misconfiguration_controls',
+                    'release_blockers',
                     'rollback_steps',
                     'evidence',
                     'commands',

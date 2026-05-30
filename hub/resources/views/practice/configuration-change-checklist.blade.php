@@ -47,6 +47,16 @@
                     </ul>
 
                     <p class="muted">{{ $card['rollback'] }}</p>
+
+                    @if (! empty($card['test_group']))
+                        <h4>Linked test group</h4>
+                        <p class="muted">{{ $card['test_group']['name'] }}</p>
+                        <ul>
+                            @foreach ($card['test_group']['assertions'] as $assertion)
+                                <li><code>{{ $assertion }}</code></li>
+                            @endforeach
+                        </ul>
+                    @endif
                 </article>
             @endforeach
         </div>

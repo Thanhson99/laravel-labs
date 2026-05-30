@@ -36,6 +36,9 @@ final class ConfigurationMaintenanceRoadmapTest extends TestCase
             ->assertJsonPath('data.archive_id', 'configuration-contract-promote-100-session-debrief')
             ->assertJsonPath('data.roadmap_status', 'active')
             ->assertJsonPath('data.cadence.0.window', 'Weekly')
+            ->assertJsonPath('data.cadence.1.window', 'Before each release')
+            ->assertJsonPath('data.owners.Security reviewer', 'Confirms release blockers, owners, rollback actions, and smoke evidence are still valid.')
+            ->assertJsonPath('data.health_signals.1', 'Security Misconfiguration release blockers still map to owners, rollback actions, and fail-closed smoke checks.')
             ->assertJsonPath('data.quality_gate.status', 'ready')
             ->assertJsonStructure([
                 'data' => [

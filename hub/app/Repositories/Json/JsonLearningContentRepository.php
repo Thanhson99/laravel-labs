@@ -68,17 +68,7 @@ final class JsonLearningContentRepository implements LearningContentRepositoryIn
             ->when($language, fn ($items) => $items->where('language', $language))
             ->when($family, fn ($items) => $items->where('family', $family))
             ->when($search !== '', function ($items) use ($search) {
-                return $items->filter(function (array $item) use ($search): bool {
-                    $haystack = mb_strtolower(implode(' ', array_filter([
-                        $item['title'] ?? '',
-                        $item['body'] ?? '',
-                        $item['answer'] ?? '',
-                        $item['source_title'] ?? '',
-                        $item['family'] ?? '',
-                    ])));
-
-                    return str_contains($haystack, $search);
-                });
+                return $items->filter(fn (array $item): bool => $this->matchesSearch($item, $search));
             })
             ->values()
             ->all();
@@ -227,6 +217,65 @@ final class JsonLearningContentRepository implements LearningContentRepositoryIn
             'code' => (string) ($item['code'] ?? ''),
             'bullets' => array_values(array_filter((array) ($item['bullets'] ?? []), 'is_string')),
         ];
+    }
+
+    /**
+     * Match natural user searches against content text, examples, and supporting notes.
+     */
+    private function matchesSearch(array $item, string $search): bool
+    {
+        $haystack = mb_strtolower(implode(' ', array_filter([
+            $item['title'] ?? '',
+            $item['body'] ?? '',
+            $item['answer'] ?? '',
+            $item['note'] ?? '',
+            $item['tip'] ?? '',
+            $item['code'] ?? '',
+            implode(' ', (array) ($item['bullets'] ?? [])),
+            $item['source_title'] ?? '',
+            $item['family'] ?? '',
+        ])));
+
+        if (str_contains($haystack, $search)) {
+            return true;
+        }
+
+        $normalizedHaystack = $this->normalizeSearchText($haystack);
+        $normalizedSearch = $this->normalizeSearchText($search);
+
+        if ($normalizedSearch === '') {
+            return true;
+        }
+
+        if (str_contains($normalizedHaystack, $normalizedSearch)) {
+            return true;
+        }
+
+        $plainSearch = trim(preg_replace('/\s+/u', ' ', mb_strtolower($search)) ?? '');
+
+        if ($normalizedSearch === $plainSearch) {
+            return false;
+        }
+
+        $tokens = array_values(array_unique(array_filter(explode(' ', $normalizedSearch))));
+
+        foreach ($tokens as $token) {
+            if (! str_contains(" {$normalizedHaystack} ", " {$token} ")) {
+                return false;
+            }
+        }
+
+        return $tokens !== [];
+    }
+
+    /**
+     * Normalize punctuation-heavy terms like `this`, @vite(...), and call/apply/bind for search.
+     */
+    private function normalizeSearchText(string $value): string
+    {
+        $normalized = preg_replace('/[^\p{L}\p{N}]+/u', ' ', mb_strtolower($value)) ?? '';
+
+        return trim(preg_replace('/\s+/u', ' ', $normalized) ?? '');
     }
 
     /**

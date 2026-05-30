@@ -20,6 +20,8 @@ final class ConfigurationChangeChecklistTest extends TestCase
             ->assertSee('Configuration Change Checklist')
             ->assertSee('Application runtime')
             ->assertSee('Authentication contract')
+            ->assertSee('Security Misconfiguration contract')
+            ->assertSee('Linked test group')
             ->assertSee('Quality gate contract')
             ->assertSee('php artisan config:clear')
             ->assertSee('Open checklist API');
@@ -36,7 +38,11 @@ final class ConfigurationChangeChecklistTest extends TestCase
             ->assertOk()
             ->assertJsonPath('data.change_cards.0.area', 'Application runtime')
             ->assertJsonPath('data.change_cards.1.watch_values.0', 'auth.defaults.guard')
-            ->assertJsonPath('data.commands.3', 'php artisan config:clear')
+            ->assertJsonPath('data.change_cards.2.area', 'Security Misconfiguration contract')
+            ->assertJsonPath('data.change_cards.2.watch_values.0', 'app.debug')
+            ->assertJsonPath('data.change_cards.2.after_change.1', 'Open the readiness API and confirm release_blockers still describe fail-closed behavior.')
+            ->assertJsonPath('data.review_questions.4', 'Which Security Misconfiguration smoke check blocks release if this value is wrong?')
+            ->assertJsonPath('data.commands.4', 'php artisan config:clear')
             ->assertJsonPath('data.quality_gate.status', 'ready')
             ->assertJsonStructure([
                 'data' => [

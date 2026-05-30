@@ -36,11 +36,13 @@ final class ConfigurationAssessmentService
                 'Branch '.$plan['branch'].' keeps remediation work focused.',
                 'Commit message is reviewable: '.$plan['commit_message'],
                 'Changed files include configuration, service, route, view, and test evidence.',
+                'Security Misconfiguration release blockers have readiness, deployment, rollback, and smoke-check evidence.',
                 'Verification includes route documentation, targeted feature tests, and Pint.',
             ],
             'improvement_tasks' => [
                 'Paste the assessment score into the pull request description before review.',
                 'Attach one screenshot or copied API payload from the configuration assessment endpoint.',
+                'Attach one failed-closed Security Misconfiguration smoke-check example before marking release evidence reusable.',
                 'Re-run the commands after any config, route, service, or view change.',
                 'Move repeated failures back to the remediation plan instead of hiding them in release notes.',
             ],
@@ -86,6 +88,12 @@ final class ConfigurationAssessmentService
                     && in_array('vendor\\bin\\pint --test', $plan['verification'], true) ? 20 : 10,
                 'max_points' => 20,
                 'evidence' => 'Verification covers route comments, focused tests, and code style.',
+            ],
+            [
+                'criterion' => 'Security misconfiguration evidence',
+                'points' => $this->containsAny($plan['evidence'], ['Security Misconfiguration']) ? 0 : 0,
+                'max_points' => 0,
+                'evidence' => 'Release blockers for unsafe debug, secrets, CORS, headers, cookies, proxies, and storage are visible in the PR evidence without changing the 100-point score.',
             ],
             [
                 'criterion' => 'Evidence reuse',

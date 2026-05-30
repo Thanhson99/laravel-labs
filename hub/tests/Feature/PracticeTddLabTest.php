@@ -63,4 +63,23 @@ final class PracticeTddLabTest extends TestCase
 
         $response->assertNotFound();
     }
+
+    /**
+     * JavaScript closure TDD labs use closure evidence goals and progress labels.
+     */
+    public function test_javascript_closure_tdd_lab_uses_scope_cycle(): void
+    {
+        $response = $this->getJson('/api/practice/tdd-lab?record_id=laravel-frontend-en-json-item-8&technology=javascript-closures');
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('data.technology', 'javascript-closures')
+            ->assertJsonPath('data.cycle.0.title', 'Write the failing closure evidence test first')
+            ->assertJsonPath('data.cycle.1.title', 'Implement the smallest closure evidence slice')
+            ->assertJsonPath('data.cycle.2.title', 'Clean up and prove the closure explanation')
+            ->assertJsonPath('data.progress_payload.items.0.label', 'Read source record and closure evidence blueprint');
+
+        $this->assertStringContainsString('captured binding', $response->json('data.cycle.0.goal'));
+        $this->assertStringContainsString('stale-closure evidence', $response->json('data.cycle.2.goal'));
+    }
 }

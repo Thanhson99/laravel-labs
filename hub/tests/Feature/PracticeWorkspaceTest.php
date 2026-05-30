@@ -19,7 +19,17 @@ final class PracticeWorkspaceTest extends TestCase
             ->assertOk()
             ->assertSee('Practice Workspace')
             ->assertSee('Build a PHP CLI input normalizer')
-            ->assertSee('Technology Tracks');
+            ->assertSee('Technology Tracks')
+            ->assertSee('Frontend Performance')
+            ->assertSee('Security + Auth')
+            ->assertSee('Optimize React re-renders with memoization discipline')
+            ->assertSee('PKCE board')
+            ->assertSee('PKCE pipeline')
+            ->assertSee('PKCE workbench')
+            ->assertSee('Stack/Heap pipelines')
+            ->assertSee('Stack/Heap pipeline')
+            ->assertSee('Stack/Heap lab')
+            ->assertSee('Stack/Heap interview');
     }
 
     /**
@@ -48,6 +58,64 @@ final class PracticeWorkspaceTest extends TestCase
             ->assertOk()
             ->assertJsonPath('meta.filters.track', 'api-validation')
             ->assertJsonPath('data.exercises.0.slug', 'api-form-request-slice');
+    }
+
+    /**
+     * Frontend performance has a first-class practice track for React render work.
+     */
+    public function test_practice_api_filters_frontend_performance_exercises(): void
+    {
+        $response = $this->getJson('/api/practice?track=frontend-performance');
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('meta.filters.track', 'frontend-performance')
+            ->assertJsonPath('data.exercises.0.slug', 'react-render-optimization-workbench')
+            ->assertJsonPath('data.exercises.0.track', 'frontend-performance');
+    }
+
+    /**
+     * Security and auth has a first-class practice track for SQL Injection and token topics.
+     */
+    public function test_practice_api_filters_security_auth_exercises(): void
+    {
+        $response = $this->getJson('/api/practice?track=security-auth&search=SQL%20Injection');
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('meta.filters.track', 'security-auth')
+            ->assertJsonPath('data.exercises.0.slug', 'sql-injection-defense-plan-workbench')
+            ->assertJsonPath('data.exercises.0.track', 'security-auth');
+    }
+
+    /**
+     * AI review exposes the dedicated AI agent memory planning exercise.
+     */
+    public function test_practice_api_filters_ai_agent_memory_exercise(): void
+    {
+        $response = $this->getJson('/api/practice?track=ai-review&search=agent%20memory');
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('meta.filters.track', 'ai-review')
+            ->assertJsonPath('data.exercises.0.slug', 'ai-agent-memory-plan-workbench')
+            ->assertJsonPath('data.exercises.0.workbench.route', 'practice.workbench.ai-agent-memory-plan')
+            ->assertJsonPath('data.exercises.0.api.path', '/api/practice/ai-agent-memory-plan');
+    }
+
+    /**
+     * Security and auth exposes the dedicated IDOR access-review exercise.
+     */
+    public function test_practice_api_filters_idor_access_review_exercise(): void
+    {
+        $response = $this->getJson('/api/practice?track=security-auth&search=IDOR');
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('meta.filters.track', 'security-auth')
+            ->assertJsonPath('data.exercises.0.slug', 'idor-access-review-workbench')
+            ->assertJsonPath('data.exercises.0.workbench.route', 'practice.workbench.idor-access-review')
+            ->assertJsonPath('data.exercises.0.api.path', '/api/practice/idor-access-review');
     }
 
     /**

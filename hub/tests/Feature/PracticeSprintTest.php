@@ -69,4 +69,26 @@ final class PracticeSprintTest extends TestCase
                 ],
             ]);
     }
+
+    /**
+     * Predictive AI sprint tasks keep workspace and verification links in the AI type lane.
+     */
+    public function test_predictive_generative_ai_sprint_routes_to_ai_type_workspace(): void
+    {
+        $response = $this->getJson('/api/practice/sprint?family=vibe-coding&language=en&search=Predictive%20AI&phase_limit=1&tasks_per_phase=1');
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('data.phases.0.technology', 'llm-foundations')
+            ->assertJsonPath('data.phases.0.board_query.technology', 'llm-foundations')
+            ->assertJsonPath('data.phases.0.tasks.0.workspace_query.technology', 'llm-foundations')
+            ->assertJsonPath('data.phases.0.tasks.0.verification_query.technology', 'llm-foundations')
+            ->assertJsonPath('data.meta.phase_count', 1)
+            ->assertJsonPath('data.meta.task_count', 1);
+
+        $this->assertStringContainsString(
+            'Predictive AI',
+            $response->json('data.phases.0.tasks.0.question')
+        );
+    }
 }

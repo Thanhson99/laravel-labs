@@ -55,7 +55,7 @@ The goal is simple:
 ### PHP Foundations
 This part covers the base layer needed to read Laravel code with confidence:
 - variables, functions, arrays, loops, conditions
-- OOP, dependency injection, coupling, separation of concerns
+- OOP, abstract classes versus interfaces, dependency injection, coupling, separation of concerns
 - HTTP basics, request/response thinking, sessions, cookies, headers
 - the mental model behind backend programming
 
@@ -95,6 +95,7 @@ It includes:
 - foundational questions
 - scenario questions
 - problem-solving questions
+- system-design topics such as load balancing algorithms, health checks, and traffic routing tradeoffs
 - teamwork and communication questions
 - ownership and decision-making questions
 - hard production and systems questions for higher levels
@@ -142,7 +143,7 @@ This area turns passive reading into action:
 - study rhythm ideas
 - practical next steps after reading theory
 - runnable Hub workbenches that connect static notes to real Laravel code
-- Dependency Injection refactor drills for replacing manual `new` calls with container-resolved collaborators
+- a runnable Dependency Injection refactor workbench with scenario presets, contract methods, file-by-file refactor maps, container-resolution tests, generated test fakes, anti-pattern scans, risk controls, overengineering guardrails, container-resolved collaborators, `bind` versus `singleton` choices, and verification checklists
 
 ---
 
@@ -182,12 +183,14 @@ This repo helps you study across multiple dimensions, not just one stack page at
 - queues and workers
 - API and webhook workflows
 - Docker / environment / deployment thinking
+- load balancing / reverse proxy / health-check strategy
 - GitHub Pages for the learning portal
 - Laravel Hub for code-first practice and JSON content integration
 
 ### Engineering concepts
 - MVC and beyond MVC
 - dependency injection and dependency inversion
+- abstract class versus interface tradeoffs
 - request lifecycle
 - authorization and trust boundaries
 - idempotency
@@ -261,6 +264,9 @@ The `hub` app keeps environment-specific values out of services, views, and JSON
 - `LABS_CONTENT_PATH` points the app to the static portal JSON content.
 - `HUB_RUNTIME_BASE_URL`, `HUB_PORT`, and `HUB_INTERNAL_PORT` control local and Docker runtime URLs/ports.
 - configuration-practice artifact IDs and auth timing values are documented in `hub/.env.example`.
+- Dependency Injection practice is backed by `/workbench/dependency-injection-refactor` and `/api/practice/dependency-injection-refactor`.
+- Abstract class versus interface practice is backed by `/workbench/oop-abstraction-decision` and `/api/practice/oop-abstraction-decision`, with presets, Laravel comparison tables, decision matrices, implementation plans, interview-answer rubrics, anti-pattern warnings, and testing strategies for interface, abstract class, and concrete class decisions.
+- Load balancer practice is backed by `/workbench/load-balancer-plan` and `/api/practice/load-balancer-plan`, with four algorithm comparisons, operational risk assessment, expected upstream traffic share, Nginx-style upstream examples, health checks, configuration review checks, algorithm-specific observability metrics, incident runbooks, traffic simulations, rollout guidance, and structured System Design interview rubrics.
 
 Do not commit `hub/.env`; use `hub/.env.example` as the shareable contract.
 

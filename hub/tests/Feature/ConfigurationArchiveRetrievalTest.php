@@ -35,7 +35,10 @@ final class ConfigurationArchiveRetrievalTest extends TestCase
             ->assertOk()
             ->assertJsonPath('data.archive_id', 'configuration-contract-promote-100')
             ->assertJsonPath('data.retrieval_cases.0.use_case', 'Portfolio note')
-            ->assertJsonPath('data.retrieval_cases.2.key', 'INC-CONFIG-001 POSTMORTEM-CONFIG-001')
+            ->assertJsonPath('data.retrieval_cases.1.use_case', 'Security review')
+            ->assertJsonPath('data.retrieval_cases.1.key', 'security misconfiguration release blockers')
+            ->assertJsonPath('data.retrieval_cases.3.key', 'INC-CONFIG-001 POSTMORTEM-CONFIG-001')
+            ->assertJsonPath('data.quality_checks.2', 'Security Misconfiguration proof names the unsafe signal and the fail-closed smoke check.')
             ->assertJsonPath('data.quality_gate.status', 'ready')
             ->assertJsonStructure([
                 'data' => [

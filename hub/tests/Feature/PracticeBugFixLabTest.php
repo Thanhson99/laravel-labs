@@ -77,4 +77,22 @@ final class PracticeBugFixLabTest extends TestCase
                 'days',
             ]);
     }
+
+    /**
+     * JavaScript closure bug-fix drills debug scope traces and interview outputs.
+     */
+    public function test_javascript_closure_bug_fix_lab_uses_scope_debugging(): void
+    {
+        $response = $this->getJson('/api/practice/bug-fix-lab?family=laravel&language=en&search=JavaScript%20closure&phase_limit=1&tasks_per_phase=1&days=3');
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('data.source_session.technology_coverage.0', 'javascript-closures')
+            ->assertJsonPath('data.bug_drills.0.technology_segment', 'Day 1 demo: javascript-closures')
+            ->assertJsonPath('data.bug_drills.0.diagnosis_steps.0', 'Read the failing closure assertion or missing interview output.')
+            ->assertJsonPath('data.review_questions.0', 'Which closure binding or scope trace owned the bug?');
+
+        $this->assertStringContainsString('closure practice round', $response->json('data.bug_drills.0.bug_report'));
+        $this->assertSame('resources/js/closure-counter.js', $response->json('data.bug_drills.0.patch_target'));
+    }
 }

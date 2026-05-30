@@ -380,7 +380,6 @@ body[data-theme="dark"] .php-keyword-chip:focus-visible {
 }
 
 .section-copy {
-  color: var(--muted);
   max-width: 780px;
   margin: 0;
 }
@@ -395,11 +394,13 @@ body[data-theme="dark"] .php-keyword-chip:focus-visible {
 
 .bullet-list li {
   position: relative;
-  padding: 18px 20px;
-  border-left: 4px solid rgba(184, 92, 56, 0.55);
-  border-radius: 0 16px 16px 0;
-  background: rgba(255, 255, 255, 0.8);
+  padding: 20px 22px;
+  border: 1px solid color-mix(in srgb, var(--accent) 10%, var(--line));
+  border-left: 4px solid rgba(184, 92, 56, 0.45);
+  border-radius: 0 18px 18px 0;
+  background: rgba(255, 255, 255, 0.82);
   color: var(--text);
+  box-shadow: 0 14px 28px rgba(73, 40, 19, 0.045);
 }
 
 [data-progress-item].done {
@@ -412,6 +413,9 @@ body[data-theme="dark"] .php-keyword-chip:focus-visible {
 
 body[data-theme="dark"] .bullet-list li {
   background: rgba(31, 40, 43, 0.78);
+  border-color: rgba(223, 132, 89, 0.12);
+  border-left-color: rgba(223, 132, 89, 0.34);
+  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.16);
 }
 
 body[data-theme="dark"] .service-card,
@@ -428,9 +432,9 @@ body[data-theme="dark"] .snippet-card {
 .bullet-list strong {
   display: block;
   margin-bottom: 6px;
-  font-size: 1.08rem;
+  font-size: 1.04rem;
   line-height: 1.4;
-  color: color-mix(in srgb, var(--text) 92%, black 8%);
+  color: color-mix(in srgb, var(--text) 88%, var(--accent-deep) 12%);
 }
 
 .bullet-question-number {
@@ -455,7 +459,7 @@ body[data-theme="dark"] .snippet-card {
 
 .bullet-body {
   display: block;
-  color: color-mix(in srgb, var(--text) 64%, var(--muted) 36%);
+  color: color-mix(in srgb, var(--muted) 82%, var(--text) 18%);
   line-height: 1.8;
   font-size: 1rem;
 }
@@ -546,12 +550,23 @@ body[data-theme="dark"] .interview-qa-list li {
 }
 
 .bullet-sublist li {
+  position: static;
   margin: 0;
   padding: 0;
   border: 0;
   border-radius: 0;
   background: transparent;
+  box-shadow: none;
+  color: inherit;
   list-style: disc;
+}
+
+.bullet-sublist strong {
+  display: inline;
+  margin: 0;
+  color: inherit;
+  font-size: inherit;
+  line-height: inherit;
 }
 
 .bullet-code-shell {
@@ -577,7 +592,7 @@ body[data-theme="dark"] .interview-qa-list li {
 
 .bullet-code-shell pre {
   margin: 0;
-  padding: 54px 18px 16px;
+  padding: 18px 128px 16px 18px;
 }
 
 .bullet-code-copy.is-copied {
@@ -591,6 +606,9 @@ body[data-theme="dark"] .interview-qa-list li {
   font-family: "SFMono-Regular", "Menlo", "Consolas", monospace;
   font-size: 0.92rem;
   line-height: 1.65;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: normal;
 }
 
 .bullet-note {

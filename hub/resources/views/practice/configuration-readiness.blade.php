@@ -31,6 +31,50 @@
     </section>
 
     <section class="section">
+        <h2>Security Misconfiguration Controls</h2>
+        <div class="list">
+            @foreach ($readiness['misconfiguration_controls'] as $control)
+                <article class="item">
+                    <div class="meta">
+                        <span class="badge">{{ $control['area'] }}</span>
+                        <span class="muted">{{ $control['owner'] }}</span>
+                    </div>
+                    <h3>{{ $control['expected_control'] }}</h3>
+                    <p>{{ $control['risk'] }}</p>
+                    <p class="muted">{{ $control['evidence'] }}</p>
+                </article>
+            @endforeach
+        </div>
+    </section>
+
+    <section class="section">
+        <h2>Deployment Smoke Matrix</h2>
+        <div class="list">
+            @foreach ($readiness['deployment_smoke_matrix'] as $smoke)
+                <article class="item">
+                    <div class="meta">
+                        <span class="badge">{{ $smoke['check'] }}</span>
+                    </div>
+                    <h3>{{ $smoke['fail_closed_action'] }}</h3>
+                    <p>{{ $smoke['unsafe_signal'] }}</p>
+                    <p class="muted">{{ $smoke['verify_with'] }}</p>
+                </article>
+            @endforeach
+        </div>
+    </section>
+
+    <section class="section">
+        <h2>Release Blockers</h2>
+        <div class="panel">
+            <ul>
+                @foreach ($readiness['release_blockers'] as $blocker)
+                    <li>{{ $blocker }}</li>
+                @endforeach
+            </ul>
+        </div>
+    </section>
+
+    <section class="section">
         <h2>Verification Commands</h2>
         <div class="panel">
             <ul>

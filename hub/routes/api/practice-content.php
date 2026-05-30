@@ -57,6 +57,7 @@ use App\Http\Controllers\Api\TechnologyPipelineIndexController;
 use App\Http\Controllers\Api\TechnologyPortfolioArtifactController;
 use App\Http\Controllers\Api\TechnologyPracticeBoardController;
 use App\Http\Controllers\Api\TechnologyPracticeMatrixController;
+use App\Http\Controllers\Api\TechnologyPracticeTaxonomyController;
 use App\Http\Controllers\Api\TechnologyQualityPlanController;
 use App\Http\Controllers\Api\TechnologyRemediationPlanController;
 use App\Http\Controllers\Api\TechnologySkillAssessmentController;
@@ -192,6 +193,9 @@ Route::get('/technology-board', TechnologyPracticeBoardController::class)->name(
 
 // Return the technology matrix inferred from source records.
 Route::get('/technology-matrix', TechnologyPracticeMatrixController::class)->name('technology-matrix');
+
+// Return supported technology keys with practice and workbench links.
+Route::get('/technology-taxonomy', TechnologyPracticeTaxonomyController::class)->name('technology-taxonomy');
 
 // Return all available technology learning pipelines.
 Route::get('/technology-pipelines', TechnologyPipelineIndexController::class)->name('technology-pipelines');

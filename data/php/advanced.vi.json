@@ -25,6 +25,18 @@
       ]
     },
     {
+      "title": "Abstract class hay interface?",
+      "description": "Cả hai đều là công cụ trừu tượng hóa, nhưng chúng giải quyết hai kiểu bài toán thiết kế khác nhau. Khi trả lời phỏng vấn, hãy nói về mục đích, không chỉ nói cú pháp.",
+      "bullets": [
+        "Dùng interface khi bạn cần một hợp đồng mà nhiều class không cùng họ vẫn có thể triển khai, ví dụ `Logger`, `PaymentGateway` hoặc `ReportExporter`.",
+        "Dùng abstract class khi các class con thật sự chia sẻ hành vi nền, helper protected hoặc state thuộc cùng một họ object.",
+        "Một class có thể implement nhiều interface, nhưng chỉ extend được một abstract class.",
+        "Trong kiến trúc kiểu Laravel, interface hợp với integration có thể thay thế; abstract class hợp hơn khi có base type thật sự với logic dùng chung.",
+        "Cách trả lời phỏng vấn: interface định nghĩa class phải làm gì, abstract class có thể định nghĩa phần các class con dùng chung và chứa implementation một phần."
+      ],
+      "code": "interface Notifier\n{\n    public function send(string $message): void;\n}\n\nabstract class FileReport\n{\n    public function __construct(protected string $path)\n    {\n    }\n\n    abstract public function rows(): array;\n\n    protected function read(): string\n    {\n        return file_get_contents($this->path) ?: '';\n    }\n}"
+    },
+    {
       "title": "final, readonly và những giới hạn có chủ đích",
       "description": "PHP hiện đại không chỉ cho bạn thêm sức mạnh, nó còn cho bạn cách đặt ranh giới rõ hơn cho code.",
       "bullets": [
@@ -68,6 +80,18 @@
         "Array quá lớn, transform lặp lại nhiều lần hoặc nạp file không cần thiết đều có thể làm tăng áp lực bộ nhớ.",
         "Tip: hãy profile hoặc đo điểm nghẽn trước khi viết lại nửa codebase chỉ để chạy nhanh hơn."
       ]
+    },
+    {
+      "title": "Vùng nhớ stack và vùng nhớ heap",
+      "description": "Đây là mô hình tư duy về runtime, không phải thứ bạn thường tự cấp phát thủ công trong PHP. Nó giúp giải thích vì sao độ sâu lời gọi hàm, vòng đời object và cấu trúc dữ liệu lớn có hành vi khác nhau.",
+      "bullets": [
+        "Stack gắn với lời gọi hàm: mỗi lần gọi hàm tạo một call frame cho tham số, biến cục bộ, địa chỉ quay lại và trạng thái tạm thời.",
+        "Heap dùng cho dữ liệu có vòng đời linh hoạt hơn một call frame, như object, array, string và cấu trúc được nhiều nơi tham chiếu.",
+        "Stack thường nhanh và tự được thu hồi khi hàm return, nhưng đệ quy quá sâu có thể làm cạn stack.",
+        "Heap linh hoạt hơn, nhưng reference sống lâu, array lớn và object graph phức tạp có thể tạo áp lực bộ nhớ cho tới khi garbage collection hoặc cleanup giải phóng chúng.",
+        "Cách trả lời phỏng vấn: stack dành cho call frame ngắn hạn; heap dành cho dữ liệu cấp phát động có vòng đời linh hoạt hơn. Trong PHP, bạn quản lý gián tiếp bằng cách tránh đệ quy quá sâu, array quá lớn, reference bị giữ lâu và stale state trong worker sống lâu."
+      ],
+      "code": "<?php\nfunction total(array $numbers): int\n{\n    $sum = 0; // Biến cục bộ trong call frame hiện tại.\n\n    foreach ($numbers as $number) {\n        $sum += $number;\n    }\n\n    return $sum;\n}\n\n$items = range(1, 100000); // Array lớn làm tăng áp lực heap.\n$result = total($items);\n\nunset($items); // Bỏ reference khi không còn cần dữ liệu.\n"
     },
     {
       "title": "Testing và độ tin cậy",
@@ -336,6 +360,11 @@
       "answer": "Interface định nghĩa một hợp đồng mà class phải triển khai, còn trait cung cấp phần cài đặt phương thức có thể tái sử dụng trong nhiều class."
     },
     {
+      "tag": "OOP",
+      "question": "Abstract class hay interface: nên trả lời phỏng vấn thế nào?",
+      "answer": "Hãy nói rằng interface phù hợp khi cần một hợp đồng thuần mà nhiều class không cùng họ vẫn implement được, còn abstract class phù hợp khi một nhóm class liên quan thật sự chia sẻ behavior hoặc state nền. Sau đó thêm tradeoff thực tế: một class có thể implement nhiều interface nhưng chỉ extend một abstract class, nên interface thường hợp cho dependency có thể thay thế, còn abstract class hợp cho logic nền dùng chung."
+    },
+    {
       "tag": "Chủ đề hot",
       "question": "Vì sao `===` thường an toàn hơn `==` trong PHP?",
       "answer": "Vì `===` so sánh cả giá trị lẫn kiểu dữ liệu, tránh việc ép kiểu ngầm có thể tạo ra bug khó đoán."
@@ -429,6 +458,11 @@
       "tag": "Hiệu năng",
       "question": "Một lưu ý quan trọng khi làm backend với ORM hoặc quan hệ dữ liệu là gì?",
       "answer": "Đừng mặc định rằng code nhìn gọn là query cũng gọn. Một loop truy cập quan hệ có thể âm thầm tạo `N+1 query` và làm trang chậm đi rất mạnh khi dữ liệu tăng. Hãy tập thói quen nhìn query log, số query và chỗ nào trong code đang chạm vào boundary dữ liệu."
+    },
+    {
+      "tag": "Runtime",
+      "question": "Vùng nhớ stack và vùng nhớ heap khác nhau như thế nào?",
+      "answer": "Stack gắn với lời gọi hàm: tham số, biến cục bộ và trạng thái tạm của call frame được tạo khi vào hàm và thu hồi khi hàm return. Heap giữ dữ liệu có vòng đời linh hoạt hơn, như object, array, string hoặc cấu trúc được nhiều nơi tham chiếu. Trong PHP bạn thường không tự cấp phát stack hay heap thủ công, nhưng mô hình này giúp giải thích đệ quy sâu, array lớn, object graph, garbage collection và memory leak trong worker sống lâu."
     },
     {
       "tag": "Service",

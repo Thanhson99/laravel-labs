@@ -49,6 +49,17 @@
     </section>
 
     <section class="section">
+        <h2>Evidence</h2>
+        <div class="list">
+            @foreach ($pullRequestPlan['evidence'] as $item)
+                <article class="item">
+                    <p>{{ $item }}</p>
+                </article>
+            @endforeach
+        </div>
+    </section>
+
+    <section class="section">
         <h2>Verification</h2>
         <div class="panel">
             <ul>

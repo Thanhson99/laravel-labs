@@ -75,6 +75,11 @@ final class ConfigurationMasteryCheckpointService
                 'proof' => 'Brief includes '.count($brief['evidence_to_cite']).' evidence references.',
             ],
             [
+                'criterion' => 'Security Misconfiguration is release-blocked.',
+                'points' => 0,
+                'proof' => 'Security Misconfiguration checks are treated as release blockers and interview evidence without changing the 100-point score.',
+            ],
+            [
                 'criterion' => 'Rehearsal checklist is concrete.',
                 'points' => count($brief['rehearsal_checklist']) >= 4 ? 10 : 5,
                 'proof' => 'Brief includes '.count($brief['rehearsal_checklist']).' rehearsal checks.',
@@ -94,6 +99,7 @@ final class ConfigurationMasteryCheckpointService
             'No rollback action can be stated for an auth or app config change.',
             'Interview answers do not cite a route, config key, or command.',
             'A config value is asserted even though it should vary per environment.',
+            'Security Misconfiguration is described as a checklist only, without fail-closed smoke checks or release blockers.',
         ];
     }
 
@@ -108,6 +114,7 @@ final class ConfigurationMasteryCheckpointService
             return [
                 'Promote to a protected progress or auth-flow implementation slice.',
                 'Reuse the release evidence in a portfolio note.',
+                'Reuse the Security Misconfiguration release-blocker evidence in interview and deployment notes.',
                 'Rehearse the interview brief once with a five-minute time limit.',
             ];
         }

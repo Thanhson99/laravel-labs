@@ -61,4 +61,36 @@ final class PracticeChallengeExecutionLabTest extends TestCase
                 ],
             ]);
     }
+
+    /**
+     * JavaScript closure challenge execution asks for closure evidence, not Laravel-layer evidence.
+     */
+    public function test_javascript_closure_challenge_execution_uses_scope_exit_criteria(): void
+    {
+        $response = $this->getJson('/api/practice/challenge-execution-lab?family=laravel&language=en&search=JavaScript%20closure&phase_limit=1&tasks_per_phase=1&days=3');
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('data.source_challenge_lab.technology_coverage.0', 'javascript-closures')
+            ->assertJsonPath('data.execution_steps.0.technology_segment', 'Day 1 demo: javascript-closures')
+            ->assertJsonPath('data.execution_steps.0.execution_order.2', 'Make the smallest closure evidence change or answer the required checkpoint.')
+            ->assertJsonPath('data.execution_steps.0.exit_criteria.2', 'The learner can explain lexical scope and the captured binding involved.')
+            ->assertJsonPath('data.execution_steps.0.exit_criteria.3', 'Risk note covers var versus let, stale closures, or accidental shared mutable state.');
+    }
+
+    /**
+     * IDOR challenge execution asks for object-authorization evidence.
+     */
+    public function test_idor_challenge_execution_uses_object_authorization_exit_criteria(): void
+    {
+        $response = $this->getJson('/api/practice/challenge-execution-lab?family=laravel&language=en&search=IDOR&phase_limit=1&tasks_per_phase=1&days=3');
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('data.source_challenge_lab.technology_coverage.0', 'idor-access-control')
+            ->assertJsonPath('data.execution_steps.0.technology_segment', 'Day 1 demo: idor-access-control')
+            ->assertJsonPath('data.execution_steps.0.execution_order.2', 'Make the smallest object-authorization change: route inventory, scoped lookup, policy check, or denial test.')
+            ->assertJsonPath('data.execution_steps.0.exit_criteria.2', 'The learner can explain why authentication alone does not authorize this object.')
+            ->assertJsonPath('data.execution_steps.0.exit_criteria.3', 'Risk note covers direct lookup, missing policy, nested-resource leakage, downloads, exports, or 403 versus 404 behavior.');
+    }
 }

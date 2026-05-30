@@ -188,6 +188,25 @@ Recommended mitigation:
 - Add a small Playwright suite if Node is added to the project.
 - Keep it focused on representative pages instead of every long content page.
 
+## Priority 3: No Automated Content Shape Linter
+
+Issue:
+
+Content quality now depends on authors choosing renderer-supported shapes consistently. There is no script that rejects raw layout HTML, missing section types, oversized loose paragraphs, or unsupported custom visual fields in JSON content.
+
+Risk:
+
+- New content can bypass the shared card/list/block system and visually blend into the page background.
+- Raw HTML can reintroduce layout drift or unsafe render paths.
+- Nested list and code-block regressions may be missed until manual review.
+
+Recommended mitigation:
+
+- Add a small static validation script that scans `data/**/*.json` for raw HTML tags in user-facing fields unless explicitly allowlisted.
+- Validate that topic files use supported shapes: default card sections, `type: "list"`, `type: "links"`, or PHP `modules`/`phases`.
+- Warn when long prose appears in nested `bullets` instead of parent `body`/`description`.
+- Add focused browser smoke tests for representative pages with nested bullets, code-copy buttons, interview QA cards, and PHP phase/module blocks.
+
 ## Priority 3: PowerShell Encoding Display Can Mislead Review
 
 Issue:

@@ -34,7 +34,7 @@ final class PracticeRemediationLabService
                 'label' => $item['label'],
                 'file' => $item['file'],
                 'problem_to_check' => $item['question'],
-                'fix_action' => $this->fixAction($item['label'], $review['route']['path']),
+                'fix_action' => $this->fixAction($item['label'], $review['route']['path'], $review['technology']),
                 'verification' => $this->verificationFor($item['label'], $review['commands']),
             ])
             ->values()
@@ -58,8 +58,22 @@ final class PracticeRemediationLabService
     /**
      * Explain the concrete fix action for a review label.
      */
-    private function fixAction(string $label, string $routePath): string
+    private function fixAction(string $label, string $routePath, string $technology): string
     {
+        if ($technology === 'javascript-closures') {
+            return match ($label) {
+                'Content traceability' => 'Replace simplified behavior with closure evidence that directly matches the selected source record.',
+                'Route contract' => sprintf('Register or correct the route so %s resolves to the generated closure evidence controller.', $routePath),
+                'Validation boundary' => 'Keep input assumptions explicit and add an invalid or missing evidence assertion if the payload accepts filters.',
+                'Thin controller' => 'Keep the controller limited to request handling, service call, and response shape for closure evidence.',
+                'Service behavior',
+                'Closure behavior' => 'Move lexical-scope, createCounter(), var-versus-let, or stale-closure transformation into the service and cover it through the feature test.',
+                'Behavior test' => 'Tighten assertions so the test fails when closure output, captured-binding text, or stale-closure evidence drifts.',
+                'Verification evidence' => 'Run the focused closure test, route check, full suite, Pint, and smoke request after each fix.',
+                default => 'Make the smallest closure-evidence change that satisfies the review question.',
+            };
+        }
+
         return match ($label) {
             'Content traceability' => 'Replace simplified behavior with logic that directly matches the selected source record.',
             'Route contract' => sprintf('Register or correct the route so %s resolves to the generated controller.', $routePath),

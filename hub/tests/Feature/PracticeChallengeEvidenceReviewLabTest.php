@@ -62,4 +62,38 @@ final class PracticeChallengeEvidenceReviewLabTest extends TestCase
                 ],
             ]);
     }
+
+    /**
+     * JavaScript closure evidence reviews ask for lexical-scope and stale-closure proof.
+     */
+    public function test_javascript_closure_challenge_evidence_review_uses_scope_questions(): void
+    {
+        $response = $this->getJson('/api/practice/challenge-evidence-review-lab?family=laravel&language=en&search=JavaScript%20closure&phase_limit=1&tasks_per_phase=1&days=3');
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('data.evidence_cards.0.technology_segment', 'Day 1 demo: javascript-closures')
+            ->assertJsonPath('data.evidence_cards.0.review_questions.1', 'Which lexical scope and captured binding carried the main behavior?')
+            ->assertJsonPath('data.evidence_cards.0.pass_signals.1', 'Evidence names at least one changed closure snippet, payload, route, or test.')
+            ->assertJsonPath('data.evidence_cards.0.risk_checks.2', 'The rollback note says how to undo the smallest risky closure-evidence change.');
+
+        $this->assertStringContainsString('closure checkpoint route', $response->json('data.evidence_cards.0.follow_up_action'));
+    }
+
+    /**
+     * IDOR evidence reviews ask for scoped lookup, policy, and denial-test proof.
+     */
+    public function test_idor_challenge_evidence_review_uses_object_authorization_questions(): void
+    {
+        $response = $this->getJson('/api/practice/challenge-evidence-review-lab?family=laravel&language=en&search=IDOR&phase_limit=1&tasks_per_phase=1&days=3');
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('data.evidence_cards.0.technology_segment', 'Day 1 demo: idor-access-control')
+            ->assertJsonPath('data.evidence_cards.0.review_questions.1', 'Which object id, owner or tenant scope, and protected action were reviewed?')
+            ->assertJsonPath('data.evidence_cards.0.pass_signals.1', 'Evidence names the protected object route, scoped lookup, object policy or Gate, and denial test.')
+            ->assertJsonPath('data.evidence_cards.0.risk_checks.1', 'No direct findOrFail() or route model binding path returns an object before scoping and authorization.');
+
+        $this->assertStringContainsString('IDOR checkpoint route', $response->json('data.evidence_cards.0.follow_up_action'));
+    }
 }

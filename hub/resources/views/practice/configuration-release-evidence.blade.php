@@ -24,6 +24,13 @@
                     <li>{{ $focus }}</li>
                 @endforeach
             </ul>
+
+            <h3>Security review focus</h3>
+            <ul>
+                @foreach ($releaseEvidence['release_summary']['security_review_focus'] as $focus)
+                    <li>{{ $focus }}</li>
+                @endforeach
+            </ul>
         </article>
     </section>
 
@@ -61,6 +68,17 @@
                         <span class="badge">{{ $rollback['area'] }}</span>
                     </div>
                     <p>{{ $rollback['proof'] }}</p>
+                </article>
+            @endforeach
+        </div>
+    </section>
+
+    <section class="section">
+        <h2>Portfolio Notes</h2>
+        <div class="list">
+            @foreach ($releaseEvidence['portfolio_notes'] as $note)
+                <article class="item">
+                    <p>{{ $note }}</p>
                 </article>
             @endforeach
         </div>

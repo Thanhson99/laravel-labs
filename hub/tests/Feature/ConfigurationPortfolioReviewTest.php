@@ -37,6 +37,10 @@ final class ConfigurationPortfolioReviewTest extends TestCase
             ->assertJsonPath('data.score', 100)
             ->assertJsonPath('data.result', 'publish-ready')
             ->assertJsonPath('data.rubric.0.criterion', 'Specific configuration claim')
+            ->assertJsonPath('data.rubric.4.criterion', 'Security review evidence')
+            ->assertJsonPath('data.rubric.4.max_points', 0)
+            ->assertJsonPath('data.review_notes.2', 'Security Misconfiguration evidence is represented as release-blocker proof, not a generic security checklist.')
+            ->assertJsonPath('data.action_items.1', 'Keep one Security Misconfiguration release blocker beside the deployment or review note.')
             ->assertJsonPath('data.quality_gate.status', 'ready')
             ->assertJsonStructure([
                 'data' => [

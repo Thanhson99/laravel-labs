@@ -31,6 +31,7 @@ final class ConfigurationInterviewBriefService
                 'Answer each question with a concrete config key or route.',
                 'Reference at least one test command and one smoke endpoint.',
                 'Explain the rollback path before discussing deployment confidence.',
+                'Explain how Security Misconfiguration controls fail closed before production release.',
                 'Keep the quality-gate status tied to observable behavior.',
             ],
             'commands' => [
@@ -78,6 +79,15 @@ final class ConfigurationInterviewBriefService
                 'follow_up' => 'What signal would make you stop the deployment before merging?',
             ],
             [
+                'question' => 'How would you explain Security Misconfiguration in this Laravel configuration workflow?',
+                'answer_outline' => [
+                    'Define it as unsafe runtime, deployment, or infrastructure setup, not business logic.',
+                    'Name debug mode, exposed secrets, broad CORS, missing headers, weak cookies, public storage, and proxy drift as concrete risks.',
+                    'Cite release blockers and smoke checks from the deployment plan.',
+                ],
+                'follow_up' => 'Which unsafe signal should block the release even if all feature tests pass?',
+            ],
+            [
                 'question' => 'Why reuse the quality gate instead of inventing a separate status?',
                 'answer_outline' => [
                     'It keeps ready/needs-work language consistent across practice artifacts.',
@@ -109,6 +119,10 @@ final class ConfigurationInterviewBriefService
             [
                 'label' => $evidence['rollback_summary'][1]['area'],
                 'source' => $evidence['rollback_summary'][1]['proof'],
+            ],
+            [
+                'label' => $evidence['release_summary']['security_review_focus'][0],
+                'source' => 'Security Misconfiguration review focus',
             ],
             [
                 'label' => 'vendor\\bin\\pint --test',

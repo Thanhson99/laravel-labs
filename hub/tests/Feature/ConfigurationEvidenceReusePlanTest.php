@@ -35,7 +35,10 @@ final class ConfigurationEvidenceReusePlanTest extends TestCase
             ->assertOk()
             ->assertJsonPath('data.archive_id', 'configuration-contract-promote-100')
             ->assertJsonPath('data.reuse_tasks.0.audience', 'Portfolio note')
-            ->assertJsonPath('data.reuse_tasks.2.source_key', 'INC-CONFIG-001 POSTMORTEM-CONFIG-001')
+            ->assertJsonPath('data.reuse_tasks.1.audience', 'Security review')
+            ->assertJsonPath('data.reuse_tasks.1.source_key', 'security misconfiguration release blockers')
+            ->assertJsonPath('data.reuse_tasks.3.source_key', 'INC-CONFIG-001 POSTMORTEM-CONFIG-001')
+            ->assertJsonPath('data.handoff_notes.1', 'Security review reuse should link release blockers to debug, secrets, CORS, headers, cookies, proxies, and storage exposure.')
             ->assertJsonPath('data.quality_gate.status', 'ready')
             ->assertJsonStructure([
                 'data' => [

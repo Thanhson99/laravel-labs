@@ -37,6 +37,9 @@ final class ConfigurationHandoffPacketTest extends TestCase
             ->assertJsonPath('data.handoff_status', 'ready-to-handoff')
             ->assertJsonPath('data.packet_links.0.label', 'Publication checklist')
             ->assertJsonPath('data.required_evidence.0.channel', 'Portfolio')
+            ->assertJsonPath('data.required_evidence.1.channel', 'Security review')
+            ->assertJsonPath('data.rehearsal_prompts.1', 'Explain which Security Misconfiguration release blocker would stop deployment and which smoke check proves it.')
+            ->assertJsonPath('data.next_actions.1', 'Open the Security review channel and attach one fail-closed smoke-check proof.')
             ->assertJsonPath('data.quality_gate.status', 'ready')
             ->assertJsonStructure([
                 'data' => [

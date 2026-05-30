@@ -36,7 +36,11 @@ final class ConfigurationTestPlanTest extends TestCase
             ->assertOk()
             ->assertJsonPath('data.target_test', 'hub/tests/Feature/ConfigurationReadinessTest.php')
             ->assertJsonPath('data.test_groups.1.name', 'Authentication contract')
+            ->assertJsonPath('data.test_groups.2.name', 'Security Misconfiguration contract')
+            ->assertJsonPath('data.test_groups.2.assertions.0', "expect(config('app.debug'))->not->toBeTrue();")
+            ->assertJsonPath('data.test_groups.2.assertions.2', 'assert every configuration release blocker has an owner, fail-closed action, and verification evidence.')
             ->assertJsonPath('data.commands.1', 'php artisan test --filter ConfigurationTestPlanTest')
+            ->assertJsonPath('data.commands.2', 'php artisan route:list --path=configuration-readiness')
             ->assertJsonPath('data.quality_gate.status', 'ready')
             ->assertJsonStructure([
                 'data' => [

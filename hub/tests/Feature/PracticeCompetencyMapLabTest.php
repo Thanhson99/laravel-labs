@@ -58,4 +58,30 @@ final class PracticeCompetencyMapLabTest extends TestCase
                 ],
             ]);
     }
+
+    /**
+     * Predictive AI competency maps label AI type comparison skills.
+     */
+    public function test_predictive_generative_ai_competency_map_uses_ai_type_skills(): void
+    {
+        $this->getJson('/api/practice/competency-map-lab?family=vibe-coding&language=en&search=Predictive%20AI&phase_limit=1&tasks_per_phase=1&days=3')
+            ->assertOk()
+            ->assertJsonPath('data.competencies.0.technology_segment', 'Day 1 demo: llm-foundations')
+            ->assertJsonPath('data.competencies.0.competency_levels.0.skill', 'ai-output-contracting')
+            ->assertJsonPath('data.competencies.0.competency_levels.2.skill', 'ai-type-explanation')
+            ->assertJsonPath('data.competencies.0.next_action', 'Move `llm-foundations` to AI type comparison checkpoint or capstone practice.');
+    }
+
+    /**
+     * JavaScript closure competency maps label closure scope and interview explanation skills.
+     */
+    public function test_javascript_closure_competency_map_uses_scope_skills(): void
+    {
+        $this->getJson('/api/practice/competency-map-lab?family=laravel&language=en&search=JavaScript%20closure&phase_limit=1&tasks_per_phase=1&days=3')
+            ->assertOk()
+            ->assertJsonPath('data.competencies.0.technology_segment', 'Day 1 demo: javascript-closures')
+            ->assertJsonPath('data.competencies.0.competency_levels.0.skill', 'closure-scope-tracing')
+            ->assertJsonPath('data.competencies.0.competency_levels.2.skill', 'closure-interview-explanation')
+            ->assertJsonPath('data.competencies.0.next_action', 'Move `javascript-closures` to closure checkpoint or capstone practice.');
+    }
 }

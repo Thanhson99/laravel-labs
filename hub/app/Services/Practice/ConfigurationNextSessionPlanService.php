@@ -27,11 +27,11 @@ final class ConfigurationNextSessionPlanService
             'summary' => 'Convert the configuration handoff packet into a focused next session with preflight checks, timed drills, deliverables, and stop criteria.',
             'archive_id' => $packet['archive_id'],
             'session_status' => $packet['handoff_status'] === 'ready-to-handoff' ? 'ready' : 'blocked',
-            'session_goal' => 'Rehearse the approved configuration evidence and apply it to one fresh review or interview prompt.',
+            'session_goal' => 'Rehearse the approved configuration evidence and apply it to one fresh review, security review, or interview prompt.',
             'preflight' => [
                 'Open the handoff packet and confirm quality-gate status is ready.',
                 'Read the portfolio headline once without editing it.',
-                'Choose one channel: portfolio, interview, or code review.',
+                'Choose one channel: portfolio, security review, interview, or code review.',
             ],
             'practice_blocks' => [
                 [
@@ -42,7 +42,7 @@ final class ConfigurationNextSessionPlanService
                 [
                     'minutes' => 20,
                     'focus' => 'Apply',
-                    'task' => 'Use one required evidence item to write or speak the selected channel output.',
+                    'task' => 'Use one required evidence item to write or speak the selected channel output, including a Security Misconfiguration blocker when security review is selected.',
                 ],
                 [
                     'minutes' => 10,
@@ -52,12 +52,14 @@ final class ConfigurationNextSessionPlanService
             ],
             'deliverables' => [
                 'One channel-specific answer or paragraph.',
+                'One Security Misconfiguration release-blocker proof when the selected channel is security review.',
                 'One cited source key or route from the handoff packet.',
                 'One command result proving the configuration pipeline remains ready.',
             ],
             'stop_criteria' => [
                 'The learner cannot explain the incident recovery path without reading the postmortem.',
                 'The selected output has a claim without proof.',
+                'The security review output names a risk but no fail-closed smoke check.',
                 'Any focused verification command fails.',
             ],
             'commands' => [

@@ -31,9 +31,11 @@ final class ConfigurationEvidenceReusePlanService
                 ...$retrieval['quality_checks'],
                 'Final reuse output names the audience and the proof source.',
                 'Final reuse output keeps app/auth configuration language precise.',
+                'Security reuse output names the unsafe production default, release blocker, owner, and smoke evidence.',
             ],
             'handoff_notes' => [
                 'Portfolio reuse should link the readiness route, quality gate, and archive id.',
+                'Security review reuse should link release blockers to debug, secrets, CORS, headers, cookies, proxies, and storage exposure.',
                 'Interview reuse should answer with one config key, one route, and one command.',
                 'Incident reuse should cite the postmortem id and smallest recovery action.',
             ],
@@ -71,6 +73,7 @@ final class ConfigurationEvidenceReusePlanService
     {
         return match ($useCase) {
             'Portfolio note' => 'Write a concise portfolio paragraph about treating Laravel configuration as a tested runtime contract.',
+            'Security review' => 'Write a release-review note that explains which Security Misconfiguration signal blocks deployment and which smoke check proves it.',
             'Interview answer' => 'Prepare a two-minute answer that explains config(), env(), auth defaults, and quality-gate status.',
             'Incident recovery' => 'Write a recovery note that cites the postmortem, root cause, route, and smallest rollback path.',
             default => 'Turn the retrieved proof into a focused learning artifact.',

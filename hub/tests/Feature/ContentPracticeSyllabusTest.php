@@ -55,4 +55,17 @@ final class ContentPracticeSyllabusTest extends TestCase
                 ],
             ]);
     }
+
+    /**
+     * The syllabus can focus on the XSS defense learning path.
+     */
+    public function test_syllabus_api_returns_xss_defense_phase(): void
+    {
+        $this->getJson('/api/practice/syllabus?family=laravel&language=en&search=XSS&limit=5')
+            ->assertOk()
+            ->assertJsonPath('data.phases.0.technology', 'xss-defense')
+            ->assertJsonPath('data.phases.0.exercise.slug', 'blade-escaping-xss-preview')
+            ->assertJsonPath('data.phases.0.queue_query.technology', 'xss-defense')
+            ->assertJsonPath('data.source_packs.0.source.path', 'laravel/auth-security.en.json');
+    }
 }

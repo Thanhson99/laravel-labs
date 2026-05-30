@@ -33,8 +33,23 @@
     <section class="section">
         <div class="topbar">
             <h2>{{ $pipeline['record_count'] }} records in this pipeline</h2>
+            @if ($pipeline['related_workbench'] && $pipeline['related_workbench']['route_name'])
+                <a class="button primary" href="{{ route($pipeline['related_workbench']['route_name']) }}">{{ $pipeline['related_workbench']['label'] }}</a>
+            @endif
             <a class="button" href="{{ route('api.practice.technology-learning-pipeline', [$pipeline['technology']] + request()->query()) }}">Open pipeline API</a>
         </div>
+
+        <div class="list">
+            <article class="item">
+                <h3>Focus Checks</h3>
+                <ul>
+                    @foreach ($pipeline['focus_checks'] as $check)
+                        <li>{{ $check }}</li>
+                    @endforeach
+                </ul>
+            </article>
+        </div>
+
         <div class="list">
             @foreach ($pipeline['stages'] as $stage)
                 <article class="item">
@@ -44,7 +59,9 @@
                     <h3>{{ $stage['label'] }}</h3>
                     <p>{{ $stage['purpose'] }}</p>
                     <a class="button primary" href="{{ $stage['route'] }}">Open stage</a>
-                    <a class="button" href="{{ $stage['api_route'] }}">Open API</a>
+                    @if ($stage['api_route'])
+                        <a class="button" href="{{ $stage['api_route'] }}">Open API</a>
+                    @endif
                 </article>
             @endforeach
         </div>

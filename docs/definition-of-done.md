@@ -33,6 +33,8 @@ Done criteria:
 - Global search still opens if search-related code changed.
 - Progress/localStorage behavior still tolerates malformed storage.
 - Responsive behavior was considered for mobile and desktop.
+- Renderer changes preserve the shared content-block contract from `docs/design-system.md`: major sections stay as `.panel`, repeated content stays inside card/list/block components, and nested lists remain visually plain.
+- Code blocks with copy buttons were checked so text does not render underneath the copy button on desktop or mobile.
 
 Verification:
 
@@ -53,8 +55,12 @@ Done criteria:
 - Item order remains stable if progress IDs should be preserved.
 - Content follows `content-quality-standards.md`.
 - Content belongs in the correct learning area from `content-taxonomy.md`.
+- New content uses an existing renderer-supported shape from `docs/data-schema.md` before any writing begins.
+- Related learning items are not left as loose paragraphs when they belong in default cards, `type: "list"`, `type: "links"`, or PHP `modules`/`phases`.
 - Code snippets are safe and relevant.
 - No raw HTML is introduced unless the renderer expects it.
+- Raw HTML is never used to force spacing, borders, color, card layout, or headings.
+- If list items use `bullets`, those bullets are short supporting details and do not duplicate the parent item title/body structure.
 
 Verification:
 
@@ -84,6 +90,9 @@ Done criteria:
 - Mobile and desktop layouts are considered.
 - Long Vietnamese labels do not overflow obvious controls.
 - New components use existing CSS variables.
+- New content surfaces reuse the existing white-surface card/list/block treatment instead of adding a page-specific style.
+- CSS selectors do not accidentally style nested supporting lists as outer cards.
+- Typography hierarchy remains clear: section heading, block/card title, supporting description, nested details.
 - Accessibility attributes are present for interactive controls.
 - No unnecessary new color system or UI library is introduced.
 

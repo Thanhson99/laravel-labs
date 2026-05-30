@@ -37,9 +37,13 @@ final class ConfigurationEvidenceArchiveTest extends TestCase
             ->assertOk()
             ->assertJsonPath('data.archive_id', 'configuration-contract-promote-100')
             ->assertJsonPath('data.retrieval_keys.0', 'config app auth readiness')
-            ->assertJsonPath('data.retrieval_keys.4', 'INC-CONFIG-001 POSTMORTEM-CONFIG-001')
+            ->assertJsonPath('data.retrieval_keys.1', 'security misconfiguration release blockers')
+            ->assertJsonPath('data.retrieval_keys.2', 'fail closed deployment smoke checks')
+            ->assertJsonPath('data.retrieval_keys.6', 'INC-CONFIG-001 POSTMORTEM-CONFIG-001')
             ->assertJsonPath('data.incident_archive.postmortem_id', 'POSTMORTEM-CONFIG-001')
             ->assertJsonPath('data.proof_bundle.0.label', 'Day 1: Recall the configuration contract.')
+            ->assertJsonPath('data.reuse_targets.1', 'Security Misconfiguration note about debug, secrets, CORS, headers, cookies, proxies, storage, and fail-closed release blockers.')
+            ->assertJsonPath('data.retrieval_prompts.1', 'Which Security Misconfiguration release blocker would stop deployment even when feature tests pass?')
             ->assertJsonPath('data.quality_gate.status', 'ready')
             ->assertJsonStructure([
                 'data' => [

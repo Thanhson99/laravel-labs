@@ -71,9 +71,9 @@ final class PracticeCompetencyMapLabService
         $level = $card['evidence_score'] >= 85 ? 'ready' : 'reinforce';
 
         return [
-            ['skill' => 'implementation', 'level' => $level],
+            ['skill' => $this->implementationSkillFor((string) $card['technology_segment']), 'level' => $level],
             ['skill' => 'verification', 'level' => count($card['proof_items']) >= 3 ? 'ready' : 'reinforce'],
-            ['skill' => 'explanation', 'level' => $level],
+            ['skill' => $this->explanationSkillFor((string) $card['technology_segment']), 'level' => $level],
             ['skill' => 'release-readiness', 'level' => $level],
         ];
     }
@@ -100,9 +100,65 @@ final class PracticeCompetencyMapLabService
     private function nextActionFor(array $card): string
     {
         if ($card['status'] === 'ready-for-harder-lab') {
+            if ($this->isAiTypeSegment($card['technology_segment'])) {
+                return 'Move `llm-foundations` to AI type comparison checkpoint or capstone practice.';
+            }
+
+            if ($this->isClosureSegment($card['technology_segment'])) {
+                return 'Move `javascript-closures` to closure checkpoint or capstone practice.';
+            }
+
             return sprintf('Move `%s` to checkpoint exam or capstone practice.', $card['technology_segment']);
         }
 
+        if ($this->isAiTypeSegment($card['technology_segment'])) {
+            return 'Repeat `llm-foundations` with predictive metrics and generative quality checks before attempting a harder lab.';
+        }
+
+        if ($this->isClosureSegment($card['technology_segment'])) {
+            return 'Repeat `javascript-closures` with lexical-scope traces and stale-closure evidence before attempting a harder lab.';
+        }
+
         return sprintf('Repeat `%s` in spaced repetition before attempting a harder lab.', $card['technology_segment']);
+    }
+
+    /**
+     * Return implementation skill label for one technology segment.
+     */
+    private function implementationSkillFor(string $technology): string
+    {
+        if ($this->isAiTypeSegment($technology)) {
+            return 'ai-output-contracting';
+        }
+
+        return $this->isClosureSegment($technology) ? 'closure-scope-tracing' : 'implementation';
+    }
+
+    /**
+     * Return explanation skill label for one technology segment.
+     */
+    private function explanationSkillFor(string $technology): string
+    {
+        if ($this->isAiTypeSegment($technology)) {
+            return 'ai-type-explanation';
+        }
+
+        return $this->isClosureSegment($technology) ? 'closure-interview-explanation' : 'explanation';
+    }
+
+    /**
+     * Determine whether a competency segment belongs to AI type comparison work.
+     */
+    private function isAiTypeSegment(string $technology): bool
+    {
+        return str_contains($technology, 'llm-foundations');
+    }
+
+    /**
+     * Determine whether a competency segment belongs to JavaScript closure work.
+     */
+    private function isClosureSegment(string $technology): bool
+    {
+        return str_contains($technology, 'javascript-closures');
     }
 }

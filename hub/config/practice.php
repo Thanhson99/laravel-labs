@@ -31,6 +31,21 @@ return [
             'name' => 'Docker + Runtime',
             'summary' => 'Practice reproducible local runtime, environment values, compose config, and smoke checks.',
         ],
+        [
+            'slug' => 'frontend-performance',
+            'name' => 'Frontend Performance',
+            'summary' => 'Practice React render measurement, memoization decisions, profiler evidence, state locality, and large-list tradeoffs.',
+        ],
+        [
+            'slug' => 'security-auth',
+            'name' => 'Security + Auth',
+            'summary' => 'Practice SQL Injection prevention, authorization, JWT storage and revocation, OAuth flow choices, and security-focused verification.',
+        ],
+        [
+            'slug' => 'ai-review',
+            'name' => 'AI Review',
+            'summary' => 'Practice evidence-first AI coding workflows, hallucination controls, review lenses, and verification commands.',
+        ],
     ],
 
     'exercises' => [
@@ -152,6 +167,51 @@ final class NoteController
 PHP,
         ],
         [
+            'slug' => 'blade-escaping-xss-preview',
+            'track' => 'security-auth',
+            'title' => 'Preview XSS-safe Blade escaping',
+            'objective' => 'Practice identifying reflected, stored, and DOM XSS risks and proving unsafe input renders as escaped text.',
+            'why' => 'This practices browser-output security: Blade escaping, raw HTML boundaries, safe JSON handoff, rich-text sanitization, CSP as defense in depth, and payload tests.',
+            'steps' => [
+                'Open the security escape preview workbench with a script-like payload.',
+                'Compare escaped Blade output with risky raw HTML rendering.',
+                'List which output context is involved: HTML text, attribute, JavaScript, URL, or rich text.',
+                'Write one feature test that proves the payload is visible as text and does not execute.',
+                'Document when `{!! !!}` is acceptable and which sanitizer or trust boundary owns it.',
+            ],
+            'files' => [
+                'app/Services/Practice/SecurityEscapePreviewService.php',
+                'app/Http/Requests/Api/PreviewEscapedContentRequest.php',
+                'resources/views/practice/workbench/security-escape-preview.blade.php',
+                'tests/Feature/SecurityEscapePreviewWorkbenchTest.php',
+            ],
+            'commands' => [
+                'php artisan test --filter SecurityEscapePreviewWorkbenchTest',
+                'php artisan route:list --path=security-escape-preview',
+                'vendor\\bin\\pint --test',
+            ],
+            'workbench' => [
+                'label' => 'Run the XSS escape preview workbench',
+                'route' => 'practice.workbench.security-escape-preview',
+            ],
+            'acceptance' => [
+                'Unsafe payloads render as escaped text in normal Blade output.',
+                'The plan names the output context and why that context matters.',
+                'Raw HTML rendering is allowed only with a sanitizer or trusted boundary.',
+                'Feature tests cover a script-like payload and a harmless rich-text case.',
+            ],
+            'starter_code' => <<<'BLADE'
+<p>{{ $comment->body }}</p>
+
+{{-- Only render sanitized or trusted HTML here. --}}
+{!! $trustedHtml !!}
+
+<script>
+    window.pageData = @json($viewModel);
+</script>
+BLADE,
+        ],
+        [
             'slug' => 'api-form-request-slice',
             'track' => 'api-validation',
             'title' => 'Build a validated practice API endpoint',
@@ -202,6 +262,57 @@ return response()->json([
     ],
     'message' => 'Practice topic accepted.',
 ], 201);
+PHP,
+        ],
+        [
+            'slug' => 'restful-api-naming-review',
+            'track' => 'api-validation',
+            'title' => 'Review and name RESTful API endpoints',
+            'objective' => 'Turn a feature brief into predictable RESTful routes with resource nouns, HTTP verbs, query parameters, route names, and action endpoints only where the domain needs them.',
+            'why' => 'This practices API contract design before code is written, so controllers, tests, OpenAPI docs, and clients all use the same language.',
+            'steps' => [
+                'List the resources, collections, single-resource lookups, and real domain actions.',
+                'Name collection routes with plural nouns and choose the HTTP verb for each operation.',
+                'Move filtering, searching, sorting, and pagination into query parameters.',
+                'Keep nested resources shallow and explain the authorization context for each nested path.',
+                'Write Laravel route names and one feature-test expectation for the most important endpoint.',
+            ],
+            'files' => [
+                'routes/api.php',
+                'routes/api/practice-actions.php',
+                'routes/web/workbench.php',
+                'app/Http/Requests/Api/PlanRestfulApiNamingRequest.php',
+                'app/Http/Controllers/Api/RestfulApiNamingPlanController.php',
+                'app/Services/Practice/RestfulApiNamingPlanService.php',
+                'resources/views/practice/workbench/restful-api-naming-plan.blade.php',
+                'tests/Feature/RestfulApiNamingPlanWorkbenchTest.php',
+            ],
+            'commands' => [
+                'php artisan route:list --path=restful-api-naming-plan',
+                'php artisan test --filter RestfulApiNamingPlanWorkbenchTest',
+                'vendor\\bin\\pint --test',
+            ],
+            'workbench' => [
+                'label' => 'Run the RESTful API naming workbench',
+                'route' => 'practice.workbench.restful-api-naming-plan',
+            ],
+            'acceptance' => [
+                'Every endpoint path uses a resource noun unless it is a deliberate business action.',
+                'HTTP verbs communicate read, create, update, delete, or command intent.',
+                'Query parameters carry filter, search, pagination, and sort behavior.',
+                'Laravel route names are stable and match the resource vocabulary.',
+                'At least one feature test proves the chosen route and response shape.',
+            ],
+            'starter_code' => <<<'PHP'
+Route::prefix('v1')->group(function () {
+    Route::apiResource('orders', OrderController::class);
+
+    Route::post('/orders/{order}/cancel', CancelOrderController::class)
+        ->name('orders.cancel');
+
+    Route::get('/users/{user}/orders', UserOrderController::class)
+        ->name('users.orders.index');
+});
 PHP,
         ],
         [
@@ -3115,6 +3226,7 @@ PHP,
             'objective' => 'Turn manual object creation into constructor injection, a contract binding, and a testable Laravel dependency flow.',
             'why' => 'This practices Dependency Injection, service-container resolution, dependency inversion, and replacing concrete collaborators in tests.',
             'steps' => [
+                'Open the Dependency Injection refactor workbench and describe the manual dependency.',
                 'Find the controller or service that creates collaborators with manual `new` calls.',
                 'Extract the collaborator behind a small interface that describes the behavior the use case needs.',
                 'Bind the interface to the implementation in a service provider.',
@@ -3129,22 +3241,25 @@ PHP,
                 'tests/Feature/ReportExportTest.php',
             ],
             'commands' => [
-                'php artisan test --filter ReportExportTest',
-                'php artisan route:list --path=reports',
+                'php artisan test --filter DependencyInjectionRefactorWorkbenchTest',
+                'php artisan route:list --path=dependency-injection-refactor',
                 'vendor/bin/pint --test',
             ],
             'workbench' => [
-                'label' => 'Run the container binding workbench',
-                'route' => 'practice.workbench.container-binding-plan',
+                'label' => 'Run the Dependency Injection refactor workbench',
+                'route' => 'practice.workbench.dependency-injection-refactor',
             ],
             'api' => [
                 'method' => 'POST',
-                'path' => '/api/practice/container-binding-plan',
+                'path' => '/api/practice/dependency-injection-refactor',
                 'payload' => [
+                    'class_name' => 'Report Controller',
+                    'manual_dependency' => 'CSV Report Exporter',
+                    'dependency_role' => 'export monthly report rows',
                     'contract_name' => 'Report Exporter',
-                    'implementation_name' => 'CSV Report Exporter',
-                    'lifetime' => 'bind',
-                    'injection_target' => 'Report Controller',
+                    'method_name' => 'export',
+                    'binding_lifetime' => 'bind',
+                    'fake_name' => 'Fake Report Exporter',
                 ],
             ],
             'acceptance' => [
@@ -3163,6 +3278,677 @@ $this->app->bind(ReportExporter::class, CsvReportExporter::class);
 
 public function __construct(private readonly ReportExporter $exporter)
 {
+}
+PHP,
+        ],
+        [
+            'slug' => 'abstract-class-interface-decision-drill',
+            'track' => 'php-foundation',
+            'title' => 'Choose abstract class or interface',
+            'objective' => 'Decide whether an OOP design needs a pure contract, a shared base class, or no extra abstraction.',
+            'why' => 'This practices PHP OOP tradeoffs, interview explanation, inheritance limits, swappable dependencies, and avoiding unnecessary abstraction.',
+            'steps' => [
+                'Describe whether the classes are related by type or only by behavior.',
+                'Use an interface when unrelated classes need to promise the same behavior.',
+                'Use an abstract class when child classes share meaningful base behavior or state.',
+                'Avoid adding an abstraction when one concrete class is stable and no replacement is expected.',
+                'Prepare a short interview answer that includes one practical example.',
+            ],
+            'files' => [
+                'data/php/advanced.en.json',
+                'data/php/advanced.vi.json',
+                'app/Contracts/Notifier.php',
+                'app/Reports/FileReport.php',
+                'tests/Unit/OopAbstractionDecisionTest.php',
+            ],
+            'commands' => [
+                'php artisan test --filter OopAbstractionDecisionWorkbenchTest',
+                'php artisan route:list --path=oop-abstraction-decision',
+                'php artisan test --filter StaticPortalCopyTest',
+                'vendor/bin/pint --test',
+            ],
+            'workbench' => [
+                'label' => 'Run the OOP abstraction decision workbench',
+                'route' => 'practice.workbench.oop-abstraction-decision',
+            ],
+            'api' => [
+                'method' => 'POST',
+                'path' => '/api/practice/oop-abstraction-decision',
+                'payload' => [
+                    'scenario' => 'Payment Gateway',
+                    'relationship' => 'unrelated',
+                    'shared_behavior' => 'send a payment request',
+                    'needs_multiple_implementations' => true,
+                    'has_shared_state' => false,
+                ],
+            ],
+            'acceptance' => [
+                'The answer explains the difference between a contract and shared base behavior.',
+                'The example uses an interface for swappable behavior.',
+                'The example uses an abstract class only when shared state or shared implementation is real.',
+                'The interview answer mentions that PHP supports multiple interfaces but only one parent class.',
+            ],
+            'starter_code' => <<<'PHP'
+interface Notifier
+{
+    public function send(string $message): void;
+}
+
+abstract class FileReport
+{
+    public function __construct(protected string $path)
+    {
+    }
+
+    abstract public function rows(): array;
+
+    protected function read(): string
+    {
+        return file_get_contents($this->path) ?: '';
+    }
+}
+PHP,
+        ],
+        [
+            'slug' => 'clean-architecture-layering-tradeoff',
+            'track' => 'laravel-http',
+            'title' => 'Clean Architecture P6: Layered Architecture is not always right',
+            'objective' => 'Decide whether a Laravel feature needs extra layers or should stay closer to the framework flow.',
+            'why' => 'This practices architectural judgment: layers are useful when they protect real boundaries, but harmful when they only add pass-through files and review friction.',
+            'steps' => [
+                'Describe the feature as simple CRUD, complex workflow, integration-heavy flow, or domain-heavy rule set.',
+                'Map which responsibilities already have natural Laravel homes: route, Form Request, controller, model/query, policy, job, event, or view/resource.',
+                'Add an action or service only when it owns workflow decisions instead of forwarding data.',
+                'Add a repository or query object only when persistence logic is reusable, complex, or needs a stable boundary.',
+                'Write a PR review note explaining why each chosen layer exists or why it was intentionally skipped.',
+            ],
+            'files' => [
+                'data/laravel/container-architecture.en.json',
+                'data/laravel/container-architecture.vi.json',
+                'routes/web.php',
+                'app/Services/Practice/LayeredArchitectureDecisionService.php',
+                'app/Http/Requests/Api/PlanLayeredArchitectureDecisionRequest.php',
+                'app/Http/Controllers/Api/LayeredArchitectureDecisionController.php',
+                'resources/views/practice/workbench/layered-architecture-decision.blade.php',
+                'tests/Feature/LayeredArchitectureDecisionWorkbenchTest.php',
+            ],
+            'commands' => [
+                'php artisan route:list --name=practice.show',
+                'php artisan test --filter LayeredArchitectureDecisionWorkbenchTest',
+                'php artisan test --filter StaticPortalCopyTest',
+                'vendor/bin/pint --test',
+            ],
+            'workbench' => [
+                'label' => 'Run the layered architecture decision workbench',
+                'route' => 'practice.workbench.layered-architecture-decision',
+            ],
+            'api' => [
+                'method' => 'POST',
+                'path' => '/api/practice/layered-architecture-decision',
+                'payload' => [
+                    'feature_name' => 'Checkout Submit',
+                    'feature_type' => 'workflow',
+                    'business_rule_count' => 4,
+                    'integration_count' => 1,
+                    'persistence_complexity' => 'complex',
+                    'requires_async_work' => true,
+                    'requires_policy' => true,
+                ],
+            ],
+            'acceptance' => [
+                'The feature does not add a service, action, or repository without a named responsibility.',
+                'Simple CRUD stays simple unless a real boundary appears.',
+                'Complex workflows move decisions into an action or service with tests.',
+                'The review note explains the tradeoff instead of claiming layered architecture is always better.',
+            ],
+            'starter_code' => <<<'PHP'
+// Keep simple CRUD close to the framework until the use case earns a boundary.
+final class OrderController
+{
+    public function store(StoreOrderRequest $request): RedirectResponse
+    {
+        $order = Order::query()->create($request->validated());
+
+        return redirect()->route('orders.show', $order);
+    }
+}
+
+// Extract when workflow decisions become meaningful.
+final class CreateOrderAction
+{
+    public function execute(array $data): Order
+    {
+        return DB::transaction(function () use ($data): Order {
+            $order = Order::query()->create($data);
+
+            // Reserve stock, publish event, or call integration here when needed.
+
+            return $order;
+        });
+    }
+}
+PHP,
+        ],
+        [
+            'slug' => 'system-design-tradeoff-plan-workbench',
+            'track' => 'docker-runtime',
+            'title' => 'Practice System Design tradeoff answers',
+            'objective' => 'Turn an ambiguous System Design prompt into clarifying questions, explicit costs, team-fit checks, and a senior interview answer.',
+            'why' => 'This practices the difference between naming technology and making architecture decisions: a strong answer explains why one cost is acceptable because the alternative cost is worse in context.',
+            'steps' => [
+                'Choose a scenario such as 10M notifications, payments, legacy scaling, or startup microservices.',
+                'State latency, failure impact, consistency, team maturity, operational capacity, and current constraints.',
+                'Generate the recommendation, tradeoff statement, decision matrix, and level framing.',
+                'Rewrite the answer in the form: I choose A, the cost is X, and I accept it because Y is more expensive here.',
+                'Add one metric or review trigger that would change the decision later.',
+            ],
+            'files' => [
+                'data/interview/senior.en.json',
+                'data/interview/senior.vi.json',
+                'app/Http/Requests/Api/PlanSystemDesignTradeoffRequest.php',
+                'app/Http/Controllers/Api/SystemDesignTradeoffPlanController.php',
+                'app/Services/Practice/SystemDesignTradeoffPlanService.php',
+                'resources/views/practice/workbench/system-design-tradeoff-plan.blade.php',
+                'tests/Feature/SystemDesignTradeoffPlanWorkbenchTest.php',
+                'tests/Unit/Practice/SystemDesignTradeoffPlanServiceTest.php',
+            ],
+            'commands' => [
+                'php artisan test --filter SystemDesignTradeoffPlan',
+                'php artisan route:list --path=system-design-tradeoff-plan',
+                'vendor\\bin\\pint --test',
+            ],
+            'workbench' => [
+                'label' => 'Run the System Design tradeoff workbench',
+                'route' => 'practice.workbench.system-design-tradeoff-plan',
+            ],
+            'api' => [
+                'method' => 'POST',
+                'path' => '/api/practice/system-design-tradeoff-plan',
+                'payload' => [
+                    'scenario' => 'notification-10m',
+                    'latency_requirement' => 'real-time',
+                    'failure_impact' => 'high',
+                    'consistency_need' => 'eventual',
+                    'team_maturity' => 'platform',
+                    'operational_capacity' => 'high',
+                    'current_constraint' => 'greenfield',
+                ],
+            ],
+            'acceptance' => [
+                'The answer asks clarifying questions before choosing technology.',
+                'The recommendation includes the cost of the chosen design and the rejected alternative.',
+                'The plan compares Long Polling, WebSocket, broker, vertical scaling, and strong consistency options.',
+                'The output explains L4, L5, L6, and L7 answer signals.',
+            ],
+            'starter_code' => <<<'TEXT'
+Question: Design notifications for 10 million users.
+
+Do not draw first.
+Ask: latency, platforms, outage impact, duplicate tolerance, team capacity.
+Then answer: I choose A; the cost is X; I accept X because Y is more expensive here.
+TEXT,
+        ],
+        [
+            'slug' => 'siem-elk-plan-workbench',
+            'track' => 'docker-runtime',
+            'title' => 'Plan SIEM and ELK security logging',
+            'objective' => 'Turn SIEM and ELK concepts into a concrete log pipeline with normalized fields, detection rules, alert ownership, retention, privacy controls, dashboards, and incident runbooks.',
+            'why' => 'This practices the difference between collecting logs and operating a useful security monitoring capability: evidence, correlation, action, and cost control.',
+            'steps' => [
+                'Choose log sources such as Laravel app, cloud auth, Nginx/Linux, Kubernetes, or mixed enterprise logs.',
+                'Define the detection goal, retention window, alert maturity, data sensitivity, and team size.',
+                'Generate ELK roles, pipeline stages, normalized fields, detections, retention, privacy controls, and runbook steps.',
+                'Review whether each alert is actionable and whether sensitive data is redacted before indexing.',
+                'Copy the implementation prompt and turn it into one small parsing or detection rule task.',
+            ],
+            'files' => [
+                'data/interview/devops.en.json',
+                'data/interview/devops.vi.json',
+                'app/Http/Requests/Api/PlanSiemElkRequest.php',
+                'app/Http/Controllers/Api/SiemElkPlanController.php',
+                'app/Services/Practice/SiemElkPlanService.php',
+                'resources/views/practice/workbench/siem-elk-plan.blade.php',
+                'tests/Feature/SiemElkPlanWorkbenchTest.php',
+                'tests/Unit/Practice/SiemElkPlanServiceTest.php',
+            ],
+            'commands' => [
+                'php artisan test --filter SiemElkPlan',
+                'php artisan route:list --path=siem-elk-plan',
+                'vendor\\bin\\pint --test',
+            ],
+            'workbench' => [
+                'label' => 'Run the SIEM ELK planning workbench',
+                'route' => 'practice.workbench.siem-elk-plan',
+            ],
+            'api' => [
+                'method' => 'POST',
+                'path' => '/api/practice/siem-elk-plan',
+                'payload' => [
+                    'environment_name' => 'Production Security Logs',
+                    'log_sources' => 'cloud-auth',
+                    'detection_goal' => 'auth-abuse',
+                    'retention_need' => 'long',
+                    'alert_maturity' => 'low',
+                    'data_sensitivity' => 'high',
+                    'team_size' => 'small',
+                ],
+            ],
+            'acceptance' => [
+                'The plan separates SIEM capability from ELK tooling roles.',
+                'The pipeline includes collection, parsing, enrichment, indexing, detection, and response.',
+                'The field contract supports correlation across users, hosts, IPs, services, outcomes, and timestamps.',
+                'The output includes retention, privacy, alert ownership, and incident runbook guidance.',
+            ],
+            'starter_code' => <<<'TEXT'
+Question: Explain SIEM with ELK.
+
+Do not answer with only "Elasticsearch stores logs".
+Explain: source -> shipper -> parser -> index -> dashboard/alert -> runbook.
+Then name the tradeoffs: parsing quality, alert noise, retention cost, privacy, and owner.
+TEXT,
+        ],
+        [
+            'slug' => 'react-render-optimization-workbench',
+            'track' => 'frontend-performance',
+            'title' => 'Optimize React re-renders with memoization discipline',
+            'objective' => 'Practice when to use React.memo, useMemo, useCallback, state locality, and list virtualization from profiler evidence.',
+            'why' => 'This keeps frontend performance work practical: measure first, stabilize props only where needed, avoid stale dependencies, and do not hide structural state problems behind memoization.',
+            'steps' => [
+                'Choose the component type, render symptom, state shape, list size, and profiler signal.',
+                'Generate a recommendation and compare React.memo, useMemo, useCallback, state locality, and virtualization.',
+                'Review anti-patterns and profiler checks before applying memoization.',
+                'Copy the code examples and adapt them to one real component.',
+            ],
+            'files' => [
+                'data/laravel/frontend.en.json',
+                'data/laravel/frontend.vi.json',
+                'app/Http/Requests/Api/PlanReactRenderOptimizationRequest.php',
+                'app/Http/Controllers/Api/ReactRenderOptimizationPlanController.php',
+                'app/Services/Practice/ReactRenderOptimizationPlanService.php',
+                'resources/views/practice/workbench/react-render-optimization-plan.blade.php',
+                'tests/Feature/ReactRenderOptimizationPlanWorkbenchTest.php',
+                'tests/Unit/Practice/ReactRenderOptimizationPlanServiceTest.php',
+            ],
+            'commands' => [
+                'php artisan test --filter ReactRenderOptimizationPlan',
+                'php artisan route:list --path=react-render-optimization-plan',
+                'vendor\\bin\\pint --test',
+            ],
+            'workbench' => [
+                'label' => 'Run the React render optimization workbench',
+                'route' => 'practice.workbench.react-render-optimization-plan',
+            ],
+            'api' => [
+                'method' => 'POST',
+                'path' => '/api/practice/react-render-optimization-plan',
+                'payload' => [
+                    'component_name' => 'Customer Search Panel',
+                    'component_type' => 'search-panel',
+                    'render_issue' => 'prop-churn',
+                    'state_shape' => 'parent-state',
+                    'list_size' => 250,
+                    'profiler_signal' => 'prop-churn',
+                ],
+            ],
+            'acceptance' => [
+                'The plan starts from React Profiler evidence.',
+                'The recommendation separates React.memo, useMemo, and useCallback responsibilities.',
+                'The plan names when state locality or virtualization matters more than memoization.',
+            ],
+            'starter_code' => <<<'TEXT'
+Measure first.
+Use React.memo for expensive children with stable props.
+Use useMemo for expensive derived values.
+Use useCallback for callback identity passed to memoized children.
+Do not memoize everything blindly.
+TEXT,
+        ],
+        [
+            'slug' => 'load-balancer-algorithm-plan-workbench',
+            'track' => 'docker-runtime',
+            'title' => 'Plan load-balancer algorithms for system design',
+            'objective' => 'Compare four common load-balancer algorithms and choose the right routing strategy for a realistic traffic pattern.',
+            'why' => 'This practices system-design interview thinking: traffic shape, upstream capacity, sticky sessions, health checks, failure modes, and rollout verification.',
+            'steps' => [
+                'Open the load-balancer planning workbench and choose a traffic pattern.',
+                'Compare round robin, weighted round robin, least connections, and IP hash.',
+                'Generate an Nginx-style upstream example with forwarding headers.',
+                'Review health-check, rollout, and failure-mode guidance.',
+                'Practice a short interview answer that explains the tradeoff.',
+            ],
+            'files' => [
+                'data/interview/devops.en.json',
+                'data/interview/devops.vi.json',
+                'app/Http/Requests/Api/PlanLoadBalancerRequest.php',
+                'app/Http/Controllers/Api/LoadBalancerPlanController.php',
+                'app/Services/Practice/LoadBalancerPlanService.php',
+                'resources/views/practice/workbench/load-balancer-plan.blade.php',
+                'tests/Feature/LoadBalancerPlanWorkbenchTest.php',
+            ],
+            'commands' => [
+                'php artisan test --filter LoadBalancerPlan',
+                'php artisan route:list --path=load-balancer-plan',
+                'vendor/bin/pint --test',
+            ],
+            'workbench' => [
+                'label' => 'Run the load-balancer planning workbench',
+                'route' => 'practice.workbench.load-balancer-plan',
+            ],
+            'api' => [
+                'method' => 'POST',
+                'path' => '/api/practice/load-balancer-plan',
+                'payload' => [
+                    'service_name' => 'Checkout API',
+                    'traffic_pattern' => 'even',
+                    'algorithm' => 'auto',
+                    'upstream_count' => 3,
+                    'has_sticky_sessions' => false,
+                    'health_check_path' => '/up',
+                ],
+            ],
+            'acceptance' => [
+                'The plan names one recommended algorithm and explains why.',
+                'The answer compares all four common algorithms.',
+                'The generated config includes forwarding headers and upstream servers.',
+                'The plan includes health-check, rollout, test, and failure-mode guidance.',
+            ],
+            'starter_code' => <<<'TEXT'
+round_robin: equal servers and even traffic
+weighted_round_robin: different upstream capacity
+least_connections: long-running or bursty requests
+ip_hash: transitional session affinity
+TEXT,
+        ],
+        [
+            'slug' => 'reverse-proxy-failure-plan-workbench',
+            'track' => 'docker-runtime',
+            'title' => 'Plan reverse-proxy failure modes and blast radius',
+            'objective' => 'Explain why healthy origin servers can become unreachable when the shared reverse-proxy or edge layer fails, then design validation, rollout, health-gate, rollback, and fail-small controls.',
+            'why' => 'This practices the production lesson behind edge outages: reverse proxies improve routing, security, TLS, and caching, but the shared request path must be validated and rolled out carefully because origin capacity does not help when traffic never reaches the origins.',
+            'steps' => [
+                'Open the reverse-proxy failure workbench and choose an edge or internal proxy scenario.',
+                'Map the request path from client to proxy, load balancer, and origins.',
+                'Generate blast-radius controls for config, generated files, rollout strategy, health gates, and rollback.',
+                'Review observability signals that separate proxy-generated errors from origin-generated errors.',
+                'Practice an interview answer about why many healthy servers can still be unreachable.',
+            ],
+            'files' => [
+                'data/interview/devops.en.json',
+                'data/interview/devops.vi.json',
+                'app/Http/Requests/Api/PlanReverseProxyFailureRequest.php',
+                'app/Http/Controllers/Api/ReverseProxyFailurePlanController.php',
+                'app/Services/Practice/ReverseProxyFailurePlanService.php',
+                'resources/views/practice/workbench/reverse-proxy-failure-plan.blade.php',
+                'tests/Feature/ReverseProxyFailurePlanWorkbenchTest.php',
+            ],
+            'commands' => [
+                'php artisan test --filter ReverseProxyFailurePlan',
+                'php artisan route:list --path=reverse-proxy-failure-plan',
+                'vendor/bin/pint --test',
+            ],
+            'workbench' => [
+                'label' => 'Run the reverse-proxy failure workbench',
+                'route' => 'practice.workbench.reverse-proxy-failure-plan',
+            ],
+            'api' => [
+                'method' => 'POST',
+                'path' => '/api/practice/reverse-proxy-failure-plan',
+                'payload' => [
+                    'service_name' => 'Public Checkout Edge',
+                    'proxy_layer' => 'edge-cdn',
+                    'change_type' => 'feature-file',
+                    'origin_count' => 120,
+                    'rollout_strategy' => 'global',
+                    'has_health_gate' => false,
+                    'fail_behavior' => 'fail_closed',
+                    'observed_failure' => 'http_500',
+                ],
+            ],
+            'acceptance' => [
+                'The plan explains why healthy origins are not enough when the proxy layer fails.',
+                'The request path names client, proxy, load balancer, and origin responsibilities.',
+                'The answer includes config validation, rollout, health gates, rollback, and fail-small controls.',
+                'The observability plan separates proxy-generated errors from origin-generated errors.',
+            ],
+            'starter_code' => <<<'TEXT'
+Validate proxy config shape and size.
+Roll out by canary or staged region.
+Stop rollout on proxy 5xx, parser errors, CPU, or memory.
+Rollback the edge artifact before scaling healthy origins.
+TEXT,
+        ],
+        [
+            'slug' => 'kubernetes-analogy-plan-workbench',
+            'track' => 'docker-runtime',
+            'title' => 'Explain Kubernetes with a ship fleet analogy',
+            'objective' => 'Explain Kubernetes for beginners by mapping command ships, cargo ships, and container cargo to control plane, worker nodes, pods, containers, deployments, services, ingress, probes, and reconciliation.',
+            'why' => 'This practices a beginner-friendly DevOps explanation without losing technical accuracy: Kubernetes keeps desired container state running across machines, schedules pods onto workers, exposes services, replaces failed pods, rolls out and rolls back deployments, handles disruption with availability controls, shuts down pods gracefully, separates config from secrets, scopes workloads with namespaces and RBAC, uses network policies to control pod traffic, connects observability to pod and app signals, diagnoses common pod status failures, maps backend concerns such as migrations, queues, sessions, cache, readiness, and schedulers to safe Kubernetes shapes, reviews manifests before merge, gates deployment through CI/CD checks, shows small YAML snippets learners can recognize, gives a one-minute script, interview rubric, command ladder, resource decision guide, manifest smell catalog, practice drills, production readiness score, SLO observability plan, and deployment review questions, controls cost with capacity planning, uses image and security-context guardrails, uses probes to control traffic and restarts, needs resource requests and limits for scheduling, scales from workload signals, and needs careful storage planning for stateful workloads.',
+            'steps' => [
+                'Create a Form Request for Kubernetes analogy input.',
+                'Create a service that returns the ship analogy, Kubernetes resource map, control loop, workload plan, probe plan, scaling plan, resource plan, rollout plan, ConfigMap and Secret guidance, namespace and RBAC guidance, network policy guidance, observability guidance, cost and capacity guidance, availability guidance, graceful shutdown guidance, image security guidance, backend runtime guidance, manifest review checklist, CI/CD gate plan, YAML snippets, one-minute script, interview rubric, command ladder, resource decision guide, manifest smell catalog, practice drills, production readiness score, SLO observability plan, deployment review questions, traffic flow, manifest outline, kubectl commands, troubleshooting runbook, failure diagnosis matrix, misconceptions, and interview answer.',
+                'Expose the plan through an API endpoint.',
+                'Render a workbench that calls the API with web, worker, and scheduled-job presets.',
+                'Write feature tests for public web API, stateful scheduled job, and validation cases.',
+            ],
+            'files' => [
+                'app/Http/Requests/Api/PlanKubernetesAnalogyRequest.php',
+                'app/Http/Controllers/Api/KubernetesAnalogyPlanController.php',
+                'app/Services/Practice/KubernetesAnalogyPlanService.php',
+                'resources/views/practice/workbench/kubernetes-analogy-plan.blade.php',
+                'tests/Feature/KubernetesAnalogyPlanWorkbenchTest.php',
+            ],
+            'commands' => [
+                'php artisan test --filter KubernetesAnalogyPlan',
+                'php artisan route:list --path=kubernetes-analogy-plan',
+                'vendor\\bin\\pint --test',
+            ],
+            'workbench' => [
+                'label' => 'Run the Kubernetes analogy workbench',
+                'route' => 'practice.workbench.kubernetes-analogy-plan',
+            ],
+            'api' => [
+                'method' => 'POST',
+                'path' => '/api/practice/kubernetes-analogy-plan',
+                'payload' => [
+                    'learning_goal' => 'one-minute',
+                    'app_type' => 'web-api',
+                    'replicas' => 3,
+                    'needs_external_access' => true,
+                    'has_stateful_data' => false,
+                ],
+            ],
+            'acceptance' => [
+                'The analogy maps command ship to control plane, cargo ship to worker node, container cargo to container, stack to pod, shipping order to deployment, and harbor address to service.',
+                'The plan explains desired state, scheduling, container startup, reconciliation, service traffic, probes, resource requests and limits, scaling signals, rollout and rollback commands, ConfigMap and Secret usage, namespace and RBAC boundaries, network policies, observability signals, failure diagnosis for ImagePullBackOff, OOMKilled, probe failure, Forbidden, DNS timeout, and volume mount failure, backend runtime concerns such as migrations, queue workers, sessions, cache, readiness dependencies, and scheduled tasks, manifest review checks, CI/CD dry-run and policy gates, YAML snippets, one-minute script, interview rubric, command ladder, resource decision guide, manifest smell catalog, practice drills, production readiness score, SLO observability plan, deployment review questions, cost and capacity controls, PodDisruptionBudget, graceful shutdown, image tags, pull policy, security context, manifests, kubectl commands, troubleshooting, and beginner misconceptions.',
+                'Stateful workloads warn about persistent storage instead of relying on disposable pod files.',
+                'Page and API tests both pass.',
+            ],
+            'starter_code' => <<<'YAML'
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app
+spec:
+  replicas: 3
+YAML,
+        ],
+        [
+            'slug' => 'sql-injection-defense-plan-workbench',
+            'track' => 'security-auth',
+            'title' => 'Plan SQL Injection prevention with parameterized queries',
+            'objective' => 'Practice explaining SQL Injection, replacing string SQL with bindings, allowlisting dynamic identifiers, and testing malicious payloads.',
+            'why' => 'This practices a common interview and production security topic: user input must stay data, SQL structure must stay fixed, and raw query escape hatches need explicit review.',
+            'steps' => [
+                'Choose the query style, input surface, dynamic SQL part, and whether bindings are already used.',
+                'Generate risk, recommendation, safe query patterns, allowlist review, and malicious payload tests.',
+                'Rewrite unsafe raw SQL into query builder or bound raw SQL.',
+                'Add tests with payloads such as `OR 1=1` and unsafe sort inputs.',
+            ],
+            'files' => [
+                'data/laravel/auth-security.en.json',
+                'data/laravel/auth-security.vi.json',
+                'app/Http/Requests/Api/PlanSqlInjectionDefenseRequest.php',
+                'app/Http/Controllers/Api/SqlInjectionDefensePlanController.php',
+                'app/Services/Practice/SqlInjectionDefensePlanService.php',
+                'resources/views/practice/workbench/sql-injection-defense-plan.blade.php',
+                'tests/Feature/SqlInjectionDefensePlanWorkbenchTest.php',
+                'tests/Unit/Practice/SqlInjectionDefensePlanServiceTest.php',
+            ],
+            'commands' => [
+                'php artisan test --filter SqlInjectionDefensePlan',
+                'php artisan route:list --path=sql-injection-defense-plan',
+                'vendor\\bin\\pint --test',
+            ],
+            'workbench' => [
+                'label' => 'Run the SQL Injection defense workbench',
+                'route' => 'practice.workbench.sql-injection-defense-plan',
+            ],
+            'api' => [
+                'method' => 'POST',
+                'path' => '/api/practice/sql-injection-defense-plan',
+                'payload' => [
+                    'query_name' => 'User Search',
+                    'query_style' => 'raw-sql',
+                    'input_surface' => 'search-box',
+                    'dynamic_parts' => 'order-by',
+                    'uses_bindings' => false,
+                ],
+            ],
+            'acceptance' => [
+                'The answer explains how SQL Injection turns input into SQL logic.',
+                'The safer pattern uses parameter bindings for values.',
+                'Dynamic identifiers use allowlists instead of arbitrary request input.',
+                'Tests include malicious payloads and prove no extra rows or unsafe sorting occur.',
+            ],
+            'starter_code' => <<<'PHP'
+// Unsafe
+$sql = "select * from users where email = '".$request->input('email')."'";
+
+// Safer
+$users = DB::select(
+    'select * from users where email = ?',
+    [$request->input('email')]
+);
+PHP,
+        ],
+        [
+            'slug' => 'csrf-protection-plan-workbench',
+            'track' => 'security-auth',
+            'title' => 'Plan CSRF protection for browser and cookie flows',
+            'objective' => 'Practice explaining CSRF, choosing token and SameSite controls, and testing missing or stale CSRF tokens.',
+            'why' => 'This practices a common Laravel security topic: browsers send cookies automatically, so state-changing web flows need request-intent proof.',
+            'steps' => [
+                'Choose the client type, state-changing method, SameSite setting, and whether token validation already exists.',
+                'Generate a risk score, attack flow, controls, SameSite review, and test matrix.',
+                'Explain why tokens, SameSite cookies, and safe HTTP methods solve different parts of the problem.',
+                'Write feature tests for missing tokens, stale tokens, and unsafe GET mutations.',
+            ],
+            'files' => [
+                'data/laravel/auth-security.en.json',
+                'data/laravel/auth-security.vi.json',
+                'app/Http/Requests/Api/PlanCsrfProtectionRequest.php',
+                'app/Http/Controllers/Api/CsrfProtectionPlanController.php',
+                'app/Services/Practice/CsrfProtectionPlanService.php',
+                'resources/views/practice/workbench/csrf-protection-plan.blade.php',
+                'tests/Feature/CsrfProtectionPlanWorkbenchTest.php',
+                'tests/Unit/Practice/CsrfProtectionPlanServiceTest.php',
+            ],
+            'commands' => [
+                'php artisan test --filter CsrfProtectionPlan',
+                'php artisan route:list --path=csrf-protection-plan',
+                'vendor\\bin\\pint --test',
+            ],
+            'workbench' => [
+                'label' => 'Run the CSRF protection workbench',
+                'route' => 'practice.workbench.csrf-protection-plan',
+            ],
+            'api' => [
+                'method' => 'POST',
+                'path' => '/api/practice/csrf-protection-plan',
+                'payload' => [
+                    'flow_name' => 'Profile Update',
+                    'client_type' => 'blade-web',
+                    'state_changing_method' => 'post',
+                    'has_csrf_token' => true,
+                    'same_site' => 'lax',
+                    'uses_cookie_auth' => true,
+                ],
+            ],
+            'acceptance' => [
+                'The answer explains CSRF as an unwanted state-changing request from a logged-in browser.',
+                'The plan distinguishes CSRF tokens from SameSite cookie behavior.',
+                'Unsafe GET mutations are flagged before merge.',
+                'Tests include missing-token and stale-token behavior.',
+            ],
+            'starter_code' => <<<'BLADE'
+<form method="POST" action="{{ route('profile.update') }}">
+    @csrf
+    @method('PATCH')
+    <input name="name" value="{{ old('name', $user->name) }}">
+    <button type="submit">Save</button>
+</form>
+BLADE,
+        ],
+        [
+            'slug' => 'idor-access-review-workbench',
+            'track' => 'security-auth',
+            'title' => 'Review IDOR object-level authorization',
+            'objective' => 'Practice finding Insecure Direct Object Reference risk, modeling attacker ID swaps, designing scoped queries, policies, denial tests, merge evidence, and monitoring guidance.',
+            'why' => 'This practices a common API security failure: authentication is not enough when a user-controlled object ID can resolve another user, tenant, team, file, export, or nested resource.',
+            'steps' => [
+                'Choose the resource, route pattern, access model, and current authorization controls.',
+                'Generate risk drivers, route surface review, abuse cases, authorization map, remediation plan, and 403 versus 404 guidance.',
+                'Create a Laravel policy and scoped query before returning the object.',
+                'Add two-user or two-tenant feature tests for read, update, delete, download, and export denial paths.',
+                'Keep route-list, replay notes, passing tests, and monitoring guidance as merge evidence.',
+            ],
+            'files' => [
+                'data/laravel/auth-security.en.json',
+                'data/laravel/auth-security.vi.json',
+                'app/Http/Requests/Api/ReviewIdorAccessRequest.php',
+                'app/Http/Controllers/Api/IdorAccessReviewController.php',
+                'app/Services/Practice/IdorAccessReviewService.php',
+                'resources/views/practice/workbench/idor-access-review.blade.php',
+                'tests/Feature/IdorAccessReviewWorkbenchTest.php',
+            ],
+            'commands' => [
+                'php artisan test --filter IdorAccessReviewWorkbenchTest',
+                'php artisan route:list --path=idor-access-review',
+                'vendor\\bin\\pint --test',
+            ],
+            'workbench' => [
+                'label' => 'Run the IDOR access review workbench',
+                'route' => 'practice.workbench.idor-access-review',
+            ],
+            'api' => [
+                'method' => 'POST',
+                'path' => '/api/practice/idor-access-review',
+                'payload' => [
+                    'resource_name' => 'Invoice',
+                    'route_pattern' => '/api/invoices/{invoice}',
+                    'access_model' => 'tenant',
+                    'uses_policy' => false,
+                    'query_scoped' => false,
+                    'attacker_changes_id' => true,
+                ],
+            ],
+            'acceptance' => [
+                'The review explains IDOR as object-level authorization failure.',
+                'The plan scopes the query before returning the object.',
+                'Policies or Gates check the exact object, not only the logged-in user.',
+                'Tests prove another user or tenant cannot read, update, delete, download, or export the object.',
+                'Merge evidence includes replay notes, route-list output, passing denial tests, and monitoring guidance.',
+            ],
+            'starter_code' => <<<'PHP'
+Route::get('/api/invoices/{invoice}', function (Invoice $invoice) {
+    Gate::authorize('view', $invoice);
+
+    return new InvoiceResource($invoice);
+});
+
+public function view(User $user, Invoice $invoice): bool
+{
+    return $user->tenant_id === $invoice->tenant_id;
 }
 PHP,
         ],
@@ -3271,6 +4057,59 @@ Cache::remember('practice:dashboard:user-42', now()->addMinutes(15), function ()
 PHP,
         ],
         [
+            'slug' => 'lsm-tree-plan-workbench',
+            'track' => 'testing-quality',
+            'title' => 'Explain NoSQL write speed with LSM Trees',
+            'objective' => 'Explain why many NoSQL engines are fast for writes by modeling the LSM Tree path through WAL, memtable, immutable segments, compaction, and Bloom Filters.',
+            'why' => 'This practices storage-engine performance reasoning: schema flexibility is not the speed explanation, sequential writes matter, compaction is a tradeoff, Bloom Filters reduce negative lookup cost, architecture decisions need recorded consequences, cost must include memory/disk/IO/operations, engine comparison must separate LSM, B-tree, search projection, and cache responsibilities, rollout needs model, benchmark, dual-read, and ramp phases, range scans need key design, data model review must catch hot partitions, query contracts should ban broad scans, tombstones and TTL require lifecycle policy, capacity must include memory and disk headroom, SLO guardrails must define p99 latency, compaction debt, disk headroom, read-miss efficiency, and tombstone pressure, decisions should follow workload evidence, benchmark plans must prove claims, anti-patterns should be avoided, incident runbooks should be ready, workload fit must be explicit, interview answers need structure, amplification must be separated, failure modes must be anticipated, and observability must track amplification and tail latency.',
+            'steps' => [
+                'Create a Form Request for LSM Tree storage-engine input.',
+                'Create a service that explains architecture decision record, write path, read path, component roles, compaction tradeoffs, Bloom Filter impact, amplification model, range scan plan, tombstone TTL policy, capacity plan, cost model, engine comparison, decision rules, benchmark plan, rollout plan, anti-patterns, incident runbook, workload fit matrix, data model review, query contract, interview checklist, failure modes, workload score, tuning checklist, SLO guardrails, observability, and an interview-ready answer.',
+                'Expose the plan through an API endpoint.',
+                'Render a workbench that calls the API.',
+                'Write feature tests for write-heavy, missing Bloom Filter, and validation cases.',
+            ],
+            'files' => [
+                'app/Http/Requests/Api/PlanLsmTreeRequest.php',
+                'app/Http/Controllers/Api/LsmTreePlanController.php',
+                'app/Services/Practice/LsmTreePlanService.php',
+                'resources/views/practice/workbench/lsm-tree-plan.blade.php',
+                'tests/Feature/LsmTreePlanWorkbenchTest.php',
+            ],
+            'commands' => [
+                'php artisan test --filter LsmTreePlan',
+                'php artisan route:list --path=lsm-tree-plan',
+                'vendor\\bin\\pint --test',
+            ],
+            'workbench' => [
+                'label' => 'Run the LSM Tree workbench',
+                'route' => 'practice.workbench.lsm-tree-plan',
+            ],
+            'api' => [
+                'method' => 'POST',
+                'path' => '/api/practice/lsm-tree-plan',
+                'payload' => [
+                    'workload_pattern' => 'write-heavy',
+                    'write_rate_per_second' => 25000,
+                    'read_miss_ratio' => 'high',
+                    'compaction_strategy' => 'leveled',
+                    'bloom_filter_enabled' => 'yes',
+                    'schema_expectation' => 'schema-flexible',
+                ],
+            ],
+            'acceptance' => [
+                'The answer rejects the myth that NoSQL is fast simply because it lacks schema.',
+                'The plan explains WAL, memtable, immutable segment flush, compaction, and Bloom Filter roles.',
+                'The plan scores workload fit and calls out ADR consequences, cost model, engine comparison, rollout phases, SLO guardrails, read amplification, write amplification, space amplification, range scan risks, tombstone TTL risks, capacity planning, decision rules, benchmark scenarios, anti-patterns, incident response, fit matrix, data model review, query contract, interview answer structure, compaction pressure, and common failure modes.',
+                'Page and API tests both pass.',
+            ],
+            'starter_code' => <<<'TEXT'
+write -> WAL -> memtable -> immutable sorted segment
+background -> compaction merges segments and removes old versions
+read miss -> Bloom Filter can skip segments without touching disk
+TEXT,
+        ],
+        [
             'slug' => 'file-storage-plan-workbench',
             'track' => 'laravel-http',
             'title' => 'Plan file storage and upload lifecycle',
@@ -3374,6 +4213,592 @@ RateLimiter::for('password-reset-request', function (Request $request) {
     return Limit::perMinutes(10, 5)->by(optional($request->user())->id ?: $request->ip());
 });
 PHP,
+        ],
+        [
+            'slug' => 'jwt-token-storage-plan-workbench',
+            'track' => 'security-auth',
+            'title' => 'Choose JWT storage by threat model',
+            'objective' => 'Compare localStorage, HttpOnly cookies, bearer tokens, and platform storage before choosing where JWTs should live or how existing storage should migrate.',
+            'why' => 'This practices interview-ready auth security reasoning: XSS exposure, CSRF controls, token lifetime, refresh-token rotation, revocation, decision matrices, risk scoring, migration planning, and client type boundaries.',
+            'steps' => [
+                'Create a Form Request for token-storage planning input.',
+                'Create a service that recommends storage from client type, token lifetime, XSS risk, CSRF controls, and refresh-token usage.',
+                'Return a decision matrix that explains how each input signal affects the recommendation.',
+                'Add risk scoring and review checklist output so the recommendation is actionable.',
+                'Return implementation snippets for cookie, bearer, localStorage demo, and platform storage flows.',
+                'Generate migration steps from the current storage pattern to the recommended storage pattern.',
+                'Add scenario presets to the workbench so learners can compare common client types quickly.',
+                'Expose the plan through an API endpoint.',
+                'Render a workbench that calls the API.',
+                'Write feature and unit tests for secure-cookie, localStorage demo, mobile, and validation cases.',
+            ],
+            'files' => [
+                'app/Http/Requests/Api/PlanJwtTokenStorageRequest.php',
+                'app/Http/Controllers/Api/JwtTokenStoragePlanController.php',
+                'app/Services/Practice/JwtTokenStoragePlanService.php',
+                'resources/views/practice/workbench/jwt-token-storage-plan.blade.php',
+                'tests/Feature/JwtTokenStoragePlanWorkbenchTest.php',
+                'tests/Unit/Practice/JwtTokenStoragePlanServiceTest.php',
+            ],
+            'commands' => [
+                'php artisan test --filter JwtTokenStoragePlan',
+                'php artisan route:list --path=jwt-token-storage-plan',
+                'vendor\\bin\\pint --test',
+            ],
+            'workbench' => [
+                'label' => 'Run the JWT storage workbench',
+                'route' => 'practice.workbench.jwt-token-storage-plan',
+            ],
+            'api' => [
+                'method' => 'POST',
+                'path' => '/api/practice/jwt-token-storage-plan',
+                'payload' => [
+                    'client_type' => 'same-domain-spa',
+                    'current_storage' => 'localStorage',
+                    'token_lifetime' => 'minutes',
+                    'xss_risk' => 'high',
+                    'csrf_controls' => 'strong',
+                    'refresh_token' => 'yes',
+                ],
+            ],
+            'acceptance' => [
+                'Browser flows with strong CSRF controls recommend HttpOnly Secure SameSite cookies.',
+                'localStorage is limited to low-risk demo contexts.',
+                'Mobile clients recommend secure platform storage.',
+                'The plan includes controls, tests, tradeoffs, a decision matrix, risk scoring, a review checklist, implementation snippets, migration steps, and an interview-ready answer.',
+            ],
+            'starter_code' => <<<'HTTP'
+Set-Cookie: refresh_token=...; HttpOnly; Secure; SameSite=Lax; Path=/auth/refresh
+
+Authorization: Bearer <short-lived-access-token>
+HTTP,
+        ],
+        [
+            'slug' => 'jwt-revocation-plan-workbench',
+            'track' => 'security-auth',
+            'title' => 'Plan JWT revocation with API and database checks',
+            'objective' => 'Design how to invalidate JWT access after logout, password change, role change, device loss, or refresh-token reuse.',
+            'why' => 'This practices the production tradeoff behind stateless JWTs: a token cannot be revoked before expiry unless the server checks additional state such as a jti denylist, token version, or refresh-token family.',
+            'steps' => [
+                'Create a Form Request for revocation planning input.',
+                'Create a service that chooses denylist, token-version, refresh-rotation, or short-lived access-token strategy.',
+                'Return an architecture summary that states the decision, main tradeoff, poor-fit warning, and next design decision.',
+                'Return a threat model for access tokens, refresh-token families, user authorization state, and browser sessions.',
+                'Return an incident playbook for triage, containment, recovery, and evidence capture after suspected token compromise.',
+                'Return database schema notes for revoked token records, user security versions, and refresh-token families.',
+                'Return a retention plan for indexes, pruning, audit metadata, and revocation store capacity.',
+                'Return a decision matrix that explains how client type, token lifetime, store choice, logout requirement, and refresh rotation affect the plan.',
+                'Return a risk score so learners can compare day-long tokens, missing refresh rotation, cache eviction, and stateful enforcement tradeoffs.',
+                'Return API endpoint guidance for login, logout, refresh, and logout-all flows.',
+                'Return middleware checks that verify signature, expiry, jti, server-side revocation state, and authorization scope.',
+                'Return a rollout plan for instrument, dual-read, enforce, and harden phases.',
+                'Return an observability plan with metrics, structured log events, and alerts for revoked-token enforcement.',
+                'Return a failure-mode plan for revocation store outages, stale cache entries, refresh-token reuse spikes, and token-version drift.',
+                'Return a structured test matrix for feature, security, operations, privacy, and authorization coverage.',
+                'Return a review checklist for token identity, server-side state, retention, observability, and refresh-token reuse.',
+                'Add scenario presets to the workbench for logout everywhere, role change, lost device, and low-risk API cases.',
+                'Expose the plan through an API endpoint.',
+                'Render a workbench that calls the API.',
+                'Write feature and unit tests for denylist, token-version, and validation cases.',
+            ],
+            'files' => [
+                'app/Http/Requests/Api/PlanJwtRevocationRequest.php',
+                'app/Http/Controllers/Api/JwtRevocationPlanController.php',
+                'app/Services/Practice/JwtRevocationPlanService.php',
+                'resources/views/practice/workbench/jwt-revocation-plan.blade.php',
+                'tests/Feature/JwtRevocationPlanWorkbenchTest.php',
+                'tests/Unit/Practice/JwtRevocationPlanServiceTest.php',
+            ],
+            'commands' => [
+                'php artisan test --filter JwtRevocationPlan',
+                'php artisan route:list --path=jwt-revocation-plan',
+                'vendor\\bin\\pint --test',
+            ],
+            'workbench' => [
+                'label' => 'Run the JWT revocation workbench',
+                'route' => 'practice.workbench.jwt-revocation-plan',
+            ],
+            'api' => [
+                'method' => 'POST',
+                'path' => '/api/practice/jwt-revocation-plan',
+                'payload' => [
+                    'client_type' => 'browser-spa',
+                    'revocation_model' => 'denylist',
+                    'token_lifetime' => 'hours',
+                    'revocation_store' => 'database',
+                    'immediate_logout' => 'yes',
+                    'refresh_rotation' => 'yes',
+                ],
+            ],
+            'acceptance' => [
+                'Denylist plans use a jti lookup and revoked token storage until token expiry.',
+                'Token-version plans explain user-wide invalidation after role, password, or account-risk changes.',
+                'Refresh-token rotation plans explain reuse detection and family revocation.',
+                'The plan includes an architecture summary, threat model, incident playbook, decision matrix, risk score, database schema notes, retention plan, API endpoints, middleware flow, revocation steps, rollout plan, observability plan, failure-mode plan, test matrix, review checklist, risk notes, snippets, tests, and an interview-ready answer.',
+            ],
+            'starter_code' => <<<'PHP'
+Schema::create('revoked_tokens', function (Blueprint $table) {
+    $table->string('jti')->primary();
+    $table->foreignId('user_id')->index();
+    $table->timestamp('revoked_at');
+    $table->timestamp('expires_at')->index();
+});
+PHP,
+        ],
+        [
+            'slug' => 'oauth-flow-plan-workbench',
+            'track' => 'security-auth',
+            'title' => 'Replace OAuth Implicit Flow with Authorization Code and PKCE',
+            'objective' => 'Compare OAuth2 Implicit Flow with Authorization Code flow and design a migration path toward Authorization Code with PKCE or a confidential backend client.',
+            'why' => 'This practices modern OAuth security reasoning: front-channel token exposure, architecture decision records, client compatibility, threat modeling, provider capability checks, token lifetime policy, scope consent matrix, authorize request hardening, token endpoint contract, frontend callback cleanup, ID-token validation, phased rollout, client cutover, observability, failure modes, incident response, deprecation policy, security test matrix, callback validation, PKCE checks, public versus confidential clients, browser URL leakage, refresh-token rotation, migration from response_type=token, code examples, review checks, and interview-ready explanation.',
+            'steps' => [
+                'Create a Form Request for OAuth flow planning input.',
+                'Create a service that recommends Authorization Code with PKCE, confidential Authorization Code, or blocking until PKCE support exists.',
+                'Return architecture decision record, compatibility notes, flow comparison, risk score, threat model, provider capability matrix, reasons Implicit is no longer recommended, sequence steps, callback validation rules, PKCE checklist, token lifetime policy, scope consent matrix, authorize request hardening, token endpoint contract, frontend cleanup plan, ID-token validation rules, implementation snippets, migration plan, rollout plan, client cutover checklist, observability plan, failure modes, incident response playbook, deprecation policy, security test matrix, review checklist, tests, and an interview-ready answer.',
+                'Add scenario presets for legacy SPA, modern SPA, server-rendered backend, and mobile app cases.',
+                'Expose the plan through an API endpoint.',
+                'Render a workbench that calls the API.',
+                'Write feature tests for PKCE migration, backend confidential clients, and validation cases.',
+            ],
+            'files' => [
+                'app/Http/Requests/Api/PlanOauthFlowRequest.php',
+                'app/Http/Controllers/Api/OauthFlowPlanController.php',
+                'app/Services/Practice/OauthFlowPlanService.php',
+                'resources/views/practice/workbench/oauth-flow-plan.blade.php',
+                'tests/Feature/OauthFlowPlanWorkbenchTest.php',
+            ],
+            'commands' => [
+                'php artisan test --filter OauthFlowPlan',
+                'php artisan route:list --path=oauth-flow-plan',
+                'vendor\\bin\\pint --test',
+            ],
+            'workbench' => [
+                'label' => 'Run the OAuth flow workbench',
+                'route' => 'practice.workbench.oauth-flow-plan',
+            ],
+            'api' => [
+                'method' => 'POST',
+                'path' => '/api/practice/oauth-flow-plan',
+                'payload' => [
+                    'client_type' => 'legacy-spa',
+                    'current_flow' => 'implicit',
+                    'can_keep_secret' => 'no',
+                    'pkce_supported' => 'yes',
+                    'refresh_token_needed' => 'yes',
+                    'browser_history_risk' => 'high',
+                ],
+            ],
+            'acceptance' => [
+                'Legacy SPA clients using Implicit Flow recommend Authorization Code with PKCE.',
+                'Server-rendered backend clients that can keep secrets recommend confidential Authorization Code flow.',
+                'The plan explains why front-channel token delivery is risky and why PKCE replaced the old Implicit workaround.',
+                'The plan includes architecture decision record, compatibility notes, flow comparison, risk score, threat model, provider capability matrix, reasons Implicit is deprecated, sequence steps, callback validation rules, PKCE checklist, token lifetime policy, scope consent matrix, authorize request hardening, token endpoint contract, frontend cleanup plan, ID-token validation rules, code snippets, migration steps, rollout plan, client cutover checklist, observability plan, failure modes, incident response playbook, deprecation policy, security test matrix, review checklist, tests, and an interview-ready answer.',
+            ],
+            'starter_code' => <<<'TEXT'
+Legacy:
+GET /authorize?response_type=token&client_id=spa&redirect_uri=https://app.example/callback
+
+Modern:
+GET /authorize?response_type=code&client_id=spa&code_challenge=...&code_challenge_method=S256
+TEXT,
+        ],
+        [
+            'slug' => 'graphql-rest-decision-workbench',
+            'track' => 'api-integration',
+            'title' => 'Choose GraphQL or REST from API constraints',
+            'objective' => 'Compare REST endpoint contracts with GraphQL schema/query contracts and produce a practical implementation plan.',
+            'why' => 'This practices API architecture tradeoffs: endpoint versus schema contracts, client-selected fields, overfetching, HTTP cache semantics, resolver boundaries, N+1 risk, query-cost limits, field-level authorization, Laravel service boundaries, review checks, and interview-ready explanation.',
+            'steps' => [
+                'Create a Form Request for API design signals.',
+                'Create a service that recommends REST or GraphQL from client shape, cache needs, relationship depth, team maturity, and authorization complexity.',
+                'Return decision matrix, risk score, contract shape, Laravel boundaries, caching plan, authorization plan, N+1 plan, implementation phases, review checklist, tests, and interview answer.',
+                'Expose the plan through an API endpoint.',
+                'Render a workbench with scenario presets.',
+                'Write feature and unit tests for GraphQL, REST, and validation cases.',
+            ],
+            'files' => [
+                'app/Http/Requests/Api/PlanGraphqlRestDecisionRequest.php',
+                'app/Http/Controllers/Api/GraphqlRestDecisionController.php',
+                'app/Services/Practice/GraphqlRestDecisionService.php',
+                'resources/views/practice/workbench/graphql-rest-decision.blade.php',
+                'tests/Feature/GraphqlRestDecisionWorkbenchTest.php',
+                'tests/Unit/Practice/GraphqlRestDecisionServiceTest.php',
+            ],
+            'commands' => [
+                'php artisan test --filter GraphqlRestDecision',
+                'php artisan route:list --path=graphql-rest-decision',
+                'vendor\\bin\\pint --test',
+            ],
+            'workbench' => [
+                'label' => 'Run the GraphQL REST decision workbench',
+                'route' => 'practice.workbench.graphql-rest-decision',
+            ],
+            'api' => [
+                'method' => 'POST',
+                'path' => '/api/practice/graphql-rest-decision',
+                'payload' => [
+                    'client_type' => 'spa-dashboard',
+                    'data_shape' => 'screen-composition',
+                    'field_flexibility' => 'high',
+                    'cache_priority' => 'low',
+                    'relationship_depth' => 'deep',
+                    'team_graphql_experience' => 'some',
+                    'authorization_complexity' => 'medium',
+                ],
+            ],
+            'acceptance' => [
+                'Graph-shaped dashboard scenarios recommend GraphQL with resolver, cache, authorization, and query-cost guardrails.',
+                'Public CRUD APIs with high cache priority recommend REST with HTTP contract controls.',
+                'The plan includes decision matrix, risk score, contract shape, Laravel boundaries, caching plan, authorization plan, N+1 plan, implementation phases, review checklist, tests, and interview answer.',
+            ],
+            'starter_code' => <<<'TEXT'
+REST:
+GET /api/projects?include=owner,stats&fields=id,title,status
+
+GraphQL:
+query Dashboard { viewer { id name teams { id name projects { id title } } } }
+TEXT,
+        ],
+        [
+            'slug' => 'graph-traversal-plan-workbench',
+            'track' => 'testing-quality',
+            'title' => 'Plan BFS and DFS traversal decisions',
+            'objective' => 'Compare BFS and DFS for API crawling, dependency graphs, tree menus, and database hierarchy queries.',
+            'why' => 'This practices algorithm choice as production engineering: queue versus stack, shortest unweighted paths, visited sets, cycle safety, max depth, fan-out limits, pagination, memory pressure, and tests that prove traversal behavior.',
+            'steps' => [
+                'Identify whether the goal needs nearest result, shortest unweighted path, full branch exploration, or subtree validation.',
+                'Choose BFS when level order, fewest hops, or nearest match matters.',
+                'Choose DFS when branch exploration, dependency reasoning, recursive validation, or backtracking matters.',
+                'Add visited-set, max-depth, max-node, pagination, and rate-limit guardrails before touching real APIs or database hierarchies.',
+                'Write tests for cycles, depth limits, fan-out limits, and expected traversal order.',
+            ],
+            'files' => [
+                'app/Services/Practice/GraphTraversalPlanService.php',
+                'app/Http/Requests/Api/PlanGraphTraversalRequest.php',
+                'resources/views/practice/workbench/graph-traversal-plan.blade.php',
+                'tests/Feature/GraphTraversalPlanWorkbenchTest.php',
+                'tests/Unit/Practice/GraphTraversalPlanServiceTest.php',
+            ],
+            'commands' => [
+                'php artisan test --filter GraphTraversalPlanWorkbenchTest',
+                'php artisan route:list --path=graph-traversal-plan',
+                'vendor\\bin\\pint --test',
+            ],
+            'workbench' => [
+                'label' => 'Run the traversal planning workbench',
+                'route' => 'practice.workbench.graph-traversal-plan',
+            ],
+            'api' => [
+                'method' => 'POST',
+                'path' => '/api/practice/graph-traversal-plan',
+                'payload' => [
+                    'scenario_name' => 'API Resource Crawl',
+                    'goal' => 'nearest-match',
+                    'graph_shape' => 'api-links',
+                    'node_count' => 500,
+                    'max_depth' => 4,
+                    'weighted_edges' => false,
+                    'production_context' => 'api-crawling',
+                ],
+            ],
+            'acceptance' => [
+                'Nearest or shortest unweighted path cases choose BFS.',
+                'Branch exploration or nested subtree validation cases choose DFS.',
+                'The plan names queue, stack or recursion, visited set, cycle checks, depth limits, fan-out limits, API pagination, and database hierarchy risk.',
+                'Tests cover traversal order, cycle protection, and failure boundaries.',
+            ],
+            'starter_code' => <<<'PHP'
+$visited = [$start => true];
+$queue = [$start]; // BFS frontier for nearest or shortest unweighted path.
+
+while ($queue !== []) {
+    $node = array_shift($queue);
+
+    foreach ($graph[$node] ?? [] as $next) {
+        if (! isset($visited[$next])) {
+            $visited[$next] = true;
+            $queue[] = $next;
+        }
+    }
+}
+PHP,
+        ],
+        [
+            'slug' => 'ai-hallucination-guard-plan-workbench',
+            'track' => 'ai-review',
+            'title' => 'Plan guardrails against AI hallucination in code',
+            'objective' => 'Design evidence-first controls that stop AI-generated code or factual answers from being accepted without repo facts, source data, runtime checks, and human review.',
+            'why' => 'This practices a concrete AI coding safety workflow: assumptions, evidence sources, safe output contracts, escalation policy, evidence ledger templates, runtime verification commands, claim validation rules, release readiness, score breakdown, decision matrix, data safety, prompt examples, version checks, prompt contracts, code controls, review lenses, ownership, maturity roadmap, required artifacts, CI policy, observability, rollback, red-team scenarios, automation hooks, and verification commands.',
+            'steps' => [
+                'Create a Form Request for AI hallucination guard input.',
+                'Create a service that scores risk and returns evidence-first controls.',
+                'Return safe output contracts, escalation policy, evidence ledger templates, runtime verification commands, release readiness, claim validation rules, score breakdown, decision matrix, hallucination vectors, guardrails, code controls, required artifacts, CI policy, data-safety plan, prompt examples, verification steps, observability plan, rollback playbook, ownership model, maturity roadmap, prompt contract, review checklist, red-team scenarios, automation hooks, tests, and an interview-ready answer.',
+                'Expose the plan through an API endpoint.',
+                'Render a workbench that calls the API with scenario presets.',
+                'Write feature and unit tests for high-risk generation, data-answer, controlled review, and validation cases.',
+            ],
+            'files' => [
+                'app/Http/Requests/Api/PlanAiHallucinationGuardRequest.php',
+                'app/Http/Controllers/Api/AiHallucinationGuardPlanController.php',
+                'app/Services/Practice/AiHallucinationGuardPlanService.php',
+                'resources/views/practice/workbench/ai-hallucination-guard-plan.blade.php',
+                'tests/Feature/AiHallucinationGuardPlanWorkbenchTest.php',
+                'tests/Unit/Practice/AiHallucinationGuardPlanServiceTest.php',
+            ],
+            'commands' => [
+                'php artisan test --filter AiHallucinationGuardPlan',
+                'php artisan route:list --path=ai-hallucination-guard-plan',
+                'vendor\\bin\\pint --test',
+            ],
+            'workbench' => [
+                'label' => 'Run the AI hallucination guard workbench',
+                'route' => 'practice.workbench.ai-hallucination-guard-plan',
+            ],
+            'api' => [
+                'method' => 'POST',
+                'path' => '/api/practice/ai-hallucination-guard-plan',
+                'payload' => [
+                    'ai_task' => 'code-generation',
+                    'risk_level' => 'high',
+                    'evidence_sources' => 'partial',
+                    'runtime_checks' => 'yes',
+                    'human_review' => 'yes',
+                ],
+            ],
+            'acceptance' => [
+                'High-risk code generation with partial evidence is scored high risk.',
+                'Data-answer work without evidence requires retrieval or source IDs before showing factual answers.',
+                'The plan includes summary, risk score, score breakdown, decision matrix, acceptance gate, release readiness, evidence requirements, claim validation rules, evidence ledger template, required artifacts, CI policy, data-safety plan, prompt examples, hallucination vectors, guardrails, code controls, verification plan, runtime verification commands, observability plan, rollback playbook, ownership model, escalation policy, maturity roadmap, implementation steps, red-team scenarios, automation hooks, prompt contract, safe output contract, review checklist, tests, and an interview-ready answer.',
+            ],
+            'starter_code' => <<<'TEXT'
+Do not patch yet.
+List assumptions and uncertain claims first.
+For each factual claim, cite a repo file, test, log, docs page, or source row.
+TEXT,
+        ],
+        [
+            'slug' => 'ai-cloud-interview-rubric-workbench',
+            'track' => 'ai-review',
+            'title' => 'Score practical AI usage in Cloud Engineer interviews',
+            'objective' => 'Evaluate whether a Cloud Engineer candidate really uses AI at work by scoring concrete task evidence, prompt workflow, IaC review, failure stories, verification, AWS Documentation conflicts, and team enablement.',
+            'why' => 'This turns the AI interview question pack into a repeatable scoring tool. It prevents interviewers from rewarding generic AI enthusiasm and instead checks production-safe behavior: source-of-truth verification, Terraform and CloudFormation review, failure stories, and team guardrails.',
+            'steps' => [
+                'Create a Form Request for candidate AI usage signals.',
+                'Create a service that scores practical AI maturity across interview dimensions.',
+                'Return dimensions, red flags, green flags, follow-up questions, interviewer traps, calibration notes, team rollout probe, and verification commands.',
+                'Expose the rubric through an API endpoint.',
+                'Render a workbench that calls the API with candidate presets.',
+                'Write feature and unit tests for strong, surface-level, and invalid candidate signals.',
+            ],
+            'files' => [
+                'app/Http/Requests/Api/ScoreAiCloudInterviewRubricRequest.php',
+                'app/Http/Controllers/Api/AiCloudInterviewRubricController.php',
+                'app/Services/Practice/AiCloudInterviewRubricService.php',
+                'resources/views/practice/workbench/ai-cloud-interview-rubric.blade.php',
+                'tests/Feature/AiCloudInterviewRubricWorkbenchTest.php',
+                'tests/Unit/Practice/AiCloudInterviewRubricServiceTest.php',
+            ],
+            'commands' => [
+                'php artisan test --filter AiCloudInterviewRubric',
+                'php artisan route:list --path=ai-cloud-interview-rubric',
+                'vendor\\bin\\pint --test',
+            ],
+            'workbench' => [
+                'label' => 'Run the AI Cloud interview rubric workbench',
+                'route' => 'practice.workbench.ai-cloud-interview-rubric',
+            ],
+            'api' => [
+                'method' => 'POST',
+                'path' => '/api/practice/ai-cloud-interview-rubric',
+                'payload' => [
+                    'candidate_level' => 'senior',
+                    'recent_task' => 'specific',
+                    'prompt_workflow' => 'structured',
+                    'iac_review' => 'production',
+                    'failure_story' => 'concrete',
+                    'verification_workflow' => 'systematic',
+                    'docs_conflict' => 'source-of-truth',
+                    'team_enablement' => 'team-standard',
+                ],
+            ],
+            'acceptance' => [
+                'Strong senior answers score as practical AI usage, not generic AI enthusiasm.',
+                'Surface-level answers produce red flags for vague tasks, missing failure stories, missing verification workflow, and trusting AI over AWS Documentation.',
+                'The rubric returns dimensions, red flags, green flags, follow-up questions, interviewer traps, calibration notes, team rollout probe, commands, and a hiring signal.',
+            ],
+            'starter_code' => <<<'TEXT'
+Ask for a task from last week.
+Ask what AI got wrong.
+Ask what they do when AI and AWS Documentation disagree.
+Score the evidence, not the enthusiasm.
+TEXT,
+        ],
+        [
+            'slug' => 'rag-strategy-plan-workbench',
+            'track' => 'ai-review',
+            'title' => 'Choose RAG, Long Context, CAG, or hybrid chatbot context',
+            'objective' => 'Design a chatbot context strategy from RAG, Long Context, CAG, hybrid routing, knowledge shape, relationship needs, tool use, freshness, risk, answer style, readiness, data model, API response contract, OpenAPI contract, Laravel integration blueprint, CI quality gates, implementation prompt, source lifecycle, benchmark plan, test fixtures, prompt-injection tests, privacy controls, capacity plan, feedback schema, feedback loop, ownership, versioning, release evidence, audit artifacts, migration path, implementation backlog, threat model, SLO policy, ADR summary, decommission plan, cost controls, access control, evaluation, observability, failure runbooks, and rollout gates.',
+            'why' => 'This turns chatbot context selection from a buzzword into an engineering decision. Learners practice when retrieval is needed, when a bounded Long Context pack is enough, when stable curated knowledge should use CAG, when hybrid routing is necessary, and which RAG pattern should back the retrieval path.',
+            'steps' => [
+                'Create a Form Request for RAG strategy inputs.',
+                'Create a service that scores RAG, Long Context, CAG, hybrid routing, classic RAG, Graph RAG, and Agentic RAG from concrete constraints.',
+                'Return a recommendation, decision matrix, readiness score, style catalog, architecture plan, data model contract, retrieval contract, answer contract, API response example, OpenAPI contract, Laravel integration blueprint, source lifecycle, evaluation plan, benchmark plan, test fixture plan, golden questions, risk controls, threat model, prompt-injection tests, access-control plan, privacy plan, SLO policy, observability plan, capacity plan, feedback loop, feedback schema, versioning policy, rollout gates, cost controls, prompt templates, failure runbook, review checklist, release checklist, evidence packet, audit artifact, CI quality gates, ownership matrix, migration path, decommission plan, implementation backlog, implementation prompt, ADR summary, anti-patterns, memo, commands, and interview answer.',
+                'Expose the plan through an API endpoint.',
+                'Render a workbench that calls the API with RAG, Long Context, CAG, and hybrid scenario presets.',
+                'Write feature and unit tests for classic document Q&A, graph-heavy knowledge, agentic operations, Long Context, CAG, hybrid routing, and invalid payloads.',
+            ],
+            'files' => [
+                'app/Http/Requests/Api/PlanRagStrategyRequest.php',
+                'app/Http/Controllers/Api/RagStrategyPlanController.php',
+                'app/Services/Practice/RagStrategyPlanService.php',
+                'resources/views/practice/workbench/rag-strategy-plan.blade.php',
+                'tests/Feature/RagStrategyPlanWorkbenchTest.php',
+                'tests/Unit/Practice/RagStrategyPlanServiceTest.php',
+            ],
+            'commands' => [
+                'php artisan test --filter RagStrategyPlan',
+                'php artisan route:list --path=rag-strategy-plan',
+                'vendor\\bin\\pint --test',
+            ],
+            'workbench' => [
+                'label' => 'Run the RAG strategy workbench',
+                'route' => 'practice.workbench.rag-strategy-plan',
+            ],
+            'api' => [
+                'method' => 'POST',
+                'path' => '/api/practice/rag-strategy-plan',
+                'payload' => [
+                    'knowledge_shape' => 'entities',
+                    'relationship_need' => 'high',
+                    'tool_use' => 'retrieval-tools',
+                    'freshness' => 'periodic',
+                    'risk_level' => 'high',
+                    'answer_style' => 'citations',
+                ],
+            ],
+            'acceptance' => [
+                'Document Q&A recommends classic RAG with source IDs and groundedness checks.',
+                'Entity and relationship-heavy knowledge recommends Graph RAG with edge provenance.',
+                'Workflow and real-time tool-use scenarios recommend Agentic RAG with iteration and tool controls.',
+                'The plan explains retrieval quality, readiness, data fields, answer fields, API shape, OpenAPI contract, Laravel files, CI gates, implementation prompt, source lifecycle, benchmarks, fixtures, prompt-injection tests, privacy, capacity, feedback labels, ownership, release evidence, replay versioning, audit trail, migration triggers, implementation backlog, threat model, SLOs, ADR summary, decommission path, citation coverage, fallback behavior, hallucination controls, permission filters, cost controls, monitoring signals, prompt templates, failure response, and rollout gates.',
+            ],
+            'starter_code' => <<<'TEXT'
+classic RAG: retrieve chunks -> answer with citations
+Graph RAG: retrieve chunks + traverse entities/edges -> answer with provenance
+Agentic RAG: plan -> call tools/retrievers -> inspect -> answer with final evidence check
+TEXT,
+        ],
+        [
+            'slug' => 'llm-decision-loop-plan-workbench',
+            'track' => 'ai-review',
+            'title' => 'Model LLMs as decision loops from probability to reward',
+            'objective' => 'Explain how large language models move from next-token prediction to repeated decisions shaped by attention, reward models, PPO, tools, feedback loops, and careful AGI claims.',
+            'why' => 'This practices AI foundations with engineering discipline: Markov decision process framing, state/policy/action/transition/reward mapping, attention, supervised fine-tuning, reward modeling, PPO, tool feedback, misconception checks, verification questions, and AGI claim guardrails.',
+            'steps' => [
+                'Create a Form Request for LLM decision-loop input.',
+                'Create a service that maps model behavior to state, policy, action, transition, and reward.',
+                'Return attention guidance, training-stack roles, reward policy, PPO explanation, feedback loops, AGI guardrails, verification checks, misconceptions, commands, and an interview-ready answer.',
+                'Expose the plan through an API endpoint.',
+                'Render a workbench that calls the API with scenario presets.',
+                'Write feature and unit tests for tool-backed coding agents, chat-only explanations, overstated AGI claims, and validation cases.',
+            ],
+            'files' => [
+                'app/Http/Requests/Api/PlanLlmDecisionLoopRequest.php',
+                'app/Http/Controllers/Api/LlmDecisionLoopPlanController.php',
+                'app/Services/Practice/LlmDecisionLoopPlanService.php',
+                'resources/views/practice/workbench/llm-decision-loop-plan.blade.php',
+                'tests/Feature/LlmDecisionLoopPlanWorkbenchTest.php',
+                'tests/Unit/Practice/LlmDecisionLoopPlanServiceTest.php',
+            ],
+            'commands' => [
+                'php artisan test --filter LlmDecisionLoopPlan',
+                'php artisan route:list --path=llm-decision-loop-plan',
+                'vendor\\bin\\pint --test',
+            ],
+            'workbench' => [
+                'label' => 'Run the LLM decision-loop workbench',
+                'route' => 'practice.workbench.llm-decision-loop-plan',
+            ],
+            'api' => [
+                'method' => 'POST',
+                'path' => '/api/practice/llm-decision-loop-plan',
+                'payload' => [
+                    'model_role' => 'coding-assistant',
+                    'training_stage' => 'rlhf',
+                    'feedback_signal' => 'tests-runtime',
+                    'tool_use' => 'yes',
+                    'agi_claim' => 'conservative',
+                ],
+            ],
+            'acceptance' => [
+                'The plan separates next-token probability from the full state, policy, action, transition, and reward loop.',
+                'Attention is explained as context routing rather than proof of human-like understanding.',
+                'Reward models and PPO are tied to explicit feedback signals and their limitations.',
+                'AGI claims are guarded with uncertainty and verification language.',
+            ],
+            'starter_code' => <<<'TEXT'
+state(context) -> policy(model) -> action(token/tool) -> transition(updated context) -> reward(feedback)
+
+Do not claim AGI from fluency alone.
+Name the feedback loop that corrects the model or workflow.
+TEXT,
+        ],
+        [
+            'slug' => 'ai-agent-memory-plan-workbench',
+            'track' => 'ai-review',
+            'title' => 'Design governed memory contracts for AI agents',
+            'objective' => 'Separate AI agent memory into working, episodic, semantic, and procedural contracts with source, freshness, confidence, permission, retention, privacy, and correction guardrails.',
+            'why' => 'This turns agent memory from a vague prompt-history idea into reviewable engineering behavior. Learners practice when memory may be read, when it must be refreshed, and how stale or private context is blocked before it can steer the next action.',
+            'steps' => [
+                'Create a Form Request for AI agent memory inputs.',
+                'Create a service that returns four memory contracts and governance controls.',
+                'Return retrieval order, failure modes, commands, and an interview-ready answer.',
+                'Expose the plan through an API endpoint.',
+                'Render a workbench that calls the API with developer, support, and research presets.',
+                'Write feature and unit tests for strict developer memory, session-only memory, stale memory handling, and validation cases.',
+            ],
+            'files' => [
+                'app/Http/Requests/Api/PlanAiAgentMemoryRequest.php',
+                'app/Http/Controllers/Api/AiAgentMemoryPlanController.php',
+                'app/Services/Practice/AiAgentMemoryPlanService.php',
+                'resources/views/practice/workbench/ai-agent-memory-plan.blade.php',
+                'tests/Feature/AiAgentMemoryPlanWorkbenchTest.php',
+                'tests/Unit/Practice/AiAgentMemoryPlanServiceTest.php',
+            ],
+            'commands' => [
+                'php artisan test --filter AiAgentMemoryPlan',
+                'php artisan route:list --path=ai-agent-memory-plan',
+                'vendor\\bin\\pint --test',
+            ],
+            'workbench' => [
+                'label' => 'Run the AI agent memory workbench',
+                'route' => 'practice.workbench.ai-agent-memory-plan',
+            ],
+            'api' => [
+                'method' => 'POST',
+                'path' => '/api/practice/ai-agent-memory-plan',
+                'payload' => [
+                    'agent_profile' => 'developer-agent',
+                    'storage_scope' => 'project-scoped',
+                    'retention_policy' => 'reviewed-durable',
+                    'privacy_mode' => 'strict',
+                    'staleness_policy' => 'block-stale',
+                ],
+            ],
+            'acceptance' => [
+                'The plan separates working, episodic, semantic, and procedural memory instead of treating memory as one prompt bucket.',
+                'Every durable memory item requires source, freshness, confidence, permission scope, retention, and correction metadata.',
+                'Private episodic memory and stale semantic memory cannot silently steer the next agent action.',
+                'The workbench returns retrieval order, governance controls, failure modes, commands, and an interview-ready answer.',
+            ],
+            'starter_code' => <<<'TEXT'
+working_memory: current task state
+episodic_memory: prior sessions and decisions
+semantic_memory: durable repo facts
+procedural_memory: reviewed playbooks
+
+No memory may steer an action without source, freshness, confidence, permission, and correction metadata.
+TEXT,
         ],
         [
             'slug' => 'practice-progress-checklist',

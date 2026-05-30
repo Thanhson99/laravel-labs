@@ -51,6 +51,12 @@
       "title": "VIII. Case Thực Chiến Và Tư Duy Dài Hạn",
       "description": "Những lỗi production rất thật, dấu hiệu integration thiết kế tệ và cách giữ lớp API sống được khi hệ thống lớn dần.",
       "tone": "copper"
+    },
+    {
+      "start": 141,
+      "title": "IX. GraphQL, REST Và Query Shape Của API",
+      "description": "So sánh REST theo endpoint với GraphQL theo schema/query, boundary resolver, cache, authorization, lỗi và tradeoff vận hành.",
+      "tone": "sand"
     }
   ],
   "items": [
@@ -648,6 +654,123 @@
     {
       "title": "140. Đánh giá sau rà soát: phần API & integration đã đủ chi tiết chưa?",
       "body": "Ở mức portal học tập thì đã khá đầy: có nền tảng, config mindset, auth, contract, resource, HTTP client, webhook, retry, idempotency, docs, test, observability và case production. Nếu muốn đi sâu hơn nữa sau này, hướng hợp lý nhất là tách riêng các site con về OAuth, webhook security, event-driven integration và API versioning strategy."
+    },
+    {
+      "title": "141. GraphQL khác REST ở điểm cốt lõi nào?",
+      "body": "REST thường mở các endpoint theo resource như `/posts`, `/posts/{id}` hoặc `/users/{id}/orders`. GraphQL mở một schema và cho client hỏi đúng field, relation và shape dữ liệu cần dùng trong một query. REST tổ chức contract quanh URL và HTTP semantic; GraphQL tổ chức contract quanh type, field, query, mutation và resolver.",
+      "links": [
+        {
+          "label": "Mở GraphQL REST decision workbench",
+          "href": "{{HUB_BASE_URL}}/workbench/graphql-rest-decision"
+        }
+      ]
+    },
+    {
+      "title": "142. Khi nào REST vẫn là lựa chọn mặc định tốt hơn?",
+      "body": "REST thường tốt hơn khi resource rõ ràng, operation map tự nhiên với HTTP verb, cache qua HTTP/proxy/CDN quan trọng, client chấp nhận response shape cố định và team muốn vận hành đơn giản. Với nhiều CRUD, admin, mobile và public API, REST vẫn dễ document, test, monitor, cache và bảo mật hơn."
+    },
+    {
+      "title": "143. Khi nào GraphQL hữu ích hơn REST?",
+      "body": "GraphQL hữu ích khi client cần tự chọn field linh hoạt, nhiều màn hình phải gom dữ liệu từ nhiều resource, mobile cần giảm payload, frontend muốn một schema ổn định trong khi UI thay đổi nhanh, hoặc một lớp BFF cần compose nhiều backend service sau một client contract."
+    },
+    {
+      "title": "144. Contract của REST và GraphQL khác nhau thế nào?",
+      "body": "Trong REST, contract thường là endpoint + method + request body + response shape + status code. Trong GraphQL, contract là schema: object type, field, argument, query, mutation, nullability và behavior của resolver. Một REST route trả lời một endpoint contract; một GraphQL resolver trả lời một field hoặc operation trong schema contract."
+    },
+    {
+      "title": "145. Vì sao GraphQL dễ phát sinh N+1 và vấn đề hiệu năng resolver?",
+      "body": "Vì query có thể hỏi relation lồng nhau, và resolver viết ngây thơ có thể load từng dòng con riêng lẻ. Một query kiểu posts -> author -> team có thể biến thành rất nhiều database query nếu server không dùng eager loading, batching, dataloader, query complexity limit, pagination và boundary resolver rõ ràng."
+    },
+    {
+      "title": "146. Cache và HTTP semantic khác nhau ra sao?",
+      "body": "REST dùng URL, HTTP verb, cache header, status code và CDN behavior khá tự nhiên. GraphQL thường gom nhiều operation qua một endpoint, ví dụ POST `/graphql`, nên cache thường cần key theo operation, persisted query, application-level cache hoặc gateway hỗ trợ. Điều này không làm GraphQL tệ, nhưng làm phần cache khác đi."
+    },
+    {
+      "title": "147. Authorization trong GraphQL nên xử lý thế nào?",
+      "body": "GraphQL vẫn cần kỷ luật authorization như REST, nhưng check thường nằm gần field, object type, mutation và resolver service hơn. Chỉ auth ở endpoint là chưa đủ nếu user vẫn có thể query field không được phép thấy. Hãy xem mỗi resolver boundary như một điểm có thể lộ dữ liệu."
+    },
+    {
+      "title": "148. Error của REST và GraphQL khác nhau thế nào?",
+      "body": "REST thường báo lỗi bằng HTTP status code và response body. GraphQL có thể trả `200 OK` kèm mảng `errors` và một phần `data`, tùy loại lỗi. Team cần chuẩn hóa error extension, validation message, auth failure và logging để client không phải đoán chuyện gì đã xảy ra."
+    },
+    {
+      "title": "149. Mental model tốt trong Laravel khi so GraphQL với REST là gì?",
+      "body": "Với REST, Laravel thường bắt đầu từ `routes/api.php`, Form Request, controller, API Resource, policy và service. Với GraphQL, vẫn giữ cùng kỷ luật: schema map tới resolver class hoặc service, validation và authorization phải rõ ràng, business workflow vẫn nằm ngoài lớp transport. Package GraphQL có thể lo phần plumbing, nhưng không nên trở thành kiến trúc business."
+    },
+    {
+      "title": "150. Câu trả lời phỏng vấn: GraphQL khác REST ra sao?",
+      "body": "Câu trả lời tốt là: REST xoay quanh endpoint/resource, còn GraphQL xoay quanh schema/query. GraphQL cho client hỏi đúng field cần dùng, giảm overfetching hoặc nhiều round trip, nhưng đổi lại có complexity ở resolver, query cost, cache và authorization. REST đơn giản và sát HTTP hơn; GraphQL phù hợp khi shape dữ liệu của client thay đổi nhanh hoặc một màn hình cần dữ liệu từ nhiều resource."
+    },
+    {
+      "title": "151. Cách đặt tên API RESTful 'chuẩn chỉnh' nghĩa là gì?",
+      "body": "Tên API RESTful sạch nên mô tả resource mà client đang truy cập, không mô tả tên hàm controller hay bảng database bên trong. URL giúp client đoán được đối tượng, còn HTTP verb nói thao tác đang làm gì.",
+      "bullets": [
+        "Tốt: `GET /api/v1/orders` đọc danh sách đơn hàng.",
+        "Tốt: `POST /api/v1/orders` tạo một đơn hàng mới.",
+        "Yếu: `POST /api/v1/getOrders` nhét action vào path và làm HTTP verb mất ý nghĩa."
+      ],
+      "note": "RESTful naming không phải để trông học thuật. Nó giúp frontend, mobile, QA, partner và support hiểu contract nhanh hơn."
+    },
+    {
+      "title": "152. Endpoint nên dùng danh từ hay động từ?",
+      "body": "Với resource thông thường, dùng danh từ: `/orders`, `/users`, `/invoices`, `/articles`, `/comments`. Để `GET`, `POST`, `PATCH`, `DELETE` thể hiện hành động. Chỉ dùng động từ trong path khi đó là một nghiệp vụ thật sự không fit vào CRUD bình thường.",
+      "code": "Route::prefix('v1')->group(function () {\n    Route::apiResource('orders', OrderController::class);\n\n    Route::post('/orders/{order}/cancel', CancelOrderController::class)\n        ->name('orders.cancel');\n});"
+    },
+    {
+      "title": "153. Vì sao resource thường nên đặt số nhiều?",
+      "body": "Tên số nhiều giúp collection và item đọc nhất quán: `/orders` là tập đơn hàng, `/orders/{order}` là một đơn hàng. Nếu nơi thì số ít, nơi thì số nhiều, API sẽ khó khám phá và khó viết tài liệu hơn.",
+      "bullets": [
+        "Ưu tiên `/users/{user}/orders` thay vì `/user/{user}/order`.",
+        "Ưu tiên `/products/{product}/reviews` thay vì `/product/{product}/review`.",
+        "Giữ cùng convention xuyên suốt mọi version API."
+      ]
+    },
+    {
+      "title": "154. Khi nào nên dùng nested resource?",
+      "body": "Dùng nested resource khi tài nguyên con được scope tự nhiên bởi tài nguyên cha, hoặc parent context là một phần của authorization và ý nghĩa nghiệp vụ. Tránh lồng quá sâu khi URL trở nên khó đọc hơn quan hệ resource.",
+      "bullets": [
+        "Tốt: `/users/{user}/orders` khi xem đơn hàng của một user.",
+        "Tốt: `/orders/{order}/items` khi item chỉ có nghĩa trong một order.",
+        "Quá sâu: `/companies/{company}/departments/{department}/teams/{team}/members/{member}/roles` thường nên được làm phẳng hoặc chuyển thành query filter."
+      ]
+    },
+    {
+      "title": "155. Filter, sort và search nên đặt tên thế nào?",
+      "body": "Đưa filter và sort vào query parameter vì chúng thay đổi cách nhìn collection, không thay đổi định danh resource. Dùng tên parameter dễ đoán và tài liệu hóa các giá trị được chấp nhận.",
+      "code": "GET /api/v1/orders?status=paid&customer_id=42&sort=-created_at\nGET /api/v1/products?search=keyboard&min_price=20&max_price=120\nGET /api/v1/audit-logs?actor_id=7&from=2026-05-01&to=2026-05-30",
+      "note": "Đừng tạo path mới cho mọi tổ hợp filter. `/orders/paid/recent/by-customer/42` rất nhanh trở thành API khó bảo trì."
+    },
+    {
+      "title": "156. Những action không phải CRUD nên đặt tên ra sao?",
+      "body": "Nếu action có ý nghĩa nghiệp vụ rõ, đặt một động từ ngắn sau resource identifier: `/orders/{order}/cancel`, `/invoices/{invoice}/void`, `/users/{user}/suspend`. Giữ các endpoint dạng action ít, rõ ràng và có chủ đích.",
+      "bullets": [
+        "Dùng `POST` cho command khởi động một nghiệp vụ.",
+        "Trả status code và response body rõ để client biết trạng thái kết quả.",
+        "Không giấu command làm thay đổi state sau `GET` chỉ vì browser gọi tiện."
+      ]
+    },
+    {
+      "title": "157. Route name trong Laravel nên khớp RESTful naming thế nào?",
+      "body": "Route name nên dễ đọc và ổn định: `orders.index`, `orders.store`, `orders.show`, `orders.update`, `orders.destroy`, và action nghiệp vụ rõ như `orders.cancel`. Tránh đặt tên lộ chi tiết controller bên trong.",
+      "code": "Route::apiResource('orders', OrderController::class)\n    ->names('orders');\n\nRoute::post('/orders/{order}/cancel', CancelOrderController::class)\n    ->name('orders.cancel');"
+    },
+    {
+      "title": "158. Checklist review RESTful naming",
+      "body": "Trước khi merge một API route, hãy review endpoint như một public contract. Route tốt phải sống được với client mới, tài liệu, dashboard monitoring và ticket support mà không bắt mọi người đọc controller trước.",
+      "bullets": [
+        "Path dùng danh từ resource, thường là số nhiều.",
+        "HTTP verb thể hiện đọc, tạo, cập nhật, xóa hoặc command.",
+        "Nested resource dừng ở độ sâu còn rõ nghĩa.",
+        "Filter, search, pagination và sorting nằm ở query parameter.",
+        "Business action rõ ràng, ít dùng và có test.",
+        "Versioning và route name nhất quán với phần còn lại của API."
+      ],
+      "links": [
+        {
+          "label": "Mở RESTful API naming workbench",
+          "href": "{{HUB_BASE_URL}}/workbench/restful-api-naming-plan"
+        }
+      ]
     }
   ]
 }

@@ -88,6 +88,14 @@ final class PracticeNextSessionHandoffLabService
      */
     private function sessionGoalFor(array $decision): string
     {
+        if ($this->isClosureSegment((string) $decision['technology_segment'])) {
+            if ($decision['decision'] === 'promote-to-next-lab') {
+                return sprintf('Open `%s` and convert the passed %s closure evidence into a portfolio-ready interview artifact.', $decision['next_route_name'], $decision['technology_segment']);
+            }
+
+            return sprintf('Reopen `%s` and strengthen the missing %s lexical-scope, var-versus-let, or stale-closure evidence before promotion.', $decision['next_route_name'], $decision['technology_segment']);
+        }
+
         if ($decision['decision'] === 'promote-to-next-lab') {
             return sprintf('Open `%s` and convert the passed %s evidence into a portfolio-ready artifact.', $decision['next_route_name'], $decision['technology_segment']);
         }
@@ -103,6 +111,14 @@ final class PracticeNextSessionHandoffLabService
      */
     private function preflightChecklistFor(array $decision): array
     {
+        if ($this->isClosureSegment((string) $decision['technology_segment'])) {
+            return [
+                sprintf('Open the previous route `%s` and review the last closure evidence.', $decision['source_route_name']),
+                sprintf('Run `%s` once before editing.', $decision['verification_command']),
+                'Write down the one captured binding, var-versus-let behavior, or stale closure you expect to improve.',
+            ];
+        }
+
         return [
             sprintf('Open the previous route `%s` and review the last evidence.', $decision['source_route_name']),
             sprintf('Run `%s` once before editing.', $decision['verification_command']),
@@ -118,6 +134,22 @@ final class PracticeNextSessionHandoffLabService
      */
     private function codingFocusFor(array $decision): array
     {
+        if ($this->isClosureSegment((string) $decision['technology_segment'])) {
+            if ($decision['decision'] === 'promote-to-next-lab') {
+                return [
+                    $decision['promotion_proof'][0],
+                    $decision['promotion_proof'][1],
+                    'Turn the proof into a short closure interview answer with lexical scope, captured binding, and stale-closure risk.',
+                ];
+            }
+
+            return [
+                $decision['repeat_triggers'][0],
+                $decision['repeat_triggers'][1],
+                'Patch the weakest closure evidence before changing any other files.',
+            ];
+        }
+
         if ($decision['decision'] === 'promote-to-next-lab') {
             return [
                 $decision['promotion_proof'][0],
@@ -141,10 +173,26 @@ final class PracticeNextSessionHandoffLabService
      */
     private function doneEvidenceFor(array $decision): array
     {
+        if ($this->isClosureSegment((string) $decision['technology_segment'])) {
+            return [
+                sprintf('`%s` passes after the closure evidence update.', $decision['verification_command']),
+                sprintf('The `%s` route output or page state includes lexical-scope and interview-trap evidence.', $decision['next_route_name']),
+                'The final handoff note says which closure example to explain first in the following session.',
+            ];
+        }
+
         return [
             sprintf('`%s` passes after the next-session change.', $decision['verification_command']),
             sprintf('The `%s` route output or page state is captured.', $decision['next_route_name']),
             'The final handoff note says what to do first in the following session.',
         ];
+    }
+
+    /**
+     * Determine whether a handoff belongs to JavaScript closure practice.
+     */
+    private function isClosureSegment(string $technology): bool
+    {
+        return str_contains($technology, 'javascript-closures');
     }
 }

@@ -34,9 +34,11 @@ final class ConfigurationRiskRegisterTest extends TestCase
         $response
             ->assertOk()
             ->assertJsonPath('data.status.quality', 'ready')
-            ->assertJsonPath('data.risk_count', 4)
+            ->assertJsonPath('data.risk_count', 5)
             ->assertJsonPath('data.highest_severity', 'high')
             ->assertJsonPath('data.risks.1.key', 'auth-contract-drift')
+            ->assertJsonPath('data.risks.3.key', 'security-misconfiguration-release-blocker')
+            ->assertJsonPath('data.risks.3.owner_route', '/practice/configuration-readiness')
             ->assertJsonStructure([
                 'data' => [
                     'title',

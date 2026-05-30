@@ -30,6 +30,8 @@ final class ConfigurationSessionArchiveService
             'session_result' => $debrief['session_result'],
             'evidence_tags' => [
                 'configuration-session-output',
+                'security-misconfiguration-release-blocker',
+                'fail-closed-smoke-evidence',
                 'quality-gate-ready',
                 'portfolio-rehearsal',
                 'incident-recovery-memory',
@@ -44,12 +46,14 @@ final class ConfigurationSessionArchiveService
                 ->all(),
             'retrieval_prompts' => [
                 'Which deliverable proved the selected channel output?',
+                'Which Security Misconfiguration release blocker was rehearsed and which smoke check proved it?',
                 'Which source key or route was attached to the session output?',
                 'Which blocker should become the next rehearsal prompt?',
                 'Which failed command would send the learner back to the risk register?',
             ],
             'reuse_paths' => [
                 'Use the captured channel output to revise the portfolio brief.',
+                'Use the captured Security Misconfiguration output to refresh release blockers and smoke evidence.',
                 'Use the weakest answer to create the next interview drill.',
                 'Use any failed command as input for configuration remediation.',
             ],

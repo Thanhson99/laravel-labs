@@ -88,6 +88,19 @@ Current `.panel` style:
 
 Do not wrap every page section in a decorative card. Cards are reserved for repeated items, compact controls, search results, roadmap nodes, and similar framed units.
 
+## Content Block Rules
+
+New learning content should inherit its visual treatment from renderer-backed components, not from custom markup or page-specific CSS.
+
+- Use `.panel` for major page sections only.
+- Put repeated or related content into existing white-surface components: `.content-card`, `.link-card`, `.bullet-list li`, `.interview-qa-list li`, `.php-phase`, `.php-note-block`, `.php-example-block`, or `.php-question-block`.
+- Do not leave related learning items as loose paragraphs directly on the beige page background when the surrounding page uses cards or list blocks.
+- Do not add raw HTML inside JSON to force spacing, borders, colors, or layout. Update the renderer/CSS component if a content shape needs a better presentation.
+- Preserve the continuous left-border pattern for grouped learning points: the border belongs to the list or block container when the items are conceptually one group, not to each short line separately.
+- Nested lists inside a card/list item must remain plain supporting bullets. They should not receive the outer card surface, shadow, or border treatment.
+- Code blocks with copy buttons must leave enough top/right padding on desktop and mobile so code text never sits under the button.
+- Titles and descriptions inside content blocks should follow the existing hierarchy: section heading, block/card title, supporting description, then nested bullet text. Do not make nested bullet titles compete visually with the parent block title.
+
 ## Header And Navigation
 
 Important classes:

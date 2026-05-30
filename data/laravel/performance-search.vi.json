@@ -759,8 +759,95 @@
       "note": "Đây mới là điểm vào nhỏ. Search thật còn kéo theo indexing, sync drift, ranking và filter permission-aware."
     },
     {
-      "title": "162. Đánh giá sau rà soát: phần performance-search đã đủ chi tiết chưa?",
+      "title": "162. Vì sao NoSQL nhanh? Câu trả lời thường là LSM Tree, không phải thiếu schema",
+      "body": "Một hiểu nhầm phổ biến là NoSQL nhanh vì không có schema. Schema linh hoạt có thể giúp team ingest document thay đổi dễ hơn, nhưng bí mật hiệu năng trong nhiều hệ NoSQL ghi nhiều là LSM Tree. Nó biến ghi ngẫu nhiên tại chỗ thành công việc thuận lợi cho append: ghi WAL, cập nhật memtable, flush segment sorted bất biến, rồi compaction các segment đó ở background.",
+      "bullets": [
+        "WAL: ghi tuần tự trước để node có thể recover sau crash.",
+        "ADR: chỉ accept LSM-backed storage khi workload, data model, query contract, benchmark và operational guardrail đã rõ.",
+        "Memtable: giữ write mới trong memory và sorted trước khi flush xuống disk.",
+        "Segment hoặc SSTable: file sorted bất biến trên disk, được ghi tuần tự thay vì sửa random page tại chỗ.",
+        "Compaction: merge segment, bỏ version cũ và tombstone, giảm read amplification nhưng tạo thêm background write.",
+        "Bloom Filter: giúp point read bỏ qua segment chắc chắn không chứa key, đặc biệt hữu ích khi read miss nhiều.",
+        "Amplification model: tách write amplification, read amplification và space amplification thay vì nói database đơn giản là nhanh hay chậm.",
+        "Range scan planning: key design, segment overlap, cursor pagination và áp lực hot range quyết định scan có ổn định không.",
+        "Tombstone và TTL policy: delete được ghi trước rồi mới bị xóa vật lý sau, nên expiry wave và snapshot có thể tạo compaction debt.",
+        "Capacity planning: tính WAL throughput, memtable memory, Bloom Filter memory, disk headroom và compaction bandwidth thay vì chỉ đếm stored record.",
+        "Cost model: tính memory, disk, CPU/IO và ownership vận hành thay vì xem write speed là miễn phí.",
+        "Engine comparison: tách vai trò LSM-backed store, B-tree relational index, search/analytics projection và cache layer.",
+        "Decision rule: chọn memtable size, compaction style, Bloom Filter và key layout từ bằng chứng workload như ingest rate, read miss, range scan và delete pattern.",
+        "Benchmark plan: chứng minh thiết kế bằng steady write ingest, compaction khi có foreground traffic, point-read miss, bounded range scan và TTL/delete wave.",
+        "Rollout plan: model access pattern, benchmark khi compaction chạy, dual-read để kiểm tra correctness, rồi ramp traffic kèm rollback threshold.",
+        "SLO guardrail: định nghĩa target và alert cho foreground p99 latency, compaction debt, disk headroom, read-miss efficiency và tombstone pressure.",
+        "Anti-pattern: tránh schema myth, bỏ qua compaction, range query không giới hạn, delete storm và thiếu Bloom Filter khi read miss cao.",
+        "Incident runbook: triage triệu chứng foreground và compaction, contain bằng backpressure hoặc bounded read, recover khi compaction debt giảm, rồi harden benchmark và alert.",
+        "Fit matrix: LSM mạnh cho high-ingest event write, có điều kiện với point miss và delete-heavy data, rủi ro với analytical scan không giới hạn.",
+        "Data model review: kiểm tra partition key spread, sort-key range shape, document validation và TTL/delete field trước khi tin vào engine.",
+        "Query contract: cho phép full-key lookup và bounded cursor range, nhưng reject offset pagination trên range lớn và analytical scan tùy hứng.",
+        "Cấu trúc trả lời phỏng vấn: nêu claim, giải thích mechanism, gọi tên tradeoff, rồi chốt bằng measurement như p99 latency và amplification.",
+        "Failure mode: theo dõi memtable flush stall, compaction backlog, tombstone buildup và negative lookup tốn kém khi Bloom Filter thiếu hoặc tuning kém."
+      ],
+      "code": "write -> WAL -> memtable -> immutable sorted segment\nbackground -> compaction merges segments and drops old versions\nread miss -> Bloom Filter skips segments before disk access",
+      "note": "Trả lời phỏng vấn: tốc độ NoSQL nên được giải thích bằng workload và storage-engine design. LSM Tree tối ưu write bằng memory buffer và sequential disk write, rồi trả chi phí sau qua compaction và tuning read amplification.",
+      "links": [
+        {
+          "href": "{{HUB_BASE_URL}}/workbench/lsm-tree-plan",
+          "label": "LSM Tree workbench",
+          "desc": "Thực hành giải thích memtable, segment, compaction, Bloom Filter và tradeoff đọc/ghi phía sau hiệu năng NoSQL."
+        }
+      ]
+    },
+    {
+      "title": "163. Đánh giá sau rà soát: phần performance-search đã đủ chi tiết chưa?",
       "body": "Ở mức portal học tập thì phần này đã khá đầy: có performance mindset, DB/query/index, cache design, invalidation, search UX, Scout/engine ngoài, observability, cost và case production. Nếu muốn đi sâu hơn nữa sau này, hướng tách riêng tốt nhất là một site con cho DB/query tuning, một site cho cache architecture và một site cho search relevance/product search."
+    },
+    {
+      "title": "164. Covering Index: vì sao query đã có index vẫn chậm",
+      "body": "Index thường giúp database tìm nhanh vị trí row phù hợp, nhưng database vẫn có thể phải quay lại table heap để đọc các cột cần select hoặc kiểm tra row có visible không. Khi kết quả lớn, heap fetch có thể trở thành hàng nghìn random IO. Trong PostgreSQL, covering index có thể lưu key column cùng các cột trả về bằng `INCLUDE`, giúp query có cơ hội chạy Index Only Scan nếu điều kiện visibility cho phép.",
+      "bullets": [
+        "Chi phí heap fetch: index scan tìm được nhiều row pointer nhưng vẫn phải nhảy lại table heap cho từng row, đặc biệt chậm khi page lạnh hoặc nằm rải rác.",
+        "Ý tưởng covering index: giữ cột filter/sort là index key, rồi thêm cột chỉ cần trả về bằng `INCLUDE` để query đọc ngay từ index.",
+        "Cú pháp `INCLUDE`: `CREATE INDEX idx_orders_user_created_covering ON orders (user_id, created_at DESC) INCLUDE (status, total_amount);`.",
+        "Query phù hợp: where/order nên bám vào key column, còn select chỉ lấy các cột có trong index hoặc included columns.",
+        "Kiểm tra bằng `EXPLAIN (ANALYZE, BUFFERS)`: tìm `Index Only Scan`, buffer read thấp và `Heap Fetches` thấp hoặc bằng 0.",
+        "Visibility map: PostgreSQL vẫn cần biết page trong heap có all-visible không. Nếu visibility map chưa cập nhật, Index Only Scan vẫn có thể phải heap fetch.",
+        "Kiểm tra VACUUM: autovacuum khỏe giúp visibility map cập nhật; bảng update/delete nhiều có thể cần tuning trước khi covering index thật sự có lợi.",
+        "Rủi ro bloat: included columns làm index rộng hơn, tốn storage, ghi chậm hơn và bảo trì đắt hơn nếu dữ liệu included thay đổi thường xuyên.",
+        "Không include mọi thứ: tránh cột text quá rộng, cột update liên tục, hoặc field không phục vụ hot query đã đo.",
+        "Luật production: chỉ thêm covering index sau khi đã đo query plan, số row, cột select, write overhead và đường rollback."
+      ],
+      "code": "CREATE INDEX idx_orders_user_created_covering\n    ON orders (user_id, created_at DESC)\n    INCLUDE (status, total_amount);\n\nEXPLAIN (ANALYZE, BUFFERS)\nSELECT created_at, status, total_amount\nFROM orders\nWHERE user_id = 42\nORDER BY created_at DESC\nLIMIT 20;",
+      "note": "Trả lời phỏng vấn: Covering Index hữu ích khi query có thể được trả lời từ chính index. Với PostgreSQL, nó chỉ thật sự nhanh khi cột select đã được cover và visibility map cho phép bỏ qua heap fetch. Luôn kiểm tra `Heap Fetches`, `Buffers`, VACUUM, kích thước index và write cost trước khi gọi đó là tối ưu.",
+      "links": [
+        {
+          "href": "{{HUB_BASE_URL}}/workbench/collection-filter-preview",
+          "label": "Workbench thực hành query database",
+          "desc": "Thực hành biến query shape, cột select, index và bằng chứng verification thành kế hoạch tối ưu database cụ thể."
+        }
+      ]
+    },
+    {
+      "title": "165. BFS và DFS: chọn chiến lược duyệt đúng lúc",
+      "body": "BFS (Breadth-First Search) duyệt các node theo từng tầng, còn DFS (Depth-First Search) đi sâu vào một nhánh trước rồi mới quay lại. Một phần so sánh BFS DFS thực tế phải bắt đầu từ mục tiêu, không phải học thuộc cái nào nghe có vẻ nhanh hơn. Hai cách duyệt có thể đi qua cùng một graph, nhưng phù hợp với mục tiêu khác nhau. BFS thường hợp khi cần kết quả gần nhất hoặc shortest path trong graph không trọng số; DFS thường hợp khi cần resolve dependency, validate cây, backtracking hoặc duyệt cấu trúc sâu với ít state hơn.",
+      "bullets": [
+        "Khác biệt cốt lõi: BFS dùng queue và xử lý node theo khoảng cách từ điểm bắt đầu; DFS dùng stack hoặc recursion và đi sâu trước khi xét sibling.",
+        "Shortest path: BFS tìm được đường đi ngắn nhất trong graph không trọng số, ví dụ ít API hop nhất từ service này tới service khác.",
+        "Tradeoff bộ nhớ: BFS có thể giữ một frontier rất rộng trong memory; DFS thường chỉ giữ current path nhưng recursion có thể overflow nếu graph quá sâu.",
+        "Ví dụ API: dùng BFS để crawl linked resources theo số hop, rate-limit từng tầng và dừng khi tìm thấy resource gần nhất.",
+        "Ví dụ database: dùng kiểu BFS batching cho category tree khi UI cần mở từng tầng; dùng kiểu DFS để render nested menu hoặc validate toàn bộ subtree.",
+        "Chống cycle: cả hai đều cần visited set khi dữ liệu là graph thay vì tree thuần, ví dụ related articles, dependency, redirect hoặc service call.",
+        "Thực hành Laravel: viết traversal thành service có queue/stack rõ ràng, max depth, pagination limit và test cho cycle, graph rỗng, fan-out lớn.",
+        "Quy tắc phỏng vấn: bắt đầu từ mục tiêu. Nếu cần nearest hoặc shortest trong unweighted graph, chọn BFS. Nếu cần khám phá nhánh, dependency reasoning hoặc backtracking, chọn DFS.",
+        "Cảnh báo production: không để traversal qua API hoặc database chạy vô hạn; phải có max depth, max nodes, timeout, cursor pagination và observability."
+      ],
+      "code": "function bfs(array $graph, string $start): array {\n    $seen = [$start => true];\n    $queue = [$start];\n    $order = [];\n\n    while ($queue !== []) {\n        $node = array_shift($queue);\n        $order[] = $node;\n\n        foreach ($graph[$node] ?? [] as $next) {\n            if (! isset($seen[$next])) {\n                $seen[$next] = true;\n                $queue[] = $next;\n            }\n        }\n    }\n\n    return $order;\n}\n\nfunction dfs(array $graph, string $node, array &$seen = [], array &$order = []): array {\n    if (isset($seen[$node])) {\n        return $order;\n    }\n\n    $seen[$node] = true;\n    $order[] = $node;\n\n    foreach ($graph[$node] ?? [] as $next) {\n        dfs($graph, $next, $seen, $order);\n    }\n\n    return $order;\n}",
+      "note": "Trả lời phỏng vấn: BFS và DFS không phải câu chuyện cái nào luôn nhanh hơn. Vấn đề là mục tiêu duyệt. BFS duyệt theo tầng và hợp với nearest result trong unweighted graph. DFS đi theo chiều sâu và hợp với duyệt nhánh, validate cấu trúc lồng nhau hoặc backtracking. Với API và database thật, câu trả lời tốt phải nhắc cycle detection, depth limit, batching, pagination và memory cost.",
+      "links": [
+        {
+          "href": "{{HUB_BASE_URL}}/practice/technology-learning-pipeline/graph-traversal?search=BFS%20DFS",
+          "label": "Pipeline học graph traversal",
+          "desc": "Thực hành biến lý thuyết BFS/DFS thành API crawling, duyệt cây, chống cycle và guardrail cho query phân cấp trong database."
+        }
+      ]
     }
   ]
 }

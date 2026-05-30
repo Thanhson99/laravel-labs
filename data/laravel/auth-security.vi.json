@@ -508,6 +508,249 @@
       "body": "Đây là cách rất thường thấy để giữ rule quyền gần use case nhưng không nhét thẳng vào view hay controller body kiểu `if ($user->is_admin)`.",
       "code": "class PostPolicy\n{\n    public function update(User $user, Post $post): bool\n    {\n        return $user->id === $post->user_id;\n    }\n}\n\n$this->authorize('update', $post);",
       "note": "Policy không chỉ làm code sạch hơn mà còn giúp quyền được test, tái sử dụng và ít bị hardcode lung tung hơn."
+    },
+    {
+      "title": "104. Trả lời phỏng vấn: JWT nên lưu trong localStorage hay cookie?",
+      "body": "Không có đáp án đúng cho mọi hệ thống, nhưng với app chạy trên browser, cookie `HttpOnly` cấu hình đúng thường an toàn hơn cho token nhạy cảm hoặc sống lâu vì JavaScript không đọc trực tiếp được. `localStorage` dễ dùng để gắn bearer token, nhưng nếu dính XSS thì attacker có thể đọc và gửi token đi. Cookie giảm rủi ro token bị đọc bởi JavaScript, nhưng phải cấu hình kỹ CSRF, `SameSite`, `Secure`, domain, path và thời gian sống.",
+      "bullets": [
+        "`localStorage`: dễ triển khai và dễ gắn vào `Authorization: Bearer`, nhưng lộ mạnh trước XSS và hay bị quên khi logout hoặc rotate token.",
+        "`HttpOnly` cookie: JavaScript không đọc được và hợp với browser session hơn, nhưng browser tự gửi cookie nên phải xử lý CSRF và same-site thật rõ.",
+        "Câu trả lời thực tế là dùng access token ngắn hạn, rotate hoặc revoke refresh token, không lưu token lâu hơn cần thiết, và chọn nơi lưu theo đúng loại client."
+      ],
+      "code": "Set-Cookie: refresh_token=...; HttpOnly; Secure; SameSite=Lax; Path=/auth/refresh\n\nAuthorization: Bearer <short-lived-access-token>",
+      "note": "Khi phỏng vấn, đừng trả lời kiểu 'cookie luôn tốt nhất' hoặc 'localStorage luôn sai'. Hãy nói theo threat model: rủi ro XSS, rủi ro CSRF, thời gian sống token, revoke, loại client và cách vận hành.",
+      "links": [
+        {
+          "href": "{{HUB_BASE_URL}}/workbench/jwt-token-storage-plan",
+          "label": "JWT token-storage workbench",
+          "desc": "Thực hành chọn nơi lưu token từ threat model browser/API cụ thể."
+        }
+      ]
+    },
+    {
+      "title": "105. JWT không thể revoke trước hạn? Làm sao đây?",
+      "body": "JWT đã ký là stateless, nên server không thể tự nhiên thu hồi token trước `exp`. Muốn revoke sớm, API phải kiểm tra thêm state phía server: denylist theo `jti`, token version của user/session, hoặc refresh-token family đã bị revoke. Trong production, hãy kết hợp access token ngắn hạn với refresh-token rotation để giảm thời gian rủi ro.",
+      "bullets": [
+        "Thêm claim `jti` duy nhất cho mỗi access token và lưu các `jti` đã revoke đến thời điểm `expires_at`.",
+        "Khi logout, đổi mật khẩu, hạ role, khóa tài khoản hoặc mất thiết bị, revoke token hiện tại và refresh-token family.",
+        "Nếu cần vô hiệu hóa toàn bộ token của user, lưu `token_version` hoặc `security_version` trên user/session và từ chối JWT có version cũ.",
+        "Middleware nên verify chữ ký và expiry trước, sau đó kiểm tra revocation state, rồi mới authorize scope hoặc policy.",
+        "Prune record revoked-token đã hết hạn và không bao giờ ghi raw bearer token vào log."
+      ],
+      "code": "Schema::create('revoked_tokens', function (Blueprint $table) {\n    $table->string('jti')->primary();\n    $table->foreignId('user_id')->index();\n    $table->timestamp('revoked_at');\n    $table->timestamp('expires_at')->index();\n    $table->string('reason')->nullable();\n});\n\nif ($revokedTokens->contains($jwt->jti())) {\n    throw new AuthenticationException('Token has been revoked.');\n}",
+      "note": "Câu trả lời phỏng vấn: JWT là stateless, nên muốn revoke trước hạn phải có stateful check. Thiết kế thực tế là access token ngắn hạn, refresh-token rotation, denylist hoặc token-version check, và test chứng minh token cũ bị chặn.",
+      "links": [
+        {
+          "href": "{{HUB_BASE_URL}}/workbench/jwt-revocation-plan",
+          "label": "JWT revocation workbench",
+          "desc": "Thực hành thiết kế API, database, middleware và test để revoke JWT trước khi hết hạn."
+        }
+      ]
+    },
+    {
+      "title": "106. Vì sao OAuth2 Implicit Flow bị loại khỏi khuyến nghị hiện đại?",
+      "body": "Implicit Flow từng hữu ích khi browser app chưa dùng Authorization Code an toàn được, nhưng nó trả access token trực tiếp qua browser front channel. Trong app thật, URL fragment và redirect vẫn có thể leak qua browser history, extension, screenshot khi support, crash report, redirect sai, log hoặc referrer handling. SPA và mobile app hiện đại nên dùng Authorization Code với PKCE: browser chỉ nhận short-lived code, không nhận token, và token endpoint chỉ exchange code đó khi có đúng code verifier ban đầu.",
+      "bullets": [
+        "Implicit: `/authorize?response_type=token` trả access token về redirect URI, nên JavaScript xử lý token ngay trong browser.",
+        "Authorization Code với PKCE: `/authorize?response_type=code&code_challenge=...` trả one-time code, rồi exchange bằng `code_verifier` tại token endpoint.",
+        "Hãy ghi quyết định như ADR: dùng Authorization Code với PKCE cho public client và confidential Authorization Code khi backend giữ được secret.",
+        "Compatibility khác nhau theo client: SPA và mobile là public client; server-rendered web app có thể exchange code ở backend.",
+        "PKCE bảo vệ public client không giữ được client secret, vì code bị đánh cắp vẫn chưa đủ nếu thiếu verifier.",
+        "Authorization Code hỗ trợ access token ngắn hạn, refresh-token rotation, state validation và server-side control rõ hơn.",
+        "Token lifetime policy nên giữ access token ngắn hạn và dùng refresh-token rotation thay vì kéo dài access token kiểu Implicit.",
+        "Scope consent review nên xem `offline_access`, admin và write scope là rủi ro cao khi migrate.",
+        "Authorize request nên harden `response_type`, `redirect_uri` khớp tuyệt đối, `state` entropy cao, `scope` tối thiểu và S256 `code_challenge` cho public client.",
+        "Token endpoint contract nên chỉ nhận authorization code chưa dùng, verify cùng redirect URI, và yêu cầu backend `client_secret` hoặc public-client `code_verifier`.",
+        "Frontend cleanup nên xóa parser token-fragment cũ, clear state trên callback URL, xóa storage key cũ, redact telemetry và clear PKCE verifier sau mọi kết quả.",
+        "Nếu dùng OpenID Connect ID token, hãy validate `iss`, `aud`, `exp`, `iat` và `nonce` trước khi tin identity claim.",
+        "Callback code nên reject URL có token, validate `state`, verify redirect URI và bắt buộc PKCE verifier cho public client.",
+        "PKCE checklist nên tạo `code_verifier` entropy cao, derive S256 `code_challenge`, chỉ lưu tới lúc callback rồi clear sau khi exchange.",
+        "Trước khi migrate, cần verify capability của provider: PKCE S256, state validation, front-channel token blocking và refresh-token rotation.",
+        "Rollout nên đi theo pha: inventory legacy client, bật Authorization Code song song, enforce rule reject callback, rồi xóa parser Implicit.",
+        "Client cutover nên thay authorize URL, chỉ lưu PKCE verifier trong login attempt, reject legacy token callback và verify end-to-end login trước khi rollout rộng.",
+        "Trong rollout, hãy track authorize request type, rejected callback, failed token exchange, token-bearing callback và refresh-token reuse.",
+        "Failure mode thường gặp là state mismatch, missing PKCE verifier, token-bearing callback, redirect URI drift và refresh-token reuse.",
+        "Nếu phát hiện token-bearing callback, hãy xử lý như incident: triage token xuất hiện ở đâu, contain bằng cách block implicit callback, recover bằng rotate hoặc revoke session rủi ro, rồi harden test.",
+        "Deprecation policy nên block Implicit client mới, bắt legacy exception có owner, yêu cầu PKCE cho public client và coi token-bearing callback là security event.",
+        "Security test matrix nên cover front-channel token blocking, state validation, PKCE verifier failure, authorization-code reuse hoặc expiry và refresh-token reuse.",
+        "Migration thực tế là block `response_type=token`, thêm PKCE, validate `state`, reject callback URL có token, và test code reuse, state mismatch, missing verifier."
+      ],
+      "code": "GET /authorize?response_type=token&client_id=spa&redirect_uri=https://app.example/callback\n\nGET /authorize?response_type=code&client_id=spa&redirect_uri=https://app.example/callback&code_challenge=...&code_challenge_method=S256\n\nawait fetch('/oauth/token', {\n  method: 'POST',\n  headers: { 'Content-Type': 'application/json' },\n  body: JSON.stringify({\n    grant_type: 'authorization_code',\n    code,\n    redirect_uri,\n    client_id,\n    code_verifier\n  })\n});",
+      "note": "Trả lời phỏng vấn: Implicit không bị loại vì OAuth tệ, mà vì token-in-URL là pattern yếu hơn trong browser khi Authorization Code với PKCE đã phổ biến.",
+      "links": [
+        {
+          "href": "{{HUB_BASE_URL}}/workbench/oauth-flow-plan",
+          "label": "OAuth flow workbench",
+          "desc": "Luyện so sánh Implicit Flow với Authorization Code plus PKCE và lập migration plan."
+        }
+      ]
+    },
+    {
+      "title": "107. SQL Injection: Bí kíp trả lời phỏng vấn và phòng tránh thực tế",
+      "body": "SQL Injection xảy ra khi input của người dùng làm thay đổi cấu trúc hoặc logic của câu SQL thay vì chỉ được xem là dữ liệu. Payload kinh điển như `' OR 1=1 --` cố biến một truy vấn hẹp thành điều kiện luôn đúng. Cách phòng tránh thực tế là dùng parameterized query: cấu trúc SQL cố định, giá trị người dùng được truyền riêng qua binding.",
+      "bullets": [
+        "Không nối request input trực tiếp vào chuỗi SQL.",
+        "Dùng Eloquent hoặc query builder cho truy vấn thông thường vì value sẽ được bind an toàn hơn.",
+        "Nếu bắt buộc dùng raw SQL, hãy dùng positional hoặc named binding.",
+        "Escape chuỗi không nên là lớp phòng thủ chính; parameter binding mới là thói quen an toàn hơn.",
+        "Table name, column name và sort direction động phải dùng allowlist vì identifier không thể bind như value.",
+        "Test bằng payload như `' OR 1=1 --` và sort string độc hại để chứng minh input vẫn chỉ là data."
+      ],
+      "code": "// Không an toàn\n$sql = \"select * from users where email = '\".$request->input('email').\"'\";\n\n// An toàn hơn với raw SQL binding\n$users = DB::select(\n    'select * from users where email = ?',\n    [$request->input('email')]\n);\n\n// An toàn hơn với query builder\n$user = User::query()\n    ->where('email', $request->string('email'))\n    ->first();",
+      "note": "Trả lời phỏng vấn: SQL Injection không chỉ là chuyện database; nó là chuyện boundary. Input người dùng không bao giờ được biến thành logic SQL.",
+      "links": [
+        {
+          "href": "{{HUB_BASE_URL}}/workbench/sql-injection-defense-plan",
+          "label": "SQL Injection defense workbench",
+          "desc": "Thực hành chấm risk, viết parameterized query, review allowlist, test payload độc hại và chuẩn bị câu trả lời phỏng vấn."
+        }
+      ]
+    },
+    {
+      "title": "108. Hiểu nhanh CSRF & cách phòng chống",
+      "body": "CSRF xảy ra khi attacker lừa browser của user đang đăng nhập gửi một request đổi trạng thái tới app. Browser có thể tự đính kèm session cookie, nên server nhìn request đó như đã authenticated dù user không thật sự muốn thực hiện hành động. CSRF token của Laravel chứng minh request đi từ flow hợp lệ của app, còn SameSite cookie giúp giảm việc cookie bị gửi trong ngữ cảnh cross-site.",
+      "bullets": [
+        "CSRF chủ yếu là rủi ro browser và cookie: nạn nhân đã đăng nhập, browser tự gửi cookie đủ điều kiện.",
+        "Route đổi trạng thái nên dùng POST, PUT, PATCH hoặc DELETE, không dùng GET.",
+        "Blade form nên có `@csrf`; JavaScript stateful flow nên gửi đúng XSRF header hoặc đi theo flow CSRF cookie của Sanctum.",
+        "SameSite=Lax là default tốt cho nhiều web app, Strict mạnh hơn nhưng có thể ảnh hưởng external redirect, còn None cần Secure và review kỹ hơn.",
+        "SameSite giảm bề mặt rủi ro, nhưng không thay thế CSRF token validation cho hành động nhạy cảm.",
+        "Test phải chứng minh thiếu token hoặc token cũ bị chặn và server state không đổi."
+      ],
+      "code": "<form method=\"POST\" action=\"{{ route('profile.update') }}\">\n    @csrf\n    @method('PATCH')\n    <input name=\"name\" value=\"{{ old('name', $user->name) }}\">\n    <button type=\"submit\">Lưu</button>\n</form>\n\n// Sanctum-style SPA bootstrap\nawait axios.get('/sanctum/csrf-cookie', { withCredentials: true });\nawait axios.post('/login', payload, { withCredentials: true });",
+      "note": "Trả lời phỏng vấn: CSRF không phải là ăn cắp cookie; nó là lợi dụng việc browser tự gửi cookie. Phòng thủ thực tế là token hợp lệ gắn với session, cấu hình SameSite rõ ràng, giữ HTTP method đúng boundary và test case thiếu hoặc stale token.",
+      "links": [
+        {
+          "href": "{{HUB_BASE_URL}}/workbench/csrf-protection-plan",
+          "label": "CSRF protection workbench",
+          "desc": "Thực hành chấm risk, chọn token control, review SameSite, lý giải Sanctum/browser flow và viết feature test cho lỗi CSRF."
+        }
+      ]
+    },
+    {
+      "title": "109. Hiểu rõ XSS và cách phòng chống",
+      "body": "XSS xảy ra khi dữ liệu không đáng tin đi ra browser dưới dạng script hoặc HTML có thể thực thi. Reflected XSS quay lại ngay từ request, stored XSS được lưu rồi hiển thị cho user khác, còn DOM-based XSS được tạo bởi cách render phía client không an toàn. Laravel hỗ trợ vì Blade escape `{{ }}` mặc định, nhưng XSS vẫn có thể xảy ra khi team render raw HTML, nhét data vào JavaScript, tin rich text hoặc build DOM bằng API browser không an toàn.",
+      "bullets": [
+        "Xem XSS là bài toán output-context: HTML text, HTML attribute, JavaScript, URL và CSS cần cách xử lý khác nhau.",
+        "Dùng Blade `{{ }}` cho text thông thường và tránh `{!! !!}` nếu HTML chưa được sanitize hoặc chưa có trust boundary rõ ràng.",
+        "Không đưa dữ liệu người dùng trực tiếp vào inline JavaScript; hãy serialize an toàn và tách data khỏi code.",
+        "Với rich text, sanitize bằng allowlist tag và attribute trước khi render.",
+        "CSP là lớp phòng thủ bổ sung, không thay thế escaping.",
+        "Test reflected, stored và DOM rendering path bằng payload phải hiển thị như text, không được thực thi."
+      ],
+      "code": "// Blade output an toàn hơn cho text\n<p>{{ $comment->body }}</p>\n\n// Rủi ro: chỉ dùng khi HTML tin cậy hoặc đã sanitize\n{!! $trustedHtml !!}\n\n// Truyền data sang JavaScript an toàn hơn\n<script>\n  window.pageData = @json($viewModel);\n</script>",
+      "note": "Trả lời phỏng vấn: XSS không chỉ là `<script>alert(1)</script>`. Vấn đề thật là dữ liệu không đáng tin đi vào context browser có thể thực thi. Phòng thủ là escape theo context, sanitize rich text, giữ boundary render rõ ràng và test để chứng minh payload chỉ hiển thị như text.",
+      "links": [
+        {
+          "href": "{{HUB_BASE_URL}}/workbench/security-escape-preview",
+          "label": "XSS escape preview workbench",
+          "desc": "Thực hành xem input nguy hiểm được escape khi render, review cách dùng Blade và giải thích vì sao raw HTML cần trust boundary."
+        }
+      ]
+    },
+    {
+      "title": "110. Client Credentials Flow là gì?",
+      "body": "Client Credentials Flow là OAuth2 flow dùng cho machine-to-machine access. Không có màn hình login của người dùng. Một confidential client như backend service, worker, cron job hoặc internal microservice tự xác thực với authorization server bằng client ID và secret hoặc private key, rồi nhận access token cho danh tính của chính service đó.",
+      "bullets": [
+        "Dùng Client Credentials khi caller là ứng dụng server-side đáng tin cậy đang hành động như chính nó, không phải thay mặt user.",
+        "Client gửi `grant_type=client_credentials` tới token endpoint và xác thực bằng secret, mTLS, private key JWT hoặc cơ chế confidential-client tương đương.",
+        "Scope nên theo service và least-privilege, ví dụ `orders.read` hoặc `billing.write`, không dùng permission rộng kiểu user.",
+        "Resource server phải validate issuer, audience, expiry, chữ ký và scope trước khi tin token.",
+        "Trong microservice, flow này phù hợp cho service-to-service call, background job, scheduled sync và internal API.",
+        "Không dùng Client Credentials cho browser SPA hoặc mobile app vì chúng không giữ được client secret.",
+        "Review vận hành cần có secret rotation, token lifetime ngắn, audit log, rate limit, owner của service và kịch bản khi client secret bị lộ."
+      ],
+      "code": "POST /oauth/token\nContent-Type: application/x-www-form-urlencoded\nAuthorization: Basic base64(client_id:client_secret)\n\ngrant_type=client_credentials&scope=orders.read\n\n// Resource server check\nif (! $token->hasAudience('orders-api') || ! $token->hasScope('orders.read')) {\n    throw new AuthorizationException('Service token is not allowed to read orders.');\n}",
+      "note": "Trả lời phỏng vấn: Client Credentials Flow không phải flow login user. Nó là service identity. Điểm quan trọng là confidential client authentication, scope tối thiểu, audience validation, token ngắn hạn, secret rotation và owner rõ trong kiến trúc microservice.",
+      "links": [
+        {
+          "href": "{{HUB_BASE_URL}}/workbench/oauth-flow-plan",
+          "label": "OAuth flow workbench",
+          "desc": "Thực hành chọn OAuth flow, validate boundary của token và giải thích khi nào Client Credentials phù hợp cho service-to-service access."
+        }
+      ]
+    },
+    {
+      "title": "111. PKCE là gì, và khi nào nên dùng?",
+      "body": "PKCE, viết đầy đủ là Proof Key for Code Exchange, là lớp bảo vệ cho Authorization Code flow trong OAuth 2.0. Client tạo một `code_verifier` dùng một lần, gửi `code_challenge` được derive từ verifier trong authorize request, rồi phải đưa lại verifier gốc khi đổi authorization code lấy token. Nhờ vậy, authorization code bị đánh cắp cũng chưa đủ để lấy token.",
+      "bullets": [
+        "Dùng PKCE cho public client như SPA, mobile app, desktop app, CLI tool hoặc bất kỳ client nào không giữ được client secret an toàn.",
+        "Ưu tiên `code_challenge_method=S256`; không dùng plain challenge trừ khi provider legacy không còn lựa chọn tốt hơn.",
+        "PKCE không thay thế `state`, kiểm tra redirect URI, chính sách token lifetime hoặc refresh-token rotation; nó bảo vệ riêng bước code exchange.",
+        "Backend confidential client vẫn có thể dùng Authorization Code với client secret, nhưng nhiều team cũng bật PKCE như một lớp defense in depth.",
+        "Chỉ lưu verifier trong đúng login attempt, xóa sau khi thành công hoặc thất bại, và không bao giờ ghi verifier vào log."
+      ],
+      "code": "const codeVerifier = generateHighEntropyString();\nconst codeChallenge = base64url(sha256(codeVerifier));\n\nGET /authorize?response_type=code&client_id=spa&redirect_uri=https://app.example/callback&code_challenge=${codeChallenge}&code_challenge_method=S256&state=${state}\n\nPOST /oauth/token\ngrant_type=authorization_code&code=AUTH_CODE&redirect_uri=https://app.example/callback&client_id=spa&code_verifier=${codeVerifier}",
+      "note": "Trả lời phỏng vấn: dùng Authorization Code với PKCE khi OAuth client không giữ được secret. PKCE buộc authorization code phải khớp với login attempt ban đầu, nên chỉ chặn được code thôi chưa đủ để lấy token.",
+      "links": [
+        {
+          "href": "{{HUB_BASE_URL}}/workbench/oauth-flow-plan",
+          "label": "OAuth flow workbench",
+          "desc": "Thực hành sequence PKCE, quyết định public client, callback validation và migration khỏi Implicit Flow."
+        }
+      ]
+    },
+    {
+      "title": "112. Security Misconfiguration Thường Gặp",
+      "body": "Security Misconfiguration xảy ra khi app, framework, server, cloud service, proxy, storage bucket, header policy hoặc biến môi trường được deploy ở trạng thái không an toàn. Lỗi này rất hay gặp vì nó không nằm trong một controller cụ thể, mà nằm ở default, config copy từ local, debug flag, admin tool mở, CORS quá rộng, secret lộ, header thiếu hoặc setting production vẫn giống development.",
+      "bullets": [
+        "Ví dụ kinh điển: `APP_DEBUG=true` ở production, lộ file `.env`, storage bucket public, credential admin mặc định, directory listing và trang lỗi quá chi tiết.",
+        "Ví dụ web: không ép HTTPS, cookie flag yếu, CORS quá thoáng, thiếu security header và tin proxy header khi chưa kiểm soát proxy boundary.",
+        "Với Laravel, nên check `APP_ENV`, `APP_DEBUG`, `APP_KEY`, `SESSION_SECURE_COOKIE`, `SESSION_DOMAIN`, trusted proxies, log exposure, config cache, storage symlink và package update.",
+        "Phòng tránh bằng secure default, checklist theo môi trường, test tự động, secret scanning, least privilege, hardening header và smoke check sau deploy.",
+        "Khi phỏng vấn, hãy nêu một failure path cụ thể và một cách verify, đừng chỉ nói chung chung 'cấu hình server cho đúng'."
+      ],
+      "code": "APP_ENV=production\nAPP_DEBUG=false\nSESSION_SECURE_COOKIE=true\nSESSION_SAME_SITE=lax\n\n# Deployment checks\nphp artisan config:cache\nphp artisan route:list --path=practice\n# Verify no .env, debug toolbar, storage bucket, or admin panel is publicly exposed.",
+      "note": "Trả lời phỏng vấn: Security Misconfiguration là lỗi setup không an toàn, không phải lỗi business logic. Tôi sẽ kiểm tra default nguy hiểm, secret lộ, debug output, network/browser policy quá thoáng, header yếu và production config drift, rồi chứng minh fix bằng test và smoke check deploy.",
+      "links": [
+        {
+          "href": "{{HUB_BASE_URL}}/practice/configuration-readiness",
+          "label": "Configuration readiness lab",
+          "desc": "Thực hành đọc app/auth config như runtime contract, rồi biến setting rủi ro thành evidence review, test và release check."
+        }
+      ]
+    },
+    {
+      "title": "113. Hiểu IDOR qua ví dụ API thực tế",
+      "body": "IDOR, hay Insecure Direct Object Reference, xảy ra khi API tin một object ID do user điều khiển như `/api/invoices/42` mà không chứng minh user hiện tại được phép truy cập đúng object đó. Attacker không cần SQL Injection hay XSS; họ chỉ đổi ID và chờ backend trả dữ liệu của người khác.",
+      "bullets": [
+        "Pattern nguy hiểm thường là `Invoice::findOrFail($id)` rồi trả record mà không có policy hoặc tenant scope.",
+        "Tấn công thực tế: đăng nhập bằng user A, gọi `/api/orders/1001`, sau đó đổi ID thành `/api/orders/1002` thuộc user B.",
+        "IDOR là lỗi authorization, không phải lỗi authentication: attacker có thể đang đăng nhập hợp lệ.",
+        "Phòng tránh bằng policy, scoped query, check tenant/team ownership, route model binding kèm authorize và test với hai user khác nhau.",
+        "Không dựa vào việc ẩn nút trên frontend hoặc ID nhìn ngẫu nhiên như lớp bảo vệ chính.",
+        "Trả lời phỏng vấn: IDOR là truy cập object trực tiếp nhưng thiếu object-level authorization. Tôi phòng tránh bằng ownership/permission check cho từng object read, update, delete, download hoặc export."
+      ],
+      "code": "// Rủi ro: đã login nhưng chưa kiểm quyền trên invoice này\nRoute::get('/api/invoices/{invoice}', function (Invoice $invoice) {\n    return new InvoiceResource($invoice);\n});\n\n// An toàn hơn: policy và tenant ownership được kiểm tra\nRoute::get('/api/invoices/{invoice}', function (Invoice $invoice) {\n    Gate::authorize('view', $invoice);\n\n    return new InvoiceResource($invoice);\n});\n\nclass InvoicePolicy\n{\n    public function view(User $user, Invoice $invoice): bool\n    {\n        return $user->tenant_id === $invoice->tenant_id;\n    }\n}",
+      "note": "Teduco Labs mental model: mỗi object ID trong API giống một tay nắm cửa. Authentication chứng minh ai đang cầm tay nắm; authorization quyết định người đó có được mở đúng cánh cửa này hay không.",
+      "links": [
+        {
+          "href": "{{HUB_BASE_URL}}/workbench/idor-access-review",
+          "label": "IDOR access review workbench",
+          "desc": "Thực hành đổi ID như attacker, kiểm object-level authorization, đặt policy Laravel, scope tenant, viết test và chuẩn bị câu trả lời phỏng vấn IDOR."
+        }
+      ]
+    },
+    {
+      "title": "114. Lỗi Authentication Nhiều Người Mắc",
+      "body": "Broken authentication xảy ra khi hệ thống không còn đủ chắc chắn rằng request thật sự thuộc về đúng user, đúng session, đúng thiết bị hoặc đúng login flow. Đây không chỉ là lỗi form đăng nhập. Nó gồm session yếu, link reset password thiếu hạn dùng, thiếu rate limit, token dễ đoán, không rotate session, recovery MFA yếu, remember-me cookie bị lộ, hoặc token flow không revoke được.",
+      "bullets": [
+        "Lỗi phổ biến là chỉ kiểm tra đăng nhập thành công, nhưng bỏ qua session fixation, logout invalidation, thời hạn reset password, rotate remember-me token và phát hiện login bất thường.",
+        "Trong API và SPA, broken authentication thường xuất hiện dưới dạng bearer token sống quá lâu, lưu token sai chỗ, refresh token không rotate, không có danh sách device/session hoặc revoke token không được enforce.",
+        "Đường tấn công thực tế: attacker đoán hoặc lấy được credential, dùng lại session cũ, lạm dụng reset token, hoặc brute-force login vì app thiếu throttling, lockout, MFA challenge hoặc cảnh báo bất thường.",
+        "Với Laravel, nên rate limit login, regenerate session sau khi login, invalidate session khi logout hoặc đổi mật khẩu, dùng hash password mặc định hiện đại, đặt hạn cho reset token, bật secure cookie và test failure flow.",
+        "Đừng nhầm authentication với authorization: authentication chứng minh danh tính, còn authorization quyết định user đã xác thực được phép truy cập gì.",
+        "Trả lời phỏng vấn: broken authentication là mọi điểm yếu cho phép sai người trở thành, tiếp tục ở lại, hoặc hành động như một user. Tôi phòng tránh bằng session lifecycle an toàn, kiểm soát reset password, MFA/recovery review, revoke token, throttling, logging và test các failure path."
+      ],
+      "code": "// Rủi ro: login thành công nhưng chưa review vòng đời session\nRoute::post('/login', function (Request $request) {\n    if (Auth::attempt($request->only('email', 'password'))) {\n        return redirect('/dashboard');\n    }\n\n    return back()->withErrors(['email' => 'Invalid credentials']);\n});\n\n// An toàn hơn: regenerate session sau khi xác thực\nRoute::post('/login', function (Request $request) {\n    $request->validate([\n        'email' => ['required', 'email'],\n        'password' => ['required', 'string'],\n    ]);\n\n    if (! Auth::attempt($request->only('email', 'password'))) {\n        RateLimiter::hit('login:'.$request->ip());\n        return back()->withErrors(['email' => 'Invalid credentials']);\n    }\n\n    $request->session()->regenerate();\n\n    return redirect()->intended('/dashboard');\n});",
+      "note": "Teduco Labs mental model: authentication là một vòng đời, không phải một nút bấm. Hãy review cách danh tính được tạo, giữ, làm mới, khôi phục, revoke, ghi log và challenge khi hành vi có dấu hiệu rủi ro.",
+      "links": [
+        {
+          "href": "{{HUB_BASE_URL}}/workbench/authorization-policy-plan",
+          "label": "Authorization policy workbench",
+          "desc": "Thực hành tách identity check khỏi access decision, rồi ghi rõ Laravel auth, policy, throttling và test chứng minh boundary bảo mật ở đâu."
+        }
+      ]
     }
   ]
 }

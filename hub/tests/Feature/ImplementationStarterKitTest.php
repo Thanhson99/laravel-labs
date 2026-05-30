@@ -60,4 +60,64 @@ final class ImplementationStarterKitTest extends TestCase
 
         $response->assertNotFound();
     }
+
+    /**
+     * JavaScript closure starter kits provide closure evidence snippets.
+     */
+    public function test_javascript_closure_starter_kit_returns_scope_snippets(): void
+    {
+        $response = $this->getJson('/api/practice/starter-kit?record_id=laravel-frontend-en-json-item-8&technology=javascript-closures');
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('data.checklist.blueprint.drill.technology', 'javascript-closures')
+            ->assertJsonPath('data.snippets.0.label', 'Feature test')
+            ->assertJsonPath('data.snippets.1.label', 'Service')
+            ->assertJsonPath('data.usage.1', 'Paste the closure feature test and evidence service snippets.')
+            ->assertJsonPath('data.usage.3', 'Run the focused closure test first, then the full suite and Pint.');
+
+        $this->assertStringContainsString('assertSee(\'lexical scope\')', $response->json('data.snippets.0.code'));
+        $this->assertStringContainsString('captured_binding', $response->json('data.snippets.1.code'));
+        $this->assertStringContainsString('stale closure', $response->json('data.snippets.1.code'));
+    }
+
+    /**
+     * Arrow-function this starter kits provide lexical-this comparison snippets.
+     */
+    public function test_arrow_this_starter_kit_returns_lexical_this_snippets(): void
+    {
+        $response = $this->getJson('/api/practice/starter-kit?record_id=laravel-frontend-en-json-item-62&technology=javascript-closures');
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('data.checklist.blueprint.drill.technology', 'javascript-closures')
+            ->assertJsonPath('data.snippets.0.label', 'Feature test')
+            ->assertJsonPath('data.snippets.1.label', 'Service')
+            ->assertJsonPath('data.usage.1', 'Paste the arrow-this feature test and comparison service snippets.')
+            ->assertJsonPath('data.usage.3', 'Run the focused arrow-this test first, then the full suite and Pint.');
+
+        $this->assertStringContainsString('assertSee(\'lexical this\')', $response->json('data.snippets.0.code'));
+        $this->assertStringContainsString('dynamic this comes from the call site', $response->json('data.snippets.1.code'));
+        $this->assertStringContainsString('call/apply/bind cannot rebind arrow this', $response->json('data.snippets.1.code'));
+    }
+
+    /**
+     * IDOR starter kits provide object authorization snippets.
+     */
+    public function test_idor_starter_kit_returns_object_authorization_snippets(): void
+    {
+        $response = $this->getJson('/api/practice/starter-kit?record_id=laravel-auth-security-en-json-item-113&technology=idor-access-control');
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('data.checklist.blueprint.drill.technology', 'idor-access-control')
+            ->assertJsonPath('data.snippets.0.label', 'Feature test')
+            ->assertJsonPath('data.snippets.1.label', 'Service')
+            ->assertJsonPath('data.usage.1', 'Paste the IDOR feature test and object-authorization service snippets.')
+            ->assertJsonPath('data.usage.3', 'Run the focused IDOR test first, then the full suite and Pint.');
+
+        $this->assertStringContainsString('ID-swap denial test', $response->json('data.snippets.0.code'));
+        $this->assertStringContainsString('object-level authorization', $response->json('data.snippets.1.code'));
+        $this->assertStringContainsString('scoped_lookup', $response->json('data.snippets.1.code'));
+    }
 }

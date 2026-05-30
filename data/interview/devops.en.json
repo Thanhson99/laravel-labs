@@ -29,10 +29,16 @@
       "tone": "coral"
     },
     {
-      "start": 41,
+      "start": 42,
       "title": "Incidents, Cost, Monitoring, And On-Call Thinking",
       "description": "The final group focuses on incident response, health checks, alerts, post-deploy verification, cloud cost, and real operational thinking.",
       "tone": "amber"
+    },
+    {
+      "start": 70,
+      "title": "AI-Assisted Cloud Engineer Interview",
+      "description": "Checks whether a candidate really uses AI at work through concrete tasks, IaC review, debugging, verification, AWS documentation conflicts, team prompts, and red/green flags.",
+      "tone": "coral"
     }
   ],
   "items": [
@@ -129,6 +135,25 @@
         "Knowing the keyword is not enough; you need to understand where the request goes and what context may be lost."
       ],
       "code": "location /api/ {\n    proxy_set_header Host $host;\n    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;\n    proxy_set_header X-Forwarded-Proto $scheme;\n    proxy_pass http://api-upstream;\n}"
+    },
+    {
+      "title": "Load balancer algorithms: how do you explain the four common choices in a system-design interview?",
+      "body": "A load balancer distributes traffic across multiple upstreams so one server does not become the only entry point. The four practical algorithms to explain are round robin, weighted round robin, least connections, and IP hash. A strong answer connects the algorithm to traffic shape, upstream capacity, session state, health checks, and failure behavior.",
+      "bullets": [
+        "Round robin is the simplest baseline when servers have similar capacity and traffic is even.",
+        "Weighted round robin is better when some upstreams are stronger or should receive more traffic.",
+        "Least connections helps when requests are long-running or bursty because it avoids already busy upstreams.",
+        "IP hash gives session affinity, but it can create uneven traffic and should not replace proper shared session storage."
+      ],
+      "code": "upstream app {\n    least_conn;\n    server app-1:9000;\n    server app-2:9000;\n    server app-3:9000;\n}\n\nlocation / {\n    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;\n    proxy_pass http://app;\n}",
+      "tip": "Short answer: `I start with round robin for equal servers, use weights for unequal capacity, least connections for long-running traffic, and IP hash only when session affinity is required. I still need health checks and metrics because the algorithm alone does not make the system reliable.`",
+      "links": [
+        {
+          "href": "{{HUB_BASE_URL}}/workbench/load-balancer-plan",
+          "label": "Run load-balancer workbench",
+          "desc": "Generate a scenario-based algorithm choice, config example, health checks, and interview answer."
+        }
+      ]
     },
     {
       "title": "If deploy succeeds but assets are broken or the UI still looks old, what do you think about?",
@@ -292,14 +317,6 @@
       "bullets": [
         "This is a very confusing bug if you only inspect application code.",
         "It tests your ability to connect network layers with app behavior."
-      ]
-    },
-    {
-      "title": "If `nginx` returns `502 Bad Gateway`, what do you think about first?",
-      "body": "Usually you think about the upstream being down, PHP-FPM not running, wrong socket or port, timeout, socket permissions, or the upstream failing in a way Nginx surfaces only as a gateway error. `502` usually means Nginx cannot talk to its backend properly.",
-      "bullets": [
-        "This is a very common runtime and configuration problem.",
-        "A strong answer should mention checking both `nginx` error logs and the upstream logs."
       ]
     },
     {
@@ -592,6 +609,216 @@
         "This is a very common runtime and configuration issue.",
         "A strong answer should mention checking both `nginx` error logs and upstream logs."
       ]
+    },
+    {
+      "title": "Kubernetes in one minute: how do you explain it with ships?",
+      "body": "Use a simple fleet story: the control plane is the command ship, worker nodes are cargo ships, and containers are application cargo. You declare how many copies of the app should run, Kubernetes schedules pods onto worker nodes, gives them stable service addresses, routes traffic through service or ingress, and replaces pods when they fail.",
+      "bullets": [
+        "Master Node or control plane: the command ship that stores cluster state, schedules work, and watches whether the fleet matches the desired state.",
+        "Worker Node: the cargo ship that actually runs pods and containers.",
+        "Container: the packaged application process.",
+        "Pod: the smallest deployable Kubernetes unit that carries one or more containers.",
+        "Deployment: the desired shipping order, including image and replica count.",
+        "Service: the stable harbor address that sends traffic to healthy pods.",
+        "Ingress or LoadBalancer: the external entry route for users.",
+        "Readiness and liveness probes: health signals that decide when cargo is ready or needs replacement.",
+        "Startup probe: gives slow apps time to boot before liveness starts restarting them.",
+        "Resource requests and limits: tell Kubernetes how to schedule pods and cap memory risk.",
+        "Scaling: replicas help stateless capacity, but workers, jobs, and stateful data need different signals.",
+        "Rollout: use rollout status, rollout history, and rollout undo to ship and recover safely.",
+        "ConfigMap and Secret: split ordinary config from sensitive values and scope access carefully.",
+        "Namespace and RBAC: separate environments, service accounts, permissions, and quotas instead of using default for everything.",
+        "NetworkPolicy: define which pods may talk to each other instead of assuming every pod should reach every other pod.",
+        "Observability: combine pod events, previous logs, resource metrics, endpoints, and app-level health.",
+        "Cost and capacity: replicas, node capacity, load balancers, storage, logs, and metrics all have operational cost.",
+        "Availability: use PodDisruptionBudget, anti-affinity, or topology spread so maintenance does not remove every replica.",
+        "Graceful shutdown: handle SIGTERM, drain traffic or jobs, and choose terminationGracePeriodSeconds from real work duration.",
+        "Image and pod security: avoid `latest`, use predictable pull policy, scan images, and run with a restrictive securityContext.",
+        "Failure diagnosis: map ImagePullBackOff, OOMKilled, probe failure, Forbidden, DNS timeout, and volume mount failures to the right layer before changing manifests.",
+        "Backend runtime: run migrations as a controlled job or release step, split web and worker pods, move session/cache state to shared services, and keep readiness checks lightweight.",
+        "Manifest review: check labels, selectors, probes, resource requests, rollout safety, runtime state, and service routing before merge.",
+        "CI/CD gates: render manifests, run server-side dry run, apply policy checks, and run rollout or manual-job smoke tests.",
+        "One-minute script: rehearse the hook, analogy, mechanics, production note, and closing so the explanation stays short and accurate.",
+        "Interview rubric and command ladder: judge whether the answer covers definition, mechanism, tradeoffs, debugging, then inspect nodes, pods, logs, routing, and storage in order.",
+        "Resource decision guide: choose Deployment, CronJob, Service, Ingress, LoadBalancer, and storage resources from workload shape instead of memorizing YAML.",
+        "Manifest smells: catch selector mismatch, missing readiness probe, missing resources, mutable image tags, and unsafe stateful writes before merge.",
+        "Practice drills: explain without notes, trace one request, debug a failed rollout, and prove storage durability for stateful data.",
+        "Production readiness score: reason about replica count, external access, scheduled work, and stateful data before calling the setup production-ready.",
+        "SLO observability: connect availability, latency or duration, error rate, resource saturation, and storage durability to alert conditions.",
+        "Deployment review: ask for evidence on scheduling, readiness, rollback, routing, and storage before release.",
+        "Troubleshooting: start with `kubectl describe`, logs, events, selectors, endpoints, probes, and resource pressure.",
+        "Reconciliation: Kubernetes keeps comparing desired state with actual state and repairs drift."
+      ],
+      "code": "kubectl get nodes\nkubectl get pods\nkubectl describe pod <pod-name>\nkubectl rollout status deployment/<app-name>",
+      "note": "Interview answer: Kubernetes is not just a container runner. It is orchestration: scheduling, service discovery, rollout, self-healing, and desired-state control across many machines.",
+      "links": [
+        {
+          "href": "{{HUB_BASE_URL}}/workbench/kubernetes-analogy-plan",
+          "label": "Kubernetes analogy workbench",
+          "desc": "Practice explaining control plane, worker nodes, pods, containers, services, ingress, probes, and reconciliation with a ship fleet analogy."
+        }
+      ]
+    },
+    {
+      "title": "Why can a reverse proxy outage make all healthy backend servers unreachable?",
+      "body": "A reverse proxy sits in front of backend servers and becomes the first request path for users. It can improve security, TLS handling, caching, routing, WAF behavior, and load distribution, but it also becomes a shared dependency. If the proxy or edge layer fails, hundreds of healthy origin servers may still be unreachable because traffic never reaches them.",
+      "bullets": [
+        "Do not confuse `many healthy servers behind the proxy` with end-to-end availability.",
+        "The proxy layer needs its own redundancy, config validation, staged rollout, health checks, rollback path, and blast-radius controls.",
+        "A failure in a hot-path module can look like a DDoS symptom from the outside because requests pile up or fail before they reach origins."
+      ]
+    },
+    {
+      "title": "What did the Cloudflare November 18, 2025 outage teach about reverse proxy and edge risk?",
+      "body": "Cloudflare's postmortem says the incident was not caused by a cyberattack. The team first suspected hyperscale DDoS symptoms, but the core issue was a larger-than-expected feature file that propagated to systems in the request path and caused widespread HTTP 500 errors. The lesson is not that reverse proxies are bad; it is that the shared edge layer must fail small, validate config shape and size, and roll changes out with health gates.",
+      "bullets": [
+        "A proxy layer can become the platform's real control point: if it breaks, origin capacity behind it does not matter.",
+        "Config and generated data files deserve the same safety discipline as code: schema checks, size limits, staged rollout, fast rollback, and blast-radius tracking.",
+        "Incident response should distinguish DDoS, config regression, dependency failure, and proxy-module crash quickly instead of treating every global failure as an attack."
+      ],
+      "links": [
+        {
+          "href": "{{HUB_BASE_URL}}/workbench/reverse-proxy-failure-plan",
+          "label": "Proxy failure-mode workbench",
+          "desc": "Practice origin reachability, config validation, staged rollout, health gates, rollback, and blast-radius review."
+        }
+      ],
+      "note": "Interview answer: reverse proxy availability is part of system availability. Multi-server origin architecture is not enough if all traffic depends on one broken edge path."
+    },
+    {
+      "title": "What is SIEM, and how does the ELK Stack fit into it?",
+      "body": "SIEM means Security Information and Event Management. It collects logs and events from applications, servers, network devices, cloud accounts, identity systems, and security tools, then normalizes, correlates, alerts, and preserves evidence for investigation. ELK can implement a SIEM-style pipeline: Beats or Elastic Agent ship logs, Logstash parses and enriches them, Elasticsearch stores and searches indexed events, and Kibana provides dashboards, saved searches, alerts, and investigation views.",
+      "bullets": [
+        "SIEM is not just a dashboard. It should help answer what happened, who or what did it, when it happened, where it happened, how severe it is, and what the next action is.",
+        "ELK becomes useful when events share fields such as timestamp, user, host, source IP, action, outcome, service, trace ID, severity, and environment.",
+        "The hard parts are alert noise, bad parsing, missing context, retention cost, access control, PII redaction, and runbook ownership."
+      ],
+      "links": [
+        {
+          "href": "{{HUB_BASE_URL}}/workbench/siem-elk-plan",
+          "label": "SIEM ELK planning workbench",
+          "desc": "Plan log sources, ELK roles, normalized fields, detection rules, retention, privacy controls, dashboards, and incident runbooks."
+        }
+      ],
+      "note": "Interview answer: ELK is a tooling stack; SIEM is the security operating capability built on top of collected events, correlation rules, alert ownership, and investigation workflow."
+    },
+    {
+      "title": "How do you know whether a Cloud Engineer candidate really uses AI at work?",
+      "body": "Do not ask only whether they use ChatGPT. Ask for a recent task, the exact workflow, the prompt shape, what AI got wrong, and how they verified the output before it touched infrastructure. Real users answer with concrete tools, examples, failure stories, and limits. Shallow users answer with generic praise.",
+      "bullets": [
+        "Warm-up checks should cover tool names, where AI appears in a normal workday, and why the candidate started using it.",
+        "The interview goal is not to reward AI hype. It is to find whether the candidate can use AI while still owning production risk.",
+        "Good candidates can separate search, drafting, debugging, review, and decision support instead of saying only `I ask AI questions`."
+      ]
+    },
+    {
+      "title": "Which AI tools do you actually use, and where do they appear in a normal workday?",
+      "body": "A strong answer names tools and use cases without taking long to think: ChatGPT or Claude for design review, Cursor or Copilot for code changes, AI inside docs/search for discovery, and internal assistants for runbooks. The candidate should describe where AI helps: drafting Terraform, explaining logs, writing checklist drafts, reviewing YAML, summarizing incidents, or preparing test commands.",
+      "bullets": [
+        "Push for real workflow sequence: context gathering, prompt, output review, source verification, local test, peer review, then apply or deploy.",
+        "If the answer stays at `AI is useful for work`, ask for the last actual task and the exact artifact AI helped produce.",
+        "A mature answer includes tasks where AI is intentionally not used, such as secret handling, access approval, policy exceptions, or production changes without human review."
+      ]
+    },
+    {
+      "title": "Tell me one concrete task from last week where you used AI. What did you prompt?",
+      "body": "This is the first strong separator between real and superficial AI usage. A real user can reconstruct the task: inputs, constraints, prompt, output, edits, checks, and result. For Cloud Engineer interviews, the best examples involve Terraform modules, CloudFormation templates, CI/CD jobs, IAM policy review, Kubernetes manifests, incident triage, cost analysis, or migration planning.",
+      "bullets": [
+        "Ask them to paraphrase the prompt: role, context, constraints, source snippets, expected format, and verification request.",
+        "Look for evidence that they gave AI bounded context instead of dumping a vague question.",
+        "Good answers mention how they changed the AI output before using it."
+      ],
+      "note": "If the candidate cannot remember one recent concrete task, they may have only used AI casually."
+    },
+    {
+      "title": "When AI writes Terraform or CloudFormation, what do you review before apply?",
+      "body": "Review the provider/resource versions, state impact, IAM permissions, network exposure, lifecycle rules, replacement risk, drift assumptions, tagging, encryption, logging, cost impact, rollback path, and environment targeting. Never apply generated IaC just because it looks syntactically correct.",
+      "bullets": [
+        "Run format, validate, plan, policy checks, and peer review before apply.",
+        "Inspect any destructive change, replacement, wildcard permission, public access, security group rule, subnet route, KMS key, retention policy, or data resource.",
+        "Compare generated code with official provider or AWS documentation when the resource behavior matters."
+      ],
+      "code": "terraform fmt -check\nterraform validate\nterraform plan\ncfn-lint template.yaml\naws cloudformation validate-template --template-body file://template.yaml"
+    },
+    {
+      "title": "Have you ever used AI output that was wrong? What happened and how did you catch it?",
+      "body": "This is a useful trap question because people who use AI seriously almost always have a story. They might describe a fake CLI flag, wrong IAM action, outdated Terraform argument, unsafe default, broken regex, wrong region assumption, or a misleading root-cause explanation. The important part is not that AI failed; it is whether the engineer caught it with docs, tests, dry runs, logs, or review.",
+      "bullets": [
+        "Red flag: `AI is smart, so I usually trust it`.",
+        "Green flag: the candidate names the failure mode and the verification step that caught it.",
+        "Senior answer: they turned the failure into a reusable checklist or project prompt rule."
+      ],
+      "links": [
+        {
+          "href": "{{HUB_BASE_URL}}/workbench/ai-cloud-interview-rubric",
+          "label": "AI Cloud interview rubric workbench",
+          "desc": "Score candidate answers across concrete AI tasks, prompt workflow, IaC review, failure stories, verification, AWS Docs conflicts, and team guardrails."
+        }
+      ]
+    },
+    {
+      "title": "How do you use AI to debug a hard cloud incident or deployment issue?",
+      "body": "Use AI as a thought partner, not as the authority. Give it sanitized symptoms, timestamps, recent changes, logs, metrics, architecture context, and what has already been ruled out. Ask it to generate hypotheses, missing evidence, and next commands. Then verify against real logs, cloud events, monitoring, official docs, and reproducible tests.",
+      "bullets": [
+        "Good examples mention narrowing the layer: DNS, load balancer, TLS, IAM, network policy, container health, queue lag, database, or application code.",
+        "Strong candidates avoid pasting secrets, customer data, private keys, or sensitive incident details into public tools.",
+        "The final root cause still needs evidence, not AI confidence."
+      ]
+    },
+    {
+      "title": "How much do you trust AI output, and what is your verification workflow?",
+      "body": "Trust depends on risk. For low-risk drafts, AI can move fast. For production infrastructure, treat AI output as an untrusted proposal until it passes source verification, static checks, tests, dry run, plan review, and human review. The workflow should be explicit enough that another team member could repeat it.",
+      "bullets": [
+        "Verify claims against official documentation when the claim affects production behavior.",
+        "Use automated checks where possible: tests, linters, policy-as-code, plan diffs, dry runs, and smoke checks.",
+        "Record assumptions in the PR so reviewers know what was AI-generated, what was verified, and what remains uncertain."
+      ]
+    },
+    {
+      "title": "If AI and AWS Documentation disagree, what do you do?",
+      "body": "Use AWS Documentation, provider documentation, release notes, and live verification as the source of truth. AI can help interpret the docs or produce a checklist, but it does not outrank official docs, actual API behavior, or production evidence.",
+      "bullets": [
+        "Check document date, service region, API version, provider version, and whether the service changed recently.",
+        "Reproduce with a safe test account or dry-run path when possible.",
+        "Update the prompt or project instructions so the same wrong assumption is less likely next time."
+      ]
+    },
+    {
+      "title": "Have you written a CLAUDE.md or project system prompt? What belongs in it?",
+      "body": "A senior AI user can describe project-level instructions: architecture boundaries, command rules, test commands, security constraints, coding style, forbidden actions, deployment rules, data-handling limits, and how to verify work. The goal is to make AI follow the team workflow instead of making each person re-explain the project every time.",
+      "bullets": [
+        "Include repo structure, ownership boundaries, quality gates, docs to read first, and safe commands.",
+        "State what AI must never do: expose secrets, run destructive commands, bypass review, or apply infrastructure without approval.",
+        "Keep the file short enough to be used, then link deeper docs for details."
+      ]
+    },
+    {
+      "title": "How would you help a whole Cloud team use AI better?",
+      "body": "Start with real workflows, not tool hype. Identify repeated work such as runbook drafting, incident summaries, Terraform review, migration plans, cost investigation, PR review, and postmortem cleanup. Standardize prompts, verification checklists, allowed data rules, and examples of good and bad AI output.",
+      "bullets": [
+        "Create team prompts for IaC review, incident triage, documentation updates, and release checks.",
+        "Measure usefulness through time saved, defects caught, review quality, and fewer repeated mistakes.",
+        "Train the team to use AI as a thought partner: ask for alternatives, risks, missing evidence, and rollback plans."
+      ]
+    },
+    {
+      "title": "What red flags show that a candidate only used AI superficially?",
+      "body": "Red flags are generic answers without a workflow: `I use ChatGPT to ask questions`, `AI is very useful`, `I trust AI because it is smart`, or `I have not used it much but I am willing to learn`. Not knowing CLAUDE.md, system prompts, verification commands, or any AI failure story suggests surface-level usage.",
+      "bullets": [
+        "They cannot name a recent concrete task.",
+        "They cannot explain how they reviewed AI-generated Terraform, CloudFormation, IAM, or Kubernetes output.",
+        "They treat AI like a search engine and never ask it to critique assumptions or produce a verification plan."
+      ]
+    },
+    {
+      "title": "What green flags show practical AI maturity in a Cloud Engineer interview?",
+      "body": "Green flags are specific and operational: tool plus use case, a real prompt pattern, a story where AI was wrong, a verification workflow, a clear boundary for tasks they do not give to AI, and a team-level view of standardizing prompts and guardrails.",
+      "bullets": [
+        "They know where AI is useful and where it is too risky without human control.",
+        "They can explain the difference between using AI as a search engine and using AI as a thought partner.",
+        "They think about how the Cloud Engineer role changes over the next two years: less memorizing boilerplate, more reviewing AI-generated plans, verifying evidence, and owning production decisions."
+      ],
+      "note": "Interviewer tip: questions about wrong AI output and AI-vs-AWS-docs conflict are the best traps. Real users usually have a concrete story."
     }
   ]
 }

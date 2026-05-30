@@ -30,6 +30,7 @@ final class ConfigurationPortfolioBriefService
             'portfolio_paragraph' => $this->portfolioParagraph($reusePlan),
             'talking_points' => [
                 'Configuration changes were routed through readiness, risk review, remediation, PR assessment, and deployment evidence.',
+                'Security Misconfiguration controls turned debug, secret, CORS, header, cookie, proxy, and storage drift into fail-closed release blockers.',
                 'Quality-gate status stayed consistent across pages and APIs instead of becoming a one-off UI label.',
                 'Incident recovery practice captured root cause, rollback thinking, postmortem evidence, and spaced-review prompts.',
             ],
@@ -38,6 +39,7 @@ final class ConfigurationPortfolioBriefService
                 'The brief names the archive id and quality status.',
                 'Each proof item maps to a source key or recovered incident route.',
                 'The portfolio paragraph avoids vague claims and names concrete Laravel configuration behavior.',
+                'Security Misconfiguration proof names the unsafe signal, release blocker, and smoke-check evidence.',
                 'Interview talking points include config(), env(), auth defaults, and quality-gate status.',
             ],
             'commands' => [
@@ -55,7 +57,7 @@ final class ConfigurationPortfolioBriefService
      */
     private function portfolioParagraph(array $reusePlan): string
     {
-        return 'Built a configuration practice workflow around '.$reusePlan['archive_id'].' that verifies app/auth readiness, keeps quality-gate status consistent, and preserves incident recovery evidence for review and interviews.';
+        return 'Built a configuration practice workflow around '.$reusePlan['archive_id'].' that verifies app/auth readiness, turns Security Misconfiguration signals into fail-closed release blockers, keeps quality-gate status consistent, and preserves incident recovery evidence for review and interviews.';
     }
 
     /**

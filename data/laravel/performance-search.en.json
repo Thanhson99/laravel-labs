@@ -759,8 +759,95 @@
       "note": "This is only the entry point. Real search also brings indexing, sync drift, ranking, and permission-aware filtering."
     },
     {
-      "title": "162. Final assessment after review: is the performance-search topic detailed enough?",
+      "title": "162. Why is NoSQL fast? The answer is often LSM Tree, not missing schema",
+      "body": "A common misconception is that NoSQL is fast because it has no schema. Schema flexibility can help teams ingest changing documents, but the performance secret in many write-heavy NoSQL systems is the LSM Tree. It turns random in-place writes into append-friendly sequential work: write to a WAL, update a memtable, flush immutable sorted segments, then compact those segments in the background.",
+      "bullets": [
+        "WAL: records the write sequentially first so the node can recover after a crash.",
+        "ADR: accept LSM-backed storage only when workload, data model, query contract, benchmark, and operational guardrails are explicit.",
+        "Memtable: keeps recent writes in memory and sorted before flushing to disk.",
+        "Segment or SSTable: immutable sorted disk file written sequentially instead of mutating random pages in place.",
+        "Compaction: merges segments, removes old versions and tombstones, and reduces read amplification at the cost of extra background writes.",
+        "Bloom Filter: helps point reads skip segments that definitely do not contain the key, which is especially valuable for read misses.",
+        "Amplification model: separate write amplification, read amplification, and space amplification instead of saying the database is simply fast or slow.",
+        "Range scan planning: key design, segment overlap, cursor pagination, and hot range pressure decide whether scans stay predictable.",
+        "Tombstone and TTL policy: deletes are written first and physically removed later, so expiry waves and snapshots can create compaction debt.",
+        "Capacity planning: budget WAL throughput, memtable memory, Bloom Filter memory, disk headroom, and compaction bandwidth instead of only counting stored records.",
+        "Cost model: plan memory, disk, CPU/IO, and operational ownership rather than treating write speed as free.",
+        "Engine comparison: separate LSM-backed stores, B-tree relational indexes, search or analytics projections, and cache layers by job.",
+        "Decision rules: choose memtable size, compaction style, Bloom Filters, and key layout from workload evidence such as ingest rate, read misses, range scans, and delete patterns.",
+        "Benchmark plan: prove the design with steady write ingest, compaction under foreground traffic, point-read misses, bounded range scans, and TTL/delete waves.",
+        "Rollout plan: model the access pattern, benchmark under compaction, dual-read for correctness, then ramp traffic with rollback thresholds.",
+        "SLO guardrails: define targets and alerts for foreground p99 latency, compaction debt, disk headroom, read-miss efficiency, and tombstone pressure.",
+        "Anti-patterns: avoid the schema myth, ignoring compaction, unbounded range queries, delete storms, and missing Bloom Filters on high-miss workloads.",
+        "Incident runbook: triage foreground versus compaction symptoms, contain with backpressure or bounded reads, recover when compaction debt falls, then harden benchmarks and alerts.",
+        "Fit matrix: LSM is strong for high-ingest event writes, conditional for point misses and delete-heavy data, and risky for unbounded analytical scans.",
+        "Data model review: check partition key spread, sort-key range shape, document validation, and TTL/delete fields before trusting the engine.",
+        "Query contract: allow full-key lookups and bounded cursor ranges, but reject offset pagination over large ranges and ad hoc analytical scans.",
+        "Interview structure: state the claim, explain the mechanism, name the tradeoff, and finish with measurements such as p99 latency and amplification.",
+        "Failure modes: watch memtable flush stalls, compaction backlog, tombstone buildup, and expensive negative lookups when Bloom Filters are missing or poorly tuned."
+      ],
+      "code": "write -> WAL -> memtable -> immutable sorted segment\nbackground -> compaction merges segments and drops old versions\nread miss -> Bloom Filter skips segments before disk access",
+      "note": "Interview answer: NoSQL speed should be explained through workload and storage-engine design. LSM Trees optimize writes by batching memory work and sequential disk writes, then pay the cost later through compaction and read-amplification tuning.",
+      "links": [
+        {
+          "href": "{{HUB_BASE_URL}}/workbench/lsm-tree-plan",
+          "label": "LSM Tree workbench",
+          "desc": "Practice explaining memtables, segments, compaction, Bloom Filters, and the write/read tradeoff behind NoSQL performance."
+        }
+      ]
+    },
+    {
+      "title": "163. Final assessment after review: is the performance-search topic detailed enough?",
       "body": "For a learning portal, this is now fairly complete: performance mindset, database and query tuning, cache design, invalidation, search UX, Scout and external engines, observability, cost, and production cases are all covered. If you want to go deeper later, the strongest next split would be one dedicated site for DB/query tuning, one for cache architecture, and one for search relevance or product search."
+    },
+    {
+      "title": "164. Covering Index: why an indexed query can still be slow",
+      "body": "A normal index can quickly find matching row locations, but the database may still need to visit the table heap to read selected columns or confirm row visibility. On large result sets, those heap fetches can become thousands of random IO operations. In PostgreSQL, a covering index can store key columns plus extra returned columns so a matching query can become an Index Only Scan when visibility checks also allow it.",
+      "bullets": [
+        "Heap fetch cost: an index scan that finds many row pointers may still jump back to the table heap for each visible row, which hurts latency when pages are cold or scattered.",
+        "Covering index idea: keep filter/order columns as normal index keys and add projected columns with `INCLUDE` so the query can read them from the index.",
+        "`INCLUDE` syntax: `CREATE INDEX idx_orders_user_created_covering ON orders (user_id, created_at DESC) INCLUDE (status, total_amount);`.",
+        "Query fit: the query should filter and sort by indexed key columns, then select only columns present in the index or included columns.",
+        "Verify with `EXPLAIN (ANALYZE, BUFFERS)`: look for `Index Only Scan`, low buffer reads, and a small or zero `Heap Fetches` count.",
+        "Visibility map: PostgreSQL still needs to know whether heap pages are all-visible. If the visibility map is stale, an Index Only Scan may still perform heap fetches.",
+        "VACUUM check: healthy autovacuum keeps visibility information current; high-churn tables may need tuning before covering indexes pay off.",
+        "Bloat risk: included columns make the index wider, increase storage, slow writes, and can create expensive maintenance if the included data changes often.",
+        "Do not include everything: avoid wide text/blob-like columns, high-update columns, or fields that are not part of a proven hot query.",
+        "Production rule: add the covering index only after measuring the query plan, row count, selected columns, write overhead, and rollback path."
+      ],
+      "code": "CREATE INDEX idx_orders_user_created_covering\n    ON orders (user_id, created_at DESC)\n    INCLUDE (status, total_amount);\n\nEXPLAIN (ANALYZE, BUFFERS)\nSELECT created_at, status, total_amount\nFROM orders\nWHERE user_id = 42\nORDER BY created_at DESC\nLIMIT 20;",
+      "note": "Interview answer: Covering Index is useful when the query can be answered from the index itself. In PostgreSQL, that only becomes truly fast when the selected columns are covered and the visibility map lets the engine avoid heap fetches. Always check `Heap Fetches`, `Buffers`, VACUUM health, index size, and write cost before calling it an optimization.",
+      "links": [
+        {
+          "href": "{{HUB_BASE_URL}}/workbench/collection-filter-preview",
+          "label": "Database query practice workbench",
+          "desc": "Practice turning query shape, selected columns, indexes, and verification evidence into a concrete database optimization plan."
+        }
+      ]
+    },
+    {
+      "title": "165. BFS vs DFS: choosing the right traversal strategy",
+      "body": "BFS (Breadth-First Search) explores neighbors level by level, while DFS (Depth-First Search) follows one branch as deep as possible before backtracking. A practical BFS DFS comparison starts from the goal, not from memorizing which one sounds faster. Both can visit the same graph, but they answer different product and system questions. BFS is usually better when you need the nearest match or shortest unweighted path; DFS is often better when you need dependency resolution, tree validation, backtracking, or memory-light traversal of deep structures.",
+      "bullets": [
+        "Core difference: BFS uses a queue and processes nodes by distance from the start; DFS uses a stack or recursion and follows depth before siblings.",
+        "Shortest path: BFS finds the shortest path in an unweighted graph, such as the fewest API hops from one service to another.",
+        "Memory tradeoff: BFS can hold a wide frontier in memory; DFS usually holds only the current path but can overflow recursion on very deep graphs.",
+        "API example: use BFS to crawl linked resources by hop count, rate-limit each level, and stop when the closest matching resource is found.",
+        "Database example: use BFS-style batching for category trees when the UI needs level-by-level expansion; use DFS-style traversal for nested menu rendering or validating a whole subtree.",
+        "Cycle safety: both need a visited set when the data can form a graph instead of a strict tree, such as related articles, dependencies, redirects, or service calls.",
+        "Laravel practice: model traversal as a service with explicit queue/stack state, maximum depth, pagination limits, and tests for cycles, empty graphs, and large fan-out.",
+        "Interview rule: start with the goal. If the goal is nearest or shortest in an unweighted graph, choose BFS. If the goal is exhaustive branch exploration, topological-style dependency reasoning, or backtracking, choose DFS.",
+        "Production warning: never let traversal over API or database records run unbounded; add max depth, max nodes, timeout, cursor pagination, and observability."
+      ],
+      "code": "function bfs(array $graph, string $start): array {\n    $seen = [$start => true];\n    $queue = [$start];\n    $order = [];\n\n    while ($queue !== []) {\n        $node = array_shift($queue);\n        $order[] = $node;\n\n        foreach ($graph[$node] ?? [] as $next) {\n            if (! isset($seen[$next])) {\n                $seen[$next] = true;\n                $queue[] = $next;\n            }\n        }\n    }\n\n    return $order;\n}\n\nfunction dfs(array $graph, string $node, array &$seen = [], array &$order = []): array {\n    if (isset($seen[$node])) {\n        return $order;\n    }\n\n    $seen[$node] = true;\n    $order[] = $node;\n\n    foreach ($graph[$node] ?? [] as $next) {\n        dfs($graph, $next, $seen, $order);\n    }\n\n    return $order;\n}",
+      "note": "Interview answer: BFS and DFS are not about which one is universally faster. They are about traversal intent. BFS is level-order and good for nearest results in unweighted graphs. DFS is depth-oriented and good for exploring a branch, validating nested structures, or backtracking. In real APIs and databases, the winning answer also names cycle detection, depth limits, batching, pagination, and memory cost.",
+      "links": [
+        {
+          "href": "{{HUB_BASE_URL}}/practice/technology-learning-pipeline/graph-traversal?search=BFS%20DFS",
+          "label": "Graph traversal learning pipeline",
+          "desc": "Practice turning BFS/DFS theory into API crawling, tree traversal, cycle detection, and database hierarchy guardrails."
+        }
+      ]
     }
   ]
 }

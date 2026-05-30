@@ -44,7 +44,7 @@ final class PracticeRotationLabService
                     'capstone_query' => $milestone['capstone_query'],
                     'checkpoint_query' => $milestone['checkpoint_query'],
                     'mentor_feedback_query' => $milestone['mentor_feedback_query'],
-                    'output' => $this->outputForDay($day),
+                    'output' => $this->outputForDay($day, (string) $milestone['technology']),
                 ];
             })
             ->all();
@@ -81,8 +81,28 @@ final class PracticeRotationLabService
     /**
      * Return the required output for one rotation day.
      */
-    private function outputForDay(int $day): string
+    private function outputForDay(int $day, string $technology): string
     {
+        if ($technology === 'llm-foundations') {
+            return match (($day - 1) % 5) {
+                0 => 'AI type comparison table with output contracts',
+                1 => 'Checkpoint evidence for metrics and failure modes',
+                2 => 'Mentor feedback action item for predictive and generative evidence',
+                3 => 'Portfolio entry updated with AI comparison proof',
+                default => 'One AI evaluation improvement selected',
+            };
+        }
+
+        if ($technology === 'javascript-closures') {
+            return match (($day - 1) % 5) {
+                0 => 'Closure lexical-scope trace with createCounter() output',
+                1 => 'Checkpoint evidence for captured bindings and stale closures',
+                2 => 'Mentor feedback action item for closure interview traps',
+                3 => 'Portfolio entry updated with closure proof',
+                default => 'One closure explanation improvement selected',
+            };
+        }
+
         return match (($day - 1) % 5) {
             0 => 'Completed workspace with focused test',
             1 => 'Checkpoint pass criteria evidence',

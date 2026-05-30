@@ -68,4 +68,22 @@ final class PracticePortfolioLabTest extends TestCase
 
         $response->assertNotFound();
     }
+
+    /**
+     * JavaScript closure portfolio entries use closure interview skills and writeup prompts.
+     */
+    public function test_javascript_closure_portfolio_lab_uses_closure_artifact_copy(): void
+    {
+        $response = $this->getJson('/api/practice/portfolio-lab?record_id=laravel-frontend-en-json-item-8&technology=javascript-closures');
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('data.technology', 'javascript-closures')
+            ->assertJsonPath('data.portfolio_entry.headline', 'Built a JavaScript closure interview artifact')
+            ->assertJsonPath('data.portfolio_entry.source_reference', 'laravel/frontend.en.json')
+            ->assertJsonPath('data.portfolio_entry.skills_practiced.0', 'Lexical scope tracing')
+            ->assertJsonPath('data.portfolio_entry.skills_practiced.5', 'Stale closure review')
+            ->assertJsonPath('data.writeup_template.2', 'Where lexical scope and captured bindings appear')
+            ->assertJsonPath('data.writeup_template.4', 'What I would improve in the next interview answer');
+    }
 }

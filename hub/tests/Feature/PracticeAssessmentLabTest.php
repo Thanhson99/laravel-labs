@@ -70,4 +70,23 @@ final class PracticeAssessmentLabTest extends TestCase
 
         $response->assertNotFound();
     }
+
+    /**
+     * JavaScript closure assessments score lexical scope, behavior tests, and interview readiness.
+     */
+    public function test_javascript_closure_assessment_lab_uses_scope_rubric(): void
+    {
+        $response = $this->getJson('/api/practice/assessment-lab?record_id=laravel-frontend-en-json-item-8&technology=javascript-closures');
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('data.technology', 'javascript-closures')
+            ->assertJsonPath('data.score_total', 100)
+            ->assertJsonPath('data.rubric.1.label', 'Lexical scope model')
+            ->assertJsonPath('data.rubric.2.label', 'Closure behavior tests')
+            ->assertJsonPath('data.rubric.4.label', 'Interview readiness');
+
+        $this->assertStringContainsString('captured binding', $response->json('data.rubric.1.evidence'));
+        $this->assertStringContainsString('stale-closure output', $response->json('data.rubric.2.evidence'));
+    }
 }

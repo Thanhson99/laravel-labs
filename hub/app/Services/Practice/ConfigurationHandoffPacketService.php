@@ -29,7 +29,7 @@ final class ConfigurationHandoffPacketService
             'handoff_status' => $checklist['publication_status'] === 'approved' ? 'ready-to-handoff' : 'blocked',
             'handoff_summary' => [
                 'Configuration evidence is approved with '.$checklist['score'].' points.',
-                'Publish channels are ready for portfolio, interview, and code review reuse.',
+                'Publish channels are ready for portfolio, security review, interview, and code review reuse.',
                 'Quality-gate status remains '.$checklist['quality_gate']['status'].'.',
             ],
             'packet_links' => [
@@ -47,11 +47,13 @@ final class ConfigurationHandoffPacketService
                 ->all(),
             'rehearsal_prompts' => [
                 'Explain why app/auth configuration was treated as a runtime contract.',
+                'Explain which Security Misconfiguration release blocker would stop deployment and which smoke check proves it.',
                 'Name the command that proves route documentation still protects learner-facing pages.',
                 'Defend the incident recovery path without rereading the postmortem.',
             ],
             'next_actions' => [
                 'Open the portfolio brief and rehearse the headline once.',
+                'Open the Security review channel and attach one fail-closed smoke-check proof.',
                 'Use the interview channel proof to answer one mock interview question.',
                 'Carry the code-review channel proof into the next configuration PR.',
             ],

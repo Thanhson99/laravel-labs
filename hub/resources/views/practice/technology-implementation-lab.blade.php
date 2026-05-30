@@ -33,9 +33,25 @@
     <section class="section">
         <div class="topbar">
             <h2>{{ $lab['meta']['task_count'] }} implementation tasks</h2>
+            @if ($lab['related_workbench'] && $lab['related_workbench']['route_name'])
+                <a class="button primary" href="{{ route($lab['related_workbench']['route_name']) }}">{{ $lab['related_workbench']['label'] }}</a>
+            @endif
             <a class="button" href="{{ route('practice.technology-code-examples.show', [$lab['technology']] + request()->query()) }}">Open code examples</a>
             <a class="button primary" href="{{ route('practice.technology-commit-plan', [$lab['technology']] + request()->query()) }}">Open commit plan</a>
             <a class="button" href="{{ route('api.practice.technology-implementation-lab', [$lab['technology']] + request()->query()) }}">Open lab API</a>
+        </div>
+
+        <div class="list">
+            @foreach ($lab['next_actions'] as $action)
+                <article class="item">
+                    <h3>{{ $action['label'] }}</h3>
+                    <p>{{ $action['purpose'] }}</p>
+                    <a class="button primary" href="{{ $action['path'] }}">Open next step</a>
+                    @if ($action['api_path'])
+                        <a class="button" href="{{ $action['api_path'] }}">Open API</a>
+                    @endif
+                </article>
+            @endforeach
         </div>
 
         <div class="list">

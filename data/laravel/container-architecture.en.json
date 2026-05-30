@@ -444,7 +444,33 @@
         "Architecture stays easier to change because creation rules live outside business logic."
       ],
       "code": "interface ReportExporter\n{\n    public function export(array $rows): string;\n}\n\nfinal class CsvReportExporter implements ReportExporter\n{\n    public function export(array $rows): string\n    {\n        return 'csv-output';\n    }\n}\n\nfinal class ReportController\n{\n    public function __construct(private ReportExporter $exporter)\n    {\n    }\n\n    public function download(SalesReportService $reports): string\n    {\n        return $this->exporter->export($reports->monthly());\n    }\n}",
-      "note": "Common mistake: placing `new CsvReportExporter()` inside the controller or service. That hides the dependency, makes tests harder, and ties the use case to one implementation."
+      "note": "Common mistake: placing `new CsvReportExporter()` inside the controller or service. That hides the dependency, makes tests harder, and ties the use case to one implementation.",
+      "links": [
+        {
+          "label": "Open DI refactor workbench",
+          "href": "{{HUB_BASE_URL}}/workbench/dependency-injection-refactor",
+          "desc": "Practice turning a manual dependency into a contract, binding, constructor injection, and test fake."
+        }
+      ]
+    },
+    {
+      "title": "90. Clean Architecture P6: Layered Architecture is not always right",
+      "body": "Layered Architecture is useful when each layer protects a real boundary: HTTP input, application workflow, domain rules, persistence, integration, or presentation. It becomes harmful when the team creates layers just because a diagram says every request must pass through the same stack.",
+      "bullets": [
+        "Use layers when they reduce coupling, make tests clearer, or protect business rules from framework details.",
+        "Avoid layers when they only forward data from controller to service to repository with no decision or boundary in between.",
+        "In small CRUD screens, a Form Request, controller, model/query, and view/resource may be enough.",
+        "In complex workflows, actions, services, policies, jobs, events, and repositories can create useful boundaries.",
+        "The question is not 'do we have enough layers?' but 'does each layer own a real responsibility?'"
+      ],
+      "note": "Clean Architecture should make change safer. If it only adds files, naming friction, and context switching, it is architecture theater.",
+      "links": [
+        {
+          "label": "Open Clean Architecture P6 workbench",
+          "href": "{{HUB_BASE_URL}}/workbench/layered-architecture-decision",
+          "desc": "Practice deciding when a Laravel feature should stay simple, use a focused action/service, or add explicit layers."
+        }
+      ]
     }
   ]
 }

@@ -63,6 +63,15 @@ window.__shellReady
 
 The main entrypoint is `init()`.
 
+Renderer contract for learning content:
+
+- JSON content chooses a supported shape; renderers decide the visual structure.
+- Major sections render as `.panel` and should not become card surfaces.
+- Repeated related content renders through shared components: content cards, link cards, bullet-list items, interview QA cards, PHP phases/modules/examples/questions, or roadmap cards.
+- Renderer helpers should not emit one-off classes just to fix one page unless the new class represents a reusable content shape.
+- Renderer helpers that add nested lists must preserve plain nested bullet styling so child bullets do not inherit outer card surfaces.
+- Renderer helpers that add code-copy buttons must pair them with code-block padding rules for desktop and mobile.
+
 The render decision tree is:
 
 - `landing` -> `renderLanding`

@@ -40,10 +40,29 @@
                 <span class="badge">Commit</span>
             </div>
             <pre><code>{{ $plan['commit_message'] }}</code></pre>
+            @if ($plan['related_workbench'] && $plan['related_workbench']['route_name'])
+                <a class="button primary" href="{{ route($plan['related_workbench']['route_name']) }}">{{ $plan['related_workbench']['label'] }}</a>
+            @endif
             <a class="button" href="{{ route('practice.technology-implementation-lab', [$plan['technology']] + request()->query()) }}">Open implementation lab</a>
             <a class="button primary" href="{{ route('practice.technology-portfolio-artifact', [$plan['technology']] + request()->query()) }}">Open portfolio artifact</a>
             <a class="button" href="{{ route('api.practice.technology-commit-plan', [$plan['technology']] + request()->query()) }}">Open commit API</a>
         </article>
+    </section>
+
+    <section class="section">
+        <h2>Next Actions</h2>
+        <div class="list">
+            @foreach ($plan['next_actions'] as $action)
+                <article class="item">
+                    <h3>{{ $action['label'] }}</h3>
+                    <p>{{ $action['purpose'] }}</p>
+                    <a class="button primary" href="{{ $action['path'] }}">Open next step</a>
+                    @if ($action['api_path'])
+                        <a class="button" href="{{ $action['api_path'] }}">Open API</a>
+                    @endif
+                </article>
+            @endforeach
+        </div>
     </section>
 
     <section class="section">

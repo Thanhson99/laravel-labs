@@ -32,6 +32,7 @@ final class ConfigurationArchiveRetrievalService
             'quality_checks' => [
                 'Retrieved proof names the source route or command.',
                 'Retrieved proof includes a reason, not only a copied label.',
+                'Security Misconfiguration proof names the unsafe signal and the fail-closed smoke check.',
                 'Incident recovery proof cites the postmortem id and root cause.',
                 'Portfolio or interview reuse keeps the quality-gate status visible.',
             ],
@@ -60,18 +61,25 @@ final class ConfigurationArchiveRetrievalService
                 'reuse_target' => $archive['reuse_targets'][0],
             ],
             [
+                'use_case' => 'Security review',
+                'prompt' => 'Find proof that Security Misconfiguration release blockers stop unsafe production configuration.',
+                'key' => 'security misconfiguration release blockers',
+                'proof' => $archive['retrieval_prompts'][1],
+                'reuse_target' => $archive['reuse_targets'][1],
+            ],
+            [
                 'use_case' => 'Interview answer',
                 'prompt' => 'Find evidence for explaining config(), env(), auth defaults, and quality status.',
-                'key' => $archive['retrieval_keys'][3],
-                'proof' => $archive['retrieval_prompts'][3],
-                'reuse_target' => $archive['reuse_targets'][1],
+                'key' => 'config env contract interview',
+                'proof' => $archive['retrieval_prompts'][4],
+                'reuse_target' => $archive['reuse_targets'][2],
             ],
             [
                 'use_case' => 'Incident recovery',
                 'prompt' => 'Find the postmortem root cause and recovery route for configuration drift.',
-                'key' => $archive['retrieval_keys'][4],
+                'key' => $archive['retrieval_keys'][6],
                 'proof' => $archive['incident_archive']['recovery_route'].' -> '.$archive['incident_archive']['root_cause'],
-                'reuse_target' => $archive['reuse_targets'][3],
+                'reuse_target' => $archive['reuse_targets'][4],
             ],
         ];
     }

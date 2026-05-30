@@ -101,11 +101,19 @@
             <a class="button" href="{{ route('practice.content-map') }}">Map content to practice</a>
             <a class="button" href="{{ route('practice.question-drills') }}">Question drill set</a>
             <a class="button" href="{{ route('practice.technology-board') }}">Technology board</a>
+            <a class="button primary" href="{{ route('practice.technology-board', ['technology' => 'oauth-flow', 'language' => 'en', 'search' => 'PKCE', 'limit' => 5]) }}">PKCE board</a>
             <a class="button" href="{{ route('practice.technology-matrix') }}">Technology matrix</a>
+            <a class="button primary" href="{{ route('practice.technology-taxonomy') }}">Technology taxonomy</a>
             <a class="button primary" href="{{ route('practice.technology-pipelines') }}">Technology pipelines</a>
             <a class="button primary" href="{{ route('practice.technology-quality-plan') }}">Technology quality plan</a>
             <a class="button primary" href="{{ route('practice.technology-code-examples') }}">Technology code examples</a>
             <a class="button primary" href="{{ route('practice.technology-learning-pipeline', 'api-validation') }}">Technology pipeline</a>
+            <a class="button primary" href="{{ route('practice.technology-learning-pipeline', ['oauth-flow', 'language' => 'en', 'search' => 'PKCE', 'limit' => 3]) }}">PKCE pipeline</a>
+            <a class="button primary" href="{{ route('practice.workbench.oauth-flow-plan') }}">PKCE workbench</a>
+            <a class="button primary" href="{{ route('practice.technology-pipelines', ['technology' => 'php', 'language' => 'en', 'search' => 'stack memory', 'limit' => 3]) }}">Stack/Heap pipelines</a>
+            <a class="button primary" href="{{ route('practice.technology-learning-pipeline', ['php', 'language' => 'en', 'search' => 'stack memory', 'limit' => 3]) }}">Stack/Heap pipeline</a>
+            <a class="button primary" href="{{ route('practice.technology-implementation-lab', ['php', 'language' => 'en', 'search' => 'stack memory', 'limit' => 3]) }}">Stack/Heap lab</a>
+            <a class="button primary" href="{{ route('practice.technology-interview-pack', ['php', 'language' => 'en', 'search' => 'stack memory', 'limit' => 3]) }}">Stack/Heap interview</a>
             <a class="button" href="{{ route('practice.source-packs.index') }}">Source packs</a>
         </article>
     </section>

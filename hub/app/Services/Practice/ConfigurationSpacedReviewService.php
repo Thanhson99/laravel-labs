@@ -34,6 +34,7 @@ final class ConfigurationSpacedReviewService
                 'Name one app config value and one auth config value that are tested.',
                 'Describe rollback for an auth provider or password throttle change.',
                 'Replay the incident root cause and recovery path from the postmortem.',
+                'Name one Security Misconfiguration release blocker and the smoke check that proves it fails closed.',
                 'Run the focused configuration tests and Pint without failures.',
             ],
             'commands' => [
@@ -70,7 +71,7 @@ final class ConfigurationSpacedReviewService
                 'focus' => 'Rebuild deployment safety.',
                 'recall_prompt' => 'Describe the deploy, smoke, and rollback order from memory.',
                 'rebuild_task' => 'Recreate the rollback explanation for app runtime and auth contract changes.',
-                'defense_prompt' => 'Explain what would make you stop a config deployment.',
+                'defense_prompt' => 'Explain what would make you stop a config deployment, including one Security Misconfiguration release blocker.',
                 'incident_prompt' => $incidentPrompts[1],
                 'route' => $checkpoint['handoff']['evidence_route'],
             ],

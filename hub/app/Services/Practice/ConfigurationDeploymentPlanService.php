@@ -11,6 +11,7 @@ final class ConfigurationDeploymentPlanService
      */
     public function __construct(
         private readonly ConfigurationChangeChecklistService $checklist,
+        private readonly ConfigurationReadinessService $readiness,
     ) {}
 
     /**
@@ -21,6 +22,7 @@ final class ConfigurationDeploymentPlanService
     public function build(): array
     {
         $checklist = $this->checklist->build();
+        $readiness = $this->readiness->build();
 
         return [
             'title' => 'Configuration Deployment Plan',
@@ -28,10 +30,13 @@ final class ConfigurationDeploymentPlanService
             'source_files' => $checklist['source_files'],
             'preflight' => $this->preflight($checklist),
             'deploy_steps' => $this->deploySteps(),
-            'smoke_checks' => $this->smokeChecks(),
+            'smoke_checks' => $this->smokeChecks($readiness),
+            'security_misconfiguration_controls' => $readiness['misconfiguration_controls'],
+            'release_blockers' => $readiness['release_blockers'],
             'rollback_steps' => $this->rollbackSteps($checklist),
             'evidence' => [
                 'Configuration readiness API returns ready.',
+                'Configuration readiness API exposes Security Misconfiguration controls and fail-closed smoke checks.',
                 'Configuration test plan API exposes the expected target test.',
                 'Practice route list still includes configuration pages.',
                 'Pint reports no style changes pending.',
@@ -97,8 +102,16 @@ final class ConfigurationDeploymentPlanService
      *
      * @return array<int, array{endpoint: string, expected: string}>
      */
-    private function smokeChecks(): array
+    private function smokeChecks(array $readiness): array
     {
+        $readinessSmoke = collect($readiness['deployment_smoke_matrix'])
+            ->map(fn (array $smoke): array => [
+                'endpoint' => '/api/practice/configuration-readiness',
+                'expected' => sprintf('%s: %s', $smoke['check'], $smoke['fail_closed_action']),
+            ])
+            ->values()
+            ->all();
+
         return [
             [
                 'endpoint' => '/practice/configuration-readiness',
@@ -112,6 +125,7 @@ final class ConfigurationDeploymentPlanService
                 'endpoint' => '/api/practice/configuration-change-checklist',
                 'expected' => 'JSON includes change_cards for app, auth, and quality gate.',
             ],
+            ...$readinessSmoke,
         ];
     }
 

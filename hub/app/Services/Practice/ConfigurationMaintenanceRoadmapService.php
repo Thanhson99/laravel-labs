@@ -34,6 +34,11 @@ final class ConfigurationMaintenanceRoadmapService
                     'action' => 'Run archive and pipeline tests, then update stale notes.',
                 ],
                 [
+                    'window' => 'Before each release',
+                    'focus' => 'Refresh Security Misconfiguration release blockers.',
+                    'action' => 'Confirm debug, secrets, CORS, headers, cookies, proxies, and storage controls still have fail-closed smoke evidence.',
+                ],
+                [
                     'window' => 'Before each config PR',
                     'focus' => 'Protect app/auth contract changes.',
                     'action' => 'Review refresh triggers and remediation triggers before requesting review.',
@@ -46,11 +51,13 @@ final class ConfigurationMaintenanceRoadmapService
             ],
             'owners' => [
                 'Configuration learner' => 'Runs refresh commands and updates proof notes.',
+                'Security reviewer' => 'Confirms release blockers, owners, rollback actions, and smoke evidence are still valid.',
                 'Reviewer' => 'Checks that refreshed evidence still maps to routes, commands, and quality status.',
                 'Maintainer' => 'Moves repeated refresh failures into remediation tasks.',
             ],
             'health_signals' => [
                 'Quality-gate status remains ready.',
+                'Security Misconfiguration release blockers still map to owners, rollback actions, and fail-closed smoke checks.',
                 'Archive retrieval still finds incident and postmortem evidence.',
                 'Portfolio brief still cites current source keys.',
                 'Route documentation test still passes after route changes.',

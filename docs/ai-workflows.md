@@ -111,11 +111,17 @@ PHP levels are more coupled than topic pages.
 1. Identify whether the content lives in `data/site-content.*.json` or a topic JSON file.
 2. Read `docs/content-taxonomy.md` to keep the content in the right learning area.
 3. Read `docs/content-quality-standards.md` to keep the writing professional and consistent.
-4. Update English and Vietnamese files together when the concept exists in both languages.
-5. Preserve anchors unless intentionally changing URLs or progress IDs.
-6. Keep code snippets escaped as JSON strings.
-7. Parse JSON after editing.
-8. Check the rendered page if browser tooling is available.
+4. Choose the existing renderer shape before writing content:
+   - default card section for independent related concepts
+   - `type: "list"` for grouped notes, checklists, Q&A, or progress-trackable content
+   - `type: "links"` for references
+   - PHP `modules` or `phases` for PHP level blocks
+5. Keep related title, description, bullets, code, notes, and links inside that shape instead of adding loose paragraphs or raw HTML.
+6. Update English and Vietnamese files together when the concept exists in both languages.
+7. Preserve anchors unless intentionally changing URLs or progress IDs.
+8. Keep code snippets escaped as JSON strings.
+9. Parse JSON after editing.
+10. Check the rendered page if browser tooling is available, including one mobile width when code blocks, long titles, or Vietnamese copy are touched.
 
 ## Fix Or Add Render Helpers
 

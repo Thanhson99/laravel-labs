@@ -31,51 +31,87 @@
       "cards": [
         {
           "href": "sites/roadmap/index.html",
-          "title": "Cây trí tuệ lập trình",
-          "summary": "Xem mục này trước để có bản đồ công nghệ thân thiện hơn trước khi đi vào PHP, Laravel và các site học khác.",
-          "button": "Mở cây trí tuệ"
+          "title": "Cây tri thức lập trình",
+          "summary": "Bắt đầu ở đây để xem bản đồ học tổng thể: nền PHP, chiều sâu Laravel, phỏng vấn, DevOps và thói quen dùng AI khi code.",
+          "button": "Mở roadmap"
         },
         {
           "href": "sites/php/index.html",
           "title": "Nền tảng PHP",
-          "summary": "Ghi chú về cú pháp, OOP, request, session và cách PHP vận hành Laravel.",
+          "summary": "Cú pháp, OOP, runtime, bộ nhớ và nền tảng backend giúp việc đọc Laravel dễ hơn.",
           "button": "Mở site PHP"
-        },
-        {
-          "href": "sites/glossary/index.html",
-          "title": "Glossary thuật ngữ",
-          "summary": "Một nơi gom các thuật ngữ web, Laravel, database, runtime và Vibe Coding để tra nhanh khi bị lẫn khái niệm.",
-          "button": "Mở glossary"
         },
         {
           "href": "sites/laravel/index.html",
           "title": "Lộ trình Laravel",
-          "summary": "Từ routing, Blade đến queue, API, testing, team feature và tư duy production.",
+          "summary": "Site Laravel chính: routing, Blade, database, auth, API, queue, testing, performance, deploy và kiến trúc.",
           "button": "Mở site Laravel"
-        },
-        {
-          "href": "sites/laravel/container-architecture.html",
-          "title": "Dependency Injection là gì?",
-          "summary": "Khám phá Dependency Injection - kỹ thuật giúp quản lý phụ thuộc trong lập trình, giữ code dễ test, dễ thay thế và rõ trách nhiệm hơn.",
-          "button": "Học Dependency Injection"
-        },
-        {
-          "href": "sites/practice/index.html",
-          "title": "Bài thực hành",
-          "summary": "Bài tập có cấu trúc và ý tưởng mini-project dựa trên các lab Laravel hiện có.",
-          "button": "Mở site thực hành"
         },
         {
           "href": "sites/interview/index.html",
           "title": "Luyện phỏng vấn",
-          "summary": "Các chủ đề phỏng vấn Laravel và PHP phổ biến, khung trả lời và điểm cần ôn.",
+          "summary": "Luyện theo cấp độ từ fresher đến senior và DevOps, tập trung cách giải thích thực tế thay vì học thuộc câu mẫu.",
           "button": "Mở site phỏng vấn"
         },
         {
           "href": "sites/vibe-coding/index.html",
           "title": "Vibe Coding",
-          "summary": "Một khu riêng cho cách lập trình cùng AI: prompt ra feature, để AI viết code, rồi review, sửa và giữ chất lượng output.",
-          "button": "Mở site Vibe Coding"
+          "summary": "Workflow lập trình với AI: prompting, sinh CRUD, review code, kiểm soát hallucination và guardrail runtime.",
+          "button": "Mở Vibe Coding"
+        },
+        {
+          "href": "sites/practice/index.html",
+          "title": "Bài thực hành",
+          "summary": "Drill, mini-project, checklist review và bài làm thực tế gắn với các folder Laravel lab trong repo.",
+          "button": "Mở site thực hành"
+        },
+        {
+          "href": "sites/glossary/index.html",
+          "title": "Glossary thuật ngữ",
+          "summary": "Tra nhanh thuật ngữ web, Laravel, database, runtime, DevOps và AI khi các khái niệm bắt đầu bị lẫn.",
+          "button": "Mở glossary"
+        },
+        {
+          "href": "sites/laravel/data.html",
+          "title": "Nổi bật: Database Locking",
+          "summary": "Chủ đề backend giá trị cao: `DB::transaction()`, `lockForUpdate()`, row lock, deadlock, contention và cách tránh bán quá tồn kho hoặc trừ tiền hai lần.",
+          "button": "Học DB Locking"
+        },
+        {
+          "href": "sites/laravel/performance-search.html",
+          "title": "Nổi bật: Covering Index",
+          "summary": "Chủ đề performance hiếm nhưng rất đáng học: Index Only Scan, heap fetch, cột `INCLUDE`, visibility map, VACUUM, bloat và bằng chứng rollout.",
+          "button": "Tối ưu index"
+        },
+        {
+          "href": "sites/laravel/api-integration.html",
+          "title": "Nổi bật: Thiết kế API",
+          "summary": "Gom REST, GraphQL, đặt tên endpoint, request shape, caching, boundary authorization và tradeoff API khi phỏng vấn.",
+          "button": "Học API design"
+        },
+        {
+          "href": "sites/laravel/auth-security.html",
+          "title": "Nổi bật: Auth & API Security",
+          "summary": "Cụm bảo mật mạnh nhất: IDOR, broken authentication, SQL Injection, CSRF, XSS, JWT storage, revoke token, OAuth và PKCE.",
+          "button": "Review bảo mật"
+        },
+        {
+          "href": "sites/vibe-coding/prompting.html",
+          "title": "Nổi bật: AI Context",
+          "summary": "Các chủ đề AI architecture đáng giữ: classic RAG, Graph RAG, Agentic RAG, Long Context, CAG và 4 loại memory cho AI agent.",
+          "button": "Học AI context"
+        },
+        {
+          "href": "sites/interview/senior.html",
+          "title": "Nổi bật: System Design",
+          "summary": "Luyện cách giải thích vì sao một thiết kế đúng kỹ thuật vẫn có thể sai nếu bỏ qua context, chi phí, team maturity, failure mode và phương án bị loại.",
+          "button": "Luyện tradeoff"
+        },
+        {
+          "href": "sites/interview/devops.html",
+          "title": "Nổi bật: DevOps Edge",
+          "summary": "Một vài chủ đề khó cho phỏng vấn senior: SIEM/ELK, Kubernetes mental model, reverse proxy failure, load balancing và cách Cloud Engineer dùng AI.",
+          "button": "Mở DevOps pack"
         }
       ],
       "repoSectionTitle": "Các lab Laravel hiện có trong repository",
@@ -2087,6 +2123,242 @@
               "action": "Mở container workbench"
             },
             {
+              "track": "Laravel Architecture",
+              "title": "Dependency Injection refactor workbench",
+              "body": "Chuyển một dependency đang bị tạo bằng `new` thủ công thành contract, service-provider binding, constructor injection và test fake để thấy rõ thay đổi kiến trúc trong code.",
+              "concepts": [
+                "Preset tình huống report, payment và external sync",
+                "Nhận diện manual dependency",
+                "Đặt tên contract theo behavior",
+                "Đặt tên method trong contract",
+                "`bind` so với `singleton`",
+                "Constructor injection",
+                "Refactor map theo từng file",
+                "Ví dụ test container resolution",
+                "Sinh fake implementation cho test",
+                "Test double cho collaborator có thể thay thế",
+                "Rà anti-pattern để tìm concrete dependency còn ẩn",
+                "Risk control cho payment hoặc side effect với service ngoài",
+                "Guardrail để tránh tạo interface khi chưa cần",
+                "Lệnh verification và checklist trước khi commit"
+              ],
+              "files": [
+                "hub/routes/api/practice-actions.php",
+                "hub/routes/web/workbench.php",
+                "hub/app/Http/Requests/Api/PlanDependencyInjectionRefactorRequest.php",
+                "hub/app/Http/Controllers/Api/DependencyInjectionRefactorController.php",
+                "hub/app/Services/Practice/DependencyInjectionRefactorService.php",
+                "hub/resources/views/practice/workbench/dependency-injection-refactor.blade.php"
+              ],
+              "commands": [
+                "php artisan test --filter DependencyInjectionRefactorWorkbenchTest",
+                "php artisan route:list --path=dependency-injection-refactor",
+                "vendor\\bin\\pint --test"
+              ],
+              "href": "{{HUB_BASE_URL}}/workbench/dependency-injection-refactor",
+              "action": "Mở DI refactor workbench"
+            },
+            {
+              "track": "PHP OOP",
+              "title": "Abstract class hay interface decision workbench",
+              "body": "So sánh lựa chọn abstract class, interface và concrete class từ một tình huống, rồi đọc code ví dụ và câu trả lời phỏng vấn được sinh ra.",
+              "concepts": [
+                "Preset tình huống cho interface, abstract class và concrete class",
+                "Bảng so sánh kèm ví dụ Laravel",
+                "File triển khai và bước review cho lựa chọn được đề xuất",
+                "Interface như behavior contract",
+                "Abstract class cho base behavior dùng chung",
+                "Giữ concrete class cho tới khi abstraction thật sự cần",
+                "Decision matrix thể hiện các tín hiệu phía sau khuyến nghị",
+                "Cảnh báo anti-pattern khi chọn sai abstraction",
+                "Chiến lược test cho từng lựa chọn abstraction",
+                "Rubric trả lời phỏng vấn có cấu trúc",
+                "Giải thích tradeoff OOP khi phỏng vấn"
+              ],
+              "files": [
+                "data/php/advanced.en.json",
+                "data/php/advanced.vi.json",
+                "hub/app/Http/Requests/Api/PlanOopAbstractionDecisionRequest.php",
+                "hub/app/Http/Controllers/Api/OopAbstractionDecisionController.php",
+                "hub/app/Services/Practice/OopAbstractionDecisionService.php",
+                "hub/resources/views/practice/workbench/oop-abstraction-decision.blade.php"
+              ],
+              "commands": [
+                "php artisan test --filter OopAbstractionDecisionWorkbenchTest",
+                "php artisan route:list --path=oop-abstraction-decision",
+                "vendor\\bin\\pint --test"
+              ],
+              "href": "{{HUB_BASE_URL}}/workbench/oop-abstraction-decision",
+              "action": "Mở OOP decision workbench"
+            },
+            {
+              "track": "Laravel Architecture",
+              "title": "Clean Architecture P6: Layered Architecture tradeoff",
+              "body": "Thực hành quyết định khi nào layered architecture hữu ích và khi nào nó chỉ thêm ceremony. Bài này so sánh CRUD đơn giản, workflow phức tạp, business rule, boundary persistence và chi phí review trong team.",
+              "concepts": [
+                "Layered Architecture như một tradeoff",
+                "Boundary của Controller, Form Request, Action, Service, Repository, Job, Event và Policy",
+                "Khi nào cấu trúc Laravel đơn giản là đủ",
+                "Khi nào layer bổ sung bảo vệ business rule",
+                "Architecture theater và chi phí nhảy file",
+                "Câu hỏi review PR cho quyết định tạo layer"
+              ],
+              "files": [
+                "data/laravel/container-architecture.en.json",
+                "data/laravel/container-architecture.vi.json",
+                "hub/config/practice.php",
+                "hub/app/Services/Practice/LayeredArchitectureDecisionService.php",
+                "hub/app/Http/Requests/Api/PlanLayeredArchitectureDecisionRequest.php",
+                "hub/app/Http/Controllers/Api/LayeredArchitectureDecisionController.php",
+                "hub/resources/views/practice/workbench/layered-architecture-decision.blade.php",
+                "hub/tests/Feature/LayeredArchitectureDecisionWorkbenchTest.php"
+              ],
+              "commands": [
+                "php artisan test --filter StaticPortalCopyTest",
+                "php artisan route:list --name=practice.show",
+                "vendor\\bin\\pint --test"
+              ],
+              "href": "{{HUB_BASE_URL}}/workbench/layered-architecture-decision",
+              "action": "Mở workbench layering"
+            },
+            {
+              "track": "System Design",
+              "title": "Reverse proxy failure workbench",
+              "body": "Lập kế hoạch khi reverse proxy hoặc edge layer hỏng trước khi traffic đến origin khỏe, rồi sinh request-path mapping, config validation, blast-radius control, staged rollout, health gate, rollback, observability và câu trả lời phỏng vấn.",
+              "concepts": [
+                "Shared edge request path",
+                "Origin khỏe vẫn có thể không truy cập được",
+                "Trách nhiệm reverse proxy so với load balancer",
+                "Validate config và generated feature file",
+                "Giới hạn schema, size, cardinality và parser compatibility",
+                "Canary và staged rollout cho thay đổi proxy",
+                "Health gate tự động cho proxy 5xx và parser error",
+                "Fail-small theo route, tenant, region hoặc optional module",
+                "Rollback trước khi scale origin",
+                "Lỗi do proxy sinh ra so với lỗi do origin sinh ra",
+                "Triage sự cố edge",
+                "Blast-radius control cho bài học outage kiểu Cloudflare",
+                "Kiểm tra origin reachability",
+                "Cấu trúc trả lời phỏng vấn về reverse proxy risk"
+              ],
+              "files": [
+                "data/interview/devops.en.json",
+                "data/interview/devops.vi.json",
+                "hub/app/Http/Requests/Api/PlanReverseProxyFailureRequest.php",
+                "hub/app/Http/Controllers/Api/ReverseProxyFailurePlanController.php",
+                "hub/app/Services/Practice/ReverseProxyFailurePlanService.php",
+                "hub/resources/views/practice/workbench/reverse-proxy-failure-plan.blade.php"
+              ],
+              "commands": [
+                "php artisan test --filter ReverseProxyFailurePlan",
+                "php artisan route:list --path=reverse-proxy-failure-plan",
+                "vendor\\bin\\pint --test"
+              ],
+              "href": "{{HUB_BASE_URL}}/workbench/reverse-proxy-failure-plan",
+              "action": "Mở proxy failure workbench"
+            },
+            {
+              "track": "System Design",
+              "title": "Load balancer algorithm workbench",
+              "body": "So sánh round robin, weighted round robin, least connections và IP hash từ một traffic scenario, rồi sinh config, health check, rollout guidance và câu trả lời phỏng vấn ngắn gọn.",
+              "concepts": [
+                "Round robin cho upstream tương đương",
+                "Weighted round robin cho capacity không đều",
+                "Least connections cho request dài hoặc traffic bursty",
+                "IP hash cho session affinity tạm thời",
+                "Đánh giá rủi ro vận hành và cách giảm rủi ro",
+                "Traffic share kỳ vọng theo từng upstream",
+                "Health check và upstream draining",
+                "Review config cho header, timeout, session và draining",
+                "Metric quan sát theo từng thuật toán",
+                "Runbook xử lý traffic lệch hoặc upstream lỗi",
+                "Bước giả lập traffic để kiểm chứng thuật toán",
+                "Forwarded header phía sau load balancer",
+                "Rubric trả lời phỏng vấn System Design",
+                "Cấu trúc trả lời phỏng vấn System Design"
+              ],
+              "files": [
+                "data/interview/devops.en.json",
+                "data/interview/devops.vi.json",
+                "hub/app/Http/Requests/Api/PlanLoadBalancerRequest.php",
+                "hub/app/Http/Controllers/Api/LoadBalancerPlanController.php",
+                "hub/app/Services/Practice/LoadBalancerPlanService.php",
+                "hub/resources/views/practice/workbench/load-balancer-plan.blade.php"
+              ],
+              "commands": [
+                "php artisan test --filter LoadBalancerPlan",
+                "php artisan route:list --path=load-balancer-plan",
+                "vendor\\bin\\pint --test"
+              ],
+              "href": "{{HUB_BASE_URL}}/workbench/load-balancer-plan",
+              "action": "Mở load-balancer workbench"
+            },
+            {
+              "track": "DevOps",
+              "title": "Kubernetes ship analogy workbench",
+              "body": "Giải thích Kubernetes trong 1 phút bằng ví dụ tàu điều khiển, tàu chở container và hàng hóa: control plane, worker node, pod, container, deployment, service, ingress, probe và reconciliation.",
+              "concepts": [
+                "Control plane như tàu điều khiển",
+                "Worker node như tàu chở container",
+                "Container như hàng hóa ứng dụng",
+                "Pod là đơn vị deploy nhỏ nhất",
+                "Deployment là shipping order mô tả desired state",
+                "Service là địa chỉ bến cảng ổn định",
+                "Ingress hoặc LoadBalancer cho traffic bên ngoài",
+                "Desired state và reconciliation loop",
+                "Readiness và liveness check",
+                "Startup probe cho app khởi động chậm",
+                "CPU và memory request cho scheduling",
+                "Memory limit và debug OOMKilled",
+                "Replica count cho web app và worker stateless",
+                "Scaling signal cho web API, worker và scheduled job",
+                "Rollout status, rollout history và rollback command",
+                "ConfigMap so với Secret cho cấu hình ứng dụng",
+                "Namespace, service account, RBAC và quota cơ bản",
+                "NetworkPolicy cơ bản cho ingress, egress, DNS và label selector",
+                "Observability signal từ events, logs, metrics và app-level health",
+                "Cost và capacity planning cho replica, node, external traffic và storage",
+                "PodDisruptionBudget, anti-affinity và topology spread cho availability",
+                "Graceful shutdown với SIGTERM, preStop và terminationGracePeriodSeconds",
+                "Image tag, imagePullPolicy, securityContext và image scanning cơ bản",
+                "CronJob cho workload chạy theo lịch",
+                "Cảnh báo persistent storage cho dữ liệu stateful",
+                "Lệnh kubectl để kiểm tra ban đầu",
+                "Troubleshooting runbook cho Pending, CrashLoopBackOff, mất service traffic và mất state",
+                "Failure diagnosis matrix cho ImagePullBackOff, OOMKilled, probe failure, Forbidden, DNS timeout và volume mount failure",
+                "Backend runtime plan cho database migration, queue worker, session, cache, readiness dependency và scheduled task",
+                "Manifest review checklist cho label, probe, resource, rollout safety và runtime state",
+                "CI/CD gate cho manifest rendering, server-side dry run, policy check và smoke test",
+                "YAML snippet cho probe, resource, service selector, PDB và CronJob safety",
+                "Script 1 phút để giải thích Kubernetes bằng ví dụ đội tàu",
+                "Rubric phỏng vấn cho definition, analogy, mechanism, production tradeoff và debugging",
+                "Command ladder cho node, workload, pod evidence, logs, routing và storage check",
+                "Resource decision guide cho Deployment, CronJob, Service, Ingress, LoadBalancer và storage",
+                "Manifest smell catalog cho selector lệch, thiếu probe, thiếu resource, tag latest và state không an toàn",
+                "Practice drill cho giải thích 1 phút, trace request, debug rollout và chứng minh storage durability",
+                "Production readiness score cho external traffic, replica count, scheduled job và stateful data",
+                "SLO observability plan cho availability, latency, error rate, saturation và storage durability",
+                "Deployment review question yêu cầu bằng chứng trước khi release",
+                "Hiểu nhầm nhập môn về Docker, pod, replica và storage",
+                "Câu trả lời phỏng vấn DevOps trong 1 phút"
+              ],
+              "files": [
+                "data/interview/devops.en.json",
+                "data/interview/devops.vi.json",
+                "hub/app/Http/Requests/Api/PlanKubernetesAnalogyRequest.php",
+                "hub/app/Http/Controllers/Api/KubernetesAnalogyPlanController.php",
+                "hub/app/Services/Practice/KubernetesAnalogyPlanService.php",
+                "hub/resources/views/practice/workbench/kubernetes-analogy-plan.blade.php"
+              ],
+              "commands": [
+                "php artisan test --filter KubernetesAnalogyPlan",
+                "php artisan route:list --path=kubernetes-analogy-plan",
+                "vendor\\bin\\pint --test"
+              ],
+              "href": "{{HUB_BASE_URL}}/workbench/kubernetes-analogy-plan",
+              "action": "Mở Kubernetes workbench"
+            },
+            {
               "track": "Laravel Authorization",
               "title": "Authorization policy workbench",
               "body": "Lập kế hoạch policy class, ability method, controller authorization call và test allowed/forbidden trước khi thêm logic phân quyền vào feature.",
@@ -2185,6 +2457,644 @@
               ],
               "href": "{{HUB_BASE_URL}}/workbench/rate-limit-plan",
               "action": "Mở rate-limit workbench"
+            },
+            {
+              "track": "Auth Security",
+              "title": "JWT token-storage decision workbench",
+              "body": "So sánh localStorage, HttpOnly cookie, bearer token và secure platform storage từ một threat model cụ thể trước khi chọn nơi lưu JWT.",
+              "concepts": [
+                "Rủi ro XSS khi dùng localStorage",
+                "Preset tình huống cho các loại client phổ biến",
+                "HttpOnly Secure SameSite cookie",
+                "CSRF control cho cookie flow",
+                "Access token ngắn hạn",
+                "Refresh-token rotation",
+                "Mobile secure storage",
+                "Bearer token revocation",
+                "Risk scoring theo threat signal",
+                "Decision matrix cho client, storage, XSS, CSRF, lifetime và refresh signal",
+                "Checklist review trước production",
+                "Implementation snippet cho cookie, bearer và platform storage",
+                "Migration plan từ storage hiện tại sang storage được khuyến nghị",
+                "Giải thích threat model khi phỏng vấn"
+              ],
+              "files": [
+                "hub/routes/api/practice-actions.php",
+                "hub/routes/web/workbench.php",
+                "hub/app/Http/Requests/Api/PlanJwtTokenStorageRequest.php",
+                "hub/app/Http/Controllers/Api/JwtTokenStoragePlanController.php",
+                "hub/app/Services/Practice/JwtTokenStoragePlanService.php",
+                "hub/resources/views/practice/workbench/jwt-token-storage-plan.blade.php"
+              ],
+              "commands": [
+                "php artisan test --filter JwtTokenStoragePlan",
+                "php artisan route:list --path=jwt-token-storage-plan",
+                "vendor\\bin\\pint --test"
+              ],
+              "href": "{{HUB_BASE_URL}}/workbench/jwt-token-storage-plan",
+              "action": "Mở JWT storage workbench"
+            },
+            {
+              "track": "Auth Security",
+              "title": "JWT revocation planning workbench",
+              "body": "Thực hành cách xử lý khi cần chặn JWT trước khi hết hạn: thêm jti claim, dùng denylist hoặc token-version check, revoke refresh-token family, thiết kế API, database record và middleware kiểm tra.",
+              "concepts": [
+                "Giới hạn revoke của stateless JWT",
+                "Thiết kế jti claim",
+                "Lưu denylist đến khi token hết hạn",
+                "Architecture summary gồm decision, tradeoff, cảnh báo poor-fit và bước thiết kế tiếp theo",
+                "Threat model cho leaked access token, refresh-token reuse, stale authorization và browser session",
+                "Incident playbook cho triage, containment, recovery và evidence capture",
+                "Token version để vô hiệu hóa theo user",
+                "Refresh-token rotation và reuse detection",
+                "API logout và logout-all",
+                "Database schema cho revoked token",
+                "Retention plan cho index, prune, audit metadata và storage capacity",
+                "Middleware kiểm tra revocation",
+                "Decision matrix cho client, model, lifetime, store, logout và refresh signal",
+                "Risk scoring cho token sống lâu, thiếu rotation, cache eviction và stateful enforcement",
+                "Rollout plan theo các phase instrument, dual-read, enforce và harden",
+                "Observability plan cho metric revoke, structured log và alert",
+                "Failure-mode plan cho revocation store outage, cache eviction, reuse spike và version drift",
+                "Structured test matrix cho feature, security, operations, privacy và authorization coverage",
+                "Checklist review control revoke trước production",
+                "Prune record revoke đã hết hạn",
+                "Câu trả lời phỏng vấn về JWT revocation"
+              ],
+              "files": [
+                "hub/routes/api/practice-actions.php",
+                "hub/routes/web/workbench.php",
+                "hub/app/Http/Requests/Api/PlanJwtRevocationRequest.php",
+                "hub/app/Http/Controllers/Api/JwtRevocationPlanController.php",
+                "hub/app/Services/Practice/JwtRevocationPlanService.php",
+                "hub/resources/views/practice/workbench/jwt-revocation-plan.blade.php"
+              ],
+              "commands": [
+                "php artisan test --filter JwtRevocationPlan",
+                "php artisan route:list --path=jwt-revocation-plan",
+                "vendor\\bin\\pint --test"
+              ],
+              "href": "{{HUB_BASE_URL}}/workbench/jwt-revocation-plan",
+              "action": "Mở JWT revocation workbench"
+            },
+            {
+              "track": "Auth Security",
+              "title": "OAuth Implicit Flow migration workbench",
+              "body": "So sánh OAuth2 Implicit Flow với Authorization Code flow, giải thích vì sao front-channel token delivery không còn được khuyến khích và lập plan migrate sang Authorization Code với PKCE hoặc confidential backend client.",
+              "concepts": [
+                "OAuth2 Implicit Flow không còn được khuyến khích",
+                "Authorization Code flow với PKCE",
+                "Architecture decision record cho quyết định thay Implicit Flow",
+                "Compatibility note cho SPA, mobile và server-rendered web client",
+                "Public client và confidential client",
+                "Rủi ro token đi qua front channel",
+                "Threat model cho access token, authorization code, login callback và refresh token",
+                "Provider capability matrix cho PKCE S256, state validation, token blocking và refresh rotation",
+                "Leak qua browser history, redirect, extension, log và screenshot",
+                "response_type=token và response_type=code",
+                "PKCE code_verifier và code_challenge",
+                "Validate state",
+                "Callback validation rule cho code, state, redirect URI và PKCE verifier",
+                "PKCE checklist cho code_verifier, S256 challenge và token exchange",
+                "Refresh-token rotation",
+                "Token lifetime policy cho access token ngắn hạn, refresh rotation và revocation",
+                "Scope consent matrix cho openid, email, offline_access và admin/write scope",
+                "Authorize request hardening cho response_type, redirect_uri, state, scope và code_challenge",
+                "Token endpoint contract cho grant_type, code, redirect_uri, client_secret và code_verifier",
+                "Frontend cleanup plan cho callback route, browser URL, legacy storage key, telemetry và PKCE verifier cache",
+                "ID-token validation rule cho issuer, audience, timestamp và nonce",
+                "Flow comparison matrix",
+                "Risk scoring cho OAuth client legacy",
+                "Sequence step cho Implicit và Authorization Code với PKCE",
+                "Code snippet cho authorize URL, token exchange và Laravel callback validation",
+                "Migration plan rời khỏi Implicit Flow",
+                "Rollout plan cho inventory, dual support, enforcement và remove legacy",
+                "Client cutover checklist cho authorize URL, PKCE verifier storage, reject legacy callback và refresh rotation",
+                "Observability plan cho authorize request, rejected callback, token exchange và implicit blocking",
+                "Failure mode cho state mismatch, missing PKCE verifier, token-bearing callback, redirect URI drift và refresh-token reuse",
+                "Incident response playbook cho token-bearing callback và nghi ngờ token leakage",
+                "Deprecation policy để block Implicit client mới và retire legacy exception",
+                "Security test matrix cho front-channel token blocking, state validation, PKCE verifier, code lifecycle và refresh rotation",
+                "Câu trả lời phỏng vấn OAuth"
+              ],
+              "files": [
+                "hub/routes/api/practice-actions.php",
+                "hub/routes/web/workbench.php",
+                "hub/app/Http/Requests/Api/PlanOauthFlowRequest.php",
+                "hub/app/Http/Controllers/Api/OauthFlowPlanController.php",
+                "hub/app/Services/Practice/OauthFlowPlanService.php",
+                "hub/resources/views/practice/workbench/oauth-flow-plan.blade.php"
+              ],
+              "commands": [
+                "php artisan test --filter OauthFlowPlan",
+                "php artisan route:list --path=oauth-flow-plan",
+                "vendor\\bin\\pint --test"
+              ],
+              "href": "{{HUB_BASE_URL}}/workbench/oauth-flow-plan",
+              "action": "Mở OAuth flow workbench"
+            },
+            {
+              "track": "API Architecture",
+              "title": "GraphQL REST decision workbench",
+              "body": "So sánh REST endpoint contract với GraphQL schema/query contract, rồi tạo khuyến nghị kèm hướng dẫn cache, authorization, resolver, N+1, boundary Laravel và câu trả lời phỏng vấn.",
+              "concepts": [
+                "REST endpoint và resource contract",
+                "GraphQL schema, query, mutation và resolver contract",
+                "Client-selected fields và tradeoff overfetching",
+                "HTTP cache semantic so với cache GraphQL theo operation",
+                "Resolver N+1 và query-cost control",
+                "Field-level authorization",
+                "Boundary Laravel cho route, request, resource, service, schema và resolver",
+                "Decision matrix và risk scoring",
+                "Implementation plan và review checklist",
+                "Câu trả lời phỏng vấn REST versus GraphQL"
+              ],
+              "files": [
+                "hub/routes/api/practice-actions.php",
+                "hub/routes/web/workbench.php",
+                "hub/app/Http/Requests/Api/PlanGraphqlRestDecisionRequest.php",
+                "hub/app/Http/Controllers/Api/GraphqlRestDecisionController.php",
+                "hub/app/Services/Practice/GraphqlRestDecisionService.php",
+                "hub/resources/views/practice/workbench/graphql-rest-decision.blade.php"
+              ],
+              "commands": [
+                "php artisan test --filter GraphqlRestDecision",
+                "php artisan route:list --path=graphql-rest-decision",
+                "vendor\\bin\\pint --test"
+              ],
+              "href": "{{HUB_BASE_URL}}/workbench/graphql-rest-decision",
+              "action": "Mở GraphQL REST workbench"
+            },
+            {
+              "track": "API Architecture",
+              "title": "RESTful API naming workbench",
+              "body": "Biến feature brief thành path endpoint RESTful gọn, route name Laravel, query parameter, endpoint action nghiệp vụ, checklist review, test và decision memo sẵn đưa vào PR.",
+              "concepts": [
+                "Danh từ resource số nhiều",
+                "HTTP verb semantic",
+                "Boundary nested resource",
+                "Query parameter cho filter và sorting",
+                "Review endpoint action nghiệp vụ",
+                "Route name Laravel và target feature test"
+              ],
+              "files": [
+                "hub/routes/api/practice-actions.php",
+                "hub/routes/web/workbench.php",
+                "hub/app/Http/Requests/Api/PlanRestfulApiNamingRequest.php",
+                "hub/app/Http/Controllers/Api/RestfulApiNamingPlanController.php",
+                "hub/app/Services/Practice/RestfulApiNamingPlanService.php",
+                "hub/resources/views/practice/workbench/restful-api-naming-plan.blade.php"
+              ],
+              "commands": [
+                "php artisan test --filter RestfulApiNamingPlanWorkbenchTest",
+                "php artisan route:list --path=restful-api-naming-plan",
+                "vendor\\bin\\pint --test"
+              ],
+              "href": "{{HUB_BASE_URL}}/workbench/restful-api-naming-plan",
+              "action": "Mở RESTful naming workbench"
+            },
+            {
+              "track": "Vibe Coding",
+              "title": "AI hallucination guardrail workbench",
+              "body": "Thực hành cách ngăn output AI nghe hợp lý nhưng sai đi vào code: bắt AI nêu assumption, trích evidence, kiểm tra version framework, chạy command verify và giữ human review là chốt chặn cuối.",
+              "concepts": [
+                "Rủi ro AI hallucination",
+                "Workflow code dựa trên evidence trước",
+                "Prompt contract",
+                "Safe output contract cho assumption, evidence map, verification record và claim chưa verify",
+                "Acceptance gate để accept hoặc block output AI",
+                "Evidence requirement theo từng loại claim",
+                "Claim validation rule cho API, route, test và data do AI bịa",
+                "Trạng thái release readiness cho output bị block, conditional hoặc sẵn sàng review",
+                "Evidence ledger template để ghi claim, reference, kết quả verify và note redaction",
+                "Phân rã điểm rủi ro theo từng signal",
+                "Decision matrix để chọn workflow AI an toàn hơn",
+                "Data-safety plan cho secret, PII và source data",
+                "Prompt example an toàn cho preflight, patch, review và source-grounded answer",
+                "Artifact bắt buộc trước khi merge",
+                "CI policy theo mức rủi ro hallucination",
+                "Observability plan cho regression do output AI",
+                "Rollback playbook khi generated change làm hỏng behavior",
+                "Ownership model cho operator, reviewer, domain owner và release owner",
+                "Escalation policy cho senior, security, reviewer và domain-owner review",
+                "Maturity roadmap từ review thủ công tới guardrail vận hành",
+                "Repo context và source citation",
+                "Command kiểm chứng runtime",
+                "Command verify theo task cho route, feature test, style check, source ledger và reproduction",
+                "Kiểm tra version framework và dependency",
+                "Review lens cho auth, validation, query, runtime và scope",
+                "Bước triển khai guardrail vào workflow team",
+                "Red-team scenario để bắt output AI bịa",
+                "Automation hook cho PR template, CI check, dependency review và security label",
+                "Guardrail cho data answer và generated code",
+                "Câu trả lời phỏng vấn về hallucination"
+              ],
+              "files": [
+                "hub/routes/api/practice-actions.php",
+                "hub/routes/web/workbench.php",
+                "hub/app/Http/Requests/Api/PlanAiHallucinationGuardRequest.php",
+                "hub/app/Http/Controllers/Api/AiHallucinationGuardPlanController.php",
+                "hub/app/Services/Practice/AiHallucinationGuardPlanService.php",
+                "hub/resources/views/practice/workbench/ai-hallucination-guard-plan.blade.php"
+              ],
+              "commands": [
+                "php artisan test --filter AiHallucinationGuardPlan",
+                "php artisan route:list --path=ai-hallucination-guard-plan",
+                "vendor\\bin\\pint --test"
+              ],
+              "href": "{{HUB_BASE_URL}}/workbench/ai-hallucination-guard-plan",
+              "action": "Mở AI guardrail workbench"
+            },
+            {
+              "track": "AI Interview",
+              "title": "AI Cloud interview rubric workbench",
+              "body": "Chấm xem ứng viên Cloud Engineer có thật sự dùng AI trong công việc không: task cụ thể, prompt workflow, review Terraform hoặc CloudFormation, chuyện AI sai, verification workflow, AWS Documentation conflict và khả năng chuẩn hóa cho team.",
+              "concepts": [
+                "Rubric đánh giá ứng viên dùng AI",
+                "Bằng chứng task cụ thể trong tuần gần nhất",
+                "Prompt workflow có context, constraint, format output và ý định verify",
+                "Review Terraform và CloudFormation trước khi apply",
+                "Câu chuyện AI sai như tín hiệu trưởng thành",
+                "Workflow verify bằng docs, dry run, test, log và peer review",
+                "AWS Documentation là source of truth cao hơn output AI",
+                "Red flag cho việc dùng AI bề mặt",
+                "Green flag cho năng lực dùng AI thực chất",
+                "Chuẩn hóa prompt và guardrail AI ở cấp team"
+              ],
+              "files": [
+                "hub/routes/api/practice-actions.php",
+                "hub/routes/web/workbench.php",
+                "hub/app/Http/Requests/Api/ScoreAiCloudInterviewRubricRequest.php",
+                "hub/app/Http/Controllers/Api/AiCloudInterviewRubricController.php",
+                "hub/app/Services/Practice/AiCloudInterviewRubricService.php",
+                "hub/resources/views/practice/workbench/ai-cloud-interview-rubric.blade.php"
+              ],
+              "commands": [
+                "php artisan test --filter AiCloudInterviewRubric",
+                "php artisan route:list --path=ai-cloud-interview-rubric",
+                "vendor\\bin\\pint --test"
+              ],
+              "href": "{{HUB_BASE_URL}}/workbench/ai-cloud-interview-rubric",
+              "action": "Mở rubric phỏng vấn AI"
+            },
+            {
+              "track": "AI Foundations",
+              "title": "RAG strategy workbench",
+              "body": "Chọn giữa RAG, Long Context, CAG và hybrid context strategy cho chatbot AI, rồi chọn tiếp pattern RAG phù hợp: classic RAG, Graph RAG hoặc Agentic RAG. Workbench dựa trên knowledge shape, relationship need, tool use, freshness, risk level, readiness, data model, API response shape, OpenAPI contract, answer contract, Laravel integration blueprint, CI gate, implementation prompt, source lifecycle, benchmark, test fixture, prompt-injection test, privacy control, capacity plan, feedback schema, feedback loop, ownership, release evidence, audit artifact, migration path, implementation backlog, threat model, SLO, ADR summary, decommission path, citation, groundedness check, cost control, access control, observability, failure runbook và rollout gate.",
+              "concepts": [
+                "RAG, Long Context, CAG và hybrid context strategy routing cho chatbot AI",
+                "Classic RAG cho retrieval theo chunk tài liệu",
+                "Graph RAG cho entity và relationship traversal",
+                "Agentic RAG cho multi-step tool use có kiểm soát",
+                "Long Context cho phân tích gói tài liệu giới hạn với token budget và source marker",
+                "CAG cho cached context có kiểm soát permission trên knowledge ổn định đã được curate",
+                "Hybrid routing cho stable FAQ, tài liệu riêng cần freshness và phiên phân tích sâu",
+                "Retrieval contract cho chunking, metadata, source ID và freshness",
+                "Groundedness, citation coverage, fallback behavior và hallucination control",
+                "Golden question set để offline evaluation",
+                "Permission filter, redaction, audit log và fail-closed behavior",
+                "Monitoring signal cho retrieval miss, source cũ, claim không grounded và tool loop",
+                "Answer contract cho answer, citation, confidence, missing evidence và follow-up",
+                "Prompt template cho retrieval query, grounded answer, conflict, refusal và behavior theo từng style",
+                "Cost control cho top-k, context token, reranking, graph traversal và agent iteration",
+                "Readiness score và decision matrix để review trước khi launch",
+                "Data model contract cho source ID, permission scope, timestamp, chunk, vector, keyword term, graph edge và tool log",
+                "Benchmark plan cho source recall, grounded answer, permission, freshness, graph edge và tool loop",
+                "Feedback loop và ownership matrix cho content, platform, security, reviewer, domain owner và tool owner",
+                "API response example và test fixture plan để có contract sẵn cho implementation",
+                "Laravel integration blueprint cho route, request, controller, service, feature test, graph evidence và tool runner",
+                "OpenAPI-style request/response contract, CI quality gate và implementation prompt để đưa vào PR",
+                "Prompt-injection test, privacy control, capacity plan và feedback schema cho RAG vận hành lâu dài",
+                "Migration path và implementation backlog để đi từ no RAG sang classic, graph hoặc agentic RAG",
+                "Threat model, SLO policy, ADR summary và decommission plan để review production",
+                "Versioning policy, release checklist, evidence packet và audit artifact để approval có thể replay",
+                "Failure runbook cho lỗi citation, source cũ, leak permission, edge sai và agent loop không an toàn"
+              ],
+              "files": [
+                "hub/routes/api/practice-actions.php",
+                "hub/routes/web/workbench.php",
+                "hub/app/Http/Requests/Api/PlanRagStrategyRequest.php",
+                "hub/app/Http/Controllers/Api/RagStrategyPlanController.php",
+                "hub/app/Services/Practice/RagStrategyPlanService.php",
+                "hub/resources/views/practice/workbench/rag-strategy-plan.blade.php"
+              ],
+              "commands": [
+                "php artisan test --filter RagStrategyPlan",
+                "php artisan route:list --path=rag-strategy-plan",
+                "vendor\\bin\\pint --test"
+              ],
+              "href": "{{HUB_BASE_URL}}/workbench/rag-strategy-plan",
+              "action": "Mở RAG strategy workbench"
+            },
+            {
+              "track": "AI Foundations",
+              "title": "LLM decision-loop workbench",
+              "body": "Mô hình hóa LLM như một quá trình ra quyết định lặp lại: state, policy, action, transition, reward, attention, reward model, PPO, tool feedback và guardrail cho claim về AGI.",
+              "concepts": [
+                "Xác suất token tiếp theo là objective ban đầu",
+                "Góc nhìn Markov decision process",
+                "State, policy, action, transition và reward",
+                "Attention như cơ chế định tuyến context",
+                "Supervised fine-tuning và reward model",
+                "PPO như constrained policy optimization",
+                "Tool use và feedback từ môi trường",
+                "Guardrail cho claim về AGI và câu hỏi verify"
+              ],
+              "files": [
+                "hub/routes/api/practice-actions.php",
+                "hub/routes/web/workbench.php",
+                "hub/app/Http/Requests/Api/PlanLlmDecisionLoopRequest.php",
+                "hub/app/Http/Controllers/Api/LlmDecisionLoopPlanController.php",
+                "hub/app/Services/Practice/LlmDecisionLoopPlanService.php",
+                "hub/resources/views/practice/workbench/llm-decision-loop-plan.blade.php"
+              ],
+              "commands": [
+                "php artisan test --filter LlmDecisionLoopPlan",
+                "php artisan route:list --path=llm-decision-loop-plan",
+                "vendor\\bin\\pint --test"
+              ],
+              "href": "{{HUB_BASE_URL}}/workbench/llm-decision-loop-plan",
+              "action": "Mở LLM workbench"
+            },
+            {
+              "track": "AI Foundations",
+              "title": "AI agent memory workbench",
+              "body": "Thiết kế memory cho AI agent thành bốn contract có governance rõ ràng: working memory cho task hiện tại, episodic memory cho phiên làm việc trước, semantic memory cho kiến thức repo bền vững, và procedural memory cho playbook đã review. Workbench giúp xác định scope, source, freshness, confidence, permission, retention, correction path, fallback khi memory cũ và kiểm soát privacy trước khi memory được dùng để điều hướng hành động tiếp theo.",
+              "concepts": [
+                "Working memory cho trạng thái task hiện tại",
+                "Episodic memory cho phiên làm việc và quyết định trước đó",
+                "Semantic memory cho kiến thức repo và domain vocabulary bền vững",
+                "Procedural memory cho playbook và command đã review",
+                "Metadata source, freshness, confidence, permission, retention và correction",
+                "Guardrail cho memory cũ, memory riêng tư, playbook sai ngữ cảnh và leak working memory"
+              ],
+              "files": [
+                "hub/routes/api/practice-actions.php",
+                "hub/routes/web/workbench.php",
+                "hub/app/Http/Requests/Api/PlanAiAgentMemoryRequest.php",
+                "hub/app/Http/Controllers/Api/AiAgentMemoryPlanController.php",
+                "hub/app/Services/Practice/AiAgentMemoryPlanService.php",
+                "hub/resources/views/practice/workbench/ai-agent-memory-plan.blade.php"
+              ],
+              "commands": [
+                "php artisan test --filter AiAgentMemoryPlan",
+                "php artisan route:list --path=ai-agent-memory-plan",
+                "vendor\\bin\\pint --test"
+              ],
+              "href": "{{HUB_BASE_URL}}/workbench/ai-agent-memory-plan",
+              "action": "Mở agent memory workbench"
+            },
+            {
+              "track": "Database Performance",
+              "title": "LSM Tree storage-engine workbench",
+              "body": "Giải thích vì sao NoSQL ghi nhanh nhờ thiết kế LSM Tree chứ không chỉ vì thiếu schema: WAL, memtable, flush segment bất biến, compaction và Bloom Filter tối ưu đọc.",
+              "concepts": [
+                "NoSQL không nhanh chỉ vì thiếu schema",
+                "Architecture decision record để chỉ accept LSM khi có operational guard",
+                "LSM Tree write path",
+                "WAL durability trước khi acknowledge",
+                "Memtable buffering",
+                "Flush immutable sorted segment hoặc SSTable",
+                "Compaction strategy và write amplification",
+                "Read amplification qua nhiều segment",
+                "Space amplification từ version cũ, tombstone và segment overlap",
+                "Range scan planning cho key design, segment overlap, cursor pagination và hot range",
+                "Tombstone và TTL policy cho delete, expiry wave, snapshot và compaction debt",
+                "Capacity plan cho WAL throughput, memtable memory, Bloom Filter memory, disk headroom và compaction bandwidth",
+                "Cost model cho memory, disk, CPU/IO và operations",
+                "Engine comparison giữa LSM-backed store, B-tree relational index, search projection và cache layer",
+                "Decision rule cho write-heavy ingest, point-read miss, range scan và TTL/delete pattern",
+                "Benchmark plan cho ingest, compaction pressure, point-read miss, range scan và TTL/delete wave",
+                "Rollout plan cho model, benchmark, dual-read và ramp phase",
+                "SLO guardrail cho p99 latency, compaction debt, disk headroom, read-miss efficiency và tombstone pressure",
+                "Anti-pattern cho schema myth, bỏ qua compaction, range query không giới hạn, delete storm và thiếu Bloom Filter",
+                "Incident runbook cho triage, containment, recovery và hardening khi LSM latency hoặc disk pressure tăng",
+                "Fit matrix cho high ingest event, point lookup, analytical scan và dữ liệu delete-heavy",
+                "Data model review cho partition key, sort key, document shape và TTL/delete field",
+                "Query contract cho point lookup, bounded range, cursor pagination và chặn broad scan",
+                "Interview checklist cho claim, mechanism, tradeoff và measurement",
+                "Failure mode cho memtable flush stall, compaction backlog, tombstone buildup và negative lookup tốn kém",
+                "Bloom Filter tối ưu point-read miss",
+                "Schema flexibility so với storage-engine layout",
+                "p95 và p99 latency khi compaction chạy"
+              ],
+              "files": [
+                "hub/routes/api/practice-actions.php",
+                "hub/routes/web/workbench.php",
+                "hub/app/Http/Requests/Api/PlanLsmTreeRequest.php",
+                "hub/app/Http/Controllers/Api/LsmTreePlanController.php",
+                "hub/app/Services/Practice/LsmTreePlanService.php",
+                "hub/resources/views/practice/workbench/lsm-tree-plan.blade.php"
+              ],
+              "commands": [
+                "php artisan test --filter LsmTreePlan",
+                "php artisan route:list --path=lsm-tree-plan",
+                "vendor\\bin\\pint --test"
+              ],
+              "href": "{{HUB_BASE_URL}}/workbench/lsm-tree-plan",
+              "action": "Mở LSM Tree workbench"
+            },
+            {
+              "track": "System Design",
+              "title": "System Design tradeoff workbench",
+              "body": "Luyện trả lời phỏng vấn kiến trúc bằng cách hỏi rõ yêu cầu trước khi vẽ, so sánh Long Polling, WebSocket, broker, vertical scaling và strong consistency, rồi nói rõ chi phí chấp nhận, lựa chọn bị từ chối, rủi ro team-fit và cách trả lời theo level.",
+              "concepts": [
+                "Hỏi rõ yêu cầu trước khi vẽ architecture",
+                "Thiết kế notification system cho 10 triệu user",
+                "Real-time so với delayed delivery",
+                "Long Polling so với vận hành WebSocket",
+                "Tradeoff Kafka hoặc broker fan-out",
+                "Strong consistency so với eventual consistency",
+                "Vertical scaling như lựa chọn deploy được cho legacy system",
+                "Team maturity và operational capacity",
+                "Tín hiệu trả lời phỏng vấn L4, L5, L6 và L7",
+                "Câu tradeoff: tôi chọn A, chi phí là X, và tôi chấp nhận vì Y đắt hơn trong bối cảnh này"
+              ],
+              "files": [
+                "hub/routes/api/practice-actions.php",
+                "hub/routes/web/workbench.php",
+                "hub/app/Http/Requests/Api/PlanSystemDesignTradeoffRequest.php",
+                "hub/app/Http/Controllers/Api/SystemDesignTradeoffPlanController.php",
+                "hub/app/Services/Practice/SystemDesignTradeoffPlanService.php",
+                "hub/resources/views/practice/workbench/system-design-tradeoff-plan.blade.php"
+              ],
+              "commands": [
+                "php artisan test --filter SystemDesignTradeoffPlan",
+                "php artisan route:list --path=system-design-tradeoff-plan",
+                "vendor\\bin\\pint --test"
+              ],
+              "href": "{{HUB_BASE_URL}}/workbench/system-design-tradeoff-plan",
+              "action": "Mở tradeoff workbench"
+            },
+            {
+              "track": "Frontend",
+              "title": "React render optimization workbench",
+              "body": "Thực hành giảm render không cần thiết trong React bằng cách đo trước, rồi chọn React.memo, useMemo, useCallback, state locality hoặc virtualization theo nguyên nhân thật.",
+              "concepts": [
+                "React Profiler trước khi tối ưu",
+                "React.memo cho child tốn render nhưng props ổn định",
+                "useMemo cho derived value nặng và object prop cần ổn định",
+                "useCallback cho callback identity truyền vào child đã memo",
+                "State locality, split context, virtualization cho list lớn và anti-pattern memoization"
+              ],
+              "files": [
+                "hub/routes/api/practice-actions.php",
+                "hub/routes/web/workbench.php",
+                "hub/app/Http/Requests/Api/PlanReactRenderOptimizationRequest.php",
+                "hub/app/Http/Controllers/Api/ReactRenderOptimizationPlanController.php",
+                "hub/app/Services/Practice/ReactRenderOptimizationPlanService.php",
+                "hub/resources/views/practice/workbench/react-render-optimization-plan.blade.php"
+              ],
+              "commands": [
+                "php artisan test --filter ReactRenderOptimizationPlan",
+                "php artisan route:list --path=react-render-optimization-plan",
+                "vendor\\bin\\pint --test"
+              ],
+              "href": "{{HUB_BASE_URL}}/workbench/react-render-optimization-plan",
+              "action": "Mở React render workbench"
+            },
+            {
+              "track": "Frontend",
+              "title": "JavaScript hoisting lab",
+              "body": "Dán một snippet JavaScript để trace hành vi hoisting qua function declaration, `var`, `let`, `const`, function expression, rủi ro temporal dead zone, rewrite an toàn hơn và câu trả lời phỏng vấn.",
+              "concepts": [
+                "Creation phase so với execution phase",
+                "`var` được khởi tạo là `undefined`",
+                "Temporal dead zone của `let` và `const`",
+                "Function declaration so với function expression",
+                "Rewrite an toàn hơn và checklist phỏng vấn"
+              ],
+              "files": [
+                "hub/routes/api/practice-actions.php",
+                "hub/routes/web/workbench.php",
+                "hub/app/Http/Requests/Api/AnalyzeJavascriptHoistingRequest.php",
+                "hub/app/Http/Controllers/Api/JavascriptHoistingLabController.php",
+                "hub/app/Services/Practice/JavascriptHoistingLabService.php",
+                "hub/resources/views/practice/workbench/javascript-hoisting-lab.blade.php"
+              ],
+              "commands": [
+                "php artisan test --filter JavascriptHoistingLabWorkbenchTest",
+                "php artisan route:list --path=javascript-hoisting-lab",
+                "vendor\\bin\\pint --test"
+              ],
+              "href": "{{HUB_BASE_URL}}/workbench/javascript-hoisting-lab",
+              "action": "Mở hoisting lab"
+            },
+            {
+              "track": "Security",
+              "title": "IDOR access review workbench",
+              "body": "Mô phỏng attacker đổi object ID, rồi thiết kế policy Laravel, scoped query, tenant boundary, authorization map, remediation steps, merge evidence, monitoring guidance, hướng dẫn 403/404, test, checklist review và câu trả lời phỏng vấn.",
+              "concepts": [
+                "IDOR là lỗi object-level authorization",
+                "Attacker đổi ID trong API route",
+                "Risk drivers và attack variants",
+                "Laravel policy và Gate authorization",
+                "Authorization map cho read, update, delete, download và export",
+                "Scoped query theo tenant và owner",
+                "Remediation plan và feature test hai user",
+                "Merge evidence và monitoring guidance",
+                "Hướng dẫn chọn 403 hoặc 404"
+              ],
+              "files": [
+                "hub/app/Services/Practice/IdorAccessReviewService.php",
+                "hub/app/Http/Requests/Api/ReviewIdorAccessRequest.php",
+                "hub/app/Http/Controllers/Api/IdorAccessReviewController.php",
+                "hub/routes/api/practice-actions.php",
+                "hub/routes/web/workbench.php",
+                "hub/resources/views/practice/workbench/idor-access-review.blade.php"
+              ],
+              "commands": [
+                "php artisan route:list --path=idor-access-review",
+                "php artisan test --filter IdorAccessReviewWorkbenchTest",
+                "vendor\\bin\\pint --test"
+              ],
+              "href": "{{HUB_BASE_URL}}/workbench/idor-access-review",
+              "action": "Mở IDOR workbench"
+            },
+            {
+              "track": "Security",
+              "title": "SQL Injection defense workbench",
+              "body": "Thực hành trả lời phỏng vấn SQL Injection và chuyển SQL động không an toàn thành parameterized query, query builder binding, allowlist identifier và test payload tấn công.",
+              "concepts": [
+                "SQL Injection là input người dùng biến thành logic SQL",
+                "Parameterized query và prepared statement",
+                "Laravel query builder và raw SQL binding",
+                "Allowlist cho order, column và table động",
+                "Test payload như OR 1=1 và UNION probe",
+                "Vì sao escaping không phải phòng tuyến chính"
+              ],
+              "files": [
+                "hub/routes/api/practice-actions.php",
+                "hub/routes/web/workbench.php",
+                "hub/app/Http/Requests/Api/PlanSqlInjectionDefenseRequest.php",
+                "hub/app/Http/Controllers/Api/SqlInjectionDefensePlanController.php",
+                "hub/app/Services/Practice/SqlInjectionDefensePlanService.php",
+                "hub/resources/views/practice/workbench/sql-injection-defense-plan.blade.php"
+              ],
+              "commands": [
+                "php artisan test --filter SqlInjectionDefensePlan",
+                "php artisan route:list --path=sql-injection-defense-plan",
+                "vendor\\bin\\pint --test"
+              ],
+              "href": "{{HUB_BASE_URL}}/workbench/sql-injection-defense-plan",
+              "action": "Mở SQL Injection workbench"
+            },
+            {
+              "track": "Security",
+              "title": "CSRF protection workbench",
+              "body": "Thực hành giải thích CSRF, mô hình rủi ro cookie-authenticated browser, chọn CSRF token và SameSite control, rồi viết test cho token thiếu hoặc token cũ.",
+              "concepts": [
+                "CSRF là request đổi trạng thái ngoài ý muốn từ browser đang đăng nhập",
+                "Laravel `@csrf` token và kiểm tra session",
+                "SameSite cookie: Lax, Strict, None và cấu hình bị thiếu",
+                "Sanctum SPA stateful và bước lấy CSRF cookie",
+                "Vì sao GET phải giữ read-only",
+                "Feature test cho 419 và stale-token behavior"
+              ],
+              "files": [
+                "hub/routes/api/practice-actions.php",
+                "hub/routes/web/workbench.php",
+                "hub/app/Http/Requests/Api/PlanCsrfProtectionRequest.php",
+                "hub/app/Http/Controllers/Api/CsrfProtectionPlanController.php",
+                "hub/app/Services/Practice/CsrfProtectionPlanService.php",
+                "hub/resources/views/practice/workbench/csrf-protection-plan.blade.php"
+              ],
+              "commands": [
+                "php artisan test --filter CsrfProtectionPlan",
+                "php artisan route:list --path=csrf-protection-plan",
+                "vendor\\bin\\pint --test"
+              ],
+              "href": "{{HUB_BASE_URL}}/workbench/csrf-protection-plan",
+              "action": "Mở CSRF workbench"
+            },
+            {
+              "track": "Security + DevOps",
+              "title": "SIEM ELK planning workbench",
+              "body": "Lập kế hoạch pipeline security logging biến raw event thành bằng chứng có thể search, field chuẩn hóa, detection rule, retention policy, privacy control, dashboard và incident runbook.",
+              "concepts": [
+                "SIEM là năng lực thu event bảo mật, correlate, alert và giữ bằng chứng điều tra",
+                "Elastic Agent hoặc Beats để ship log",
+                "Logstash parse, normalize, enrich và redact dữ liệu nhạy cảm",
+                "Elasticsearch index, search, retention và kiểm soát chi phí",
+                "Kibana dashboard, saved search, alert và evidence view",
+                "Detection rule cho auth abuse, web attack, privilege change và incident investigation",
+                "Alert ownership, dedup window, runbook, false-positive review và privacy control"
+              ],
+              "files": [
+                "hub/routes/api/practice-actions.php",
+                "hub/routes/web/workbench.php",
+                "hub/app/Http/Requests/Api/PlanSiemElkRequest.php",
+                "hub/app/Http/Controllers/Api/SiemElkPlanController.php",
+                "hub/app/Services/Practice/SiemElkPlanService.php",
+                "hub/resources/views/practice/workbench/siem-elk-plan.blade.php"
+              ],
+              "commands": [
+                "php artisan test --filter SiemElkPlan",
+                "php artisan route:list --path=siem-elk-plan",
+                "vendor\\bin\\pint --test"
+              ],
+              "href": "{{HUB_BASE_URL}}/workbench/siem-elk-plan",
+              "action": "Mở SIEM ELK workbench"
             },
             {
               "track": "Docker + Runtime",

@@ -6,6 +6,52 @@
   border-color: color-mix(in srgb, var(--accent) 24%, var(--line));
 }
 
+.site-nav-dropdown:not(.open) .site-nav-submenu {
+  display: none;
+}
+
+.site-nav-dropdown.open .site-nav-submenu {
+  display: grid;
+}
+
+body[data-page^="interview-"] .section-copy,
+body[data-page^="interview-"] #appShell *,
+body[data-page^="interview-"] .detail-main > *,
+body[data-page^="interview-"] .panel > *,
+body[data-page^="interview-"] .detail-section-head > *,
+body[data-page^="interview-"] .bullet-partitions,
+body[data-page^="interview-"] .bullet-partition,
+body[data-page^="interview-"] .bullet-part-header,
+body[data-page^="interview-"] .bullet-part-copy,
+body[data-page^="interview-"] .interview-qa-list,
+body[data-page^="interview-"] .interview-qa-list li,
+body[data-page^="interview-"] .bullet-list strong,
+body[data-page^="interview-"] .bullet-body,
+body[data-page^="interview-"] .bullet-note,
+body[data-page^="interview-"] .bullet-tip,
+body[data-page^="interview-"] .bullet-sublist,
+body[data-page^="interview-"] .bullet-sublist li,
+body[data-page^="interview-"] .bullet-link-chip,
+body[data-page^="interview-"] .bullet-link-chip strong,
+body[data-page^="interview-"] .bullet-link-chip span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  word-break: normal;
+}
+
+body[data-page^="interview-"] code,
+body[data-page^="interview-"] .inline-keyword,
+body[data-page^="interview-"] .bullet-meta-label,
+body[data-page^="interview-"] .bullet-inline-label {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+body[data-page^="interview-"] .bullet-code-shell code {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
 .global-search-result strong {
   font-size: 1rem;
 }
@@ -295,6 +341,34 @@ body[data-theme="dark"] .global-search-field input {
 
   .panel {
     padding: 24px 0;
+  }
+
+  .detail-section {
+    gap: 16px;
+  }
+
+  .panel > h2,
+  .detail-section-copy h2,
+  .section-heading h2 {
+    font-size: 1.32rem;
+  }
+
+  .service-card,
+  .repo-card,
+  .content-card,
+  .link-card,
+  .bullet-list li {
+    padding: 20px;
+  }
+
+  .bullet-sublist li {
+    padding: 0;
+  }
+
+  .bullet-code-shell pre,
+  .php-example-block pre,
+  .php-note-block .php-code-shell pre {
+    padding: 58px 16px 16px;
   }
 
   .site-nav-submenu {

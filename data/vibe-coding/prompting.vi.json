@@ -256,6 +256,113 @@
     {
       "title": "Vì sao `copyright` và `license` cũng là một phần của Vibe Coding?",
       "body": "Vì AI có thể gợi ý snippet, cấu trúc hoặc dependency mà bạn không hiểu nguồn gốc. Người dùng vẫn phải chịu trách nhiệm với package được thêm vào, nội dung được copy, và điều kiện license đi kèm."
+    },
+    {
+      "title": "RAG và các pattern RAG: classic RAG, Graph RAG, Agentic RAG",
+      "body": "RAG là retrieval-augmented generation: trước khi model trả lời, hệ thống đi lấy evidence rồi yêu cầu model trả lời dựa trên context đó. Quyết định quan trọng không chỉ là `dùng RAG`, mà là chọn pattern retrieval nào phù hợp với knowledge và rủi ro.",
+      "bullets": [
+        "Classic RAG lấy các chunk tài liệu liên quan, đưa vào prompt, rồi yêu cầu model trả lời kèm citation.",
+        "Graph RAG thêm entity và relationship để câu trả lời có thể đi theo dependency, ownership, incident, service hoặc quan hệ nhân quả mà similarity search đơn giản dễ bỏ sót.",
+        "Agentic RAG thêm một vòng có kiểm soát: lập kế hoạch, gọi retriever hoặc tool, đọc kết quả, quyết định bước tiếp theo, rồi trả lời với bước kiểm tra evidence cuối.",
+        "RAG không tự động xóa hallucination; chunking kém, index cũ, thiếu citation, edge sai trong graph, hoặc tool loop không kiểm soát vẫn có thể tạo câu trả lời sai rất tự tin.",
+        "Một workflow RAG production cần source ID, metadata, freshness rule, permission filter, đánh giá groundedness, fallback behavior và regression question cho các câu trả lời từng sai."
+      ],
+      "code": "classic RAG: retrieve chunks -> answer with citations\nGraph RAG: retrieve chunks + traverse entities/edges -> answer with provenance\nAgentic RAG: plan -> call tools/retrievers -> inspect -> answer with final evidence check",
+      "note": "Hãy bắt đầu bằng classic RAG, trừ khi có failure đo được chứng minh rằng cần relationship graph hoặc multi-step tool use.",
+      "tip": "Khi review câu trả lời RAG, hãy hỏi: claim này đến từ source nào, source có mới không, và hệ thống làm gì nếu retrieval yếu hoặc mâu thuẫn?",
+      "links": [
+        {
+          "href": "{{HUB_BASE_URL}}/workbench/rag-strategy-plan",
+          "label": "RAG strategy workbench",
+          "desc": "Thực hành chọn classic RAG, Graph RAG hoặc Agentic RAG từ knowledge shape, relationship, tool, freshness, risk và citation."
+        }
+      ]
+    },
+    {
+      "title": "RAG, Long Context hay CAG: nên chọn cái nào cho chatbot AI?",
+      "body": "Đây không phải là ba cấp độ của cùng một kỹ thuật, mà là ba chiến lược đưa context cho model. RAG lấy evidence bên ngoài ngay lúc trả lời. Long Context đưa một gói tài liệu lớn thẳng vào context window của model. CAG, trong bài này hiểu là Cache-Augmented Generation, preload hoặc cache phần knowledge ổn định để các câu hỏi lặp lại không phải chạy retrieval đầy đủ mỗi lần.",
+      "bullets": [
+        "Chọn RAG khi knowledge thay đổi thường xuyên, corpus lớn, cần citation, hoặc cần lọc quyền truy cập theo từng user.",
+        "Chọn Long Context khi bài toán có một gói tài liệu giới hạn, cần model so sánh nhiều phần cùng lúc, và chi phí hoặc latency của prompt lớn vẫn chấp nhận được.",
+        "Chọn CAG khi knowledge ổn định, đã được curate kỹ và được dùng lặp lại nhiều lần, ví dụ onboarding rule, FAQ sản phẩm, support macro hoặc policy summary.",
+        "Chatbot thực tế thường dùng hybrid: CAG cho baseline context ổn định, RAG cho tài liệu mới hoặc có quyền riêng, và Long Context cho một phiên phân tích sâu.",
+        "Đừng coi Long Context là bản thay thế RAG nếu hệ thống vẫn cần freshness, access control, citation, retrieval metric và source-level audit log."
+      ],
+      "code": "chatbot question\n-> classify intent and risk\n-> choose context strategy\n   - stable FAQ: CAG cache\n   - fresh/private docs: RAG retrieval\n   - bounded analysis pack: Long Context\n-> answer with source policy, confidence, and fallback",
+      "note": "Câu trả lời phỏng vấn: bắt đầu từ constraint của sản phẩm. Nếu knowledge động hoặc có phân quyền, dùng RAG. Nếu context giới hạn và model cần so sánh tất cả cùng lúc, dùng Long Context. Nếu cùng một context ổn định được dùng lặp lại liên tục, dùng CAG. Với chatbot production, thường nên phối hợp có chủ đích thay vì chọn theo trend.",
+      "tip": "Trước khi chọn, hãy hỏi 5 câu: knowledge mới đến đâu, corpus lớn cỡ nào, ai được xem source nào, latency chấp nhận được là bao nhiêu, và evidence nào phải được log để review?",
+      "links": [
+        {
+          "href": "{{HUB_BASE_URL}}/workbench/rag-strategy-plan",
+          "label": "RAG strategy workbench",
+          "desc": "Thực hành quyết định chatbot nên retrieve, cache hay pack context dựa trên knowledge shape, freshness, permission, cost và citation."
+        }
+      ]
+    },
+    {
+      "title": "4 loại Memory Cốt Lõi Để AI Agent Làm Việc Như Dev",
+      "body": "Một AI agent hữu ích không chỉ cần prompt dài hơn. Nó cần nhớ mục tiêu hiện tại, nhớ những gì đã xảy ra trước đó, tái sử dụng kiến thức bền vững của dự án, và làm theo workflow đã học. Nếu gom tất cả thành một khái niệm `memory` mơ hồ, agent rất dễ quên context quan trọng, dùng fact đã cũ hoặc lặp lại lỗi cũ.",
+      "bullets": [
+        "Working memory là trạng thái ngắn hạn của task hiện tại: mục tiêu, file đang mở, test đang fail, constraint và hành động kế tiếp. Phần này nên nhỏ, rõ và được refresh liên tục khi agent làm việc.",
+        "Episodic memory ghi lại sự kiện đã xảy ra trong các phiên trước: quyết định, bug đã sửa, command đã chạy, failure và review note. Nó giúp agent không hỏi lại cùng một câu hoặc đi lại một hướng đã hỏng.",
+        "Semantic memory lưu kiến thức bền vững: rule kiến trúc, từ vựng domain, API contract, ý nghĩa database, coding convention và policy của team. Phần này cần curate và version vì knowledge cũ có thể làm agent suy luận sai.",
+        "Procedural memory lưu cách làm việc lặp lại: flow debug, vòng test-first, checklist PR, workflow migration, bước release và incident response. Nó biến thói quen tốt thành playbook có thể tái sử dụng.",
+        "Agent production nên tách memory theo scope, độ mới, quyền truy cập và độ tin cậy thay vì nhét toàn bộ lịch sử chat vào prompt."
+      ],
+      "code": "developer task\n-> working memory: mục tiêu, file, test fail\n-> episodic memory: quyết định cũ và hướng đã thử\n-> semantic memory: rule repo, domain model, API contract\n-> procedural memory: debug loop, test command, PR checklist\n-> hành động có evidence và cập nhật memory",
+      "note": "Câu trả lời phỏng vấn: agent memory không phải chỉ là prompt dài hơn. Working memory giữ task đang làm, episodic memory nhớ sự kiện đã xảy ra, semantic memory giữ fact bền vững, còn procedural memory giữ workflow lặp lại. Agent tốt tách các loại này để làm việc như teammate mà không mù quáng tin context cũ hoặc context riêng tư.",
+      "tip": "Khi thiết kế memory cho agent, hãy hỏi: ai được đọc memory này, nó sống bao lâu, source nào tạo ra nó, sửa sai bằng cách nào, và nó có được tự động ảnh hưởng đến hành động kế tiếp không?",
+      "links": [
+        {
+          "href": "{{HUB_BASE_URL}}/workbench/llm-decision-loop-plan",
+          "label": "LLM decision-loop workbench",
+          "desc": "Thực hành biến state, action, feedback, memory và verification thành workflow AI agent an toàn."
+        }
+      ]
+    },
+    {
+      "title": "Sự khác nhau giữa Predictive AI và Generative AI?",
+      "body": "Predictive AI ước lượng một kết quả từ dữ liệu đã có. Generative AI tạo nội dung mới từ các pattern đã học. Điểm khác nhau chính không phải là bên nào thông minh hơn, mà là output contract và cách kiểm chứng rủi ro.",
+      "bullets": [
+        "Predictive AI trả lời các câu hỏi như: khách hàng có rời bỏ không, giao dịch này có rủi ro không, nhu cầu sắp tới là bao nhiêu, hoặc input này thuộc nhãn nào?",
+        "Generative AI tạo ra thứ mới: văn bản, hình ảnh, code, bản tóm tắt, SQL nháp, test case, câu trả lời support hoặc phương án thiết kế.",
+        "Predictive AI thường được đánh giá bằng accuracy, precision, recall, calibration, AUC, error rate và business lift.",
+        "Generative AI được đánh giá bằng groundedness, usefulness, safety, style fit, chất lượng citation, kết quả test, human review và constraint của output.",
+        "Cả hai đều có thể sai: predictive system có thể overfit hoặc drift, còn generative system có thể hallucinate, bịa citation hoặc sinh code không an toàn."
+      ],
+      "code": "Predictive AI: historical data -> model -> score / label / forecast\nGenerative AI: prompt + context -> model -> new content / code / image / answer",
+      "note": "Câu trả lời phỏng vấn: Predictive AI hợp khi sản phẩm cần quyết định, ranking, forecast hoặc risk score. Generative AI hợp khi sản phẩm cần draft nội dung, giải thích, code, tóm tắt hoặc output đa phương thức.",
+      "tip": "Khi thiết kế một AI feature, hãy viết output mong muốn trước. Nếu output là score hoặc class, nghĩ theo predictive. Nếu output là nội dung mới, nghĩ theo generative. Nếu cần cả hai, tách phần evaluation riêng.",
+      "links": [
+        {
+          "href": "{{HUB_BASE_URL}}/workbench/llm-decision-loop-plan",
+          "label": "LLM decision-loop workbench",
+          "desc": "Thực hành tách prediction, generation, feedback signal, reward và verification khi giải thích hành vi AI."
+        }
+      ]
+    },
+    {
+      "title": "Mô Hình Ngôn Ngữ Lớn Hoạt Động Như Thế Nào? Từ Xác Suất Đến Học Tăng Cường Và Con Đường Tới AGI",
+      "body": "Mô hình ngôn ngữ lớn thường được giới thiệu là hệ thống dự đoán token tiếp theo, nhưng đó mới là lớp vào cửa. Khi chạy, mô hình liên tục quan sát context, ước lượng xác suất cho các token hoặc hành động tiếp theo, chọn một hành động, nhận context mới rồi tiếp tục. Vòng lặp đó có thể nhìn như một quá trình quyết định Markov: state là context hiện tại, action là token hoặc lựa chọn tool tiếp theo, transition là context đã được cập nhật, còn reward đến từ tín hiệu huấn luyện hoặc phản hồi của môi trường.",
+      "bullets": [
+        "Xác suất token tiếp theo cho mô hình mục tiêu ngôn ngữ cơ bản, nhưng hành vi xuất hiện từ việc lặp quyết định đó rất nhiều lần.",
+        "Attention giúp mô hình cân nhắc phần nào trong context quan trọng trước khi chọn token tiếp theo.",
+        "Supervised fine-tuning dạy mô hình các mẫu trả lời hữu ích sau pretraining.",
+        "Reward model và phản hồi từ con người giúp xếp hạng output theo độ hữu ích, an toàn và alignment.",
+        "PPO và các kỹ thuật reinforcement learning liên quan điều chỉnh policy để hành động được ưu tiên có xác suất cao hơn.",
+        "Tool use, memory, feedback loop và tương tác với môi trường khiến mô hình không còn giống autocomplete tĩnh, mà giống một hệ ra quyết định hơn.",
+        "AGI không tự động xuất hiện chỉ vì có các kỹ thuật này, nhưng hiểu xác suất, attention, reward và feedback sẽ giải thích vì sao AI hiện đại có vẻ như biết suy luận."
+      ],
+      "code": "state(context) -> policy(model) -> action(next token/tool choice) -> transition(updated context) -> reward(feedback) -> improved policy",
+      "note": "Ý chính: đừng rút gọn LLM thành câu `chỉ đoán chữ tiếp theo`. Câu đó có ích về mặt kỹ thuật, nhưng chưa đủ. Câu hỏi engineering quan trọng hơn là xác suất, attention, reward, tool và feedback loop đang định hình hành vi ra sao.",
+      "tip": "Khi dùng LLM để code, hãy hỏi feedback loop nào đang giám sát nó: test, evidence trong repo, human review, output runtime, hay chỉ là văn bản nghe mượt.",
+      "links": [
+        {
+          "href": "{{HUB_BASE_URL}}/workbench/llm-decision-loop-plan",
+          "label": "LLM decision-loop workbench",
+          "desc": "Thực hành map hành vi LLM thành state, policy, action, transition, reward, attention, PPO và feedback loop."
+        }
+      ]
     }
   ]
 }

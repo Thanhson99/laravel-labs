@@ -33,9 +33,22 @@
     <section class="section">
         <div class="topbar">
             <h2>{{ $board['meta']['source_count'] }} sources, {{ $board['meta']['record_count'] }} records</h2>
+            @if ($board['related_workbench'] && $board['related_workbench']['route_name'])
+                <a class="button primary" href="{{ route($board['related_workbench']['route_name']) }}">{{ $board['related_workbench']['label'] }}</a>
+            @endif
             <a class="button" href="{{ route('practice.queue', array_filter($board['queue_query'])) }}">Open queue</a>
             <a class="button" href="{{ route('api.practice.technology-board', request()->query()) }}">Open board API</a>
         </div>
+        <article class="item">
+            <h3>Readiness Signal</h3>
+            <p>{{ $board['readiness_signal'] }}</p>
+            <h3>Focus Checks</h3>
+            <ul>
+                @foreach ($board['focus_checks'] as $check)
+                    <li>{{ $check }}</li>
+                @endforeach
+            </ul>
+        </article>
         <div class="list">
             @forelse ($board['sources'] as $source)
                 <article class="item">

@@ -36,6 +36,10 @@ final class ConfigurationPublicationChecklistTest extends TestCase
             ->assertJsonPath('data.archive_id', 'configuration-contract-promote-100')
             ->assertJsonPath('data.publication_status', 'approved')
             ->assertJsonPath('data.channels.0.name', 'Portfolio')
+            ->assertJsonPath('data.channels.1.name', 'Security review')
+            ->assertJsonPath('data.channels.1.proof_required', 'Unsafe signal, release blocker, owner, rollback action, and fail-closed smoke check.')
+            ->assertJsonPath('data.pre_publish_checks.2', 'Security Misconfiguration claims name release blockers and fail-closed smoke evidence.')
+            ->assertJsonPath('data.do_not_publish_if.1', 'Security Misconfiguration is described without an unsafe signal, owner, rollback action, or smoke check.')
             ->assertJsonPath('data.quality_gate.status', 'ready')
             ->assertJsonStructure([
                 'data' => [

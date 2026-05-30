@@ -55,6 +55,34 @@
     </section>
 
     <section class="section">
+        <h2>Security Misconfiguration Controls</h2>
+        <div class="list">
+            @foreach ($deploymentPlan['security_misconfiguration_controls'] as $control)
+                <article class="item">
+                    <div class="meta">
+                        <span class="badge">{{ $control['area'] }}</span>
+                        <span class="muted">{{ $control['owner'] }}</span>
+                    </div>
+                    <h3>{{ $control['expected_control'] }}</h3>
+                    <p>{{ $control['risk'] }}</p>
+                    <p class="muted">{{ $control['evidence'] }}</p>
+                </article>
+            @endforeach
+        </div>
+    </section>
+
+    <section class="section">
+        <h2>Release Blockers</h2>
+        <div class="panel">
+            <ul>
+                @foreach ($deploymentPlan['release_blockers'] as $blocker)
+                    <li>{{ $blocker }}</li>
+                @endforeach
+            </ul>
+        </div>
+    </section>
+
+    <section class="section">
         <h2>Rollback</h2>
         <div class="list">
             @foreach ($deploymentPlan['rollback_steps'] as $step)

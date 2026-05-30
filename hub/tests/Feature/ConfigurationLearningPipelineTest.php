@@ -38,6 +38,8 @@ final class ConfigurationLearningPipelineTest extends TestCase
             ->assertSee('Archive refresh plan')
             ->assertSee('Maintenance roadmap')
             ->assertSee('configuration-contract-promote-100')
+            ->assertSee('Reuse targets')
+            ->assertSee('Security Misconfiguration note about debug, secrets, CORS, headers, cookies, proxies, storage, and fail-closed release blockers.')
             ->assertSee('Open pipeline API');
     }
 
@@ -70,6 +72,8 @@ final class ConfigurationLearningPipelineTest extends TestCase
             ->assertJsonPath('data.stages.26.label', 'Archive refresh plan')
             ->assertJsonPath('data.stages.27.label', 'Maintenance roadmap')
             ->assertJsonPath('data.archive.archive_id', 'configuration-contract-promote-100')
+            ->assertJsonPath('data.archive.retrieval_keys.1', 'security misconfiguration release blockers')
+            ->assertJsonPath('data.archive.reuse_targets.1', 'Security Misconfiguration note about debug, secrets, CORS, headers, cookies, proxies, storage, and fail-closed release blockers.')
             ->assertJsonPath('data.quality_gate.status', 'ready')
             ->assertJsonStructure([
                 'data' => [

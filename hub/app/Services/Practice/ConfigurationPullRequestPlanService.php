@@ -31,18 +31,21 @@ final class ConfigurationPullRequestPlanService
             'changed_files' => $changedFiles,
             'pr_summary' => [
                 'Remediates '.$plan['task_count'].' configuration risks across app runtime, auth contract, quality gate, and release evidence.',
+                'Adds Security Misconfiguration release-blocker evidence for debug, secrets, CORS, headers, cookies, proxies, and storage exposure.',
                 'Keeps configuration learning artifacts read-only and testable.',
                 'Preserves shared quality-gate status semantics for downstream practice pages.',
             ],
             'review_checklist' => [
                 'Target files match the risks being remediated.',
                 'High-severity risks include focused verification commands.',
+                'Security Misconfiguration controls include owner, rollback, release blocker, and fail-closed smoke evidence.',
                 'No config values are hardcoded into controllers or views.',
                 'Docs mention new durable routes and practice artifacts.',
             ],
             'verification' => $this->verification($plan),
             'evidence' => [
-                'Risk register lists four risks with owner routes.',
+                'Risk register lists '.$plan['risk_count'].' risks with owner routes.',
+                'Security Misconfiguration release blocker maps unsafe production signals to readiness and deployment evidence.',
                 'Remediation plan maps each risk to target files and done signals.',
                 'Route documentation test confirms new route comments remain learner-facing.',
             ],

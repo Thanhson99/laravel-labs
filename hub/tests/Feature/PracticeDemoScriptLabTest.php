@@ -59,4 +59,38 @@ final class PracticeDemoScriptLabTest extends TestCase
                 ],
             ]);
     }
+
+    /**
+     * JavaScript closure demo scripts present scope traces and closure evidence.
+     */
+    public function test_javascript_closure_demo_script_uses_scope_presentation(): void
+    {
+        $response = $this->getJson('/api/practice/demo-script-lab?family=laravel&language=en&search=JavaScript%20closure&phase_limit=1&tasks_per_phase=1&days=3');
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('data.weekly_report.technology_coverage.0', 'javascript-closures')
+            ->assertJsonPath('data.opening_lines.0', 'This demo starts from JSON-backed Laravel Labs content and ends in a JavaScript closure interview artifact.')
+            ->assertJsonPath('data.rehearsal_checklist.2', 'Show the closure snippet or payload before showing the rendered result.');
+
+        $this->assertStringContainsString('lexical-scope trace', $response->json('data.script_steps.0.do'));
+        $this->assertStringContainsString('createCounter()', $response->json('data.script_steps.0.verify'));
+    }
+
+    /**
+     * IDOR demo scripts present scoped lookup, policy, and denial evidence.
+     */
+    public function test_idor_demo_script_uses_object_authorization_presentation(): void
+    {
+        $response = $this->getJson('/api/practice/demo-script-lab?family=laravel&language=en&search=IDOR&phase_limit=1&tasks_per_phase=1&days=3');
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('data.weekly_report.technology_coverage.0', 'idor-access-control')
+            ->assertJsonPath('data.opening_lines.0', 'This demo starts from JSON-backed Laravel Labs content and ends in an IDOR object-authorization artifact.')
+            ->assertJsonPath('data.rehearsal_checklist.2', 'Show the vulnerable direct lookup before showing the scoped lookup and policy check.');
+
+        $this->assertStringContainsString('protected object route', $response->json('data.script_steps.0.do'));
+        $this->assertStringContainsString('cross-user denial evidence', $response->json('data.script_steps.0.verify'));
+    }
 }

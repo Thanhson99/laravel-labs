@@ -157,7 +157,9 @@
     },
     {
       "title": "24. Should entire Eloquent models be broadcast to clients?",
-      "body": "Usually not by habit. Payloads should contain only what the UI actually needs and should avoid exposing sensitive or bulky state."
+      "body": "Usually not by habit. Payloads should contain only what the UI actually needs and should avoid exposing sensitive or bulky state.",
+      "code": "public function broadcastWith(): array\n{\n    return [\n        'id' => $this->order->id,\n        'status' => $this->order->status,\n        'updated_at' => $this->order->updated_at,\n    ];\n}",
+      "note": "Small, explicit payloads make frontend state merging easier and reduce the risk of leaking internal fields."
     },
     {
       "title": "25. Why is realtime payload design important?",

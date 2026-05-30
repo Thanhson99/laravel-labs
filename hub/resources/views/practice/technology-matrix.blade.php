@@ -30,6 +30,7 @@
         <div class="topbar">
             <h2>{{ $matrix['meta']['technology_count'] }} technologies from {{ $matrix['meta']['record_count'] }} records</h2>
             <a class="button" href="{{ route('api.practice.technology-matrix', request()->query()) }}">Open matrix API</a>
+            <a class="button" href="{{ route('practice.technology-taxonomy') }}">Open taxonomy</a>
             <a class="button primary" href="{{ route('practice.technology-pipelines', request()->query()) }}">Open pipelines</a>
             <a class="button primary" href="{{ route('practice.technology-quality-plan', request()->query()) }}">Open quality plan</a>
             <a class="button primary" href="{{ route('practice.technology-code-examples', request()->query()) }}">Open code examples</a>
@@ -45,8 +46,16 @@
                     <h3>{{ $item['practice']['title'] }}</h3>
                     <p>{{ $item['sample']['title'] }}</p>
                     <p class="muted">{{ implode(', ', $item['sources']) }}</p>
+                    <ul>
+                        @foreach ($item['focus_checks'] as $check)
+                            <li>{{ $check }}</li>
+                        @endforeach
+                    </ul>
                     @if ($item['practice']['slug'])
                         <a class="button" href="{{ route('practice.show', $item['practice']['slug']) }}">Open exercise</a>
+                    @endif
+                    @if ($item['related_workbench'] && $item['related_workbench']['route_name'])
+                        <a class="button primary" href="{{ route($item['related_workbench']['route_name']) }}">{{ $item['related_workbench']['label'] }}</a>
                     @endif
                     <a class="button primary" href="{{ route('practice.technology-learning-pipeline', [$item['technology']] + array_filter($filters)) }}">Open pipeline</a>
                     <a class="button primary" href="{{ route('practice.content-drill', $item['drill_query']) }}">Open sample drill</a>

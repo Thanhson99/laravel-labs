@@ -35,7 +35,11 @@ final class ConfigurationNextSessionPlanTest extends TestCase
             ->assertOk()
             ->assertJsonPath('data.archive_id', 'configuration-contract-promote-100')
             ->assertJsonPath('data.session_status', 'ready')
+            ->assertJsonPath('data.preflight.2', 'Choose one channel: portfolio, security review, interview, or code review.')
             ->assertJsonPath('data.practice_blocks.0.focus', 'Recall')
+            ->assertJsonPath('data.practice_blocks.1.task', 'Use one required evidence item to write or speak the selected channel output, including a Security Misconfiguration blocker when security review is selected.')
+            ->assertJsonPath('data.deliverables.1', 'One Security Misconfiguration release-blocker proof when the selected channel is security review.')
+            ->assertJsonPath('data.stop_criteria.2', 'The security review output names a risk but no fail-closed smoke check.')
             ->assertJsonPath('data.quality_gate.status', 'ready')
             ->assertJsonStructure([
                 'data' => [

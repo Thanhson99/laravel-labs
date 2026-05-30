@@ -31,6 +31,7 @@ final class ConfigurationTestPlanService
             'test_groups' => [
                 $this->groupFor('Application runtime contract', $checks->where('file', 'hub/config/app.php')->values()->all()),
                 $this->groupFor('Authentication contract', $checks->where('file', 'hub/config/auth.php')->values()->all()),
+                $this->securityMisconfigurationGroup($readiness),
                 $this->groupFor('Quality-gate contract', [
                     [
                         'key' => 'quality_gate_ready_contract',
@@ -45,6 +46,7 @@ final class ConfigurationTestPlanService
             'commands' => [
                 'php artisan test --filter ConfigurationReadinessTest',
                 'php artisan test --filter ConfigurationTestPlanTest',
+                'php artisan route:list --path=configuration-readiness',
                 'vendor\\bin\\pint --test',
             ],
             'quality_gate' => $readiness['quality_gate'],
@@ -87,6 +89,49 @@ final class ConfigurationTestPlanService
             'quality_gate_ready_contract' => "expect((new PracticeQualityGateService)->evaluate(\$baseline)['status'])->toBe('ready');",
             default => sprintf('expect(%s)->toBeTrue();', var_export((string) $check['key'], true)),
         };
+    }
+
+    /**
+     * Build test ideas for Security Misconfiguration controls and smoke checks.
+     *
+     * @param  array<string, mixed>  $readiness
+     * @return array{name: string, checks: array<int, array<string, mixed>>, assertions: array<int, string>}
+     */
+    private function securityMisconfigurationGroup(array $readiness): array
+    {
+        $controls = collect($readiness['misconfiguration_controls'])
+            ->map(fn (array $control): array => [
+                'key' => str($control['area'])->slug('_')->toString(),
+                'label' => $control['expected_control'],
+                'value' => $control['owner'],
+                'passed' => true,
+                'file' => 'hub/app/Services/Practice/ConfigurationReadinessService.php',
+            ])
+            ->values();
+
+        $smokeChecks = collect($readiness['deployment_smoke_matrix'])
+            ->map(fn (array $smoke): array => [
+                'key' => str($smoke['check'])->slug('_')->toString(),
+                'label' => $smoke['fail_closed_action'],
+                'value' => $smoke['unsafe_signal'],
+                'passed' => true,
+                'file' => 'deployment smoke checks',
+            ])
+            ->values();
+
+        $checks = $controls
+            ->merge($smokeChecks)
+            ->all();
+
+        return [
+            'name' => 'Security Misconfiguration contract',
+            'checks' => $checks,
+            'assertions' => [
+                "expect(config('app.debug'))->not->toBeTrue();",
+                'assert response smoke checks reject exposed .env, debug toolbar, broad CORS, missing headers, weak cookies, proxy drift, and public private-storage paths.',
+                'assert every configuration release blocker has an owner, fail-closed action, and verification evidence.',
+            ],
+        ];
     }
 
     /**

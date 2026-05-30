@@ -58,6 +58,9 @@
                     <li><code>bootstrap/providers.php</code></li>
                     <li><code>tests/Feature/ContainerBindingPlanWorkbenchTest.php</code></li>
                 </ul>
+                <p style="margin-top: 14px;">
+                    <a class="button" href="{{ route('practice.workbench.dependency-injection-refactor') }}">Open DI refactor workbench</a>
+                </p>
             </article>
         </div>
     </section>

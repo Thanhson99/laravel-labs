@@ -43,19 +43,37 @@ final class PracticeTddLabService
                 'path' => $names['route_path'],
             ],
             'files' => $this->filesFromNames($names),
-            'cycle' => [
+            'cycle' => $this->cycleFor($blueprint['drill']['technology'], $names, $starterKit['snippets'], $verificationPlan),
+            'progress_payload' => $this->progressPayload->fromLabels(
+                $this->progressLabelsFor($blueprint['drill']['technology'])
+            ),
+        ];
+    }
+
+    /**
+     * Build Red-Green-Refactor cycle rows for one technology.
+     *
+     * @param  array<string, string>  $names
+     * @param  array<int, array{label: string, file: string, code: string}>  $snippets
+     * @param  array<string, mixed>  $verificationPlan
+     * @return array<int, array<string, mixed>>
+     */
+    private function cycleFor(string $technology, array $names, array $snippets, array $verificationPlan): array
+    {
+        if ($technology === 'javascript-closures') {
+            return [
                 [
                     'stage' => 'red',
-                    'title' => 'Write the failing feature test first',
-                    'goal' => sprintf('Create %s and assert behavior from the source record.', $names['test_file']),
-                    'snippet' => $this->snippetByLabel($starterKit['snippets'], 'Feature test'),
+                    'title' => 'Write the failing closure evidence test first',
+                    'goal' => sprintf('Create %s and assert lexical scope, captured binding, and interview-trap evidence from the source record.', $names['test_file']),
+                    'snippet' => $this->snippetByLabel($snippets, 'Feature test'),
                     'command' => $verificationPlan['commands'][0]['command'],
                 ],
                 [
                     'stage' => 'green',
-                    'title' => 'Implement the smallest passing slice',
-                    'goal' => 'Create the request, controller, route, and service with only the behavior needed by the test.',
-                    'snippets' => collect($starterKit['snippets'])
+                    'title' => 'Implement the smallest closure evidence slice',
+                    'goal' => 'Create the route, controller, and service with only the closure evidence needed by the test.',
+                    'snippets' => collect($snippets)
                         ->reject(fn (array $snippet): bool => $snippet['label'] === 'Feature test')
                         ->values()
                         ->all(),
@@ -63,19 +81,65 @@ final class PracticeTddLabService
                 ],
                 [
                     'stage' => 'refactor',
-                    'title' => 'Clean up and prove the implementation',
-                    'goal' => 'Run the full verification set and keep the controller thin.',
+                    'title' => 'Clean up and prove the closure explanation',
+                    'goal' => 'Run the full verification set and keep lexical-scope, createCounter(), var-versus-let, and stale-closure evidence explicit.',
                     'commands' => $verificationPlan['commands'],
                     'quality_gate_payload' => $verificationPlan['quality_gate_payload'],
                 ],
+            ];
+        }
+
+        return [
+            [
+                'stage' => 'red',
+                'title' => 'Write the failing feature test first',
+                'goal' => sprintf('Create %s and assert behavior from the source record.', $names['test_file']),
+                'snippet' => $this->snippetByLabel($snippets, 'Feature test'),
+                'command' => $verificationPlan['commands'][0]['command'],
             ],
-            'progress_payload' => $this->progressPayload->fromLabels([
-                'Read source record and route blueprint',
-                'Write failing feature test',
-                'Implement request, controller, and service',
-                'Run smoke request and focused test',
+            [
+                'stage' => 'green',
+                'title' => 'Implement the smallest passing slice',
+                'goal' => 'Create the request, controller, route, and service with only the behavior needed by the test.',
+                'snippets' => collect($snippets)
+                    ->reject(fn (array $snippet): bool => $snippet['label'] === 'Feature test')
+                    ->values()
+                    ->all(),
+                'smoke_request' => $verificationPlan['smoke_request'],
+            ],
+            [
+                'stage' => 'refactor',
+                'title' => 'Clean up and prove the implementation',
+                'goal' => 'Run the full verification set and keep the controller thin.',
+                'commands' => $verificationPlan['commands'],
+                'quality_gate_payload' => $verificationPlan['quality_gate_payload'],
+            ],
+        ];
+    }
+
+    /**
+     * Return progress labels for one technology.
+     *
+     * @return array<int, string>
+     */
+    private function progressLabelsFor(string $technology): array
+    {
+        if ($technology === 'javascript-closures') {
+            return [
+                'Read source record and closure evidence blueprint',
+                'Write failing closure evidence test',
+                'Implement route, controller, service, and closure payload',
+                'Run smoke request and focused closure test',
                 'Run full suite, Pint, and quality gate',
-            ]),
+            ];
+        }
+
+        return [
+            'Read source record and route blueprint',
+            'Write failing feature test',
+            'Implement request, controller, and service',
+            'Run smoke request and focused test',
+            'Run full suite, Pint, and quality gate',
         ];
     }
 

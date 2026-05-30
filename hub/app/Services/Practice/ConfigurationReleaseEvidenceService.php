@@ -31,6 +31,7 @@ final class ConfigurationReleaseEvidenceService
             'rollback_summary' => $this->rollbackSummary($plan),
             'portfolio_notes' => [
                 'Explain how app and auth config were treated as a runtime contract.',
+                'Explain how Security Misconfiguration controls block unsafe production defaults before deploy.',
                 'Mention the quality gate as the shared readiness signal across practice pages.',
                 'Cite the deployment plan, smoke checks, and rollback steps as release evidence.',
             ],
@@ -62,6 +63,10 @@ final class ConfigurationReleaseEvidenceService
                 'Confirm config values are read through config().',
                 'Confirm public practice routes still render without auth.',
                 'Confirm rollback values are clear before deployment.',
+            ],
+            'security_review_focus' => [
+                'Confirm debug mode, exposed secrets, broad CORS, missing headers, weak cookies, public storage, and proxy drift are release blockers.',
+                'Confirm every Security Misconfiguration control has an owner and captured smoke-check evidence.',
             ],
         ];
     }

@@ -34,20 +34,14 @@ final class PracticePortfolioLabService
             'technology' => $retrospective['technology'],
             'record' => $retrospective['record'],
             'portfolio_entry' => [
-                'headline' => sprintf('Built a Laravel practice slice for %s', $retrospective['technology']),
+                'headline' => $this->headlineFor($retrospective['technology']),
                 'problem' => sprintf('Practice record: %s', $retrospective['record']['title']),
                 'source_reference' => $retrospective['source']['path'],
                 'skills_practiced' => $this->skillsFor($retrospective['technology']),
                 'evidence' => $retrospective['wins'],
                 'next_improvement' => $retrospective['weak_spots'][0]['next_action'] ?? 'Pick one small improvement and verify it.',
             ],
-            'writeup_template' => [
-                'What I built',
-                'Which source record/question drove the implementation',
-                'Which Laravel layers changed',
-                'How I verified the behavior',
-                'What I would improve in the next pass',
-            ],
+            'writeup_template' => $this->writeupTemplateFor($retrospective['technology']),
             'next_labs' => $retrospective['next_labs'],
             'progress_payload' => $this->progressPayload->fromLabels([
                 'Write portfolio headline',
@@ -56,6 +50,18 @@ final class PracticePortfolioLabService
                 'Document one next improvement',
             ]),
         ];
+    }
+
+    /**
+     * Return a portfolio headline for one technology.
+     */
+    private function headlineFor(string $technology): string
+    {
+        if ($technology === 'javascript-closures') {
+            return 'Built a JavaScript closure interview artifact';
+        }
+
+        return sprintf('Built a Laravel practice slice for %s', $technology);
     }
 
     /**
@@ -69,7 +75,34 @@ final class PracticePortfolioLabService
             'api-validation' => ['API route design', 'Form Request validation', 'Thin controller', 'Service behavior', 'Feature testing'],
             'testing-quality' => ['Behavior-first testing', 'Quality gates', 'Review checklists', 'Verification evidence'],
             'docker-runtime' => ['Runtime configuration', 'Smoke checks', 'Environment verification'],
+            'javascript-closures' => ['Lexical scope tracing', 'Captured bindings', 'Function factories', 'Private state', 'Var versus let traps', 'Stale closure review'],
             default => ['Laravel routing', 'Service extraction', 'Feature tests', 'Practice review'],
         };
+    }
+
+    /**
+     * Return writeup prompts for one technology.
+     *
+     * @return array<int, string>
+     */
+    private function writeupTemplateFor(string $technology): array
+    {
+        if ($technology === 'javascript-closures') {
+            return [
+                'What closure example I built',
+                'Which source record/question drove the explanation',
+                'Where lexical scope and captured bindings appear',
+                'How I verified createCounter(), var versus let, or stale-closure behavior',
+                'What I would improve in the next interview answer',
+            ];
+        }
+
+        return [
+            'What I built',
+            'Which source record/question drove the implementation',
+            'Which Laravel layers changed',
+            'How I verified the behavior',
+            'What I would improve in the next pass',
+        ];
     }
 }

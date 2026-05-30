@@ -71,6 +71,22 @@ final class PracticeReleaseReadinessLabService
      */
     private function releaseNoteFor(array $task): string
     {
+        if ($this->isIdorSegment((string) $task['technology_segment'])) {
+            return sprintf(
+                'Improved `%s` IDOR object-authorization practice flow: %s',
+                $task['technology_segment'],
+                $task['refactor_goal'],
+            );
+        }
+
+        if ($this->isClosureSegment((string) $task['technology_segment'])) {
+            return sprintf(
+                'Improved `%s` closure practice flow: %s',
+                $task['technology_segment'],
+                $task['refactor_goal'],
+            );
+        }
+
         return sprintf(
             'Improved `%s` practice flow: %s',
             $task['technology_segment'],
@@ -85,6 +101,14 @@ final class PracticeReleaseReadinessLabService
      */
     private function smokeCheckFor(array $task): string
     {
+        if ($this->isIdorSegment((string) $task['technology_segment'])) {
+            return sprintf('Run %s and confirm scoped lookup, object policy, ID-swap denial, and 403 or 404 evidence still appear in the payload.', $task['verification_command']);
+        }
+
+        if ($this->isClosureSegment((string) $task['technology_segment'])) {
+            return sprintf('Run %s and confirm lexical-scope, captured-binding, and stale-closure evidence still appear in the payload.', $task['verification_command']);
+        }
+
         if (str_contains($task['target_file'], 'routes/')) {
             return 'Run php artisan route:list --path=practice and open the affected route.';
         }
@@ -107,9 +131,39 @@ final class PracticeReleaseReadinessLabService
      */
     private function rollbackNoteFor(array $task): string
     {
+        if ($this->isIdorSegment((string) $task['technology_segment'])) {
+            return sprintf(
+                'If IDOR denial evidence disappears, revert the scoped change in `%s` and rerun the object-authorization verification command.',
+                $task['target_file'],
+            );
+        }
+
+        if ($this->isClosureSegment((string) $task['technology_segment'])) {
+            return sprintf(
+                'If closure evidence disappears, revert the scoped change in `%s` and rerun the closure-focused verification command.',
+                $task['target_file'],
+            );
+        }
+
         return sprintf(
             'If the smoke check fails, revert the scoped change in `%s` and rerun the focused verification command.',
             $task['target_file'],
         );
+    }
+
+    /**
+     * Determine whether a task belongs to JavaScript closure practice.
+     */
+    private function isClosureSegment(string $technology): bool
+    {
+        return str_contains($technology, 'javascript-closures');
+    }
+
+    /**
+     * Determine whether a task belongs to IDOR object-authorization practice.
+     */
+    private function isIdorSegment(string $technology): bool
+    {
+        return str_contains($technology, 'idor-access-control');
     }
 }

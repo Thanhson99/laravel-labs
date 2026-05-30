@@ -51,6 +51,12 @@
       "title": "VIII. Real-World Cases And Long-Term Thinking",
       "description": "Very real production failures, signs of poor integration design, and how to keep the API layer healthy as the system grows.",
       "tone": "copper"
+    },
+    {
+      "start": 141,
+      "title": "IX. GraphQL, REST, And API Query Shape",
+      "description": "Compare REST endpoint contracts with GraphQL schema-driven queries, resolver boundaries, caching, authorization, errors, and operational tradeoffs.",
+      "tone": "sand"
     }
   ],
   "items": [
@@ -648,6 +654,123 @@
     {
       "title": "140. Final assessment after review: is this API and integration topic detailed enough?",
       "body": "For a learning portal, it is now fairly complete: foundations, config mindset, auth, contracts, resources, HTTP clients, webhooks, retries, idempotency, docs, tests, observability, and production cases are all covered. If you want to go deeper later, the best next split would be dedicated sites for OAuth, webhook security, event-driven integration, and API versioning strategy."
+    },
+    {
+      "title": "141. GraphQL vs REST: what is the core difference?",
+      "body": "REST usually exposes resource-oriented endpoints such as `/posts`, `/posts/{id}`, and `/users/{id}/orders`. GraphQL exposes a schema and lets the client ask for the exact fields and relationships it needs in one query. REST organizes contracts around URLs and HTTP semantics; GraphQL organizes contracts around types, fields, queries, mutations, and resolvers.",
+      "links": [
+        {
+          "label": "Open GraphQL REST decision workbench",
+          "href": "{{HUB_BASE_URL}}/workbench/graphql-rest-decision"
+        }
+      ]
+    },
+    {
+      "title": "142. When is REST the better default?",
+      "body": "REST is usually the better default when resources are clear, operations map naturally to HTTP verbs, caching through HTTP/proxies/CDNs matters, clients can tolerate fixed response shapes, and the team wants simple operational behavior. For many CRUD, admin, mobile, and public APIs, REST stays easier to document, test, monitor, cache, and secure."
+    },
+    {
+      "title": "143. When does GraphQL help more than REST?",
+      "body": "GraphQL helps when clients need flexible field selection, many screens combine data from multiple resources, mobile payload size matters, frontend teams need a stable schema while screens evolve, or a BFF-style layer needs to compose several backend services behind one client contract."
+    },
+    {
+      "title": "144. How do contracts differ between REST and GraphQL?",
+      "body": "In REST, the contract is usually endpoint + method + request body + response shape + status codes. In GraphQL, the contract is the schema: object types, fields, arguments, queries, mutations, nullability, and resolver behavior. A REST route answers one endpoint contract; a GraphQL resolver answers one field or operation inside a schema contract."
+    },
+    {
+      "title": "145. Why can GraphQL create N+1 and resolver performance problems?",
+      "body": "Because a query can ask for nested relationships, and naive resolvers may load each child row separately. A query such as posts -> author -> team can become many database queries unless the server uses eager loading, batching, dataloaders, query complexity limits, pagination, and careful resolver boundaries."
+    },
+    {
+      "title": "146. How do caching and HTTP semantics differ?",
+      "body": "REST can naturally use URLs, HTTP verbs, cache headers, status codes, and CDN behavior. GraphQL often sends many operations through one endpoint, commonly POST `/graphql`, so caching usually needs operation-aware keys, persisted queries, application-level cache, or gateway support. This does not make GraphQL bad, but it changes the caching work."
+    },
+    {
+      "title": "147. How should authorization be handled in GraphQL?",
+      "body": "GraphQL still needs the same authorization discipline as REST, but the checks often sit closer to fields, object types, mutations, and resolver services. Endpoint-level auth is not enough if a user can query fields they should not see. Treat every resolver boundary like a possible data exposure point."
+    },
+    {
+      "title": "148. How do errors differ between REST and GraphQL?",
+      "body": "REST usually communicates failures through HTTP status codes and a response body. GraphQL can return `200 OK` with an `errors` array and partial data, depending on the failure. Teams must standardize error extensions, validation messages, auth failures, and logging so clients do not have to guess what happened."
+    },
+    {
+      "title": "149. What is a good Laravel mental model for GraphQL vs REST?",
+      "body": "For REST, Laravel code often starts from `routes/api.php`, Form Requests, controllers, API Resources, policies, and services. For GraphQL, keep the same discipline: schema definitions map to resolver classes or services, validation and authorization stay explicit, and business workflows still belong outside the transport layer. A package can provide GraphQL plumbing, but it should not become the business architecture."
+    },
+    {
+      "title": "150. Interview answer: GraphQL khác REST ra sao?",
+      "body": "A strong answer is: REST is endpoint/resource-oriented, while GraphQL is schema/query-oriented. GraphQL lets clients request exactly the fields they need and can reduce overfetching or many round trips, but it adds resolver complexity, query-cost control, caching differences, and authorization risk. REST is simpler and more HTTP-native, while GraphQL is useful when client data shape changes often or one screen needs data from many resources."
+    },
+    {
+      "title": "151. RESTful API naming: what does 'clean' mean?",
+      "body": "A clean RESTful API name describes the resource being accessed, not the controller method or internal database table. The URL should help a client guess the resource, while the HTTP verb explains the operation.",
+      "bullets": [
+        "Good: `GET /api/v1/orders` reads an order collection.",
+        "Good: `POST /api/v1/orders` creates a new order.",
+        "Weak: `POST /api/v1/getOrders` mixes an action word into the path and fights the HTTP verb."
+      ],
+      "note": "RESTful naming is less about looking academic and more about keeping contracts predictable for frontend, mobile, QA, partner, and support teams."
+    },
+    {
+      "title": "152. Should endpoint names use nouns or verbs?",
+      "body": "Use nouns for normal resources: `/orders`, `/users`, `/invoices`, `/articles`, `/comments`. Let `GET`, `POST`, `PATCH`, and `DELETE` carry the action meaning. Use action words only when the action is a real domain operation that does not fit normal CRUD cleanly.",
+      "code": "Route::prefix('v1')->group(function () {\n    Route::apiResource('orders', OrderController::class);\n\n    Route::post('/orders/{order}/cancel', CancelOrderController::class)\n        ->name('orders.cancel');\n});"
+    },
+    {
+      "title": "153. Why are plural resource names usually better?",
+      "body": "Plural names make collections and single resources read consistently: `/orders` for the collection and `/orders/{order}` for one item. Mixing singular and plural naming across endpoints makes API discovery and documentation harder.",
+      "bullets": [
+        "Prefer `/users/{user}/orders` over `/user/{user}/order`.",
+        "Prefer `/products/{product}/reviews` over `/product/{product}/review`.",
+        "Keep the same convention across every version of the API."
+      ]
+    },
+    {
+      "title": "154. When should nested resources be used?",
+      "body": "Nest when the child resource is naturally scoped by the parent or when the parent context is part of authorization and meaning. Avoid deep nesting when the URL becomes harder to read than the resource relationship.",
+      "bullets": [
+        "Good: `/users/{user}/orders` when showing one user's orders.",
+        "Good: `/orders/{order}/items` when order items only make sense inside an order.",
+        "Too deep: `/companies/{company}/departments/{department}/teams/{team}/members/{member}/roles` usually needs a flatter route or query filter."
+      ]
+    },
+    {
+      "title": "155. How should filters, sorting, and search be named?",
+      "body": "Keep filtering and sorting in query parameters because they change the view of a collection, not the resource identity. Use predictable parameter names and document accepted values.",
+      "code": "GET /api/v1/orders?status=paid&customer_id=42&sort=-created_at\nGET /api/v1/products?search=keyboard&min_price=20&max_price=120\nGET /api/v1/audit-logs?actor_id=7&from=2026-05-01&to=2026-05-30",
+      "note": "Do not create a new path for every filter combination. `/orders/paid/recent/by-customer/42` becomes fragile very quickly."
+    },
+    {
+      "title": "156. How should non-CRUD business actions be named?",
+      "body": "If the action is meaningful in the domain, use a short verb after the resource identifier: `/orders/{order}/cancel`, `/invoices/{invoice}/void`, `/users/{user}/suspend`. Keep these action endpoints rare and intentional.",
+      "bullets": [
+        "Use `POST` for commands that start a business action.",
+        "Return a clear status code and response body explaining the resulting state.",
+        "Do not hide a state-changing command behind `GET` just because it is easy to call from a browser."
+      ]
+    },
+    {
+      "title": "157. What Laravel route names should match RESTful endpoint naming?",
+      "body": "Laravel route names should be readable and stable: `orders.index`, `orders.store`, `orders.show`, `orders.update`, `orders.destroy`, and explicit domain actions like `orders.cancel`. Avoid names that expose controller implementation details.",
+      "code": "Route::apiResource('orders', OrderController::class)\n    ->names('orders');\n\nRoute::post('/orders/{order}/cancel', CancelOrderController::class)\n    ->name('orders.cancel');"
+    },
+    {
+      "title": "158. RESTful naming review checklist",
+      "body": "Before merging an API route, review the endpoint like a public contract. A good route should survive new clients, documentation, monitoring dashboards, and support tickets without requiring people to read controller code first.",
+      "bullets": [
+        "Path uses resource nouns, usually plural.",
+        "HTTP verb expresses read, create, update, delete, or command intent.",
+        "Nested resources stop at the depth where the relationship is still clear.",
+        "Filters, search, pagination, and sorting are query parameters.",
+        "Business actions are explicit, rare, and tested.",
+        "Versioning and route names are consistent with the rest of the API."
+      ],
+      "links": [
+        {
+          "label": "Open RESTful API naming workbench",
+          "href": "{{HUB_BASE_URL}}/workbench/restful-api-naming-plan"
+        }
+      ]
     }
   ]
 }

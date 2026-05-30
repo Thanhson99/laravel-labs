@@ -256,6 +256,113 @@
     {
       "title": "Why do copyright and license questions also belong to Vibe Coding?",
       "body": "Because AI may suggest snippets, structures, or dependencies whose origin you do not fully understand. The human user still owns the responsibility for added packages, copied content, and any license obligations attached to them."
+    },
+    {
+      "title": "RAG and RAG patterns: classic RAG, Graph RAG, and Agentic RAG",
+      "body": "RAG means retrieval-augmented generation: before the model answers, the system retrieves evidence and asks the model to answer from that context. The important decision is not just 'use RAG', but which retrieval pattern fits the knowledge and risk.",
+      "bullets": [
+        "Classic RAG retrieves relevant document chunks, passes them into the prompt, and asks the model to answer with citations.",
+        "Graph RAG adds entities and relationships so the answer can follow dependency, ownership, incident, service, or causal paths that simple similarity search may miss.",
+        "Agentic RAG adds a controlled loop: plan, call retrievers or tools, inspect results, decide the next step, then produce an answer with a final evidence check.",
+        "RAG does not automatically remove hallucination; weak chunking, stale indexes, missing citations, wrong graph edges, and uncontrolled tool loops can still produce confident wrong answers.",
+        "A production RAG workflow needs source IDs, metadata, freshness rules, permission filters, groundedness evaluation, fallback behavior, and regression questions for known bad answers."
+      ],
+      "code": "classic RAG: retrieve chunks -> answer with citations\nGraph RAG: retrieve chunks + traverse entities/edges -> answer with provenance\nAgentic RAG: plan -> call tools/retrievers -> inspect -> answer with final evidence check",
+      "note": "Start with classic RAG unless a measured failure shows that relationships or multi-step tool use are necessary.",
+      "tip": "When reviewing a RAG answer, ask: what source produced this claim, how fresh is it, and what should happen if retrieval finds weak or conflicting evidence?",
+      "links": [
+        {
+          "href": "{{HUB_BASE_URL}}/workbench/rag-strategy-plan",
+          "label": "RAG strategy workbench",
+          "desc": "Practice choosing classic RAG, Graph RAG, or Agentic RAG from knowledge shape, relationships, tools, freshness, risk, and citations."
+        }
+      ]
+    },
+    {
+      "title": "RAG, Long Context, or CAG: which should power an AI chatbot?",
+      "body": "These are not three levels of the same thing. They are three context strategies. RAG retrieves external evidence at answer time. Long Context puts a large working set directly into the model window. CAG, used here as Cache-Augmented Generation, preloads or caches stable knowledge so repeated answers do not need a full retrieval pass every time.",
+      "bullets": [
+        "Choose RAG when knowledge changes often, the corpus is large, users need citations, or permissions must filter what each user may see.",
+        "Choose Long Context when the task has a bounded package of documents, the session needs cross-document reasoning, and the cost or latency of a large prompt is still acceptable.",
+        "Choose CAG when the knowledge is stable, curated, and frequently reused, such as onboarding rules, product FAQs, support macros, or policy summaries.",
+        "A real chatbot often uses a hybrid: CAG for stable baseline context, RAG for fresh or permissioned documents, and Long Context for one deep analysis session.",
+        "Do not treat Long Context as a replacement for RAG if the system still needs freshness, access control, citations, retrieval metrics, and source-level audit logs."
+      ],
+      "code": "chatbot question\n-> classify intent and risk\n-> choose context strategy\n   - stable FAQ: CAG cache\n   - fresh/private docs: RAG retrieval\n   - bounded analysis pack: Long Context\n-> answer with source policy, confidence, and fallback",
+      "note": "Interview answer: start from product constraints. If the knowledge is dynamic or permissioned, use RAG. If the context is bounded and the model must compare everything at once, use Long Context. If the same stable context is reused constantly, use CAG. For production chatbots, combine them deliberately instead of picking one by trend.",
+      "tip": "Ask five questions before choosing: how fresh is the knowledge, how large is the corpus, who may access each source, how much latency is acceptable, and what evidence must be logged for review?",
+      "links": [
+        {
+          "href": "{{HUB_BASE_URL}}/workbench/rag-strategy-plan",
+          "label": "RAG strategy workbench",
+          "desc": "Practice deciding whether a chatbot should retrieve, cache, or pack context from knowledge shape, freshness, permissions, cost, and citation needs."
+        }
+      ]
+    },
+    {
+      "title": "4 core AI agent memory types that help it work like a developer",
+      "body": "An AI agent feels useful when it can keep the current task in mind, remember what happened earlier, reuse durable project knowledge, and follow learned workflows. Those are different memory jobs. Mixing them into one vague 'memory' feature makes the agent forget important context, leak stale facts, or repeat the same mistakes.",
+      "bullets": [
+        "Working memory is the short-lived task state: current goal, open files, failing test, constraints, and the next action. It should be small, explicit, and refreshed as the agent works.",
+        "Episodic memory records what happened in previous sessions: decisions, bugs fixed, commands run, failures, and review notes. It helps the agent avoid asking the same questions or repeating a broken path.",
+        "Semantic memory stores durable knowledge: architecture rules, domain vocabulary, API contracts, database meaning, coding conventions, and team policies. It should be curated and versioned because stale knowledge can mislead the agent.",
+        "Procedural memory captures how to do repeatable work: debugging flow, test-first loop, PR checklist, migration workflow, release steps, and incident response. It turns good habits into reusable playbooks.",
+        "A production agent should separate memory by scope, freshness, permissions, and confidence instead of dumping every previous interaction into the prompt."
+      ],
+      "code": "developer task\n-> working memory: current goal, files, failing test\n-> episodic memory: prior decisions and failed attempts\n-> semantic memory: repo rules, domain model, API contracts\n-> procedural memory: debug loop, test command, PR checklist\n-> action with evidence and updated memory",
+      "note": "Interview answer: agent memory is not just a bigger prompt. Working memory manages the active task, episodic memory remembers past events, semantic memory stores durable facts, and procedural memory stores repeatable workflows. A good agent keeps these separated so it can act like a teammate without blindly trusting stale or private context.",
+      "tip": "When designing agent memory, ask: who may read this memory, how long should it live, what source created it, how will it be corrected, and should it influence the next action automatically?",
+      "links": [
+        {
+          "href": "{{HUB_BASE_URL}}/workbench/llm-decision-loop-plan",
+          "label": "LLM decision-loop workbench",
+          "desc": "Practice turning state, action, feedback, memory, and verification into a safe AI agent workflow."
+        }
+      ]
+    },
+    {
+      "title": "What is the difference between Predictive AI and Generative AI?",
+      "body": "Predictive AI estimates an outcome from existing data. Generative AI creates new content from learned patterns. The difference is not that one is smart and the other is not; the difference is the output contract and the risk you must verify.",
+      "bullets": [
+        "Predictive AI answers questions like: will this customer churn, is this transaction risky, what is the likely demand, or which label fits this input?",
+        "Generative AI answers by producing something new: text, image, code, summary, SQL draft, test case, support reply, or design option.",
+        "Predictive AI is usually judged with metrics such as accuracy, precision, recall, calibration, AUC, error rate, and business lift.",
+        "Generative AI is judged with groundedness, usefulness, safety, style fit, citation quality, test results, human review, and output constraints.",
+        "Both can be wrong: predictive systems can overfit or drift, while generative systems can hallucinate, fabricate citations, or create unsafe code."
+      ],
+      "code": "Predictive AI: historical data -> model -> score / label / forecast\nGenerative AI: prompt + context -> model -> new content / code / image / answer",
+      "note": "Interview answer: Predictive AI is best when the product needs a decision, ranking, forecast, or risk score. Generative AI is best when the product needs drafted content, explanations, code, summaries, or multimodal output.",
+      "tip": "When designing an AI feature, write the expected output first. If it is a score or class, think predictive. If it is new content, think generative. If it is both, design separate evaluation checks.",
+      "links": [
+        {
+          "href": "{{HUB_BASE_URL}}/workbench/llm-decision-loop-plan",
+          "label": "LLM decision-loop workbench",
+          "desc": "Practice separating prediction, generation, feedback signals, reward, and verification when explaining AI behavior."
+        }
+      ]
+    },
+    {
+      "title": "How do large language models work? From probability to reinforcement learning and the path to AGI",
+      "body": "A large language model is often introduced as a next-token prediction system, but that view is only the entry point. At runtime, the model repeatedly observes context, estimates probabilities for possible next tokens, chooses an action, receives more context, and continues. That loop can be understood like a Markov decision process: state is the current context, action is the next token or tool decision, transition is the updated context, and reward comes from training signals or environment feedback.",
+      "bullets": [
+        "Next-token probability gives the model a basic language objective, but behavior emerges from repeating that decision many times.",
+        "Attention lets the model weigh which parts of the context matter before it chooses the next token.",
+        "Supervised fine-tuning teaches useful answer patterns after pretraining.",
+        "Reward models and human feedback help rank outputs by usefulness, safety, and alignment.",
+        "PPO and related reinforcement-learning methods adjust the policy so preferred actions become more likely.",
+        "Tool use, memory, feedback loops, and environment interaction make the model look less like static autocomplete and more like a decision system.",
+        "AGI is not guaranteed by this stack, but understanding probability, attention, reward, and action feedback explains why modern AI can appear to reason."
+      ],
+      "code": "state(context) -> policy(model) -> action(next token/tool choice) -> transition(updated context) -> reward(feedback) -> improved policy",
+      "note": "The practical takeaway: do not reduce LLMs to 'just predicting words'. That phrase is technically useful, but incomplete. The important engineering question is how probabilities, attention, rewards, tools, and feedback loops shape behavior.",
+      "tip": "When using an LLM for coding, ask what feedback loop is supervising it: tests, repo evidence, human review, runtime output, or only fluent text.",
+      "links": [
+        {
+          "href": "{{HUB_BASE_URL}}/workbench/llm-decision-loop-plan",
+          "label": "LLM decision-loop workbench",
+          "desc": "Practice mapping LLM behavior to state, policy, action, transition, reward, attention, PPO, and feedback loops."
+        }
+      ]
     }
   ]
 }

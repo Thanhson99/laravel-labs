@@ -51,12 +51,7 @@ final class PracticeRefactorLabService
                 'Run the same focused command after every small refactor.',
             ],
             'refactor_tasks' => $tasks,
-            'architecture_checks' => [
-                'Controller stays thin and delegates behavior.',
-                'Service owns workflow and transformation logic.',
-                'Blade renders prepared data without hidden business logic.',
-                'Feature test asserts behavior, not private implementation details.',
-            ],
+            'architecture_checks' => $this->architectureChecksFor($bugFix['source_session']['technology_coverage']),
             'progress_payload' => $this->progressPayload->fromRows(
                 $tasks,
                 fn (array $task): string => sprintf('Refactored %s', $task['technology_segment'])
@@ -71,6 +66,14 @@ final class PracticeRefactorLabService
      */
     private function goalFor(array $drill): string
     {
+        if ($this->isClosureSegment((string) $drill['technology_segment'])) {
+            return sprintf(
+                'Improve the `%s` closure evidence without changing the verified lexical-scope behavior for `%s`.',
+                $drill['patch_target'],
+                $drill['technology_segment'],
+            );
+        }
+
         return sprintf(
             'Improve the `%s` implementation without changing the verified behavior for `%s`.',
             $drill['patch_target'],
@@ -86,6 +89,15 @@ final class PracticeRefactorLabService
      */
     private function safeStepsFor(array $drill): array
     {
+        if ($this->isClosureSegment((string) $drill['technology_segment'])) {
+            return [
+                'Run the verification command before editing.',
+                sprintf('Open `%s` and identify one small closure explanation or snippet improvement.', $drill['patch_target']),
+                'Make one scoped change without renaming public routes, response keys, or evidence labels.',
+                'Rerun the same verification command and compare closure evidence.',
+            ];
+        }
+
         return [
             'Run the verification command before editing.',
             sprintf('Open `%s` and identify one small readability or layering improvement.', $drill['patch_target']),
@@ -102,6 +114,30 @@ final class PracticeRefactorLabService
      */
     private function guardrailsFor(array $drill): array
     {
+        if ($this->isClosureSegment((string) $drill['technology_segment'])) {
+            if (str_contains($drill['patch_target'], 'closure-counter')) {
+                return [
+                    'Keep createCounter() behavior stable across repeated calls.',
+                    'Name the captured binding explicitly.',
+                    'Avoid turning the closure example into global mutable state.',
+                ];
+            }
+
+            if (str_contains($drill['patch_target'], 'closure-interview-checklist')) {
+                return [
+                    'Keep var versus let and stale-closure traps visible.',
+                    'Mention at least one practical callback, debounce, throttle, memoization, or hook use case.',
+                    'Avoid syntax-only closure definitions.',
+                ];
+            }
+
+            return [
+                'Keep lexical-scope evidence explicit.',
+                'Use stable response keys for closure payloads.',
+                'Keep tests focused on public interview evidence.',
+            ];
+        }
+
         if (str_contains($drill['patch_target'], 'routes/')) {
             return [
                 'Keep route names stable.',
@@ -131,5 +167,38 @@ final class PracticeRefactorLabService
             'Use explicit array keys for API payloads.',
             'Split helpers only when they reduce real complexity.',
         ];
+    }
+
+    /**
+     * Return architecture checks for the refactor session.
+     *
+     * @param  array<int, string>  $technologies
+     * @return array<int, string>
+     */
+    private function architectureChecksFor(array $technologies): array
+    {
+        if (collect($technologies)->contains(fn (string $technology): bool => $this->isClosureSegment($technology))) {
+            return [
+                'Closure snippet keeps state private and repeatable.',
+                'Interview checklist names lexical scope, captured binding, var versus let, and stale closures.',
+                'Payload keeps closure evidence explicit for the frontend renderer.',
+                'Feature test asserts public closure behavior, not private helper details.',
+            ];
+        }
+
+        return [
+            'Controller stays thin and delegates behavior.',
+            'Service owns workflow and transformation logic.',
+            'Blade renders prepared data without hidden business logic.',
+            'Feature test asserts behavior, not private implementation details.',
+        ];
+    }
+
+    /**
+     * Determine whether a segment belongs to JavaScript closure practice.
+     */
+    private function isClosureSegment(string $technology): bool
+    {
+        return str_contains($technology, 'javascript-closures');
     }
 }

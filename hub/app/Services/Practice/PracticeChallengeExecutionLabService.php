@@ -83,6 +83,24 @@ final class PracticeChallengeExecutionLabService
      */
     private function executionOrderFor(array $card): array
     {
+        if ($this->isIdorSegment((string) $card['technology_segment'])) {
+            return [
+                sprintf('Open `%s` with the same filters.', $card['recommended_route']),
+                sprintf('Read the IDOR challenge reason: %s', $card['why_this_challenge']),
+                'Make the smallest object-authorization change: route inventory, scoped lookup, policy check, or denial test.',
+                'Run the verification command and capture protected-object, owner-scope, and ID-swap denial evidence.',
+            ];
+        }
+
+        if ($this->isClosureSegment((string) $card['technology_segment'])) {
+            return [
+                sprintf('Open `%s` with the same filters.', $card['recommended_route']),
+                sprintf('Read the closure challenge reason: %s', $card['why_this_challenge']),
+                'Make the smallest closure evidence change or answer the required checkpoint.',
+                'Run the verification command and capture lexical-scope, captured-binding, or stale-closure evidence.',
+            ];
+        }
+
         return [
             sprintf('Open `%s` with the same filters.', $card['recommended_route']),
             sprintf('Read the challenge reason: %s', $card['why_this_challenge']),
@@ -99,11 +117,45 @@ final class PracticeChallengeExecutionLabService
      */
     private function exitCriteriaFor(array $card): array
     {
+        if ($this->isIdorSegment((string) $card['technology_segment'])) {
+            return [
+                sprintf('`%s` passes.', $card['verification_command']),
+                'Evidence includes the protected object route, identifier, owner or tenant scope, and action.',
+                'The learner can explain why authentication alone does not authorize this object.',
+                'Risk note covers direct lookup, missing policy, nested-resource leakage, downloads, exports, or 403 versus 404 behavior.',
+            ];
+        }
+
+        if ($this->isClosureSegment((string) $card['technology_segment'])) {
+            return [
+                sprintf('`%s` passes.', $card['verification_command']),
+                'Evidence includes a changed closure example, scope trace, or interview answer output.',
+                'The learner can explain lexical scope and the captured binding involved.',
+                'Risk note covers var versus let, stale closures, or accidental shared mutable state.',
+            ];
+        }
+
         return [
             sprintf('`%s` passes.', $card['verification_command']),
             'Evidence includes changed behavior or answer output.',
             'The learner can explain the Laravel layer involved.',
             'Risk or rollback note is written.',
         ];
+    }
+
+    /**
+     * Determine whether a challenge belongs to JavaScript closure practice.
+     */
+    private function isClosureSegment(string $technology): bool
+    {
+        return str_contains($technology, 'javascript-closures');
+    }
+
+    /**
+     * Determine whether a challenge belongs to IDOR object-authorization practice.
+     */
+    private function isIdorSegment(string $technology): bool
+    {
+        return str_contains($technology, 'idor-access-control');
     }
 }

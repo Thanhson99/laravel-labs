@@ -64,4 +64,22 @@ final class PracticeNextSessionHandoffLabTest extends TestCase
                 ],
             ]);
     }
+
+    /**
+     * JavaScript closure next-session handoffs preserve the next interview evidence to improve.
+     */
+    public function test_javascript_closure_next_session_handoff_uses_scope_focus(): void
+    {
+        $response = $this->getJson('/api/practice/next-session-handoff-lab?family=laravel&language=en&search=JavaScript%20closure&phase_limit=1&tasks_per_phase=1&days=3');
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('data.handoff_cards.0.technology_segment', 'Day 1 demo: javascript-closures')
+            ->assertJsonPath('data.handoff_summary.handoff_count', 3);
+
+        $this->assertStringContainsString('portfolio-ready interview artifact', $response->json('data.handoff_cards.0.session_goal'));
+        $this->assertStringContainsString('captured binding', $response->json('data.handoff_cards.0.preflight_checklist.2'));
+        $this->assertStringContainsString('closure interview answer', $response->json('data.handoff_cards.0.coding_focus.2'));
+        $this->assertStringContainsString('lexical-scope and interview-trap evidence', $response->json('data.handoff_cards.0.done_evidence.1'));
+    }
 }

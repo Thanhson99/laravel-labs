@@ -61,4 +61,38 @@ final class PracticeReleaseReadinessLabTest extends TestCase
                 ],
             ]);
     }
+
+    /**
+     * JavaScript closure release readiness keeps scope and stale-closure evidence visible.
+     */
+    public function test_javascript_closure_release_readiness_uses_scope_evidence(): void
+    {
+        $response = $this->getJson('/api/practice/release-readiness-lab?family=laravel&language=en&search=JavaScript%20closure&phase_limit=1&tasks_per_phase=1&days=3');
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('data.source_refactor_lab.technology_coverage.0', 'javascript-closures')
+            ->assertJsonPath('data.release_items.0.technology_segment', 'Day 1 demo: javascript-closures');
+
+        $this->assertStringContainsString('closure practice flow', $response->json('data.release_items.0.release_note'));
+        $this->assertStringContainsString('lexical-scope', $response->json('data.release_items.0.smoke_check'));
+        $this->assertStringContainsString('closure-focused verification command', $response->json('data.release_items.0.rollback_note'));
+    }
+
+    /**
+     * IDOR release readiness keeps object-authorization evidence visible.
+     */
+    public function test_idor_release_readiness_uses_object_authorization_evidence(): void
+    {
+        $response = $this->getJson('/api/practice/release-readiness-lab?family=laravel&language=en&search=IDOR&phase_limit=1&tasks_per_phase=1&days=3');
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('data.source_refactor_lab.technology_coverage.0', 'idor-access-control')
+            ->assertJsonPath('data.release_items.0.technology_segment', 'Day 1 demo: idor-access-control');
+
+        $this->assertStringContainsString('IDOR object-authorization practice flow', $response->json('data.release_items.0.release_note'));
+        $this->assertStringContainsString('ID-swap denial', $response->json('data.release_items.0.smoke_check'));
+        $this->assertStringContainsString('object-authorization verification command', $response->json('data.release_items.0.rollback_note'));
+    }
 }

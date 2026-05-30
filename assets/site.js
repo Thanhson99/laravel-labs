@@ -694,6 +694,7 @@ function collectPhpKeywords(levels) {
       addKeyword(module.title, moduleId, groupKey, groupLabel, 2);
       addTextKeywords(module.description, moduleId, groupKey, groupLabel, 2);
       (module.bullets || []).forEach((bullet) => addTextKeywords(bullet, moduleId, groupKey, groupLabel, 2));
+      addTextKeywords(module.code, moduleId, groupKey, groupLabel, 1);
     });
 
     (level.phases || []).forEach((phase, phaseIndex) => {
@@ -2117,17 +2118,20 @@ function bindThemeToggle(data, language, pageKey, render) {
 
 function createCard(item, language) {
   const href = resolveConfiguredHref(item.href);
+  const title = formatRichText(text(item.title, language));
+  const summary = formatRichText(text(item.summary, language));
+  const button = formatRichText(text(item.button, language));
 
   return `
     <article class="service-card landing-card">
-      <h3>${text(item.title, language)}</h3>
-      <p>${text(item.summary, language)}</p>
+      <h3>${title}</h3>
+      <p>${summary}</p>
       <p class="landing-card-action">
         <a class="btn" href="${escapeHtml(href)}">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 24" aria-hidden="true" focusable="false">
             <path d="m18 0 8 12 10-8-4 20H4L0 4l10 8 8-12z"></path>
           </svg>
-          <span>${text(item.button, language)}</span>
+          <span>${button}</span>
         </a>
       </p>
     </article>
@@ -2379,6 +2383,9 @@ function createWorkbenchCard(item, language) {
   const files = Array.isArray(item.files) ? item.files : [];
   const commands = Array.isArray(item.commands) ? item.commands : [];
   const concepts = Array.isArray(item.concepts) ? item.concepts : [];
+  const labels = language === "vi"
+    ? { copy: "Sao chép", copied: "✓ Đã sao chép" }
+    : { copy: "Copy", copied: "✓ Copied" };
 
   return `
     <article class="content-card workbench-card">
@@ -2401,6 +2408,12 @@ function createWorkbenchCard(item, language) {
       ` : ""}
       ${commands.length ? `
         <div class="bullet-code-shell">
+          <button
+            type="button"
+            class="bullet-code-copy"
+            data-copy-label="${labels.copy}"
+            data-copied-label="${labels.copied}"
+          >${labels.copy}</button>
           <pre><code>${escapeHtml(commands.join("\n"))}</code></pre>
         </div>
       ` : ""}
@@ -3087,10 +3100,24 @@ function bindVideoTopicSwitcher() {
   };
 }
 
-function createPhpModuleCard(module) {
+function createPhpModuleCard(module, language) {
   const moduleId = module.id || "";
+  const ui = PHP_LEVEL_UI[language];
   const bullets = Array.isArray(module.bullets)
     ? `<ul class="php-note-points">${module.bullets.map((item) => `<li>${formatRichText(item)}</li>`).join("")}</ul>`
+    : "";
+  const code = module.code
+    ? `
+      <div class="php-code-shell">
+        <button
+          type="button"
+          class="bullet-code-copy"
+          data-copy-label="${ui.copyCode}"
+          data-copied-label="${ui.copiedCode}"
+        >${ui.copyCode}</button>
+        <pre><code>${escapeHtml(module.code)}</code></pre>
+      </div>
+    `
     : "";
 
   return `
@@ -3098,6 +3125,7 @@ function createPhpModuleCard(module) {
       <h3>${module.title}</h3>
       <p class="php-note-copy">${formatRichText(module.description)}</p>
       ${bullets}
+      ${code}
     </article>
   `;
 }
@@ -3452,7 +3480,7 @@ function renderPhpLevel(level, language) {
   const modules = !hasPhases && Array.isArray(level.modules)
     ? `
       <div class="php-notes-stack">
-        ${level.modules.map((module) => createPhpModuleCard(module)).join("")}
+          ${level.modules.map((module) => createPhpModuleCard(module, language)).join("")}
       </div>
     `
     : "";

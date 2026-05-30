@@ -70,4 +70,23 @@ final class PracticeRemediationLabTest extends TestCase
 
         $response->assertNotFound();
     }
+
+    /**
+     * JavaScript closure remediation tasks fix closure evidence instead of generic Laravel behavior.
+     */
+    public function test_javascript_closure_remediation_lab_uses_scope_fix_actions(): void
+    {
+        $response = $this->getJson('/api/practice/remediation-lab?record_id=laravel-frontend-en-json-item-8&technology=javascript-closures');
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('data.technology', 'javascript-closures')
+            ->assertJsonPath('data.tasks.0.label', 'Content traceability')
+            ->assertJsonPath('data.tasks.1.label', 'Route contract')
+            ->assertJsonPath('data.tasks.4.label', 'Closure behavior');
+
+        $this->assertStringContainsString('closure evidence', $response->json('data.tasks.0.fix_action'));
+        $this->assertStringContainsString('generated closure evidence controller', $response->json('data.tasks.1.fix_action'));
+        $this->assertStringContainsString('createCounter()', $response->json('data.tasks.4.fix_action'));
+    }
 }

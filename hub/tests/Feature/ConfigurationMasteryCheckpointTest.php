@@ -36,6 +36,10 @@ final class ConfigurationMasteryCheckpointTest extends TestCase
             ->assertJsonPath('data.decision', 'promote')
             ->assertJsonPath('data.score', 100)
             ->assertJsonPath('data.scorecard.0.criterion', 'Runtime contract is testable.')
+            ->assertJsonPath('data.scorecard.4.criterion', 'Security Misconfiguration is release-blocked.')
+            ->assertJsonPath('data.scorecard.4.points', 0)
+            ->assertJsonPath('data.repeat_triggers.4', 'Security Misconfiguration is described as a checklist only, without fail-closed smoke checks or release blockers.')
+            ->assertJsonPath('data.next_actions.2', 'Reuse the Security Misconfiguration release-blocker evidence in interview and deployment notes.')
             ->assertJsonPath('data.handoff.interview_route', '/practice/configuration-interview-brief')
             ->assertJsonPath('data.quality_gate.status', 'ready')
             ->assertJsonStructure([

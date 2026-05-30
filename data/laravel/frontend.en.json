@@ -11,31 +11,37 @@
       "tone": "amber"
     },
     {
-      "start": 8,
+      "start": 9,
+      "title": "JavaScript Interview Fundamentals",
+      "description": "Closures, hoisting, lexical scope, declarations, and the small JavaScript rules that often appear in interviews and frontend bugs.",
+      "tone": "copper"
+    },
+    {
+      "start": 10,
       "title": "Project Setup and Dependency Discipline",
       "description": "How to read `package.json`, respect `package-lock.json`, and set up a cloned project without environment drift.",
       "tone": "copper"
     },
     {
-      "start": 15,
+      "start": 17,
       "title": "Vite, Build, and the Asset Pipeline",
       "description": "Dev server behavior, production builds, `@vite`, the manifest, `vite.config`, and build-only failure modes.",
       "tone": "olive"
     },
     {
-      "start": 23,
+      "start": 25,
       "title": "CSS, UI Stack, and Technology Choices",
       "description": "Tailwind, Alpine, Livewire, Inertia, Vue/React, and how to choose the right stack for actual app complexity.",
       "tone": "ocean"
     },
     {
-      "start": 33,
+      "start": 35,
       "title": "Environment, Failure Modes, and Deployment",
       "description": "Docker, WSL, asset paths, cache/CDN, build artifacts, and the frontend environment problems teams repeatedly hit.",
       "tone": "indigo"
     },
     {
-      "start": 41,
+      "start": 43,
       "title": "Checklists, Review, and Long-Term Maintenance",
       "description": "Onboarding, PR review, safer package upgrades, anti-patterns, and signs the frontend layer has become a subsystem.",
       "tone": "slate"
@@ -69,6 +75,43 @@
     {
       "title": "Why should a Laravel learner still understand some frontend theory?",
       "body": "Because many problems that feel like 'Laravel is broken' are actually frontend-tooling problems: assets are not built, the dev server is not running, CSS was not compiled, JavaScript is missing, or a frontend package failed. Without a basic understanding of Node, npm, Vite, and the asset pipeline, debugging goes in the wrong direction very easily."
+    },
+    {
+      "title": "What is a closure in JavaScript, and why is it important?",
+      "body": "A JavaScript closure happens when a function remembers variables from the lexical scope where it was created, even after the outer function has finished running. It matters because many JavaScript patterns depend on functions carrying state safely: event handlers, callbacks, timers, factory functions, private variables, memoization, and React hooks.",
+      "bullets": [
+        "A closure is not a special syntax. It is the combination of a function plus the variables it can still access from its surrounding scope.",
+        "The inner function keeps a reference to the outer variables it uses, so those variables are not cleaned up while the closure can still run.",
+        "Closures are common in callbacks, event listeners, async code, module patterns, function factories, debounce, throttle, memoization, and stateful UI logic.",
+        "Interviewers often ask closures through counters, loops using `var` versus `let`, private state, stale closures, debounce, throttle, or React hook dependencies."
+      ],
+      "code": "function createCounter() {\n  let count = 0;\n\n  return function increment() {\n    count += 1;\n    return count;\n  };\n}\n\nconst counter = createCounter();\nconsole.log(counter()); // 1\nconsole.log(counter()); // 2",
+      "note": "Interview answer: a closure lets an inner function keep access to outer-scope variables by lexical scope, even after the outer function returns. The key is not copying the value once; the function keeps access to the variable binding.",
+      "links": [
+        {
+          "label": "Open React render workbench",
+          "href": "{{HUB_BASE_URL}}/workbench/react-render-optimization-plan"
+        }
+      ]
+    },
+    {
+      "title": "JavaScript hoisting explained simply",
+      "body": "Hoisting is JavaScript's behavior of setting up declarations before your code line actually runs. A simple way to remember it: JavaScript prepares names first, then executes statements. Function declarations are usable before their line. `var` declarations exist early but start as `undefined`. `let` and `const` are also known before execution, but you cannot use them before the declaration line because they are in the temporal dead zone.",
+      "bullets": [
+        "Hoisting does not literally move your source code. It is how JavaScript creates bindings during the setup phase before execution.",
+        "`function sayHi() {}` can be called before it appears in the file because function declarations are initialized during setup.",
+        "`var name` is hoisted and initialized as `undefined`, so reading it early does not throw but often creates bugs.",
+        "`let` and `const` are hoisted too, but reading them before declaration throws `ReferenceError` because of the temporal dead zone.",
+        "In interviews, explain hoisting together with execution context, declaration setup, `var` versus `let/const`, and function declaration versus function expression."
+      ],
+      "code": "sayHi(); // Works because function declarations are hoisted\n\nfunction sayHi() {\n  console.log('Hello from a function declaration');\n}\n\nconsole.log(userName); // undefined, not ReferenceError\nvar userName = 'Son';\n\n// console.log(score); // ReferenceError: cannot access before initialization\nlet score = 10;\n\n// run(); // TypeError: run is not a function\nvar run = function () {\n  console.log('Function expression assigned later');\n};",
+      "note": "Interview answer: hoisting means JavaScript registers declarations before executing code. Function declarations are initialized early, `var` starts as `undefined`, and `let`/`const` stay unavailable until the declaration line because of the temporal dead zone. In real projects, prefer declaring variables before use and use `let`/`const` to avoid confusing hoisting bugs.",
+      "links": [
+        {
+          "label": "Open JavaScript hoisting lab",
+          "href": "{{HUB_BASE_URL}}/workbench/javascript-hoisting-lab"
+        }
+      ]
     },
     {
       "title": "Why does Laravel need Node and npm if it is a PHP framework?",
@@ -313,6 +356,26 @@
       ]
     },
     {
+      "title": "How do you optimize React re-renders with memo, useMemo, and useCallback?",
+      "body": "Start with React Profiler, not assumptions. `React.memo` helps when an expensive child receives stable props. `useMemo` helps when a derived value is expensive or when an object/array prop must stay stable for a memoized child. `useCallback` helps when callback identity causes a memoized child or hook dependency to change. These tools reduce unnecessary work only when the real cause is prop churn, expensive calculations, or a component tree that re-renders too broadly.",
+      "bullets": [
+        "`React.memo` skips child rendering when props are shallow-equal, but it is useless if props change every render.",
+        "`useMemo` memoizes a calculated value; it should not be used for every tiny expression.",
+        "`useCallback` memoizes function identity; it does not make the function itself faster.",
+        "For very large lists, virtualization or pagination usually matters more than memo alone.",
+        "If state lives too high in the tree, move state down or split context before adding more memoization."
+      ],
+      "code": "const Row = React.memo(function Row({ item, onSelect }) {\n  return <button onClick={() => onSelect(item.id)}>{item.name}</button>;\n});\n\nconst visibleItems = useMemo(() => filterItems(items, query), [items, query]);\nconst handleSelect = useCallback((id) => setSelectedId(id), []);",
+      "links": [
+        {
+          "href": "{{HUB_BASE_URL}}/workbench/react-render-optimization-plan",
+          "label": "React render optimization workbench",
+          "desc": "Practice choosing React.memo, useMemo, useCallback, state locality, profiler checks, and virtualization tradeoffs."
+        }
+      ],
+      "note": "Interview answer: memoization is not a blanket rule. Measure first, stabilize props only where it matters, and keep dependencies correct so performance work does not create stale UI."
+    },
+    {
       "title": "A quick frontend-stack selection matrix for Laravel projects",
       "body": "Think in terms of interaction density and team skill, not in terms of trend.",
       "bullets": [
@@ -531,6 +594,26 @@
       "body": "The frontend pipeline only matters when the final assets are actually wired back into the real UI entry point.",
       "code": "@vite(['resources/css/app.css', 'resources/js/app.js'])",
       "note": "This directive tells Laravel to load assets from the dev server in local development and from the built manifest in production. It is a very important bridge between the backend and the frontend toolchain."
+    },
+    {
+      "title": "494. Arrow function `this` versus normal function `this` in JavaScript",
+      "body": "Arrow functions do not create their own `this`. In plain search terms, arrow function this means lexical `this`: the arrow reads `this` from the surrounding scope where it was created. A normal function decides `this` from how it is called: as an object method, with `call`/`apply`/`bind`, as a constructor, or as a plain function.",
+      "code": "const user = {\n  name: 'Son',\n  normal() {\n    return this.name;\n  },\n  arrow: () => {\n    return this.name;\n  },\n};\n\nconsole.log(user.normal()); // 'Son'\nconsole.log(user.arrow());  // usually undefined in modules/strict mode\n\nfunction Timer() {\n  this.seconds = 0;\n\n  setInterval(() => {\n    this.seconds += 1; // `this` is Timer instance from outer scope\n  }, 1000);\n}",
+      "bullets": [
+        "Arrow function has lexical `this`: it does not bind a new `this` when called.",
+        "Normal function has dynamic `this`: the caller determines the value.",
+        "Arrow functions are useful for callbacks inside methods, timers, array callbacks, and class code when you want to keep the outer `this`.",
+        "Do not use arrow functions as object methods when the method needs `this` to mean that object.",
+        "Interview trap: `obj.arrow()` does not make `this` become `obj`; the arrow already captured `this` from outside."
+      ],
+      "tip": "A concise interview answer: arrow functions do not have their own `this`; they close over `this` from the lexical scope. Normal functions get `this` from the call site.",
+      "links": [
+        {
+          "href": "{{HUB_BASE_URL}}/practice/technology-code-examples/javascript-closures?language=en&search=arrow%20function%20this&limit=3",
+          "label": "Arrow `this` code examples",
+          "desc": "Open Hub snippets that compare arrow functions, normal functions, callbacks, and interview traps."
+        }
+      ]
     }
   ]
 }

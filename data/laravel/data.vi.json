@@ -572,6 +572,52 @@
     {
       "title": "118. Kinh nghiệm cuối bổ sung: database mạnh không phải là nơi query nào cũng viết được, mà là nơi thay đổi dữ liệu vẫn an toàn khi hệ thống đã đông người dùng",
       "body": "Ở giai đoạn đầu, ai cũng viết được CRUD. Khó nhất là khi dữ liệu đã lớn, nhiều request chạy đồng thời, nhiều job chạy nền, và business vẫn muốn đổi luật mà không được làm hỏng dữ liệu cũ."
+    },
+    {
+      "title": "119. Locking trong database là gì?",
+      "body": "Database locking là cơ chế database dùng để bảo vệ dữ liệu trong lúc một transaction đang đọc hoặc thay đổi nó. Nói dễ hiểu: khi một request đang sửa một row quan trọng, database có thể bắt request khác chờ để hai request không ghi đè nhau dựa trên trạng thái cũ.",
+      "bullets": [
+        "Lock không tự động là xấu; nó là công cụ điều phối concurrency.",
+        "Rủi ro bắt đầu khi lock bị giữ quá lâu, lấy lock theo thứ tự khác nhau, hoặc cùng tranh một nhóm row nóng.",
+        "Trong Laravel, bạn thường gặp chủ đề này qua transaction, `lockForUpdate()`, trừ tồn kho, cập nhật ví tiền, đổi trạng thái đơn hàng và job chạy nền."
+      ]
+    },
+    {
+      "title": "120. Vì sao locking quan trọng trong dự án Laravel thật?",
+      "body": "Vì web app thường có nhiều request chạy cùng lúc. Hai người có thể mua món hàng cuối cùng, hai job có thể xử lý cùng một payout, hoặc hai API call có thể cập nhật cùng một số dư. Nếu thiếu transaction và lock đúng chỗ, cả hai process có thể đọc cùng một giá trị cũ rồi ghi ra trạng thái cuối sai.",
+      "code": "// Nguy hiểm khi hai request chạy cùng lúc:\n$product = Product::find($id);\n\nif ($product->stock > 0) {\n    $product->decrement('stock');\n    Order::create([...]);\n}"
+    },
+    {
+      "title": "121. Ví dụ dùng `lockForUpdate()` để bảo vệ một row",
+      "body": "`lockForUpdate()` yêu cầu database khóa các row được chọn cho tới khi transaction kết thúc. Transaction khác muốn update các row đó sẽ phải chờ, nhờ vậy code có thể đọc giá trị hiện tại, kiểm tra rule và ghi giá trị mới trong một flow được bảo vệ.",
+      "code": "DB::transaction(function () use ($productId) {\n    $product = Product::whereKey($productId)\n        ->lockForUpdate()\n        ->firstOrFail();\n\n    if ($product->stock < 1) {\n        throw new RuntimeException('Out of stock.');\n    }\n\n    $product->decrement('stock');\n\n    Order::create([\n        'product_id' => $product->id,\n        'status' => 'paid',\n    ]);\n});",
+      "note": "Điểm quan trọng là lock phải nằm trong transaction. Gọi `lockForUpdate()` nhưng không có transaction thật thường không bảo vệ được toàn bộ business flow."
+    },
+    {
+      "title": "122. Row lock, table lock, deadlock và lock contention",
+      "body": "Row lock bảo vệ các row cụ thể. Table lock ảnh hưởng phạm vi rộng hơn và có thể chặn nhiều việc hơn. Deadlock xảy ra khi hai transaction chờ nhau vì đã lock tài nguyên theo thứ tự xung đột. Lock contention xảy ra khi nhiều request cùng chờ một lock nóng, làm hệ thống chậm dù không có lỗi logic rõ ràng.",
+      "bullets": [
+        "Ưu tiên lock hẹp ở đúng row business cần bảo vệ.",
+        "Giữ transaction ngắn: không gọi API ngoài chậm khi đang giữ lock database.",
+        "Nếu flow đụng nhiều record, hãy lấy lock theo thứ tự nhất quán.",
+        "Chỉ thêm retry logic sau khi operation đã idempotent và đã hiểu nguyên nhân deadlock."
+      ]
+    },
+    {
+      "title": "123. Sai lầm phổ biến khi mới học database locking",
+      "body": "Sai lầm hay gặp nhất là xem lock như thuốc thần cho mọi lỗi concurrency. Locking hữu ích, nhưng phải đi cùng transaction đúng, index phù hợp, thứ tự truy cập rõ ràng và critical section đủ nhỏ.",
+      "bullets": [
+        "Đọc giá trị ngoài transaction rồi lock quá muộn.",
+        "Lock quá nhiều row vì query không có index phù hợp.",
+        "Giữ lock trong lúc gửi email, gọi payment API hoặc xử lý file chậm.",
+        "Bỏ qua deadlock thay vì retry an toàn hoặc giảm thứ tự lock xung đột.",
+        "Tin rằng test local một người dùng sẽ lộ được lỗi concurrency production."
+      ]
+    },
+    {
+      "title": "124. Câu trả lời phỏng vấn: giải thích database locking rõ ràng",
+      "body": "Database locking là cách database điều phối truy cập đồng thời để hai transaction không làm hỏng cùng một dữ liệu. Trong Laravel, tôi dùng locking khi giá trị hiện tại quyết định lần ghi tiếp theo, ví dụ tồn kho, số dư, trạng thái payout hoặc workflow transition. Pattern thường là `DB::transaction()`, chọn đúng row bằng `lockForUpdate()`, kiểm tra trạng thái, ghi thay đổi và giữ transaction ngắn. Tôi cũng để ý deadlock, row nóng, thiếu index và việc gọi service ngoài trong transaction.",
+      "tip": "Câu trả lời tốt nên nêu cả lợi ích lẫn chi phí: lock bảo vệ tính đúng đắn, nhưng thiết kế lock kém có thể làm cả hệ thống chậm."
     }
   ]
 }

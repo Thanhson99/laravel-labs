@@ -32,50 +32,86 @@
         {
           "href": "sites/roadmap/index.html",
           "title": "Learning Tree",
-          "summary": "Open this first for a friendly technology map before moving into PHP, Laravel, and the rest of the study sites.",
+          "summary": "Start here for the big learning map: PHP base, Laravel depth, interview growth, DevOps context, and AI-assisted coding habits.",
           "button": "Open Roadmap"
         },
         {
           "href": "sites/php/index.html",
           "title": "PHP Fundamentals",
-          "summary": "Concept notes for syntax, OOP, requests, sessions, and how PHP powers Laravel.",
+          "summary": "Core PHP syntax, OOP, runtime behavior, memory concepts, and backend foundations that make Laravel easier to understand.",
           "button": "Open PHP Site"
-        },
-        {
-          "href": "sites/glossary/index.html",
-          "title": "Glossary",
-          "summary": "A quick reference for web, Laravel, database, runtime, and Vibe Coding terms when concepts start blending together.",
-          "button": "Open Glossary"
         },
         {
           "href": "sites/laravel/index.html",
           "title": "Laravel Roadmap",
-          "summary": "From routing and Blade to queues, APIs, testing, teams, and production thinking.",
+          "summary": "The main Laravel site: routing, Blade, data, auth, APIs, queues, testing, performance, deployment, and architecture.",
           "button": "Open Laravel Site"
-        },
-        {
-          "href": "sites/laravel/container-architecture.html",
-          "title": "Dependency Injection",
-          "summary": "Explore Dependency Injection as a dependency-management technique that keeps Laravel code explicit, testable, and easier to replace.",
-          "button": "Learn Dependency Injection"
-        },
-        {
-          "href": "sites/practice/index.html",
-          "title": "Practice Projects",
-          "summary": "Structured drills and mini-project ideas based on your current Laravel lab folders.",
-          "button": "Open Practice Site"
         },
         {
           "href": "sites/interview/index.html",
           "title": "Interview Prep",
-          "summary": "Common Laravel and PHP interview themes, answer outlines, and review checkpoints.",
+          "summary": "Role-based interview practice from fresher to senior and DevOps, with practical answer framing instead of memorized one-liners.",
           "button": "Open Interview Site"
         },
         {
           "href": "sites/vibe-coding/index.html",
           "title": "Vibe Coding",
-          "summary": "A dedicated area for AI-assisted coding workflows: prompting features, reviewing generated code, refactoring outputs, and applying runtime guardrails.",
+          "summary": "AI-assisted coding workflows for prompting, CRUD generation, review discipline, runtime safety, and hallucination control.",
           "button": "Open Vibe Coding Site"
+        },
+        {
+          "href": "sites/practice/index.html",
+          "title": "Practice Projects",
+          "summary": "Structured drills, mini-project ideas, review checklists, and hands-on work tied to the Laravel lab folders.",
+          "button": "Open Practice Site"
+        },
+        {
+          "href": "sites/glossary/index.html",
+          "title": "Glossary",
+          "summary": "A compact reference for web, Laravel, database, runtime, DevOps, and AI terms when concepts start blending together.",
+          "button": "Open Glossary"
+        },
+        {
+          "href": "sites/laravel/data.html",
+          "title": "Spotlight: Database Locking",
+          "summary": "A high-value backend topic: `DB::transaction()`, `lockForUpdate()`, row locks, deadlocks, contention, and preventing oversold inventory or double-spent balances.",
+          "button": "Study DB Locking"
+        },
+        {
+          "href": "sites/laravel/performance-search.html",
+          "title": "Spotlight: Covering Index",
+          "summary": "A rare but useful performance topic: Index Only Scan, heap fetches, `INCLUDE` columns, visibility maps, VACUUM, bloat, and rollout evidence.",
+          "button": "Optimize Index Scans"
+        },
+        {
+          "href": "sites/laravel/api-integration.html",
+          "title": "Spotlight: API Design",
+          "summary": "Compare REST, GraphQL, endpoint naming, request shapes, caching, authorization boundaries, and interview-ready API tradeoffs.",
+          "button": "Study API Design"
+        },
+        {
+          "href": "sites/laravel/auth-security.html",
+          "title": "Spotlight: Auth & API Security",
+          "summary": "The strongest security cluster: IDOR, broken authentication, SQL Injection, CSRF, XSS, JWT storage, revocation, OAuth, and PKCE.",
+          "button": "Review Security"
+        },
+        {
+          "href": "sites/vibe-coding/prompting.html",
+          "title": "Spotlight: AI Context",
+          "summary": "High-signal AI architecture topics: classic RAG, Graph RAG, Agentic RAG, Long Context, CAG, and the four memory types for AI agents.",
+          "button": "Study AI Context"
+        },
+        {
+          "href": "sites/interview/senior.html",
+          "title": "Spotlight: System Design",
+          "summary": "Practice explaining why technically correct designs still fail when they ignore context, cost, team maturity, failure modes, and rejected alternatives.",
+          "button": "Practice Tradeoffs"
+        },
+        {
+          "href": "sites/interview/devops.html",
+          "title": "Spotlight: DevOps Edge",
+          "summary": "Selected hard topics for senior interviews: SIEM/ELK, Kubernetes mental models, reverse proxy failure, load balancing, and AI use by cloud engineers.",
+          "button": "Open DevOps Pack"
         }
       ],
       "repoSectionTitle": "Current Laravel Labs in This Repository",
@@ -2087,6 +2123,242 @@
               "action": "Open container workbench"
             },
             {
+              "track": "Laravel Architecture",
+              "title": "Dependency Injection refactor workbench",
+              "body": "Convert a manual `new` dependency into a contract, service-provider binding, constructor injection target, and test fake so the architecture change is visible in code.",
+              "concepts": [
+                "Scenario presets for reports, payments, and external sync",
+                "Manual dependency detection",
+                "Contract naming by behavior",
+                "Contract method naming",
+                "`bind` versus `singleton`",
+                "Constructor injection",
+                "File-by-file refactor map",
+                "Container-resolution test example",
+                "Generated fake implementation for tests",
+                "Test doubles for replaceable collaborators",
+                "Anti-pattern scan for hidden concrete dependencies",
+                "Risk controls for payment or external-service side effects",
+                "Overengineering guardrails for when not to add an interface",
+                "Verification commands and commit checklist"
+              ],
+              "files": [
+                "hub/routes/api/practice-actions.php",
+                "hub/routes/web/workbench.php",
+                "hub/app/Http/Requests/Api/PlanDependencyInjectionRefactorRequest.php",
+                "hub/app/Http/Controllers/Api/DependencyInjectionRefactorController.php",
+                "hub/app/Services/Practice/DependencyInjectionRefactorService.php",
+                "hub/resources/views/practice/workbench/dependency-injection-refactor.blade.php"
+              ],
+              "commands": [
+                "php artisan test --filter DependencyInjectionRefactorWorkbenchTest",
+                "php artisan route:list --path=dependency-injection-refactor",
+                "vendor\\bin\\pint --test"
+              ],
+              "href": "{{HUB_BASE_URL}}/workbench/dependency-injection-refactor",
+              "action": "Open DI refactor workbench"
+            },
+            {
+              "track": "PHP OOP",
+              "title": "Abstract class or interface decision workbench",
+              "body": "Compare abstract class, interface, and concrete class choices from a scenario, then read the generated code example and interview answer.",
+              "concepts": [
+                "Scenario presets for interface, abstract class, and concrete class",
+                "Comparison table with Laravel examples",
+                "Implementation files and review steps for the selected choice",
+                "Interface as behavior contract",
+                "Abstract class for shared base behavior",
+                "Concrete class until abstraction is earned",
+                "Decision matrix that exposes the signals behind the recommendation",
+                "Anti-pattern warnings for wrong abstraction choices",
+                "Testing strategy for each abstraction choice",
+                "Structured interview-answer rubric",
+                "Interview-ready OOP tradeoff explanation"
+              ],
+              "files": [
+                "data/php/advanced.en.json",
+                "data/php/advanced.vi.json",
+                "hub/app/Http/Requests/Api/PlanOopAbstractionDecisionRequest.php",
+                "hub/app/Http/Controllers/Api/OopAbstractionDecisionController.php",
+                "hub/app/Services/Practice/OopAbstractionDecisionService.php",
+                "hub/resources/views/practice/workbench/oop-abstraction-decision.blade.php"
+              ],
+              "commands": [
+                "php artisan test --filter OopAbstractionDecisionWorkbenchTest",
+                "php artisan route:list --path=oop-abstraction-decision",
+                "vendor\\bin\\pint --test"
+              ],
+              "href": "{{HUB_BASE_URL}}/workbench/oop-abstraction-decision",
+              "action": "Open OOP decision workbench"
+            },
+            {
+              "track": "Laravel Architecture",
+              "title": "Clean Architecture P6: Layered Architecture tradeoff",
+              "body": "Practice deciding when layered architecture is useful and when it only adds ceremony. This exercise compares simple CRUD, complex workflows, domain rules, persistence boundaries, and team review cost.",
+              "concepts": [
+                "Layered Architecture as a tradeoff",
+                "Controller, Form Request, Action, Service, Repository, Job, Event, and Policy boundaries",
+                "When simple Laravel structure is enough",
+                "When extra layers protect business rules",
+                "Architecture theater and file-jumping cost",
+                "PR review questions for layer decisions"
+              ],
+              "files": [
+                "data/laravel/container-architecture.en.json",
+                "data/laravel/container-architecture.vi.json",
+                "hub/config/practice.php",
+                "hub/app/Services/Practice/LayeredArchitectureDecisionService.php",
+                "hub/app/Http/Requests/Api/PlanLayeredArchitectureDecisionRequest.php",
+                "hub/app/Http/Controllers/Api/LayeredArchitectureDecisionController.php",
+                "hub/resources/views/practice/workbench/layered-architecture-decision.blade.php",
+                "hub/tests/Feature/LayeredArchitectureDecisionWorkbenchTest.php"
+              ],
+              "commands": [
+                "php artisan test --filter StaticPortalCopyTest",
+                "php artisan route:list --name=practice.show",
+                "vendor\\bin\\pint --test"
+              ],
+              "href": "{{HUB_BASE_URL}}/workbench/layered-architecture-decision",
+              "action": "Open layering workbench"
+            },
+            {
+              "track": "System Design",
+              "title": "Reverse proxy failure workbench",
+              "body": "Plan how a reverse proxy or edge layer can fail before traffic reaches healthy origins, then generate request-path mapping, config validation, blast-radius controls, staged rollout, health gates, rollback, observability, and an interview answer.",
+              "concepts": [
+                "Shared edge request path",
+                "Healthy origins can still be unreachable",
+                "Reverse proxy versus load balancer responsibility",
+                "Config and generated feature-file validation",
+                "Schema, size, cardinality, and parser compatibility limits",
+                "Canary and staged rollout for proxy changes",
+                "Automated health gates for proxy 5xx and parser errors",
+                "Fail-small design by route, tenant, region, or optional module",
+                "Rollback before origin scaling",
+                "Proxy-generated errors versus origin-generated errors",
+                "Incident triage for edge failures",
+                "Blast-radius controls for Cloudflare-style outage lessons",
+                "Origin reachability checks",
+                "Interview answer structure for reverse proxy risk"
+              ],
+              "files": [
+                "data/interview/devops.en.json",
+                "data/interview/devops.vi.json",
+                "hub/app/Http/Requests/Api/PlanReverseProxyFailureRequest.php",
+                "hub/app/Http/Controllers/Api/ReverseProxyFailurePlanController.php",
+                "hub/app/Services/Practice/ReverseProxyFailurePlanService.php",
+                "hub/resources/views/practice/workbench/reverse-proxy-failure-plan.blade.php"
+              ],
+              "commands": [
+                "php artisan test --filter ReverseProxyFailurePlan",
+                "php artisan route:list --path=reverse-proxy-failure-plan",
+                "vendor\\bin\\pint --test"
+              ],
+              "href": "{{HUB_BASE_URL}}/workbench/reverse-proxy-failure-plan",
+              "action": "Open proxy failure workbench"
+            },
+            {
+              "track": "System Design",
+              "title": "Load balancer algorithm workbench",
+              "body": "Compare round robin, weighted round robin, least connections, and IP hash from a traffic scenario, then generate config, health checks, rollout guidance, and a short interview answer.",
+              "concepts": [
+                "Round robin for equal upstreams",
+                "Weighted round robin for uneven capacity",
+                "Least connections for long-running or bursty requests",
+                "IP hash for temporary session affinity",
+                "Operational risk assessment and mitigations",
+                "Expected traffic share by upstream",
+                "Health checks and upstream draining",
+                "Configuration review for headers, timeouts, sessions, and draining",
+                "Observability metrics by algorithm",
+                "Incident runbook for uneven traffic or failed upstreams",
+                "Traffic simulation steps for proving the algorithm",
+                "Forwarded headers behind a balancer",
+                "Structured System Design interview rubric",
+                "System-design interview answer structure"
+              ],
+              "files": [
+                "data/interview/devops.en.json",
+                "data/interview/devops.vi.json",
+                "hub/app/Http/Requests/Api/PlanLoadBalancerRequest.php",
+                "hub/app/Http/Controllers/Api/LoadBalancerPlanController.php",
+                "hub/app/Services/Practice/LoadBalancerPlanService.php",
+                "hub/resources/views/practice/workbench/load-balancer-plan.blade.php"
+              ],
+              "commands": [
+                "php artisan test --filter LoadBalancerPlan",
+                "php artisan route:list --path=load-balancer-plan",
+                "vendor\\bin\\pint --test"
+              ],
+              "href": "{{HUB_BASE_URL}}/workbench/load-balancer-plan",
+              "action": "Open load-balancer workbench"
+            },
+            {
+              "track": "DevOps",
+              "title": "Kubernetes ship analogy workbench",
+              "body": "Explain Kubernetes in one minute by mapping a command ship, cargo ships, and container cargo to the control plane, worker nodes, pods, containers, deployments, services, ingress, probes, and reconciliation.",
+              "concepts": [
+                "Control plane as the command ship",
+                "Worker nodes as cargo ships",
+                "Containers as application cargo",
+                "Pods as the smallest deployable unit",
+                "Deployment as the desired shipping order",
+                "Service as the stable harbor address",
+                "Ingress or LoadBalancer for external traffic",
+                "Desired state and reconciliation loop",
+                "Readiness and liveness checks",
+                "Startup probes for slow-booting apps",
+                "CPU and memory requests for scheduling",
+                "Memory limits and OOMKilled debugging",
+                "Replica count for stateless web and worker apps",
+                "Scaling signals for web APIs, workers, and scheduled jobs",
+                "Rollout status, rollout history, and rollback commands",
+                "ConfigMap versus Secret for application configuration",
+                "Namespace, service account, RBAC, and quota basics",
+                "NetworkPolicy basics for ingress, egress, DNS, and label selectors",
+                "Observability signals from events, logs, metrics, and app-level health",
+                "Cost and capacity planning for replicas, nodes, external traffic, and storage",
+                "PodDisruptionBudget, anti-affinity, and topology spread for availability",
+                "Graceful shutdown with SIGTERM, preStop, and terminationGracePeriodSeconds",
+                "Image tag, imagePullPolicy, securityContext, and image scanning basics",
+                "CronJob for scheduled workloads",
+                "Persistent storage warning for stateful data",
+                "kubectl commands for first inspection",
+                "Troubleshooting runbook for Pending, CrashLoopBackOff, missing service traffic, and lost state",
+                "Failure diagnosis matrix for ImagePullBackOff, OOMKilled, probe failure, Forbidden, DNS timeout, and volume mount failure",
+                "Backend runtime plan for database migrations, queue workers, sessions, cache, readiness dependencies, and scheduled tasks",
+                "Manifest review checklist for labels, probes, resources, rollout safety, and runtime state",
+                "CI/CD gates for manifest rendering, server-side dry run, policy checks, and smoke tests",
+                "YAML snippets for probes, resources, service selectors, PDB, and CronJob safety",
+                "One-minute script for explaining Kubernetes with the ship fleet analogy",
+                "Interview rubric for definition, analogy, mechanism, production tradeoffs, and debugging",
+                "Command ladder for nodes, workloads, pod evidence, logs, routing, and storage checks",
+                "Resource decision guide for Deployment, CronJob, Service, Ingress, LoadBalancer, and storage",
+                "Manifest smell catalog for selector mismatch, missing probes, resource gaps, latest tags, and unsafe state",
+                "Practice drills for one-minute explanation, request tracing, rollout debugging, and storage durability",
+                "Production readiness score for external traffic, replica count, scheduled jobs, and stateful data",
+                "SLO observability plan for availability, latency, error rate, saturation, and storage durability",
+                "Deployment review questions that require evidence before release",
+                "Beginner misconceptions about Docker, pods, replicas, and storage",
+                "One-minute DevOps interview answer"
+              ],
+              "files": [
+                "data/interview/devops.en.json",
+                "data/interview/devops.vi.json",
+                "hub/app/Http/Requests/Api/PlanKubernetesAnalogyRequest.php",
+                "hub/app/Http/Controllers/Api/KubernetesAnalogyPlanController.php",
+                "hub/app/Services/Practice/KubernetesAnalogyPlanService.php",
+                "hub/resources/views/practice/workbench/kubernetes-analogy-plan.blade.php"
+              ],
+              "commands": [
+                "php artisan test --filter KubernetesAnalogyPlan",
+                "php artisan route:list --path=kubernetes-analogy-plan",
+                "vendor\\bin\\pint --test"
+              ],
+              "href": "{{HUB_BASE_URL}}/workbench/kubernetes-analogy-plan",
+              "action": "Open Kubernetes workbench"
+            },
+            {
               "track": "Laravel Authorization",
               "title": "Authorization policy workbench",
               "body": "Plan a policy class, ability method, controller authorization call, and allowed/forbidden tests before adding access-control logic to a feature.",
@@ -2185,6 +2457,644 @@
               ],
               "href": "{{HUB_BASE_URL}}/workbench/rate-limit-plan",
               "action": "Open rate-limit workbench"
+            },
+            {
+              "track": "Auth Security",
+              "title": "JWT token-storage decision workbench",
+              "body": "Compare localStorage, HttpOnly cookies, bearer tokens, and secure platform storage from a concrete client threat model before choosing where JWTs should live.",
+              "concepts": [
+                "localStorage XSS exposure",
+                "Scenario presets for common client types",
+                "HttpOnly Secure SameSite cookies",
+                "CSRF controls for cookie flows",
+                "Short-lived access tokens",
+                "Refresh-token rotation",
+                "Mobile secure storage",
+                "Bearer token revocation",
+                "Risk scoring by threat signal",
+                "Decision matrix for client, storage, XSS, CSRF, lifetime, and refresh signals",
+                "Production review checklist",
+                "Implementation snippets for cookie, bearer, and platform storage",
+                "Migration plan from current storage to recommended storage",
+                "Interview-ready threat model explanation"
+              ],
+              "files": [
+                "hub/routes/api/practice-actions.php",
+                "hub/routes/web/workbench.php",
+                "hub/app/Http/Requests/Api/PlanJwtTokenStorageRequest.php",
+                "hub/app/Http/Controllers/Api/JwtTokenStoragePlanController.php",
+                "hub/app/Services/Practice/JwtTokenStoragePlanService.php",
+                "hub/resources/views/practice/workbench/jwt-token-storage-plan.blade.php"
+              ],
+              "commands": [
+                "php artisan test --filter JwtTokenStoragePlan",
+                "php artisan route:list --path=jwt-token-storage-plan",
+                "vendor\\bin\\pint --test"
+              ],
+              "href": "{{HUB_BASE_URL}}/workbench/jwt-token-storage-plan",
+              "action": "Open JWT storage workbench"
+            },
+            {
+              "track": "Auth Security",
+              "title": "JWT revocation planning workbench",
+              "body": "Practice what to do when a JWT must be stopped before expiry: add jti claims, denylist or token-version checks, refresh-token family revocation, API endpoints, database records, and middleware enforcement.",
+              "concepts": [
+                "Stateless JWT revocation limits",
+                "jti claim design",
+                "Denylist storage until exp",
+                "Architecture summary with decision, tradeoff, poor-fit warning, and next design step",
+                "Threat model for leaked access tokens, refresh-token reuse, stale authorization, and browser sessions",
+                "Incident playbook for triage, containment, recovery, and evidence capture",
+                "Token version for user-wide invalidation",
+                "Refresh-token rotation and reuse detection",
+                "Logout and logout-all API flows",
+                "Database schema for revoked tokens",
+                "Retention plan for indexes, pruning, audit metadata, and storage capacity",
+                "Middleware revocation lookup",
+                "Decision matrix for client, model, lifetime, store, logout, and refresh signals",
+                "Risk scoring for long-lived tokens, missing rotation, cache eviction, and stateful enforcement",
+                "Rollout plan for instrument, dual-read, enforce, and harden phases",
+                "Observability plan for revocation metrics, structured logs, and alerts",
+                "Failure-mode plan for revocation store outage, cache eviction, reuse spikes, and version drift",
+                "Structured test matrix for feature, security, operations, privacy, and authorization coverage",
+                "Production review checklist for revocation controls",
+                "Pruning expired revocation records",
+                "Interview-ready revocation answer"
+              ],
+              "files": [
+                "hub/routes/api/practice-actions.php",
+                "hub/routes/web/workbench.php",
+                "hub/app/Http/Requests/Api/PlanJwtRevocationRequest.php",
+                "hub/app/Http/Controllers/Api/JwtRevocationPlanController.php",
+                "hub/app/Services/Practice/JwtRevocationPlanService.php",
+                "hub/resources/views/practice/workbench/jwt-revocation-plan.blade.php"
+              ],
+              "commands": [
+                "php artisan test --filter JwtRevocationPlan",
+                "php artisan route:list --path=jwt-revocation-plan",
+                "vendor\\bin\\pint --test"
+              ],
+              "href": "{{HUB_BASE_URL}}/workbench/jwt-revocation-plan",
+              "action": "Open JWT revocation workbench"
+            },
+            {
+              "track": "Auth Security",
+              "title": "OAuth Implicit Flow migration workbench",
+              "body": "Compare OAuth2 Implicit Flow with Authorization Code flow, explain why front-channel token delivery is no longer recommended, and plan a migration to Authorization Code with PKCE or a confidential backend client.",
+              "concepts": [
+                "OAuth2 Implicit Flow deprecation",
+                "Authorization Code flow with PKCE",
+                "Architecture decision record for replacing Implicit Flow",
+                "Compatibility notes for SPA, mobile, and server-rendered web clients",
+                "Public versus confidential clients",
+                "Front-channel token exposure",
+                "Threat model for access tokens, authorization codes, login callbacks, and refresh tokens",
+                "Provider capability matrix for PKCE S256, state validation, token blocking, and refresh rotation",
+                "Browser history, redirect, extension, log, and screenshot leakage",
+                "response_type=token versus response_type=code",
+                "PKCE code_verifier and code_challenge",
+                "State validation",
+                "Callback validation rules for code, state, redirect URI, and PKCE verifier",
+                "PKCE checklist for code_verifier, S256 challenge, and token exchange",
+                "Refresh-token rotation",
+                "Token lifetime policy for short-lived access tokens, refresh rotation, and revocation",
+                "Scope consent matrix for openid, email, offline_access, and admin/write scopes",
+                "Authorize request hardening for response_type, redirect_uri, state, scope, and code_challenge",
+                "Token endpoint contract for grant_type, code, redirect_uri, client_secret, and code_verifier",
+                "Frontend cleanup plan for callback route, browser URL, legacy storage keys, telemetry, and PKCE verifier cache",
+                "ID-token validation rules for issuer, audience, timestamps, and nonce",
+                "Flow comparison matrix",
+                "Risk scoring for legacy OAuth clients",
+                "Sequence steps for Implicit versus Authorization Code with PKCE",
+                "Implementation snippets for authorize URL, token exchange, and Laravel callback validation",
+                "Migration plan away from Implicit Flow",
+                "Rollout plan for inventory, dual support, enforcement, and legacy removal",
+                "Client cutover checklist for authorize URL, PKCE verifier storage, legacy callback rejection, and refresh rotation",
+                "Observability plan for authorize requests, rejected callbacks, token exchanges, and implicit blocking",
+                "Failure modes for state mismatch, missing PKCE verifier, token-bearing callback, redirect URI drift, and refresh-token reuse",
+                "Incident response playbook for token-bearing callbacks and suspected token leakage",
+                "Deprecation policy for blocking new Implicit clients and retiring legacy exceptions",
+                "Security test matrix for front-channel token blocking, state validation, PKCE verifier, code lifecycle, and refresh rotation",
+                "Interview-ready OAuth answer"
+              ],
+              "files": [
+                "hub/routes/api/practice-actions.php",
+                "hub/routes/web/workbench.php",
+                "hub/app/Http/Requests/Api/PlanOauthFlowRequest.php",
+                "hub/app/Http/Controllers/Api/OauthFlowPlanController.php",
+                "hub/app/Services/Practice/OauthFlowPlanService.php",
+                "hub/resources/views/practice/workbench/oauth-flow-plan.blade.php"
+              ],
+              "commands": [
+                "php artisan test --filter OauthFlowPlan",
+                "php artisan route:list --path=oauth-flow-plan",
+                "vendor\\bin\\pint --test"
+              ],
+              "href": "{{HUB_BASE_URL}}/workbench/oauth-flow-plan",
+              "action": "Open OAuth flow workbench"
+            },
+            {
+              "track": "API Architecture",
+              "title": "GraphQL REST decision workbench",
+              "body": "Compare REST endpoint contracts with GraphQL schema/query contracts, then generate a recommendation with cache, authorization, resolver, N+1, Laravel boundary, and interview-answer guidance.",
+              "concepts": [
+                "REST endpoint and resource contracts",
+                "GraphQL schema, query, mutation, and resolver contracts",
+                "Client-selected fields and overfetching tradeoffs",
+                "HTTP cache semantics versus operation-aware GraphQL caching",
+                "Resolver N+1 and query-cost controls",
+                "Field-level authorization",
+                "Laravel route, request, resource, service, schema, and resolver boundaries",
+                "Decision matrix and risk scoring",
+                "Implementation plan and review checklist",
+                "Interview-ready REST versus GraphQL answer"
+              ],
+              "files": [
+                "hub/routes/api/practice-actions.php",
+                "hub/routes/web/workbench.php",
+                "hub/app/Http/Requests/Api/PlanGraphqlRestDecisionRequest.php",
+                "hub/app/Http/Controllers/Api/GraphqlRestDecisionController.php",
+                "hub/app/Services/Practice/GraphqlRestDecisionService.php",
+                "hub/resources/views/practice/workbench/graphql-rest-decision.blade.php"
+              ],
+              "commands": [
+                "php artisan test --filter GraphqlRestDecision",
+                "php artisan route:list --path=graphql-rest-decision",
+                "vendor\\bin\\pint --test"
+              ],
+              "href": "{{HUB_BASE_URL}}/workbench/graphql-rest-decision",
+              "action": "Open GraphQL REST workbench"
+            },
+            {
+              "track": "API Architecture",
+              "title": "RESTful API naming workbench",
+              "body": "Turn a feature brief into clean RESTful endpoint paths, Laravel route names, query parameters, business-action endpoints, review checks, tests, and a PR-ready decision memo.",
+              "concepts": [
+                "Plural resource nouns",
+                "HTTP verb semantics",
+                "Nested resource boundaries",
+                "Query parameters for filters and sorting",
+                "Business action endpoint review",
+                "Laravel route names and feature-test targets"
+              ],
+              "files": [
+                "hub/routes/api/practice-actions.php",
+                "hub/routes/web/workbench.php",
+                "hub/app/Http/Requests/Api/PlanRestfulApiNamingRequest.php",
+                "hub/app/Http/Controllers/Api/RestfulApiNamingPlanController.php",
+                "hub/app/Services/Practice/RestfulApiNamingPlanService.php",
+                "hub/resources/views/practice/workbench/restful-api-naming-plan.blade.php"
+              ],
+              "commands": [
+                "php artisan test --filter RestfulApiNamingPlanWorkbenchTest",
+                "php artisan route:list --path=restful-api-naming-plan",
+                "vendor\\bin\\pint --test"
+              ],
+              "href": "{{HUB_BASE_URL}}/workbench/restful-api-naming-plan",
+              "action": "Open RESTful naming workbench"
+            },
+            {
+              "track": "Vibe Coding",
+              "title": "AI hallucination guardrail workbench",
+              "body": "Practice how to stop plausible but wrong AI output from entering code: require assumptions, cite evidence, check framework versions, run verification commands, and keep human review as the final authority.",
+              "concepts": [
+                "AI hallucination risk",
+                "Evidence-first code workflow",
+                "Prompt contract",
+                "Safe output contract for assumptions, evidence map, verification record, and unverified claims",
+                "Acceptance gate for accepting or blocking AI output",
+                "Evidence requirements by claim type",
+                "Claim validation rules for invented APIs, routes, tests, and data",
+                "Release readiness status for blocked, conditional, or review-ready output",
+                "Evidence ledger template for recording claims, references, verification results, and redaction notes",
+                "Risk score breakdown by signal",
+                "Decision matrix for safer AI workflow choices",
+                "Data-safety plan for secrets, PII, and source data",
+                "Safe prompt examples for preflight, patching, review, and source-grounded answers",
+                "Required artifacts before merge",
+                "CI policy profile by hallucination risk",
+                "Observability plan for AI-output regressions",
+                "Rollback playbook when generated changes break behavior",
+                "Ownership model for operator, reviewer, domain owner, and release owner",
+                "Escalation policy for senior, security, reviewer, and domain-owner review",
+                "Maturity roadmap from manual review to operational guardrails",
+                "Repo context and source citations",
+                "Runtime verification commands",
+                "Task-specific verification commands for routes, feature tests, style checks, source ledgers, and reproductions",
+                "Framework and dependency version checks",
+                "Review lenses for auth, validation, query, runtime, and scope",
+                "Implementation steps for team workflow rollout",
+                "Red-team scenarios for catching hallucinated output",
+                "Automation hooks for PR templates, CI checks, dependency review, and security labels",
+                "Guardrails for data answers and generated code",
+                "Interview-ready hallucination answer"
+              ],
+              "files": [
+                "hub/routes/api/practice-actions.php",
+                "hub/routes/web/workbench.php",
+                "hub/app/Http/Requests/Api/PlanAiHallucinationGuardRequest.php",
+                "hub/app/Http/Controllers/Api/AiHallucinationGuardPlanController.php",
+                "hub/app/Services/Practice/AiHallucinationGuardPlanService.php",
+                "hub/resources/views/practice/workbench/ai-hallucination-guard-plan.blade.php"
+              ],
+              "commands": [
+                "php artisan test --filter AiHallucinationGuardPlan",
+                "php artisan route:list --path=ai-hallucination-guard-plan",
+                "vendor\\bin\\pint --test"
+              ],
+              "href": "{{HUB_BASE_URL}}/workbench/ai-hallucination-guard-plan",
+              "action": "Open AI guardrail workbench"
+            },
+            {
+              "track": "AI Interview",
+              "title": "AI Cloud interview rubric workbench",
+              "body": "Score whether a Cloud Engineer candidate really uses AI at work: concrete task evidence, prompt workflow, Terraform or CloudFormation review, AI failure stories, verification workflow, AWS Documentation conflicts, and team enablement.",
+              "concepts": [
+                "Candidate AI usage rubric",
+                "Concrete task evidence from the last week",
+                "Prompt workflow with context, constraints, output format, and verification intent",
+                "Terraform and CloudFormation review before apply",
+                "AI failure story as a maturity signal",
+                "Verification workflow using docs, dry runs, tests, logs, and peer review",
+                "AWS Documentation as source of truth over AI output",
+                "Red flags for superficial AI usage",
+                "Green flags for practical AI maturity",
+                "Team-level AI prompt and guardrail standardization"
+              ],
+              "files": [
+                "hub/routes/api/practice-actions.php",
+                "hub/routes/web/workbench.php",
+                "hub/app/Http/Requests/Api/ScoreAiCloudInterviewRubricRequest.php",
+                "hub/app/Http/Controllers/Api/AiCloudInterviewRubricController.php",
+                "hub/app/Services/Practice/AiCloudInterviewRubricService.php",
+                "hub/resources/views/practice/workbench/ai-cloud-interview-rubric.blade.php"
+              ],
+              "commands": [
+                "php artisan test --filter AiCloudInterviewRubric",
+                "php artisan route:list --path=ai-cloud-interview-rubric",
+                "vendor\\bin\\pint --test"
+              ],
+              "href": "{{HUB_BASE_URL}}/workbench/ai-cloud-interview-rubric",
+              "action": "Open AI interview rubric"
+            },
+            {
+              "track": "AI Foundations",
+              "title": "RAG strategy workbench",
+              "body": "Choose between RAG, Long Context, CAG, and hybrid chatbot context strategies, then choose the right RAG pattern: classic RAG, Graph RAG, or Agentic RAG. The workbench uses knowledge shape, relationship needs, tool use, freshness, risk level, readiness, data model, API response shape, OpenAPI contract, answer contract, Laravel integration blueprint, CI gates, implementation prompt, source lifecycle, benchmarks, test fixtures, prompt-injection tests, privacy controls, capacity plan, feedback schema, feedback loops, ownership, release evidence, audit artifacts, migration path, implementation backlog, threat model, SLOs, ADR summary, decommission path, citations, groundedness checks, cost controls, access control, observability, failure runbooks, and rollout gates.",
+              "concepts": [
+                "RAG, Long Context, CAG, and hybrid context strategy routing for AI chatbots",
+                "Classic RAG for document chunk retrieval",
+                "Graph RAG for entity and relationship traversal",
+                "Agentic RAG for controlled multi-step tool use",
+                "Long Context for bounded document-pack analysis with token budgets and source markers",
+                "CAG for permission-aware cached context over stable, curated knowledge",
+                "Hybrid routing for stable FAQ, fresh private documents, and deep analysis sessions",
+                "Retrieval contracts for chunking, metadata, source IDs, and freshness",
+                "Groundedness, citation coverage, fallback behavior, and hallucination controls",
+                "Golden question sets for offline evaluation",
+                "Permission filters, redaction, audit logs, and fail-closed behavior",
+                "Monitoring signals for retrieval misses, stale sources, ungrounded claims, and tool loops",
+                "Answer contract fields for answer, citations, confidence, missing evidence, and follow-up",
+                "Prompt templates for retrieval queries, grounded answers, conflicts, refusals, and style-specific behavior",
+                "Cost controls for top-k, context tokens, reranking, graph traversal, and agent iterations",
+                "Readiness score and decision matrix for review before launch",
+                "Data model contract for source IDs, permission scope, timestamps, chunks, vectors, keyword terms, graph edges, and tool logs",
+                "Benchmark plan for source recall, grounded answers, permissions, freshness, graph edges, and tool loops",
+                "Feedback loop and ownership matrix for content, platform, security, reviewers, domain owners, and tool owners",
+                "API response example and test fixture plan for implementation-ready contracts",
+                "Laravel integration blueprint for route, request, controller, service, feature test, graph evidence, and tool runner slices",
+                "OpenAPI-style request/response contract, CI quality gates, and implementation prompt for PR-ready work",
+                "Prompt-injection tests, privacy controls, capacity plan, and feedback schema for long-running RAG operations",
+                "Migration path and implementation backlog for moving from no RAG to classic, graph, or agentic RAG",
+                "Threat model, SLO policy, ADR summary, and decommission plan for production review",
+                "Versioning policy, release checklist, evidence packet, and audit artifact for repeatable approvals",
+                "Failure runbook for citation errors, stale sources, permission leaks, wrong graph edges, and unsafe agent loops"
+              ],
+              "files": [
+                "hub/routes/api/practice-actions.php",
+                "hub/routes/web/workbench.php",
+                "hub/app/Http/Requests/Api/PlanRagStrategyRequest.php",
+                "hub/app/Http/Controllers/Api/RagStrategyPlanController.php",
+                "hub/app/Services/Practice/RagStrategyPlanService.php",
+                "hub/resources/views/practice/workbench/rag-strategy-plan.blade.php"
+              ],
+              "commands": [
+                "php artisan test --filter RagStrategyPlan",
+                "php artisan route:list --path=rag-strategy-plan",
+                "vendor\\bin\\pint --test"
+              ],
+              "href": "{{HUB_BASE_URL}}/workbench/rag-strategy-plan",
+              "action": "Open RAG strategy workbench"
+            },
+            {
+              "track": "AI Foundations",
+              "title": "LLM decision-loop workbench",
+              "body": "Model a large language model as a repeated decision process: state, policy, action, transition, reward, attention, reward models, PPO, tool feedback, and careful AGI claims.",
+              "concepts": [
+                "Next-token probability as the starting objective",
+                "Markov decision process framing",
+                "State, policy, action, transition, and reward",
+                "Attention as context routing",
+                "Supervised fine-tuning and reward modeling",
+                "PPO as constrained policy optimization",
+                "Tool use and environment feedback",
+                "AGI claim guardrails and verification questions"
+              ],
+              "files": [
+                "hub/routes/api/practice-actions.php",
+                "hub/routes/web/workbench.php",
+                "hub/app/Http/Requests/Api/PlanLlmDecisionLoopRequest.php",
+                "hub/app/Http/Controllers/Api/LlmDecisionLoopPlanController.php",
+                "hub/app/Services/Practice/LlmDecisionLoopPlanService.php",
+                "hub/resources/views/practice/workbench/llm-decision-loop-plan.blade.php"
+              ],
+              "commands": [
+                "php artisan test --filter LlmDecisionLoopPlan",
+                "php artisan route:list --path=llm-decision-loop-plan",
+                "vendor\\bin\\pint --test"
+              ],
+              "href": "{{HUB_BASE_URL}}/workbench/llm-decision-loop-plan",
+              "action": "Open LLM workbench"
+            },
+            {
+              "track": "AI Foundations",
+              "title": "AI agent memory workbench",
+              "body": "Design AI agent memory as four governed contracts: working memory for the current task, episodic memory for prior sessions, semantic memory for durable repo facts, and procedural memory for reviewed playbooks. The workbench helps you define scope, source, freshness, confidence, permission, retention, correction paths, stale-memory fallback, and privacy controls before memory can steer the next action.",
+              "concepts": [
+                "Working memory for current task state",
+                "Episodic memory for prior sessions and decisions",
+                "Semantic memory for durable repo facts and domain vocabulary",
+                "Procedural memory for reviewed playbooks and commands",
+                "Source, freshness, confidence, permission, retention, and correction metadata",
+                "Stale-memory, private-memory, procedural-mismatch, and working-memory leak guardrails"
+              ],
+              "files": [
+                "hub/routes/api/practice-actions.php",
+                "hub/routes/web/workbench.php",
+                "hub/app/Http/Requests/Api/PlanAiAgentMemoryRequest.php",
+                "hub/app/Http/Controllers/Api/AiAgentMemoryPlanController.php",
+                "hub/app/Services/Practice/AiAgentMemoryPlanService.php",
+                "hub/resources/views/practice/workbench/ai-agent-memory-plan.blade.php"
+              ],
+              "commands": [
+                "php artisan test --filter AiAgentMemoryPlan",
+                "php artisan route:list --path=ai-agent-memory-plan",
+                "vendor\\bin\\pint --test"
+              ],
+              "href": "{{HUB_BASE_URL}}/workbench/ai-agent-memory-plan",
+              "action": "Open agent memory workbench"
+            },
+            {
+              "track": "Database Performance",
+              "title": "LSM Tree storage-engine workbench",
+              "body": "Explain why NoSQL write speed comes from LSM Tree storage design rather than simply lacking schema: WAL, memtable, immutable segment flush, compaction, and Bloom Filter read optimization.",
+              "concepts": [
+                "NoSQL speed is not caused by missing schema alone",
+                "Architecture decision record for accepting LSM only with operational guards",
+                "LSM Tree write path",
+                "WAL durability before acknowledgement",
+                "Memtable buffering",
+                "Immutable sorted segment or SSTable flush",
+                "Compaction strategy and write amplification",
+                "Read amplification across segments",
+                "Space amplification from old versions, tombstones, and overlapping segments",
+                "Range scan planning for key design, segment overlap, cursor pagination, and hot ranges",
+                "Tombstone and TTL policy for deletes, expiry waves, snapshots, and compaction debt",
+                "Capacity plan for WAL throughput, memtable memory, Bloom Filter memory, disk headroom, and compaction bandwidth",
+                "Cost model for memory, disk, CPU/IO, and operations",
+                "Engine comparison across LSM-backed stores, B-tree relational indexes, search projections, and cache layers",
+                "Decision rules for write-heavy ingest, point-read misses, range scans, and TTL/delete patterns",
+                "Benchmark plan for ingest, compaction pressure, point-read misses, range scans, and TTL/delete waves",
+                "Rollout plan for model, benchmark, dual-read, and ramp phases",
+                "SLO guardrails for p99 latency, compaction debt, disk headroom, read-miss efficiency, and tombstone pressure",
+                "Anti-patterns for schema myth, ignored compaction, unbounded range query, delete storm, and missing Bloom Filters",
+                "Incident runbook for triage, containment, recovery, and hardening when LSM latency or disk pressure spikes",
+                "Fit matrix for high ingest events, point-lookups, analytical scans, and delete-heavy data",
+                "Data model review for partition key, sort key, document shape, and TTL/delete fields",
+                "Query contract for point lookups, bounded ranges, cursor pagination, and banned broad scans",
+                "Interview checklist for claim, mechanism, tradeoff, and measurement",
+                "Failure modes for memtable flush stalls, compaction backlog, tombstone buildup, and expensive negative lookups",
+                "Bloom Filter optimization for point-read misses",
+                "Schema flexibility versus storage-engine layout",
+                "p95 and p99 latency during compaction"
+              ],
+              "files": [
+                "hub/routes/api/practice-actions.php",
+                "hub/routes/web/workbench.php",
+                "hub/app/Http/Requests/Api/PlanLsmTreeRequest.php",
+                "hub/app/Http/Controllers/Api/LsmTreePlanController.php",
+                "hub/app/Services/Practice/LsmTreePlanService.php",
+                "hub/resources/views/practice/workbench/lsm-tree-plan.blade.php"
+              ],
+              "commands": [
+                "php artisan test --filter LsmTreePlan",
+                "php artisan route:list --path=lsm-tree-plan",
+                "vendor\\bin\\pint --test"
+              ],
+              "href": "{{HUB_BASE_URL}}/workbench/lsm-tree-plan",
+              "action": "Open LSM Tree workbench"
+            },
+            {
+              "track": "System Design",
+              "title": "System Design tradeoff workbench",
+              "body": "Practice answering architecture interviews by asking clarifying questions before drawing, comparing Long Polling, WebSocket, brokers, vertical scaling, and strong consistency, then stating the accepted cost, rejected alternative, team-fit risk, and level-based answer framing.",
+              "concepts": [
+                "Clarifying questions before architecture diagrams",
+                "Notification system design for 10 million users",
+                "Real-time versus delayed delivery",
+                "Long Polling versus WebSocket operations",
+                "Kafka or broker fan-out tradeoffs",
+                "Strong consistency versus eventual consistency",
+                "Vertical scaling as a deployable legacy-system choice",
+                "Team maturity and operational capacity",
+                "L4, L5, L6, and L7 interview answer signals",
+                "Tradeoff statement: I choose A, the cost is X, and I accept it because Y costs more here"
+              ],
+              "files": [
+                "hub/routes/api/practice-actions.php",
+                "hub/routes/web/workbench.php",
+                "hub/app/Http/Requests/Api/PlanSystemDesignTradeoffRequest.php",
+                "hub/app/Http/Controllers/Api/SystemDesignTradeoffPlanController.php",
+                "hub/app/Services/Practice/SystemDesignTradeoffPlanService.php",
+                "hub/resources/views/practice/workbench/system-design-tradeoff-plan.blade.php"
+              ],
+              "commands": [
+                "php artisan test --filter SystemDesignTradeoffPlan",
+                "php artisan route:list --path=system-design-tradeoff-plan",
+                "vendor\\bin\\pint --test"
+              ],
+              "href": "{{HUB_BASE_URL}}/workbench/system-design-tradeoff-plan",
+              "action": "Open tradeoff workbench"
+            },
+            {
+              "track": "Frontend",
+              "title": "React render optimization workbench",
+              "body": "Practice reducing unnecessary React renders by measuring first, then choosing React.memo, useMemo, useCallback, state locality, or virtualization based on the real render cause.",
+              "concepts": [
+                "React Profiler before optimization",
+                "React.memo for expensive children with stable props",
+                "useMemo for expensive derived values and stable object props",
+                "useCallback for callback identity passed to memoized children",
+                "State locality, context splitting, large-list virtualization, and memoization anti-patterns"
+              ],
+              "files": [
+                "hub/routes/api/practice-actions.php",
+                "hub/routes/web/workbench.php",
+                "hub/app/Http/Requests/Api/PlanReactRenderOptimizationRequest.php",
+                "hub/app/Http/Controllers/Api/ReactRenderOptimizationPlanController.php",
+                "hub/app/Services/Practice/ReactRenderOptimizationPlanService.php",
+                "hub/resources/views/practice/workbench/react-render-optimization-plan.blade.php"
+              ],
+              "commands": [
+                "php artisan test --filter ReactRenderOptimizationPlan",
+                "php artisan route:list --path=react-render-optimization-plan",
+                "vendor\\bin\\pint --test"
+              ],
+              "href": "{{HUB_BASE_URL}}/workbench/react-render-optimization-plan",
+              "action": "Open React render workbench"
+            },
+            {
+              "track": "Frontend",
+              "title": "JavaScript hoisting lab",
+              "body": "Paste a JavaScript snippet and trace hoisting behavior across function declarations, `var`, `let`, `const`, function expressions, temporal dead zone risk, safer rewrites, and interview-ready answers.",
+              "concepts": [
+                "Creation phase versus execution phase",
+                "`var` initialized as `undefined`",
+                "`let` and `const` temporal dead zone",
+                "Function declaration versus function expression",
+                "Safer project rewrite and interview checklist"
+              ],
+              "files": [
+                "hub/routes/api/practice-actions.php",
+                "hub/routes/web/workbench.php",
+                "hub/app/Http/Requests/Api/AnalyzeJavascriptHoistingRequest.php",
+                "hub/app/Http/Controllers/Api/JavascriptHoistingLabController.php",
+                "hub/app/Services/Practice/JavascriptHoistingLabService.php",
+                "hub/resources/views/practice/workbench/javascript-hoisting-lab.blade.php"
+              ],
+              "commands": [
+                "php artisan test --filter JavascriptHoistingLabWorkbenchTest",
+                "php artisan route:list --path=javascript-hoisting-lab",
+                "vendor\\bin\\pint --test"
+              ],
+              "href": "{{HUB_BASE_URL}}/workbench/javascript-hoisting-lab",
+              "action": "Open hoisting lab"
+            },
+            {
+              "track": "Security",
+              "title": "IDOR access review workbench",
+              "body": "Simulate an attacker changing object IDs, then design Laravel policy checks, scoped queries, tenant boundaries, authorization maps, remediation steps, merge evidence, monitoring guidance, 403/404 decisions, tests, review checklist, and interview answer.",
+              "concepts": [
+                "IDOR as object-level authorization failure",
+                "Attacker ID swapping in API routes",
+                "Risk drivers and attack variants",
+                "Laravel policy and Gate authorization",
+                "Authorization map for read, update, delete, download, and export",
+                "Tenant and owner scoped queries",
+                "Remediation plan and two-user feature tests",
+                "Merge evidence and monitoring guidance",
+                "403 versus 404 response guidance"
+              ],
+              "files": [
+                "hub/app/Services/Practice/IdorAccessReviewService.php",
+                "hub/app/Http/Requests/Api/ReviewIdorAccessRequest.php",
+                "hub/app/Http/Controllers/Api/IdorAccessReviewController.php",
+                "hub/routes/api/practice-actions.php",
+                "hub/routes/web/workbench.php",
+                "hub/resources/views/practice/workbench/idor-access-review.blade.php"
+              ],
+              "commands": [
+                "php artisan route:list --path=idor-access-review",
+                "php artisan test --filter IdorAccessReviewWorkbenchTest",
+                "vendor\\bin\\pint --test"
+              ],
+              "href": "{{HUB_BASE_URL}}/workbench/idor-access-review",
+              "action": "Open IDOR workbench"
+            },
+            {
+              "track": "Security",
+              "title": "SQL Injection defense workbench",
+              "body": "Practice explaining SQL Injection for interviews and turning unsafe dynamic SQL into parameterized queries, query builder bindings, allowlisted identifiers, and focused attack-payload tests.",
+              "concepts": [
+                "SQL Injection as user input becoming SQL logic",
+                "Parameterized queries and prepared statements",
+                "Laravel query builder and raw SQL bindings",
+                "Allowlists for dynamic order, column, and table identifiers",
+                "Payload tests such as OR 1=1 and UNION probes",
+                "Why escaping alone is not the primary defense"
+              ],
+              "files": [
+                "hub/routes/api/practice-actions.php",
+                "hub/routes/web/workbench.php",
+                "hub/app/Http/Requests/Api/PlanSqlInjectionDefenseRequest.php",
+                "hub/app/Http/Controllers/Api/SqlInjectionDefensePlanController.php",
+                "hub/app/Services/Practice/SqlInjectionDefensePlanService.php",
+                "hub/resources/views/practice/workbench/sql-injection-defense-plan.blade.php"
+              ],
+              "commands": [
+                "php artisan test --filter SqlInjectionDefensePlan",
+                "php artisan route:list --path=sql-injection-defense-plan",
+                "vendor\\bin\\pint --test"
+              ],
+              "href": "{{HUB_BASE_URL}}/workbench/sql-injection-defense-plan",
+              "action": "Open SQL Injection workbench"
+            },
+            {
+              "track": "Security",
+              "title": "CSRF protection workbench",
+              "body": "Practice explaining CSRF, modeling cookie-authenticated browser risk, choosing CSRF token and SameSite controls, and writing tests for missing or stale tokens.",
+              "concepts": [
+                "CSRF as unwanted state change from a logged-in browser",
+                "Laravel `@csrf` token and session verification",
+                "SameSite cookie behavior: Lax, Strict, None, and missing config",
+                "Sanctum stateful SPA CSRF cookie bootstrap",
+                "Why GET should stay read-only",
+                "Feature tests for 419 and stale-token behavior"
+              ],
+              "files": [
+                "hub/routes/api/practice-actions.php",
+                "hub/routes/web/workbench.php",
+                "hub/app/Http/Requests/Api/PlanCsrfProtectionRequest.php",
+                "hub/app/Http/Controllers/Api/CsrfProtectionPlanController.php",
+                "hub/app/Services/Practice/CsrfProtectionPlanService.php",
+                "hub/resources/views/practice/workbench/csrf-protection-plan.blade.php"
+              ],
+              "commands": [
+                "php artisan test --filter CsrfProtectionPlan",
+                "php artisan route:list --path=csrf-protection-plan",
+                "vendor\\bin\\pint --test"
+              ],
+              "href": "{{HUB_BASE_URL}}/workbench/csrf-protection-plan",
+              "action": "Open CSRF workbench"
+            },
+            {
+              "track": "Security + DevOps",
+              "title": "SIEM ELK planning workbench",
+              "body": "Plan a security logging pipeline that turns raw events into searchable evidence, normalized fields, detection rules, retention policy, privacy controls, dashboards, and incident runbooks.",
+              "concepts": [
+                "SIEM as security event collection, correlation, alerting, and investigation evidence",
+                "Elastic Agent or Beats for log shipping",
+                "Logstash parsing, normalization, enrichment, and redaction",
+                "Elasticsearch indexing, search, retention, and cost control",
+                "Kibana dashboards, saved searches, alerts, and evidence views",
+                "Detection rules for auth abuse, web attacks, privilege changes, and incident investigation",
+                "Alert ownership, dedup windows, runbooks, false-positive review, and privacy controls"
+              ],
+              "files": [
+                "hub/routes/api/practice-actions.php",
+                "hub/routes/web/workbench.php",
+                "hub/app/Http/Requests/Api/PlanSiemElkRequest.php",
+                "hub/app/Http/Controllers/Api/SiemElkPlanController.php",
+                "hub/app/Services/Practice/SiemElkPlanService.php",
+                "hub/resources/views/practice/workbench/siem-elk-plan.blade.php"
+              ],
+              "commands": [
+                "php artisan test --filter SiemElkPlan",
+                "php artisan route:list --path=siem-elk-plan",
+                "vendor\\bin\\pint --test"
+              ],
+              "href": "{{HUB_BASE_URL}}/workbench/siem-elk-plan",
+              "action": "Open SIEM ELK workbench"
             },
             {
               "track": "Docker + Runtime",

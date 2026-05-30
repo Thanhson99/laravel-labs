@@ -62,4 +62,49 @@ final class PracticeMentorFeedbackLabTest extends TestCase
                 ],
             ]);
     }
+
+    /**
+     * Predictive AI mentor feedback reviews output contracts, metrics, and failure evidence.
+     */
+    public function test_predictive_generative_ai_mentor_feedback_uses_ai_type_review(): void
+    {
+        $response = $this->getJson('/api/practice/mentor-feedback-lab?technology=llm-foundations&family=vibe-coding&language=en&search=Predictive%20AI&limit=1');
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('data.technology', 'llm-foundations')
+            ->assertJsonPath('data.feedback_items.0.source_path', 'vibe-coding/prompting.en.json')
+            ->assertJsonPath('data.feedback_items.0.workspace_query.technology', 'llm-foundations')
+            ->assertJsonPath('data.feedback_items.0.risk', 'The explanation may collapse prediction and generation into one generic AI story without separate evidence.')
+            ->assertJsonPath('data.feedback_items.0.action_item', 'Open the workspace for task 1, add one predictive metric and one generative quality check, then update portfolio evidence.')
+            ->assertJsonPath('data.mentor_questions.0', 'Which source record most clearly separates prediction output from generation output?')
+            ->assertJsonPath('data.review_focus.2', 'Predictive metrics and generative quality checks are not reused interchangeably.');
+
+        $this->assertStringContainsString(
+            'output contract',
+            $response->json('data.feedback_items.0.mentor_comment')
+        );
+    }
+
+    /**
+     * JavaScript closure mentor feedback checks lexical scope and common interview traps.
+     */
+    public function test_javascript_closure_mentor_feedback_uses_scope_review(): void
+    {
+        $response = $this->getJson('/api/practice/mentor-feedback-lab?technology=javascript-closures&family=laravel&language=en&search=JavaScript%20closure&limit=1');
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('data.technology', 'javascript-closures')
+            ->assertJsonPath('data.feedback_items.0.source_path', 'laravel/frontend.en.json')
+            ->assertJsonPath('data.feedback_items.0.workspace_query.technology', 'javascript-closures')
+            ->assertJsonPath('data.feedback_items.0.risk', 'The explanation may stop at "inner function remembers variables" without tracing lexical scope, captured bindings, var versus let, or stale closures.')
+            ->assertJsonPath('data.mentor_questions.1', 'Where does createCounter() keep state between calls, and which binding is captured?')
+            ->assertJsonPath('data.review_focus.3', 'Interview-trap evidence covers var versus let and stale closures.');
+
+        $this->assertStringContainsString(
+            'captured bindings',
+            $response->json('data.feedback_items.0.mentor_comment')
+        );
+    }
 }

@@ -58,25 +58,105 @@ final class PracticePullRequestLabService
             'commit_message' => sprintf('practice: implement %s lab', $slug),
             'pull_request' => [
                 'title' => sprintf('Practice %s: %s', $remediation['technology'], $remediation['record']['title']),
-                'summary' => [
-                    sprintf('Implements a Laravel practice slice for `%s`.', $remediation['record']['title']),
-                    sprintf('Keeps the work traceable to `%s`.', $remediation['source']['path']),
-                    'Includes route, validation, controller/service behavior, tests, and verification evidence.',
-                ],
+                'summary' => $this->summaryFor($remediation),
                 'changed_files' => $changedFiles,
                 'verification' => $verificationCommands,
-                'review_checklist' => collect($remediation['tasks'])
-                    ->map(fn (array $task): string => sprintf('[ ] %s fixed in %s', $task['label'], $task['file']))
-                    ->all(),
+                'review_checklist' => $this->reviewChecklistFor($remediation['technology'], $remediation['tasks']),
             ],
             'quality_gate_payload' => $remediation['quality_gate_payload'],
-            'progress_payload' => $this->progressPayload->fromLabels([
-                'Create practice branch',
-                'Commit implementation files',
+            'progress_payload' => $this->progressPayload->fromLabels($this->progressLabelsFor($remediation['technology'])),
+        ];
+    }
+
+    /**
+     * Return PR summary lines for one remediation payload.
+     *
+     * @param  array<string, mixed>  $remediation
+     * @return array<int, string>
+     */
+    private function summaryFor(array $remediation): array
+    {
+        if ($remediation['technology'] === 'idor-access-control') {
+            return [
+                sprintf('Implements an IDOR object-authorization artifact for `%s`.', $remediation['record']['title']),
+                sprintf('Keeps the IDOR review traceable to `%s`.', $remediation['source']['path']),
+                'Includes route inventory, scoped lookup evidence, policy or Gate behavior, ID-swap denial tests, status-code rationale, and verification evidence.',
+            ];
+        }
+
+        if ($remediation['technology'] === 'javascript-closures') {
+            return [
+                sprintf('Implements a JavaScript closure interview artifact for `%s`.', $remediation['record']['title']),
+                sprintf('Keeps the closure explanation traceable to `%s`.', $remediation['source']['path']),
+                'Includes route, closure evidence service behavior, tests, lexical-scope proof, and verification evidence.',
+            ];
+        }
+
+        return [
+            sprintf('Implements a Laravel practice slice for `%s`.', $remediation['record']['title']),
+            sprintf('Keeps the work traceable to `%s`.', $remediation['source']['path']),
+            'Includes route, validation, controller/service behavior, tests, and verification evidence.',
+        ];
+    }
+
+    /**
+     * Return PR review checklist lines.
+     *
+     * @param  array<int, array{label: string, file: string}>  $tasks
+     * @return array<int, string>
+     */
+    private function reviewChecklistFor(string $technology, array $tasks): array
+    {
+        if ($technology === 'idor-access-control') {
+            return collect($tasks)
+                ->map(fn (array $task): string => sprintf('[ ] %s object-authorization evidence fixed in %s', $task['label'], $task['file']))
+                ->all();
+        }
+
+        if ($technology === 'javascript-closures') {
+            return collect($tasks)
+                ->map(fn (array $task): string => sprintf('[ ] %s closure evidence fixed in %s', $task['label'], $task['file']))
+                ->all();
+        }
+
+        return collect($tasks)
+            ->map(fn (array $task): string => sprintf('[ ] %s fixed in %s', $task['label'], $task['file']))
+            ->all();
+    }
+
+    /**
+     * Return progress labels for one technology.
+     *
+     * @return array<int, string>
+     */
+    private function progressLabelsFor(string $technology): array
+    {
+        if ($technology === 'idor-access-control') {
+            return [
+                'Create IDOR practice branch',
+                'Commit object-authorization evidence files',
                 'Write PR summary from source record',
-                'Paste verification evidence',
-                'Complete review checklist',
-            ]),
+                'Paste scoped lookup, policy, and ID-swap denial verification evidence',
+                'Complete IDOR review checklist',
+            ];
+        }
+
+        if ($technology === 'javascript-closures') {
+            return [
+                'Create closure practice branch',
+                'Commit closure evidence files',
+                'Write PR summary from source record',
+                'Paste lexical-scope and stale-closure verification evidence',
+                'Complete closure review checklist',
+            ];
+        }
+
+        return [
+            'Create practice branch',
+            'Commit implementation files',
+            'Write PR summary from source record',
+            'Paste verification evidence',
+            'Complete review checklist',
         ];
     }
 }

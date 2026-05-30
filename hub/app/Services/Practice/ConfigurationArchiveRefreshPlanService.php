@@ -29,6 +29,7 @@ final class ConfigurationArchiveRefreshPlanService
             'refresh_status' => $archive['session_result'] === 'completed' ? 'scheduled' : 'blocked',
             'refresh_triggers' => [
                 'A configuration route, config file, or quality-gate payload changes.',
+                'A Security Misconfiguration control, release blocker, or smoke check changes.',
                 'A portfolio or interview answer cites stale proof.',
                 'A session archive blocker repeats twice.',
                 'Any focused verification command fails after a config change.',
@@ -50,6 +51,7 @@ final class ConfigurationArchiveRefreshPlanService
             'remediation_triggers' => [
                 'Refresh action cannot reproduce the original proof.',
                 'Quality-gate status changes away from ready.',
+                'Security Misconfiguration release blockers no longer map to an owner, rollback action, and smoke check.',
                 'Archive retrieval can no longer find the postmortem or incident source key.',
             ],
             'commands' => [

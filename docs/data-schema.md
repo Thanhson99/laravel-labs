@@ -176,6 +176,10 @@ If `type` is omitted or not recognized, `renderSection` renders content cards.
 }
 ```
 
+Use this shape when each item is an independent related concept, reference summary, or small explanation that should appear as its own card.
+
+Do not use raw HTML or custom CSS classes in `title` or `body` to create layout. If the section needs a different visual pattern, add or reuse a renderer-supported section type.
+
 ### Links Section
 
 ```json
@@ -194,6 +198,8 @@ If `type` is omitted or not recognized, `renderSection` renders content cards.
 }
 ```
 
+Use this shape for external references, docs, tools, or cross-site resources. Do not model links as plain text in a default card when the action should be clickable.
+
 ### List Section
 
 ```json
@@ -208,6 +214,18 @@ If `type` is omitted or not recognized, `renderSection` renders content cards.
   "items": []
 }
 ```
+
+Use this shape when the items are a sequence, checklist, interview question set, or grouped learning notes that should render as block/list content with progress support.
+
+Rules for list content:
+
+- Put the main idea in `title`.
+- Put the answer or primary explanation in `body`.
+- Put supporting bullets in `bullets`; these render as nested plain bullets and should stay shorter than the parent item.
+- Put short warnings or reminders in `tip` or `note` instead of creating extra sibling items just for one sentence.
+- Put code in `code`; do not embed fenced code blocks in `body`.
+- Use `breaks` when a long list needs visible parts instead of making many separate sections with repeated headings.
+- Use `questionNumbered: true` and `questionStyle: "interview"` for interview Q&A pages so they keep the interview card style and progress controls.
 
 List item shape:
 
@@ -382,6 +400,8 @@ Phase shape:
 }
 ```
 
+Use `phases` when PHP level content is a set of large conceptual blocks. Each phase renders as a white block with a title, intro, and grouped topic list.
+
 Phase topic shape:
 
 ```json
@@ -391,6 +411,8 @@ Phase topic shape:
   "note": ""
 }
 ```
+
+Use `modules` when PHP level content is a stack of related note blocks. Do not write phase-like content as loose paragraphs outside `modules` or `phases`.
 
 Example/snippet shape:
 

@@ -58,6 +58,22 @@ final class LearningContentApiTest extends TestCase
     }
 
     /**
+     * Search tolerates punctuation and matches code, tips, and supporting notes.
+     */
+    public function test_learning_api_search_normalizes_punctuation_and_code_terms(): void
+    {
+        $this->getJson('/api/learning/questions?family=laravel&language=en&search=user.normal%20arrow%20function')
+            ->assertOk()
+            ->assertJsonPath('data.0.source_path', 'laravel/frontend.en.json')
+            ->assertJsonPath('data.0.title', '494. Arrow function `this` versus normal function `this` in JavaScript');
+
+        $this->getJson('/api/learning/questions?family=laravel&language=en&search=call-site%20arrow')
+            ->assertOk()
+            ->assertJsonPath('data.0.source_path', 'laravel/frontend.en.json')
+            ->assertJsonPath('data.0.title', '494. Arrow function `this` versus normal function `this` in JavaScript');
+    }
+
+    /**
      * The question API defaults to English records when no language is provided.
      */
     public function test_learning_api_defaults_questions_to_english_content(): void

@@ -51,6 +51,12 @@
       "title": "URL, Request Trace Và Câu Hỏi Tư Duy",
       "description": "Nhóm bổ sung để đánh giá khả năng lần flow qua nhiều lớp, hiểu web stack cơ bản, và trình bày cách suy nghĩ khi gặp bài toán lạ.",
       "tone": "coral"
+    },
+    {
+      "start": 76,
+      "title": "Nền Tảng JavaScript Khi Phỏng Vấn",
+      "description": "Các quy tắc JavaScript nhỏ như hoisting, declaration setup và cách dự đoán runtime behavior thường xuất hiện trong phỏng vấn frontend hoặc fullstack.",
+      "tone": "amber"
     }
   ],
   "items": [
@@ -700,6 +706,24 @@
         "Một endpoint làm đúng nghiệp vụ nhưng mở sai quyền vẫn là bug lớn."
       ],
       "tip": "Một câu ngắn gọn là: `đúng flow chưa đủ, còn phải đúng quyền và đúng guardrail`."
+    },
+    {
+      "title": "Giải thích hoisting trong JavaScript một cách dễ hiểu kèm code.",
+      "body": "Hoisting nghĩa là JavaScript đăng ký declaration trước khi chạy từng statement. Function declaration được khởi tạo sớm nên có thể gọi trước dòng khai báo. `var` cũng được đăng ký sớm, nhưng giá trị ban đầu là `undefined`. `let` và `const` cũng được biết trước, nhưng không được đọc trước dòng khai báo vì đang nằm trong temporal dead zone.",
+      "code": "sayHi(); // Chạy được\n\nfunction sayHi() {\n  console.log('Hello');\n}\n\nconsole.log(userName); // undefined\nvar userName = 'Son';\n\n// console.log(score); // ReferenceError\nlet score = 10;\n\n// run(); // TypeError: run is not a function\nvar run = function () {\n  console.log('Assigned later');\n};",
+      "bullets": [
+        "Đừng nói JavaScript thật sự kéo code lên đầu file.",
+        "Hãy nói declaration được chuẩn bị trước khi execute.",
+        "Tách rõ function declaration, `var`, `let`/`const` và function expression.",
+        "Trong project thực tế, khai báo trước khi dùng và ưu tiên `const` hoặc `let` thay vì `var`."
+      ],
+      "tip": "Câu trả lời phỏng vấn: function declaration gọi sớm được, `var` có sớm nhưng là `undefined`, còn `let`/`const` bị temporal dead zone chặn cho tới khi dòng khai báo chạy.",
+      "links": [
+        {
+          "label": "Mở JavaScript hoisting lab",
+          "href": "{{HUB_BASE_URL}}/workbench/javascript-hoisting-lab"
+        }
+      ]
     }
   ]
 }

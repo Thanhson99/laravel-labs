@@ -33,9 +33,12 @@ final class ConfigurationRemediationPlanTest extends TestCase
 
         $response
             ->assertOk()
-            ->assertJsonPath('data.task_count', 4)
+            ->assertJsonPath('data.task_count', 5)
             ->assertJsonPath('data.tasks.1.risk_key', 'auth-contract-drift')
             ->assertJsonPath('data.tasks.2.target_files.0', 'hub/app/Services/Practice/PracticeQualityGateService.php')
+            ->assertJsonPath('data.tasks.3.risk_key', 'security-misconfiguration-release-blocker')
+            ->assertJsonPath('data.tasks.3.done_signal', 'Unsafe production settings block release through readiness controls, release blockers, and deployment smoke checks.')
+            ->assertJsonPath('data.completion_criteria.1', 'Every Security Misconfiguration release blocker has an owner, rollback action, and fail-closed smoke check.')
             ->assertJsonPath('data.status.quality', 'ready')
             ->assertJsonStructure([
                 'data' => [

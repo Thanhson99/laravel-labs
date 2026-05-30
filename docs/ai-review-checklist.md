@@ -25,6 +25,11 @@ Use this checklist when reviewing or changing this repository.
 ## Content Checks
 
 - Does the content follow the tone and quality rules in `docs/content-quality-standards.md`?
+- Did the author choose the renderer shape first: default card section, `type: "list"`, `type: "links"`, or PHP `modules`/`phases`?
+- Are related concepts inside a card/list/block surface instead of loose text on the page background?
+- Is there any raw HTML used for visual layout, spacing, border, color, heading, or card behavior? If yes, reject unless the renderer explicitly supports it.
+- Are parent titles concise, with explanation in `body`, `intro`, `description`, or `summary` instead of overloaded headings?
+- Are nested bullets supporting details only, not fake standalone cards or sections?
 - Keep English and Vietnamese versions aligned when changing shared content.
 - Do not delete Vietnamese text because terminal output looks broken.
 - Preserve code blocks exactly unless the task is to correct them.
@@ -39,6 +44,11 @@ Use this checklist when reviewing or changing this repository.
 
 - Does the change preserve the warm editorial learning-portal style described in `docs/design-system.md`?
 - Check desktop and mobile layout if markup or CSS changes.
+- Check light and dark theme surfaces for any new card/list/block component.
+- Confirm grouped learning points use a continuous container-level left border when they are one conceptual group.
+- Confirm nested lists are visually plain and do not inherit the outer card/list surface, shadow, or border.
+- Confirm code blocks with copy buttons have enough desktop and mobile padding so code text does not sit under the button.
+- Confirm section headings, card titles, descriptions, and nested details keep a clear visual hierarchy.
 - Avoid nested card layouts unless already established locally.
 - Keep controls predictable and accessible.
 - Make sure long Vietnamese text does not overflow buttons, cards, or nav items.
@@ -91,6 +101,8 @@ git status --short
 Get-Content AGENTS.md
 Get-Content docs\local-setup-and-verification.md
 rg -n "href=\"../index.html\"" partials
+rg -n "<[a-zA-Z][^>]*>|style=|class=" data
+rg -n '"type"\s*:\s*"(list|links|mindmap|workbenches)"|"modules"\s*:|"phases"\s*:' data
 Get-ChildItem -Recurse -Filter *.json | ForEach-Object {
   $file = $_.FullName
   try {

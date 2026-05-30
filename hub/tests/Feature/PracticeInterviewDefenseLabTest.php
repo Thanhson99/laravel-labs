@@ -59,4 +59,22 @@ final class PracticeInterviewDefenseLabTest extends TestCase
                 ],
             ]);
     }
+
+    /**
+     * JavaScript closure interview defense asks for lexical scope and trap evidence.
+     */
+    public function test_javascript_closure_interview_defense_uses_scope_questions(): void
+    {
+        $response = $this->getJson('/api/practice/interview-defense-lab?family=laravel&language=en&search=JavaScript%20closure&phase_limit=1&tasks_per_phase=1&days=3');
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('data.source_release_lab.technology_coverage.0', 'javascript-closures')
+            ->assertJsonPath('data.defense_cards.0.technology_segment', 'Day 1 demo: javascript-closures');
+
+        $this->assertStringContainsString('lexical scope', $response->json('data.defense_cards.0.question'));
+        $this->assertStringContainsString('Start with the closure behavior', $response->json('data.defense_cards.0.answer_outline.0'));
+        $this->assertStringContainsString('stale-closure or var-versus-let risk', $response->json('data.defense_cards.0.answer_outline.2'));
+        $this->assertStringContainsString('stale-closure assertion', $response->json('data.defense_cards.0.follow_up_risk'));
+    }
 }

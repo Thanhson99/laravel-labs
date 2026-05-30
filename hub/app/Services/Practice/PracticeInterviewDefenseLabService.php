@@ -75,6 +75,14 @@ final class PracticeInterviewDefenseLabService
      */
     private function questionFor(array $item): string
     {
+        if ($this->isClosureSegment((string) $item['technology_segment'])) {
+            return sprintf(
+                'How does `%s` prove `%s` through lexical scope, captured bindings, and interview-trap evidence?',
+                $item['changed_area'],
+                $item['technology_segment'],
+            );
+        }
+
         return sprintf(
             'Why was `%s` the right area to change for `%s`, and how did you prove it?',
             $item['changed_area'],
@@ -90,6 +98,14 @@ final class PracticeInterviewDefenseLabService
      */
     private function answerOutlineFor(array $item): array
     {
+        if ($this->isClosureSegment((string) $item['technology_segment'])) {
+            return [
+                sprintf('Start with the closure behavior: %s', $item['release_note']),
+                sprintf('Explain the lexical-scope proof: %s', $item['smoke_check']),
+                sprintf('Close with stale-closure or var-versus-let risk: %s', $item['rollback_note']),
+            ];
+        }
+
         return [
             sprintf('Start with the behavior: %s', $item['release_note']),
             sprintf('Explain the proof: %s', $item['smoke_check']),
@@ -104,9 +120,24 @@ final class PracticeInterviewDefenseLabService
      */
     private function followUpRiskFor(array $item): string
     {
+        if ($this->isClosureSegment((string) $item['technology_segment'])) {
+            return sprintf(
+                'If `%s` changes again, which lexical-scope, var-versus-let, or stale-closure assertion should fail first?',
+                $item['changed_area'],
+            );
+        }
+
         return sprintf(
             'If `%s` changes again, what test or smoke check should fail first?',
             $item['changed_area'],
         );
+    }
+
+    /**
+     * Determine whether a defense card belongs to JavaScript closure practice.
+     */
+    private function isClosureSegment(string $technology): bool
+    {
+        return str_contains($technology, 'javascript-closures');
     }
 }

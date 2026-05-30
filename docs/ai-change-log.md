@@ -2,6 +2,18 @@
 
 This file records durable findings and decisions from AI sessions. Keep it concise and useful for future work.
 
+## 2026-05-28 Static Content Block Rules
+
+- Added rules requiring new static portal content to use existing renderer-backed shapes and shared components instead of raw HTML, loose background text, or page-specific styling.
+- Documented white-surface block/card/list expectations for related learning content, continuous left-border behavior for grouped points, nested bullet resets, code-copy padding, and title/description hierarchy.
+- Updated the content workflow so future additions choose default cards, `type: "list"`, `type: "links"`, or PHP `modules`/`phases` before writing content.
+
+## 2026-05-27 JWT Token Storage Workbench
+
+- Added a Hub JWT token-storage decision workbench at `/workbench/jwt-token-storage-plan` and `/api/practice/jwt-token-storage-plan`.
+- The workbench compares `localStorage`, `HttpOnly` cookies, bearer tokens, and secure platform storage from client type, token lifetime, XSS risk, CSRF controls, and refresh-token usage.
+- Added matching static practice catalog entries in `data/site-content.en.json` and `data/site-content.vi.json` so the root portal can point learners into the runnable Hub exercise.
+
 ## 2026-05-25 Hub Route Organization Rules
 
 Refactored `hub` route definitions so `routes/web.php` and `routes/api.php` act as entry points and feature routes live under grouped files in `routes/web/**` and `routes/api/**`.
@@ -233,6 +245,26 @@ Added `docs/laravel-coding-standards.md` with technical code rules:
 
 Updated `AGENTS.md`, `docs/ai-context.md`, `docs/ai-workflows.md`, and `docs/ai-review-checklist.md` so future AI sessions read these standards before writing Laravel code.
 
+## 2026-05-28 AI Cloud Interview Content
+
+Added a Cloud Engineer AI interview pack to the static portal and Hub practice pipeline:
+
+- landing cards in `data/site-content.en.json` and `data/site-content.vi.json`
+- DevOps interview content covering real AI usage, IaC review, debugging, verification, AWS Documentation conflicts, CLAUDE.md/system prompts, red flags, and green flags
+- Hub technology key `ai-cloud-interview` mapped to the AI Cloud interview rubric workbench
+- tests for static copy, content drill, taxonomy, starter snippets, implementation lab, quality plan, and workbench links
+- dedicated Hub rubric workbench at `/workbench/ai-cloud-interview-rubric` and `/api/practice/ai-cloud-interview-rubric` for scoring concrete AI usage, prompt workflow, IaC review, AI failure stories, verification, docs conflicts, and team enablement
+
+Also resolved `LABS_CONTENT_PATH` relative values through `base_path()` in `hub/config/labs.php` so local Hub servers can read `../data` reliably regardless of process working directory.
+
+## 2026-05-28 Reverse Proxy Failure Workbench
+
+Added a dedicated reverse-proxy failure-mode learning slice across static content and Hub:
+
+- practice workbench card for `{{HUB_BASE_URL}}/workbench/reverse-proxy-failure-plan`
+- DevOps interview reverse-proxy outage topic now links to the proxy failure workbench instead of the load-balancer algorithm workbench
+- Hub API, Form Request, service, Blade workbench, routes, config exercise, mapper links, starter snippets, taxonomy integration, and tests for request-path mapping, config validation, staged rollout, health gates, rollback, fail-small controls, observability, and origin reachability
+
 ## 2026-05-25 Engineering Standards
 
 Added `docs/engineering-standards.md` with cross-cutting technical rules:
@@ -254,6 +286,14 @@ Added `docs/engineering-standards.md` with cross-cutting technical rules:
 - AI-specific engineering rules
 
 Updated `AGENTS.md`, `docs/ai-context.md`, `docs/ai-workflows.md`, and `docs/ai-review-checklist.md` so future AI sessions read this file before changing cross-cutting technical behavior.
+
+## 2026-05-27 JWT Revocation Workbench
+
+Added a JWT revocation learning slice across the static portal and Hub:
+
+- landing and auth-security JSON content for "JWT cannot be revoked?"
+- practice workbench link to `{{HUB_BASE_URL}}/workbench/jwt-revocation-plan`
+- Hub API, Form Request, service, Blade workbench, routes, and tests for denylist, token-version, refresh rotation, database schema, middleware, and interview-answer planning
 
 ## 2026-05-25 Content Quality Standards
 

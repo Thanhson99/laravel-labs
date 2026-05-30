@@ -202,6 +202,43 @@
     {
       "title": "Một strong prompt để review diff AI nên thêm gì ngoài bug logic?",
       "body": "Ngoài logic, nên hỏi thêm `framework/version mismatch`, `dependency assumption`, `runtime risk`, và `test illusion`. Những lớp này thường lộ ra các lỗi mà review bề mặt bỏ qua."
+    },
+    {
+      "title": "Ngăn Hallucination trong code như nào?",
+      "body": "Hallucination xảy ra khi AI tạo code, dữ kiện, API, file hoặc lời giải thích nghe hợp lý nhưng không bám vào repo hiện tại hoặc source data. Cách xử lý thực tế không phải là chỉ bớt tin AI, mà là ép AI đưa evidence: nêu assumption trước, dẫn source, patch nhỏ, kiểm tra dependency/version, chạy command verify và để người review chốt các vùng rủi ro.",
+      "bullets": [
+        "Bắt model đánh dấu assumption và claim chưa chắc trước khi viết code.",
+        "Mỗi claim có tính factual phải gắn với file trong repo, test, log, docs chính thức, row database hoặc retrieval source ID.",
+        "Từ chối class, route, config key, package method, migration, citation hoặc kết quả test do AI bịa ra.",
+        "Dùng runtime check và review lens cho auth, validation, query, file, dependency và scope.",
+        "Định nghĩa acceptance gate: block output rủi ro cao cho tới khi evidence, verify và human review đều đạt.",
+        "Thêm rule data-safety: chỉ chia sẻ context đã sanitize, redact PII và environment value, block secret hoặc raw customer data.",
+        "Dùng prompt example an toàn cho preflight, patch tối thiểu, strict review và câu trả lời factual có source.",
+        "Bắt buộc safe output contract gồm assumption, evidence map, smallest scoped change, verification record và claim chưa verify.",
+        "Bắt buộc có artifact trước merge như assumption register, evidence map, scope diff summary, verification record và source ledger cho data answer.",
+        "Map mức rủi ro vào CI policy: strict blocking cho output rủi ro cao, standard blocking cho review đã kiểm soát.",
+        "Phân rã risk score thành từng signal để team giải thích được vì sao câu trả lời bị block hoặc được accept.",
+        "Dùng decision matrix để chuyển từ default rủi ro sang lựa chọn an toàn hơn về evidence, runtime và review.",
+        "Validate từng claim rủi ro bằng check cụ thể cho route, service, package API, root-cause claim, kết quả command và fact có source.",
+        "Trả release readiness để output rủi ro cao bị block cho tới khi evidence, runtime check, review và score gate đều đạt.",
+        "Ghi evidence vào ledger gồm claim, evidence type, reference, kết quả verify và note redaction.",
+        "Gợi ý command verify theo task cho route check, feature test, style gate, source ledger và reproduction case.",
+        "Theo dõi output AI đã accept bằng metric, log event và alert để regression có thể truy ngược về generated change.",
+        "Giữ rollback playbook: detect symptom, contain change, repair bằng failing test trước, rồi cập nhật guardrail đã bị bỏ sót.",
+        "Định nghĩa ownership rõ ràng: AI operator, code reviewer, domain owner và release owner chịu trách nhiệm cho các failure mode khác nhau.",
+        "Escalate API bịa, patch nhạy cảm security, risk score cao và fact thiếu source tới đúng reviewer.",
+        "Nâng cấp workflow theo maturity level: manual, templated, automated và operational.",
+        "Red-team workflow bằng rủi ro được cài sẵn: API bịa, thiếu reproduction, scope creep và dữ liệu bịa.",
+        "Biến checklist thành automation qua PR template, CI route/test check, dependency review và security label."
+      ],
+      "code": "Do not patch yet.\nList assumptions first.\nFor every factual claim, cite a repo file, test, log, docs page, or source row.\nReturn an acceptance gate: accept, needs evidence, or block.\nReturn verification commands and mark anything unverified.",
+      "links": [
+        {
+          "href": "{{HUB_BASE_URL}}/workbench/ai-hallucination-guard-plan",
+          "label": "AI hallucination guard workbench",
+          "desc": "Luyện cách biến rủi ro AI thành evidence, prompt contract, runtime check và review control."
+        }
+      ]
     }
   ]
 }

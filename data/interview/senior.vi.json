@@ -502,6 +502,46 @@
         "Đây là câu rất thực chiến và hay dính tới quyền truy cập production.",
         "Security tradeoff tốt không chỉ hỏi tiện hay không, mà hỏi ai trả giá nếu lộ dữ liệu."
       ]
+    },
+    {
+      "title": "JWT lưu localStorage hay cookie: cách nào an toàn hơn và nên trả lời phỏng vấn IT ra sao?",
+      "body": "Câu trả lời senior nên so sánh threat model thay vì học thuộc khẩu hiệu. `localStorage` dễ bị đánh cắp token nếu có XSS vì JavaScript đọc được. Cookie `HttpOnly`, `Secure`, `SameSite` làm injected JavaScript khó lấy token hơn, nhưng lại kéo theo rủi ro CSRF và phạm vi cookie vì browser tự gửi cookie. Thiết kế an toàn hơn thường kết hợp access token ngắn hạn, refresh token rotation, revoke rõ ràng, CSRF protection cho flow dùng cookie, chống XSS tốt và logout sạch.",
+      "bullets": [
+        "Với browser app do backend kiểm soát flow gần giống session, ưu tiên cookie `HttpOnly` cấu hình đúng.",
+        "Với non-browser client hoặc API bên thứ ba, bearer token có thể hợp hơn, nhưng lifetime, storage và revoke phải rõ.",
+        "Điểm phỏng vấn nằm ở việc bạn giải thích được tradeoff XSS và CSRF, không phải lặp một luật tuyệt đối."
+      ],
+      "note": "Trả lời ngắn gọn: localStorage đơn giản nhưng dễ bị đọc qua XSS; cookie có thể an toàn hơn trước token theft nếu có `HttpOnly`, `Secure`, `SameSite`, nhưng cần CSRF protection và thiết kế lifecycle kỹ."
+    },
+    {
+      "title": "JWT không thể revoke trước hạn. Senior engineer nên thiết kế quanh vấn đề này thế nào?",
+      "body": "Câu trả lời senior nên bắt đầu từ ý: JWT stateless vẫn hợp lệ đến `exp` nếu server không kiểm tra thêm state. Thiết kế thực tế không phải một mẹo duy nhất, mà là cả lifecycle: access token ngắn hạn, claim `jti`, denylist lưu đến khi token hết hạn nếu cần revoke ngay, token-version check để vô hiệu hóa theo user, refresh-token rotation, reuse detection và audit log không lộ raw token.",
+      "bullets": [
+        "Dùng denylist khi cần chặn một token đã phát hành trước `exp`, và chỉ lưu `jti` hoặc hash kèm `expires_at`.",
+        "Dùng token version hoặc session security version khi đổi mật khẩu, hạ quyền hoặc khóa tài khoản cần vô hiệu hóa nhiều token cùng lúc.",
+        "Giữ access token ngắn hạn và revoke refresh-token family khi logout, mất thiết bị hoặc phát hiện reuse đáng ngờ.",
+        "Middleware nên verify chữ ký và expiry trước, sau đó kiểm tra revocation state, rồi mới kiểm tra scope hoặc policy."
+      ],
+      "note": "Điểm mạnh khi phỏng vấn: giải thích được tradeoff giữa hiệu năng stateless thuần và khả năng kiểm soát revoke bằng stateful check, thay vì nói JWT không bao giờ dùng an toàn được."
+    },
+    {
+      "title": "Vì sao trả lời System Design đúng kỹ thuật vẫn có thể fail nếu không nói tradeoff?",
+      "body": "Với câu hỏi `design notification system cho 10 triệu user`, việc kể Kafka, WebSocket, Redis Pub/Sub và partition theo user ID có thể đúng kỹ thuật nhưng vẫn chưa đủ. Câu trả lời senior phải hỏi trước: notification có cần real-time không, chạy trên platform nào, hệ thống chết 5 phút thì business mất gì, duplicate có chấp nhận được không, và team hiện tại có vận hành nổi không. System Design không phải bài thi có một đáp án; nó là quá trình thương lượng giữa các chi phí mâu thuẫn.",
+      "bullets": [
+        "Đừng vẽ kiến trúc trước. Hãy hỏi những câu có thể làm đổi kiến trúc.",
+        "Nói to cái giá phải trả: `Tôi chọn A. Chi phí là X. Tôi chấp nhận X vì trong bối cảnh này Y đắt hơn.`",
+        "Nhớ ba câu hỏi: nếu sai ai chịu; phức tạp nằm ở code hay vận hành; team hiện tại gánh nổi không?",
+        "Long Polling có thể tốt hơn WebSocket nếu chấp nhận delay và muốn vận hành đơn giản.",
+        "Vertical scaling có thể là lựa chọn deploy được cho legacy database dù horizontal scaling nghe có vẻ senior hơn.",
+        "L4 gọi tên công nghệ, L5 so sánh lựa chọn, L6 chủ động nêu tradeoff ẩn, L7 đặt business và tổ chức trước khi chạm vào kiến trúc."
+      ],
+      "links": [
+        {
+          "label": "Mở System Design tradeoff workbench",
+          "href": "{{HUB_BASE_URL}}/workbench/system-design-tradeoff-plan"
+        }
+      ],
+      "note": "Một câu chốt mạnh: `Không ai cần tôi biết tất cả câu trả lời. Họ cần thấy tôi hỏi đúng câu hỏi trước khi chọn một câu trả lời.`"
     }
   ]
 }

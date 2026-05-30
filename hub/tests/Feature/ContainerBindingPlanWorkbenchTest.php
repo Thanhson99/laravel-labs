@@ -20,6 +20,7 @@ final class ContainerBindingPlanWorkbenchTest extends TestCase
             ->assertSee('Container Binding Plan Workbench')
             ->assertSee('POST /api/practice/container-binding-plan')
             ->assertSee('ContainerBindingPlanService')
+            ->assertSee('Open DI refactor workbench')
             ->assertSee('Plan binding');
     }
 

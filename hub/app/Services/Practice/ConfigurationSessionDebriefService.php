@@ -29,6 +29,7 @@ final class ConfigurationSessionDebriefService
             'session_result' => $plan['session_status'] === 'ready' ? 'completed' : 'blocked',
             'completed_outputs' => [
                 'One channel-specific answer or paragraph was drafted from the handoff packet.',
+                'One Security Misconfiguration release-blocker proof was checked when security review was selected.',
                 'One proof route or source key was attached to the output.',
                 'Focused configuration verification stayed tied to the quality gate.',
             ],
@@ -43,10 +44,12 @@ final class ConfigurationSessionDebriefService
             'blockers' => [
                 'If the incident recovery path was not recallable, repeat the postmortem and spaced review cards.',
                 'If a claim lacked proof, return to archive retrieval before publishing.',
+                'If Security Misconfiguration proof lacked a fail-closed smoke check, return to the deployment plan.',
                 'If verification failed, open the remediation plan instead of editing the portfolio artifact.',
             ],
             'next_actions' => [
                 'Promote the strongest output into the portfolio brief.',
+                'Promote the strongest security-review output into the publication checklist evidence.',
                 'Turn the weakest answer into one new rehearsal prompt.',
                 'Carry any failed command back to the configuration risk register.',
             ],

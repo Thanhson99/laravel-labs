@@ -75,6 +75,22 @@ final class PracticeChallengeEvidenceReviewLabService
      */
     private function reviewQuestionsFor(array $step): array
     {
+        if ($this->isIdorSegment((string) $step['technology_segment'])) {
+            return [
+                sprintf('What IDOR evidence changed after opening `%s` for %s?', $step['route_name'], $step['technology_segment']),
+                'Which object id, owner or tenant scope, and protected action were reviewed?',
+                'Which assertion proves an attacker cannot replay a victim object id across read, update, download, export, or nested-resource access?',
+            ];
+        }
+
+        if ($this->isClosureSegment((string) $step['technology_segment'])) {
+            return [
+                sprintf('What closure evidence changed after opening `%s` for %s?', $step['route_name'], $step['technology_segment']),
+                'Which lexical scope and captured binding carried the main behavior?',
+                'Which assertion or output proves createCounter(), var-versus-let, or stale-closure behavior is correct?',
+            ];
+        }
+
         return [
             sprintf('What changed after opening `%s` for %s?', $step['route_name'], $step['technology_segment']),
             'Which Laravel layer carried the main behavior: route, request, controller, service, repository, view, or test?',
@@ -90,6 +106,22 @@ final class PracticeChallengeEvidenceReviewLabService
      */
     private function passSignalsFor(array $step): array
     {
+        if ($this->isIdorSegment((string) $step['technology_segment'])) {
+            return [
+                sprintf('`%s` passes after the IDOR challenge is complete.', $step['verification_command']),
+                'Evidence names the protected object route, scoped lookup, object policy or Gate, and denial test.',
+                'The explanation connects IDOR prevention to object-level authorization instead of login-only checks.',
+            ];
+        }
+
+        if ($this->isClosureSegment((string) $step['technology_segment'])) {
+            return [
+                sprintf('`%s` passes after the closure challenge is complete.', $step['verification_command']),
+                'Evidence names at least one changed closure snippet, payload, route, or test.',
+                'The explanation connects the closure behavior to the source content or question prompt.',
+            ];
+        }
+
         return [
             sprintf('`%s` passes after the challenge is complete.', $step['verification_command']),
             'Evidence names at least one changed file or route.',
@@ -105,6 +137,22 @@ final class PracticeChallengeEvidenceReviewLabService
      */
     private function riskChecksFor(array $step): array
     {
+        if ($this->isIdorSegment((string) $step['technology_segment'])) {
+            return [
+                sprintf('The `%s` route still denies cross-user or cross-tenant object access.', $step['route_name']),
+                'No direct findOrFail() or route model binding path returns an object before scoping and authorization.',
+                'The rollback note says how to undo the smallest risky authorization or scoped-query change.',
+            ];
+        }
+
+        if ($this->isClosureSegment((string) $step['technology_segment'])) {
+            return [
+                sprintf('The `%s` route still renders or returns closure evidence JSON.', $step['route_name']),
+                'No unrelated practice files were changed.',
+                'The rollback note says how to undo the smallest risky closure-evidence change.',
+            ];
+        }
+
         return [
             sprintf('The `%s` route still renders or returns JSON.', $step['route_name']),
             'No unrelated practice files were changed.',
@@ -119,10 +167,42 @@ final class PracticeChallengeEvidenceReviewLabService
      */
     private function followUpActionFor(array $step): string
     {
+        if ($this->isIdorSegment((string) $step['technology_segment'])) {
+            if ($step['challenge_type'] === 'harder-lab') {
+                return sprintf('Promote to the next IDOR checkpoint route after object-authorization evidence passes: %s.', $step['route_name']);
+            }
+
+            return sprintf('Repeat the IDOR reinforcement route until denial evidence is specific: %s.', $step['route_name']);
+        }
+
+        if ($this->isClosureSegment((string) $step['technology_segment'])) {
+            if ($step['challenge_type'] === 'harder-lab') {
+                return sprintf('Promote to the next closure checkpoint route after lexical-scope evidence passes: %s.', $step['route_name']);
+            }
+
+            return sprintf('Repeat the closure reinforcement route until the evidence is specific: %s.', $step['route_name']);
+        }
+
         if ($step['challenge_type'] === 'harder-lab') {
             return sprintf('Promote to the next checkpoint route after evidence passes: %s.', $step['route_name']);
         }
 
         return sprintf('Repeat the reinforcement route until the evidence is specific: %s.', $step['route_name']);
+    }
+
+    /**
+     * Determine whether a review card belongs to JavaScript closure practice.
+     */
+    private function isClosureSegment(string $technology): bool
+    {
+        return str_contains($technology, 'javascript-closures');
+    }
+
+    /**
+     * Determine whether a review card belongs to IDOR object-authorization practice.
+     */
+    private function isIdorSegment(string $technology): bool
+    {
+        return str_contains($technology, 'idor-access-control');
     }
 }

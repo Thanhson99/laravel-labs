@@ -56,4 +56,18 @@ final class PracticeRotationLabTest extends TestCase
                 ],
             ]);
     }
+
+    /**
+     * Predictive AI rotations produce AI type comparison outputs.
+     */
+    public function test_predictive_generative_ai_rotation_uses_ai_type_outputs(): void
+    {
+        $this->getJson('/api/practice/rotation-lab?family=vibe-coding&language=en&search=Predictive%20AI&phase_limit=1&tasks_per_phase=1&days=3')
+            ->assertOk()
+            ->assertJsonPath('data.schedule.0.technology', 'llm-foundations')
+            ->assertJsonPath('data.schedule.0.output', 'AI type comparison table with output contracts')
+            ->assertJsonPath('data.schedule.1.output', 'Checkpoint evidence for metrics and failure modes')
+            ->assertJsonPath('data.schedule.2.output', 'Mentor feedback action item for predictive and generative evidence')
+            ->assertJsonPath('data.schedule.0.capstone_query.technology', 'llm-foundations');
+    }
 }

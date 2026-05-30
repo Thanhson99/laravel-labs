@@ -51,12 +51,7 @@ final class PracticeBugFixLabService
                 'Rerun the focused command before moving to the next drill.',
             ],
             'bug_drills' => $drills,
-            'review_questions' => [
-                'Which Laravel layer owned the bug?',
-                'Which assertion proved the fix?',
-                'What would break again if the same bug returned?',
-                'Which source-backed technology did the bug reinforce?',
-            ],
+            'review_questions' => $this->reviewQuestionsFor($session['demo_script']['technology_coverage']),
             'progress_payload' => $this->progressPayload->fromRows(
                 $drills,
                 fn (array $drill): string => sprintf('Bug fixed for %s', $drill['technology_segment'])
@@ -71,6 +66,14 @@ final class PracticeBugFixLabService
      */
     private function bugReportFor(array $round): string
     {
+        if ($this->isClosureSegment((string) $round['technology_segment'])) {
+            return sprintf(
+                'The closure practice round for `%s` does not satisfy its verification command `%s`.',
+                $round['technology_segment'],
+                $round['verification_command'],
+            );
+        }
+
         return sprintf(
             'The live coding round for `%s` does not satisfy its verification command `%s`.',
             $round['technology_segment'],
@@ -86,6 +89,15 @@ final class PracticeBugFixLabService
      */
     private function diagnosisStepsFor(array $round): array
     {
+        if ($this->isClosureSegment((string) $round['technology_segment'])) {
+            return [
+                'Read the failing closure assertion or missing interview output.',
+                'Find the scope trace, snippet, or checklist that owns the pass signal.',
+                sprintf('Compare the current closure evidence with this pass signal: %s', $round['pass_signal']),
+                'Patch one closure-focused file or payload, then rerun the focused command.',
+            ];
+        }
+
         return [
             'Read the failing assertion or missing browser text.',
             'Find the route/controller/service/view that owns the pass signal.',
@@ -101,6 +113,20 @@ final class PracticeBugFixLabService
      */
     private function patchTargetFor(array $round): string
     {
+        if ($this->isClosureSegment((string) $round['technology_segment'])) {
+            $text = $round['coding_prompt'].' '.$round['pass_signal'];
+
+            if (str_contains($text, 'snippet') || str_contains($text, 'createCounter')) {
+                return 'resources/js/closure-counter.js';
+            }
+
+            if (str_contains($text, 'interview') || str_contains($text, 'stale')) {
+                return 'resources/js/closure-interview-checklist.js';
+            }
+
+            return 'app/Services/Practice/*Closure*Service.php or tests/Feature/*Closure*Test.php';
+        }
+
         $text = $round['coding_prompt'].' '.$round['pass_signal'];
 
         if (str_contains($text, 'route')) {
@@ -116,5 +142,38 @@ final class PracticeBugFixLabService
         }
 
         return 'app/Services/Practice/*Service.php';
+    }
+
+    /**
+     * Return review questions for a bug-fix session.
+     *
+     * @param  array<int, string>  $technologies
+     * @return array<int, string>
+     */
+    private function reviewQuestionsFor(array $technologies): array
+    {
+        if (collect($technologies)->contains(fn (string $technology): bool => $this->isClosureSegment($technology))) {
+            return [
+                'Which closure binding or scope trace owned the bug?',
+                'Which assertion proved the createCounter(), var-versus-let, or stale-closure fix?',
+                'What would break again if the same closure trap returned?',
+                'Which source-backed closure concept did the bug reinforce?',
+            ];
+        }
+
+        return [
+            'Which Laravel layer owned the bug?',
+            'Which assertion proved the fix?',
+            'What would break again if the same bug returned?',
+            'Which source-backed technology did the bug reinforce?',
+        ];
+    }
+
+    /**
+     * Determine whether a segment belongs to JavaScript closure practice.
+     */
+    private function isClosureSegment(string $technology): bool
+    {
+        return str_contains($technology, 'javascript-closures');
     }
 }

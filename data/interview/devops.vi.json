@@ -29,10 +29,16 @@
       "tone": "coral"
     },
     {
-      "start": 41,
+      "start": 42,
       "title": "Incident, Cost, Monitoring Và On-Call Thinking",
       "description": "Phần cuối tập trung vào incident response, health check, alert, post-deploy verification, cloud cost và tư duy trực production.",
       "tone": "amber"
+    },
+    {
+      "start": 70,
+      "title": "Phỏng Vấn Cloud Engineer Dùng AI",
+      "description": "Kiểm tra ứng viên có thật sự dùng AI trong công việc qua task cụ thể, review IaC, debug, verify, xung đột với AWS Documentation, prompt cho team, red flag và green flag.",
+      "tone": "coral"
     }
   ],
   "items": [
@@ -129,6 +135,25 @@
         "Không chỉ nhớ keyword, mà phải hiểu request đang đi sang đâu và mất gì trên đường."
       ],
       "code": "location /api/ {\n    proxy_set_header Host $host;\n    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;\n    proxy_set_header X-Forwarded-Proto $scheme;\n    proxy_pass http://api-upstream;\n}"
+    },
+    {
+      "title": "Phân tải Load Balancer IT chuẩn: giải thích 4 thuật toán phổ biến trong phỏng vấn System Design thế nào?",
+      "body": "Load balancer phân phối traffic qua nhiều upstream để một server không trở thành điểm nghẽn duy nhất. Bốn thuật toán thực tế nên nắm là round robin, weighted round robin, least connections và IP hash. Câu trả lời tốt phải nối thuật toán với traffic shape, capacity của upstream, session state, health check và failure behavior.",
+      "bullets": [
+        "Round robin là baseline đơn giản khi server tương đương và traffic khá đều.",
+        "Weighted round robin hợp hơn khi một số upstream mạnh hơn hoặc cần nhận nhiều traffic hơn.",
+        "Least connections phù hợp với request dài hoặc traffic bursty vì tránh đẩy thêm việc vào upstream đang bận.",
+        "IP hash tạo session affinity, nhưng có thể làm traffic lệch và không nên thay thế shared session storage đúng nghĩa."
+      ],
+      "code": "upstream app {\n    least_conn;\n    server app-1:9000;\n    server app-2:9000;\n    server app-3:9000;\n}\n\nlocation / {\n    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;\n    proxy_pass http://app;\n}",
+      "tip": "Mẫu trả lời ngắn: `Em bắt đầu với round robin nếu server ngang nhau, dùng weight nếu capacity không đều, dùng least connections cho request dài, và chỉ dùng IP hash khi cần session affinity. Nhưng vẫn phải có health check và metric vì thuật toán không tự làm hệ thống đáng tin cậy.`",
+      "links": [
+        {
+          "href": "{{HUB_BASE_URL}}/workbench/load-balancer-plan",
+          "label": "Chạy load-balancer workbench",
+          "desc": "Sinh lựa chọn thuật toán theo scenario, ví dụ config, health check và câu trả lời phỏng vấn."
+        }
+      ]
     },
     {
       "title": "Nếu deploy xong mà web lên nhưng asset vỡ hoặc giao diện cũ, bạn nghĩ tới điều gì?",
@@ -292,14 +317,6 @@
       "bullets": [
         "Đây là bug rất khó hiểu nếu chỉ nhìn code app.",
         "Câu này đánh giá khả năng nối network layer với application behavior."
-      ]
-    },
-    {
-      "title": "Nếu `nginx` trả `502 Bad Gateway`, bạn nghĩ tới điều gì đầu tiên?",
-      "body": "Thường nghĩ tới upstream chết, PHP-FPM chưa chạy, socket hoặc port sai, timeout, permission trên socket, hoặc upstream trả lỗi mà Nginx không nói rõ hơn. `502` là dấu hiệu Nginx không nói chuyện được bình thường với backend của nó.",
-      "bullets": [
-        "Đây là lỗi cấu hình/runtime rất hay gặp.",
-        "Một câu trả lời tốt nên nhấn kiểm tra cả `nginx error log` lẫn log của upstream."
       ]
     },
     {
@@ -592,6 +609,216 @@
         "Đây là lỗi cấu hình/runtime rất hay gặp.",
         "Một câu trả lời tốt nên nhấn kiểm tra cả `nginx error log` lẫn log của upstream."
       ]
+    },
+    {
+      "title": "Kubernetes trong 1 phút: giải thích bằng tàu thuyền như thế nào?",
+      "body": "Hãy dùng câu chuyện đội tàu: control plane là tàu điều khiển, worker node là tàu chở container, còn container là hàng hóa ứng dụng. Bạn khai báo muốn app chạy bao nhiêu bản, Kubernetes sẽ xếp pod lên worker node, cấp địa chỉ service ổn định, đưa traffic qua service hoặc ingress, và tạo pod thay thế khi có pod lỗi.",
+      "bullets": [
+        "Master Node hoặc control plane: tàu điều khiển, giữ trạng thái cluster, lên lịch workload và kiểm tra đội tàu có đúng desired state không.",
+        "Worker Node: tàu chở container, nơi pod và container thật sự chạy.",
+        "Container: gói ứng dụng đã đóng kèm runtime dependency.",
+        "Pod: đơn vị deploy nhỏ nhất của Kubernetes, chứa một hoặc nhiều container.",
+        "Deployment: shipping order mô tả image và số replica cần chạy.",
+        "Service: địa chỉ bến cảng ổn định để gửi traffic tới pod khỏe.",
+        "Ingress hoặc LoadBalancer: cửa vào bên ngoài cho user.",
+        "Readiness và liveness probe: tín hiệu sức khỏe để biết app đã sẵn sàng hoặc cần thay thế.",
+        "Startup probe: cho app khởi động chậm có thời gian boot trước khi liveness restart.",
+        "Resource request và limit: giúp Kubernetes schedule pod và giới hạn rủi ro memory.",
+        "Scaling: replica giúp workload stateless, nhưng worker, job và dữ liệu stateful cần signal khác nhau.",
+        "Rollout: dùng rollout status, rollout history và rollout undo để ship và recover an toàn.",
+        "ConfigMap và Secret: tách config thường khỏi giá trị nhạy cảm và scope quyền truy cập cẩn thận.",
+        "Namespace và RBAC: tách môi trường, service account, permission và quota thay vì dùng default cho mọi thứ.",
+        "NetworkPolicy: định nghĩa pod nào được nói chuyện với pod nào thay vì mặc định mọi pod đều nên gọi được nhau.",
+        "Observability: kết hợp pod events, previous logs, resource metrics, endpoints và app-level health.",
+        "Cost và capacity: replica, node capacity, load balancer, storage, logs và metrics đều có chi phí vận hành.",
+        "Availability: dùng PodDisruptionBudget, anti-affinity hoặc topology spread để maintenance không làm mất toàn bộ replica.",
+        "Graceful shutdown: xử lý SIGTERM, drain traffic hoặc job, và chọn terminationGracePeriodSeconds theo thời gian xử lý thật.",
+        "Image và pod security: tránh `latest`, dùng pull policy rõ ràng, scan image và chạy với securityContext chặt hơn.",
+        "Failure diagnosis: map ImagePullBackOff, OOMKilled, probe failure, Forbidden, DNS timeout và volume mount failure về đúng layer trước khi sửa manifest.",
+        "Backend runtime: chạy migration bằng controlled job hoặc release step, tách web và worker pod, đưa session/cache state sang service dùng chung, và giữ readiness check nhẹ.",
+        "Manifest review: kiểm tra label, selector, probe, resource request, rollout safety, runtime state và service routing trước khi merge.",
+        "CI/CD gate: render manifest, chạy server-side dry run, policy check và rollout hoặc manual-job smoke test.",
+        "Script 1 phút: luyện hook, analogy, mechanics, production note và closing để câu trả lời ngắn nhưng đúng kỹ thuật.",
+        "Rubric phỏng vấn và command ladder: đánh giá answer có definition, mechanism, tradeoff, debugging, rồi kiểm tra node, pod, log, routing và storage theo thứ tự.",
+        "Resource decision guide: chọn Deployment, CronJob, Service, Ingress, LoadBalancer và storage theo workload shape thay vì học thuộc YAML.",
+        "Manifest smell: bắt selector lệch, thiếu readiness probe, thiếu resource, image tag mutable và stateful write không an toàn trước khi merge.",
+        "Practice drill: giải thích không nhìn note, trace một request, debug rollout lỗi và chứng minh storage durability cho dữ liệu stateful.",
+        "Production readiness score: phân tích replica count, external access, scheduled work và stateful data trước khi gọi setup là sẵn sàng production.",
+        "SLO observability: nối availability, latency hoặc duration, error rate, resource saturation và storage durability với điều kiện alert.",
+        "Deployment review: yêu cầu bằng chứng về scheduling, readiness, rollback, routing và storage trước khi release.",
+        "Troubleshooting: bắt đầu từ `kubectl describe`, logs, events, selector, endpoint, probe và resource pressure.",
+        "Reconciliation: Kubernetes liên tục so desired state với actual state và sửa drift."
+      ],
+      "code": "kubectl get nodes\nkubectl get pods\nkubectl describe pod <pod-name>\nkubectl rollout status deployment/<app-name>",
+      "note": "Trả lời phỏng vấn: Kubernetes không chỉ là công cụ chạy container. Nó là orchestration: scheduling, service discovery, rollout, self-healing và desired-state control trên nhiều máy.",
+      "links": [
+        {
+          "href": "{{HUB_BASE_URL}}/workbench/kubernetes-analogy-plan",
+          "label": "Kubernetes analogy workbench",
+          "desc": "Thực hành giải thích control plane, worker node, pod, container, service, ingress, probe và reconciliation bằng ví dụ đội tàu."
+        }
+      ]
+    },
+    {
+      "title": "Vì sao reverse proxy lỗi có thể làm toàn bộ backend khỏe mạnh vẫn không truy cập được?",
+      "body": "Reverse proxy đứng trước backend server và là đường đi đầu tiên của request từ user. Nó giúp xử lý security, TLS, cache, routing, WAF và phân phối tải, nhưng cũng trở thành dependency chung. Nếu proxy hoặc edge layer lỗi, hàng trăm origin server phía sau vẫn có thể không ai truy cập được vì traffic không bao giờ đi tới chúng.",
+      "bullets": [
+        "Đừng nhầm `nhiều server khỏe phía sau proxy` với availability end-to-end.",
+        "Proxy layer cũng cần redundancy, config validation, staged rollout, health check, rollback path và kiểm soát blast radius riêng.",
+        "Lỗi ở module nằm trên hot path có thể nhìn giống triệu chứng DDoS từ bên ngoài vì request bị dồn hoặc fail trước khi tới origin."
+      ]
+    },
+    {
+      "title": "Sự cố Cloudflare ngày 18/11/2025 dạy gì về rủi ro reverse proxy và edge layer?",
+      "body": "Postmortem của Cloudflare nói sự cố này không phải cyberattack. Ban đầu team nghi có triệu chứng hyperscale DDoS, nhưng nguyên nhân chính là một feature file lớn hơn dự kiến được propagate vào hệ thống nằm trên request path và gây HTTP 500 diện rộng. Bài học không phải reverse proxy là xấu, mà là shared edge layer phải fail small, validate shape/size của config và rollout bằng health gate.",
+      "bullets": [
+        "Proxy layer có thể là control point thật sự của nền tảng: nếu nó hỏng, origin capacity phía sau không còn ý nghĩa.",
+        "Config và generated data file cần kỷ luật an toàn như code: schema check, size limit, staged rollout, rollback nhanh và blast-radius tracking.",
+        "Incident response nên phân biệt nhanh DDoS, config regression, dependency failure và proxy-module crash thay vì coi mọi lỗi global là attack."
+      ],
+      "links": [
+        {
+          "href": "{{HUB_BASE_URL}}/workbench/reverse-proxy-failure-plan",
+          "label": "Proxy failure-mode workbench",
+          "desc": "Thực hành origin reachability, config validation, staged rollout, health gate, rollback và blast-radius review."
+        }
+      ],
+      "note": "Câu trả lời phỏng vấn: availability của reverse proxy là một phần của system availability. Có nhiều origin server là chưa đủ nếu toàn bộ traffic phụ thuộc vào một edge path đang hỏng."
+    },
+    {
+      "title": "SIEM là gì, và ELK Stack nằm ở đâu trong SIEM?",
+      "body": "SIEM là Security Information and Event Management: hệ thống thu log và event từ application, server, network device, cloud account, identity system và security tool, rồi normalize, correlate, alert và giữ bằng chứng để điều tra. ELK có thể làm pipeline kiểu SIEM: Beats hoặc Elastic Agent ship log, Logstash parse và enrich, Elasticsearch lưu/index để search, còn Kibana tạo dashboard, saved search, alert và investigation view.",
+      "bullets": [
+        "SIEM không chỉ là dashboard. Nó phải giúp trả lời chuyện gì xảy ra, ai hoặc cái gì gây ra, xảy ra lúc nào, ở đâu, mức độ nghiêm trọng ra sao và hành động tiếp theo là gì.",
+        "ELK chỉ thật sự hữu ích khi event có field chung như timestamp, user, host, source IP, action, outcome, service, trace ID, severity và environment.",
+        "Phần khó nằm ở alert noise, parser sai, thiếu context, chi phí retention, access control, redaction PII và owner của runbook."
+      ],
+      "links": [
+        {
+          "href": "{{HUB_BASE_URL}}/workbench/siem-elk-plan",
+          "label": "SIEM ELK planning workbench",
+          "desc": "Lập kế hoạch log source, vai trò ELK, field chuẩn hóa, detection rule, retention, privacy control, dashboard và incident runbook."
+        }
+      ],
+      "note": "Câu trả lời phỏng vấn: ELK là tooling stack; SIEM là năng lực vận hành bảo mật được xây trên event, correlation rule, alert ownership và quy trình điều tra."
+    },
+    {
+      "title": "Làm sao biết ứng viên Cloud Engineer có thật sự dùng AI trong công việc?",
+      "body": "Đừng chỉ hỏi có dùng ChatGPT không. Hãy hỏi task gần đây, workflow cụ thể, prompt dạng nào, AI sai ở đâu, và ứng viên verify thế nào trước khi để output chạm tới infrastructure. Người dùng thật trả lời bằng tool, ví dụ, lỗi đã gặp và giới hạn. Người dùng hời hợt thường trả lời chung chung.",
+      "bullets": [
+        "Warm-up nên hỏi tên tool, AI xuất hiện ở bước nào trong ngày làm việc, và lý do bắt đầu dùng AI.",
+        "Mục tiêu phỏng vấn không phải thưởng điểm cho hype AI, mà là xem ứng viên có dùng AI nhưng vẫn chịu trách nhiệm production risk không.",
+        "Ứng viên tốt phân biệt được search, draft, debug, review và decision support thay vì chỉ nói `em hỏi AI`."
+      ]
+    },
+    {
+      "title": "Em dùng AI tool nào, và AI xuất hiện ở đâu trong một ngày làm việc bình thường?",
+      "body": "Câu trả lời mạnh sẽ nêu tool và use case cụ thể: ChatGPT hoặc Claude để review design, Cursor hoặc Copilot khi sửa code, AI trong docs/search để tìm hướng, và assistant nội bộ cho runbook. Ứng viên nên nói rõ AI giúp draft Terraform, đọc log, viết checklist, review YAML, tóm tắt incident hoặc chuẩn bị command kiểm tra.",
+      "bullets": [
+        "Đẩy sâu vào sequence thật: gom context, prompt, review output, verify source, test local, peer review, rồi mới apply hoặc deploy.",
+        "Nếu câu trả lời chỉ là `AI rất hữu ích`, hãy hỏi task gần nhất và artifact cụ thể AI đã giúp tạo ra.",
+        "Câu trả lời trưởng thành có cả những task không dùng AI: secret, access approval, policy exception, hoặc production change chưa có human review."
+      ]
+    },
+    {
+      "title": "Kể một task cụ thể tuần vừa rồi em dùng AI. Em đã prompt như thế nào?",
+      "body": "Đây là câu tách rất rõ người dùng thật và người nói cho có. Người dùng thật có thể kể lại task: input, constraint, prompt, output, phần đã sửa, cách kiểm tra và kết quả. Với Cloud Engineer, ví dụ tốt thường là Terraform module, CloudFormation template, CI/CD job, IAM policy review, Kubernetes manifest, incident triage, cost analysis hoặc migration plan.",
+      "bullets": [
+        "Hãy yêu cầu paraphrase prompt: role, context, constraint, source snippet, format mong muốn và yêu cầu verification.",
+        "Tìm dấu hiệu ứng viên biết giới hạn context thay vì hỏi một câu rất mơ hồ.",
+        "Câu trả lời tốt nói rõ họ đã sửa output AI như thế nào trước khi dùng."
+      ],
+      "note": "Nếu ứng viên không nhớ nổi một task cụ thể gần đây, khả năng cao họ chỉ dùng AI ở mức casual."
+    },
+    {
+      "title": "Khi AI viết Terraform hoặc CloudFormation, em review gì trước khi apply?",
+      "body": "Review provider/resource version, impact tới state, IAM permission, network exposure, lifecycle rule, replacement risk, drift assumption, tagging, encryption, logging, cost impact, rollback path và target environment. Không apply IaC do AI sinh ra chỉ vì nhìn đúng cú pháp.",
+      "bullets": [
+        "Chạy format, validate, plan, policy check và peer review trước khi apply.",
+        "Soi kỹ destructive change, replacement, wildcard permission, public access, security group rule, subnet route, KMS key, retention policy hoặc data resource.",
+        "So output AI với official provider hoặc AWS documentation khi behavior của resource quan trọng."
+      ],
+      "code": "terraform fmt -check\nterraform validate\nterraform plan\ncfn-lint template.yaml\naws cloudformation validate-template --template-body file://template.yaml"
+    },
+    {
+      "title": "AI từng cho output sai và em dùng luôn chưa? Chuyện gì xảy ra và em bắt lỗi thế nào?",
+      "body": "Đây là câu bẫy tốt vì người dùng AI nghiêm túc gần như luôn có câu chuyện. Có thể là CLI flag không tồn tại, IAM action sai, Terraform argument lỗi thời, default không an toàn, regex sai, assumption sai về region hoặc root cause nghe rất thuyết phục nhưng không đúng. Điều quan trọng không phải AI sai, mà là engineer bắt được bằng docs, test, dry run, log hoặc review.",
+      "bullets": [
+        "Red flag: `AI rất thông minh nên em thường tin`.",
+        "Green flag: ứng viên nêu được failure mode và bước verification đã bắt lỗi.",
+        "Senior answer: biến lỗi đó thành checklist hoặc project prompt rule dùng lại cho team."
+      ],
+      "links": [
+        {
+          "href": "{{HUB_BASE_URL}}/workbench/ai-cloud-interview-rubric",
+          "label": "AI Cloud interview rubric workbench",
+          "desc": "Chấm câu trả lời ứng viên theo task AI cụ thể, prompt workflow, review IaC, chuyện AI sai, verification, AWS Docs conflict và guardrail cho team."
+        }
+      ]
+    },
+    {
+      "title": "Em dùng AI để debug một cloud incident hoặc lỗi deploy khó như thế nào?",
+      "body": "Dùng AI như thought partner, không dùng như nguồn sự thật. Đưa vào symptom đã sanitize, timestamp, thay đổi gần nhất, log, metric, kiến trúc và những thứ đã loại trừ. Yêu cầu AI đưa giả thuyết, bằng chứng còn thiếu và command tiếp theo. Sau đó verify bằng log thật, cloud event, monitoring, official docs và test tái hiện được.",
+      "bullets": [
+        "Ví dụ tốt biết thu hẹp layer: DNS, load balancer, TLS, IAM, network policy, container health, queue lag, database hoặc app code.",
+        "Ứng viên mạnh không paste secret, customer data, private key hoặc incident detail nhạy cảm vào public tool.",
+        "Root cause cuối cùng cần evidence, không cần AI tự tin."
+      ]
+    },
+    {
+      "title": "Em tin output của AI ở mức nào, và workflow verify của em là gì?",
+      "body": "Mức tin phụ thuộc rủi ro. Với draft ít rủi ro, AI có thể giúp nhanh. Với production infrastructure, hãy xem output AI như một đề xuất chưa đáng tin cho tới khi qua source verification, static check, test, dry run, plan review và human review. Workflow phải đủ rõ để người khác trong team lặp lại được.",
+      "bullets": [
+        "Verify claim với official documentation khi claim ảnh hưởng production behavior.",
+        "Dùng automated check khi có thể: test, linter, policy-as-code, plan diff, dry run và smoke check.",
+        "Ghi assumption vào PR để reviewer biết phần nào AI-generated, phần nào đã verify và phần nào còn uncertain."
+      ]
+    },
+    {
+      "title": "Nếu AI và AWS Documentation nói khác nhau, em làm thế nào?",
+      "body": "Lấy AWS Documentation, provider documentation, release note và live verification làm source of truth. AI có thể giúp đọc docs hoặc tạo checklist, nhưng AI không đứng trên official docs, behavior thật của API hoặc bằng chứng production.",
+      "bullets": [
+        "Kiểm tra ngày tài liệu, service region, API version, provider version và service có thay đổi gần đây không.",
+        "Nếu được, reproduce trong test account an toàn hoặc dry-run path.",
+        "Cập nhật prompt hoặc project instruction để lần sau giảm khả năng lặp lại assumption sai."
+      ]
+    },
+    {
+      "title": "Em đã viết CLAUDE.md hoặc project system prompt chưa? Trong đó nên có gì?",
+      "body": "Người dùng AI senior mô tả được instruction cấp project: architecture boundary, command rule, test command, security constraint, coding style, hành động cấm, deployment rule, giới hạn dữ liệu và cách verify. Mục tiêu là bắt AI đi theo workflow của team thay vì mỗi người phải giải thích lại project từ đầu.",
+      "bullets": [
+        "Nên có repo structure, ownership boundary, quality gate, docs cần đọc trước và command an toàn.",
+        "Ghi rõ AI không được làm gì: lộ secret, chạy destructive command, bỏ qua review hoặc apply infrastructure khi chưa được duyệt.",
+        "Giữ file đủ ngắn để thật sự dùng được, rồi link sang docs sâu hơn nếu cần."
+      ]
+    },
+    {
+      "title": "Nếu giao em giúp cả team Cloud dùng AI hiệu quả hơn, em bắt đầu từ đâu?",
+      "body": "Bắt đầu từ workflow thật, không bắt đầu từ hype tool. Tìm các việc lặp lại như draft runbook, tóm tắt incident, review Terraform, migration plan, cost investigation, PR review và dọn postmortem. Chuẩn hóa prompt, verification checklist, rule về dữ liệu được phép đưa vào AI, và ví dụ output tốt/xấu.",
+      "bullets": [
+        "Tạo prompt team cho IaC review, incident triage, update documentation và release check.",
+        "Đo hiệu quả bằng thời gian tiết kiệm, lỗi bắt được, chất lượng review và số lỗi lặp lại giảm.",
+        "Huấn luyện team dùng AI như thought partner: hỏi alternative, risk, missing evidence và rollback plan."
+      ]
+    },
+    {
+      "title": "Red flag nào cho thấy ứng viên chỉ dùng AI bề mặt?",
+      "body": "Red flag là câu trả lời chung chung không có workflow: `em dùng ChatGPT để hỏi đáp`, `AI rất hữu ích`, `em tin AI vì nó thông minh`, hoặc `em chưa dùng nhiều nhưng sẵn sàng học`. Không biết CLAUDE.md, system prompt, verification command hoặc không có câu chuyện AI sai là dấu hiệu dùng ở mức bề mặt.",
+      "bullets": [
+        "Không kể được task cụ thể gần đây.",
+        "Không giải thích được cách review Terraform, CloudFormation, IAM hoặc Kubernetes do AI sinh ra.",
+        "Dùng AI như search engine và chưa bao giờ yêu cầu AI critique assumption hoặc tạo verification plan."
+      ]
+    },
+    {
+      "title": "Green flag nào cho thấy ứng viên dùng AI thực chất trong phỏng vấn Cloud Engineer?",
+      "body": "Green flag là sự cụ thể và có tính vận hành: tool kèm use case, prompt pattern thật, một lần AI sai, workflow verify, ranh giới task không giao cho AI, và góc nhìn team-level về chuẩn hóa prompt và guardrail.",
+      "bullets": [
+        "Biết AI hữu ích ở đâu và ở đâu quá rủi ro nếu thiếu human control.",
+        "Phân biệt được dùng AI như search engine và dùng AI như thought partner.",
+        "Nghĩ được role Cloud Engineer 2 năm nữa sẽ đổi: ít học thuộc boilerplate hơn, nhiều review plan AI sinh ra, verify evidence và chịu trách nhiệm quyết định production hơn."
+      ],
+      "note": "Tip cho người phỏng vấn: câu hỏi về lần AI sai và lúc AI mâu thuẫn AWS Docs là hai câu bẫy tốt nhất. Người dùng thật thường có câu chuyện cụ thể."
     }
   ]
 }

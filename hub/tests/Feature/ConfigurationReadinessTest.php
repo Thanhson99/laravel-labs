@@ -21,6 +21,10 @@ final class ConfigurationReadinessTest extends TestCase
             ->assertSee('app_name_present')
             ->assertSee('web_guard_uses_session')
             ->assertSee('users_provider_uses_eloquent')
+            ->assertSee('Security Misconfiguration Controls')
+            ->assertSee('Deployment Smoke Matrix')
+            ->assertSee('Release Blockers')
+            ->assertSee('Production debug guard')
             ->assertSee('Open readiness API');
     }
 
@@ -36,7 +40,13 @@ final class ConfigurationReadinessTest extends TestCase
             ->assertJsonPath('data.quality_gate.status', 'ready')
             ->assertJsonPath('data.baseline.failures', 0)
             ->assertJsonPath('data.checks.3.key', 'web_guard_uses_session')
+            ->assertJsonPath('data.misconfiguration_controls.0.area', 'Runtime environment')
+            ->assertJsonPath('data.misconfiguration_controls.2.expected_control', 'CORS uses explicit origins, headers are present, secure cookies are enabled, HTTPS is enforced, and proxy trust is scoped.')
+            ->assertJsonPath('data.deployment_smoke_matrix.0.check', 'Production debug guard')
+            ->assertJsonPath('data.deployment_smoke_matrix.2.unsafe_signal', 'CORS allows wildcard credentialed origins, required security headers are missing, or cookies are not secure.')
+            ->assertJsonPath('data.release_blockers.1', 'Any production debug, secret exposure, broad CORS, missing header, weak cookie, proxy drift, or public storage signal blocks release.')
             ->assertJsonPath('data.commands.0', 'php artisan test --filter ConfigurationReadinessTest')
+            ->assertJsonPath('data.commands.2', 'php artisan route:list --path=configuration-readiness')
             ->assertJsonStructure([
                 'data' => [
                     'title',
@@ -50,6 +60,24 @@ final class ConfigurationReadinessTest extends TestCase
                             'file',
                         ],
                     ],
+                    'misconfiguration_controls' => [
+                        '*' => [
+                            'area',
+                            'risk',
+                            'expected_control',
+                            'evidence',
+                            'owner',
+                        ],
+                    ],
+                    'deployment_smoke_matrix' => [
+                        '*' => [
+                            'check',
+                            'unsafe_signal',
+                            'fail_closed_action',
+                            'verify_with',
+                        ],
+                    ],
+                    'release_blockers',
                     'quality_gate',
                     'baseline',
                     'commands',

@@ -57,4 +57,60 @@ final class ImplementationVerificationPlanTest extends TestCase
 
         $response->assertNotFound();
     }
+
+    /**
+     * JavaScript closure verification plans check rendered closure evidence.
+     */
+    public function test_javascript_closure_verification_plan_uses_scope_done_criteria(): void
+    {
+        $response = $this->getJson('/api/practice/verification-plan?record_id=laravel-frontend-en-json-item-8&technology=javascript-closures');
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('data.technology', 'javascript-closures')
+            ->assertJsonPath('data.smoke_request.headers.Accept', 'text/html,application/json')
+            ->assertJsonPath('data.smoke_request.expected_text.0', 'lexical scope')
+            ->assertJsonPath('data.smoke_request.expected_text.3', 'stale closure')
+            ->assertJsonPath('data.quality_gate_payload.assertions', 4)
+            ->assertJsonPath('data.done_when.0', 'The focused closure test passes for the generated test class.')
+            ->assertJsonPath('data.done_when.2', 'The smoke request renders lexical scope, captured binding, createCounter(), and stale-closure evidence.');
+    }
+
+    /**
+     * Arrow-function this verification plans check lexical-this evidence.
+     */
+    public function test_arrow_this_verification_plan_uses_lexical_this_done_criteria(): void
+    {
+        $response = $this->getJson('/api/practice/verification-plan?record_id=laravel-frontend-en-json-item-62&technology=javascript-closures');
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('data.technology', 'javascript-closures')
+            ->assertJsonPath('data.smoke_request.headers.Accept', 'text/html,application/json')
+            ->assertJsonPath('data.smoke_request.expected_text.0', 'lexical this')
+            ->assertJsonPath('data.smoke_request.expected_text.3', 'call/apply/bind cannot rebind arrow this')
+            ->assertJsonPath('data.quality_gate_payload.assertions', 4)
+            ->assertJsonPath('data.done_when.0', 'The focused arrow-this test passes for the generated test class.')
+            ->assertJsonPath('data.done_when.2', 'The smoke request renders lexical this, dynamic this, obj.arrow() trap, and call/apply/bind evidence.');
+    }
+
+    /**
+     * IDOR verification plans check object authorization evidence and denial probes.
+     */
+    public function test_idor_verification_plan_uses_object_authorization_done_criteria(): void
+    {
+        $response = $this->getJson('/api/practice/verification-plan?record_id=laravel-auth-security-en-json-item-113&technology=idor-access-control');
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('data.technology', 'idor-access-control')
+            ->assertJsonPath('data.smoke_request.headers.Accept', 'text/html,application/json')
+            ->assertJsonPath('data.smoke_request.expected_text.0', 'object-level authorization')
+            ->assertJsonPath('data.smoke_request.expected_text.3', 'ID-swap denial test')
+            ->assertJsonPath('data.smoke_request.denial_probe.expected_status', 403)
+            ->assertJsonPath('data.smoke_request.denial_probe.fallback_status', 404)
+            ->assertJsonPath('data.quality_gate_payload.assertions', 4)
+            ->assertJsonPath('data.done_when.0', 'The focused IDOR test passes for the generated test class.')
+            ->assertJsonPath('data.done_when.3', 'The denial probe proves user A cannot access user B object with 403 or deliberately scoped 404 behavior.');
+    }
 }

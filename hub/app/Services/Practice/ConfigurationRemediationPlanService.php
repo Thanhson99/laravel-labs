@@ -35,6 +35,7 @@ final class ConfigurationRemediationPlanService
             'tasks' => $tasks,
             'completion_criteria' => [
                 'Every high-severity risk has a focused test or assertion.',
+                'Every Security Misconfiguration release blocker has an owner, rollback action, and fail-closed smoke check.',
                 'Config cache is cleared before runtime verification.',
                 'Quality-gate consumers still receive status, passed, checks, and next_action.',
                 'Release evidence can cite smoke checks, rollback, and Pint output.',
@@ -75,6 +76,7 @@ final class ConfigurationRemediationPlanService
             'config-cache-stale' => 'Refresh stale configuration cache before verification.',
             'auth-contract-drift' => 'Restore auth contract assertions before auth behavior expands.',
             'quality-gate-shape-break' => 'Protect the shared quality-gate response shape.',
+            'security-misconfiguration-release-blocker' => 'Bind unsafe production configuration signals to fail-closed release blockers.',
             'release-evidence-missing' => 'Rebuild release evidence before reuse.',
             default => 'Repair configuration risk.',
         };
@@ -99,6 +101,12 @@ final class ConfigurationRemediationPlanService
             'quality-gate-shape-break' => [
                 'hub/app/Services/Practice/PracticeQualityGateService.php',
                 'hub/tests/Unit/Practice/PracticeQualityGateServiceTest.php',
+            ],
+            'security-misconfiguration-release-blocker' => [
+                'hub/app/Services/Practice/ConfigurationReadinessService.php',
+                'hub/app/Services/Practice/ConfigurationDeploymentPlanService.php',
+                'hub/tests/Feature/ConfigurationReadinessTest.php',
+                'hub/tests/Feature/ConfigurationDeploymentPlanTest.php',
             ],
             'release-evidence-missing' => [
                 'hub/app/Services/Practice/ConfigurationReleaseEvidenceService.php',
@@ -128,6 +136,10 @@ final class ConfigurationRemediationPlanService
                 'php artisan test --filter PracticeQualityGate',
                 'php artisan test --filter ConfigurationPracticeDashboardTest',
             ],
+            'security-misconfiguration-release-blocker' => [
+                'php artisan test --filter ConfigurationReadinessTest',
+                'php artisan test --filter ConfigurationDeploymentPlanTest',
+            ],
             'release-evidence-missing' => [
                 'php artisan test --filter ConfigurationReleaseEvidenceTest',
                 'php artisan test --filter ConfigurationEvidenceArchiveTest',
@@ -145,6 +157,7 @@ final class ConfigurationRemediationPlanService
             'config-cache-stale' => 'Readiness API reflects current config values after cache clear.',
             'auth-contract-drift' => 'Auth guard, provider, model, and broker expectations are covered by tests.',
             'quality-gate-shape-break' => 'Quality-gate payload keeps its shared ready/needs-work contract.',
+            'security-misconfiguration-release-blocker' => 'Unsafe production settings block release through readiness controls, release blockers, and deployment smoke checks.',
             'release-evidence-missing' => 'Release evidence and archive cite smoke checks, rollback, and style proof.',
             default => 'The risk owner route renders and focused tests pass.',
         };

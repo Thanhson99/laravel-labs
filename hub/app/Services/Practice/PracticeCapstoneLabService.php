@@ -51,7 +51,7 @@ final class PracticeCapstoneLabService
                 'source' => $item['source'],
                 'workspace_query' => $item['workspace_query'],
                 'estimated_minutes' => $item['estimated_minutes'],
-                'deliverable' => sprintf('Implement and verify a Laravel slice for `%s`.', $item['question']),
+                'deliverable' => $this->deliverableFor($technology, (string) $item['question']),
             ])
             ->values()
             ->all();
@@ -59,7 +59,7 @@ final class PracticeCapstoneLabService
         return [
             'title' => sprintf('Capstone Lab: %s', $technology),
             'technology' => $technology,
-            'mission' => sprintf('Build a small Laravel capstone from %d `%s` records and package the work as reviewable evidence.', count($tasks), $technology),
+            'mission' => $this->missionFor($technology, count($tasks)),
             'source_coverage' => collect($board['sources'])
                 ->take(5)
                 ->map(fn (array $source): array => [
@@ -71,12 +71,7 @@ final class PracticeCapstoneLabService
                 ->values()
                 ->all(),
             'tasks' => $tasks,
-            'deliverables' => [
-                'Complete each record workspace in the task list.',
-                'Run a verification plan for each task.',
-                'Create one PR lab artifact for the strongest task.',
-                'Create one assessment and retrospective before moving to the next technology.',
-            ],
+            'deliverables' => $this->deliverablesFor($technology),
             'artifact_queries' => collect($tasks)
                 ->map(fn (array $task): array => [
                     'record_id' => $task['record_id'],
@@ -103,6 +98,71 @@ final class PracticeCapstoneLabService
                     ->map(fn (array $task): string => sprintf('Complete capstone task %d', $task['position']))
                     ->push('Package strongest task as portfolio evidence')
             ),
+        ];
+    }
+
+    /**
+     * Build a capstone mission tuned to the selected technology.
+     */
+    private function missionFor(string $technology, int $taskCount): string
+    {
+        if ($technology === 'llm-foundations') {
+            return sprintf('Build an AI explanation capstone from %d `%s` records and package output contracts, metrics, and failure-mode evidence for review.', $taskCount, $technology);
+        }
+
+        if ($technology === 'javascript-closures') {
+            return sprintf('Build a JavaScript closure interview capstone from %d `%s` records and package lexical-scope traces, code examples, and trap evidence for review.', $taskCount, $technology);
+        }
+
+        return sprintf('Build a small Laravel capstone from %d `%s` records and package the work as reviewable evidence.', $taskCount, $technology);
+    }
+
+    /**
+     * Build the record-level deliverable for one capstone task.
+     */
+    private function deliverableFor(string $technology, string $question): string
+    {
+        if ($technology === 'llm-foundations' && AiTypeComparisonTopicService::matchesText($question)) {
+            return sprintf('Create and verify an AI type comparison table for `%s` with output contract, input evidence, metric, and failure mode.', $question);
+        }
+
+        if ($technology === 'javascript-closures') {
+            return sprintf('Create and verify a JavaScript closure explanation for `%s` with lexical scope, captured binding, createCounter(), and interview trap evidence.', $question);
+        }
+
+        return sprintf('Implement and verify a Laravel slice for `%s`.', $question);
+    }
+
+    /**
+     * Return capstone-level deliverables.
+     *
+     * @return array<int, string>
+     */
+    private function deliverablesFor(string $technology): array
+    {
+        if ($technology === 'llm-foundations') {
+            return [
+                'Complete each record workspace in the task list.',
+                'Produce one Predictive AI versus Generative AI comparison table.',
+                'Attach predictive metrics, generative quality checks, and failure-mode evidence.',
+                'Create one assessment and retrospective before moving to the next technology.',
+            ];
+        }
+
+        if ($technology === 'javascript-closures') {
+            return [
+                'Complete each closure workspace in the task list.',
+                'Produce one lexical-scope trace that names the outer scope, inner function, and captured binding.',
+                'Attach createCounter(), private state, var versus let, and stale-closure evidence.',
+                'Create one interview answer and retrospective before moving to the next technology.',
+            ];
+        }
+
+        return [
+            'Complete each record workspace in the task list.',
+            'Run a verification plan for each task.',
+            'Create one PR lab artifact for the strongest task.',
+            'Create one assessment and retrospective before moving to the next technology.',
         ];
     }
 }

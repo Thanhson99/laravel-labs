@@ -572,6 +572,52 @@
     {
       "title": "118. Additional final insight: a strong database layer is not the place where any query can be written, but the place where data can still change safely after the system has many active users",
       "body": "At the beginning, almost anyone can write CRUD. The hard part starts when data is large, many requests run concurrently, background jobs are active, and the business still wants to change rules without corrupting old data."
+    },
+    {
+      "title": "119. Locking in database là gì?",
+      "body": "Database locking is the mechanism a database uses to protect data while one transaction is reading or changing it. In plain terms: when one request is changing an important row, the database can make another request wait so both requests do not overwrite each other with stale assumptions.",
+      "bullets": [
+        "A lock is not automatically bad; it is a coordination tool.",
+        "The danger starts when locks are held too long, taken in different orders, or placed around hot rows.",
+        "In Laravel, you usually meet this topic through transactions, `lockForUpdate()`, inventory updates, wallet balances, order status changes, and background jobs."
+      ]
+    },
+    {
+      "title": "120. Why does locking matter in real Laravel projects?",
+      "body": "Because web apps often run many requests at the same time. Two users can buy the last item, two jobs can process the same payout, or two API calls can update one account balance. Without a transaction and the right lock, both processes may read the same old value and write an invalid final state.",
+      "code": "// Dangerous idea when two requests run at the same time:\n$product = Product::find($id);\n\nif ($product->stock > 0) {\n    $product->decrement('stock');\n    Order::create([...]);\n}"
+    },
+    {
+      "title": "121. Example: using `lockForUpdate()` to protect a row",
+      "body": "`lockForUpdate()` asks the database to lock selected rows until the transaction finishes. Other transactions that want to update those rows must wait, so your code can safely read the current value, validate it, and write the new value as one protected flow.",
+      "code": "DB::transaction(function () use ($productId) {\n    $product = Product::whereKey($productId)\n        ->lockForUpdate()\n        ->firstOrFail();\n\n    if ($product->stock < 1) {\n        throw new RuntimeException('Out of stock.');\n    }\n\n    $product->decrement('stock');\n\n    Order::create([\n        'product_id' => $product->id,\n        'status' => 'paid',\n    ]);\n});",
+      "note": "The important detail is that the lock lives inside the transaction. Calling `lockForUpdate()` without a real transaction usually does not protect the full business flow."
+    },
+    {
+      "title": "122. Row lock, table lock, deadlock, and lock contention",
+      "body": "A row lock protects selected rows. A table lock affects a broader table surface and can block much more work. A deadlock happens when two transactions wait on each other because they locked resources in a conflicting order. Lock contention happens when many requests keep waiting for the same hot lock, making the system slow even if nothing is technically broken.",
+      "bullets": [
+        "Prefer narrow row locks for specific business records.",
+        "Keep transactions short: do not call slow external APIs while holding a database lock.",
+        "Lock rows in a consistent order when a flow touches multiple records.",
+        "Add retry logic only after the operation is idempotent and the deadlock cause is understood."
+      ]
+    },
+    {
+      "title": "123. Common mistakes when developers first learn database locking",
+      "body": "The most common mistake is treating a lock as a magic fix for every concurrency bug. Locking is useful, but it must be paired with correct transactions, indexes, clear access order, and small critical sections.",
+      "bullets": [
+        "Reading a value outside the transaction, then locking too late.",
+        "Locking too many rows because the query has no useful index.",
+        "Holding a lock while sending email, calling payment APIs, or doing slow file work.",
+        "Ignoring deadlock errors instead of retrying safely or reducing conflicting lock order.",
+        "Assuming local tests with one user will reveal production concurrency problems."
+      ]
+    },
+    {
+      "title": "124. Interview answer: explain database locking clearly",
+      "body": "Database locking is how the database coordinates concurrent access so two transactions do not corrupt the same data. In Laravel, I use it when the current value matters before writing the next value, such as stock, balances, payout status, or workflow transitions. The usual pattern is `DB::transaction()`, select the exact rows with `lockForUpdate()`, validate the state, write the change, and keep the transaction short. I also watch for deadlocks, hot rows, missing indexes, and external calls inside transactions.",
+      "tip": "A strong interview answer should mention both the benefit and the cost: locks protect correctness, but poor lock design can slow the whole system."
     }
   ]
 }

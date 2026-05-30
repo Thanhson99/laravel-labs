@@ -202,6 +202,43 @@
     {
       "title": "What should a strong AI diff-review prompt ask beyond business logic?",
       "body": "Beyond logic, it should ask for `framework/version mismatch`, `dependency assumptions`, `runtime risk`, and `test illusion`. Those layers often expose failures that surface-level review misses."
+    },
+    {
+      "title": "How do you prevent hallucination in code?",
+      "body": "Hallucination happens when AI produces code, facts, APIs, files, or explanations that sound plausible but are not grounded in the current repo or source data. The practical answer is not to trust less; it is to force evidence: assumptions first, source references, small patches, dependency and version checks, runtime commands, and human review for risky areas.",
+      "bullets": [
+        "Require the model to label assumptions and uncertain claims before writing code.",
+        "Tie every factual claim to repo files, tests, logs, official docs, database rows, or retrieval source IDs.",
+        "Reject invented classes, routes, config keys, package methods, migrations, citations, and test results.",
+        "Use runtime checks and review lenses for auth, validation, queries, files, dependencies, and scope.",
+        "Define an acceptance gate: block high-risk output until evidence, verification, and human review pass.",
+        "Add data-safety rules: share minimal sanitized context, redact PII and environment values, and block secrets or raw customer data.",
+        "Use safe prompt examples for preflight, minimal patching, strict review, and source-grounded factual answers.",
+        "Require a safe output contract with assumptions, evidence map, smallest scoped change, verification record, and unverified claims.",
+        "Require merge artifacts such as an assumption register, evidence map, scope diff summary, verification record, and source ledger for data answers.",
+        "Map the risk level to a CI policy: strict blocking for high-risk output, standard blocking for controlled review work.",
+        "Break the risk score into signals so the team can explain why the answer is blocked or accepted.",
+        "Use a decision matrix to move from risky defaults toward safer evidence, runtime, and review choices.",
+        "Validate each risky claim with concrete checks for routes, services, package APIs, root-cause claims, command results, and source-backed facts.",
+        "Return release readiness so high-risk output is blocked until evidence, runtime checks, review, and score gates are closed.",
+        "Record evidence in a ledger with the claim, evidence type, reference, verification result, and redaction note.",
+        "Suggest task-specific verification commands for route checks, feature tests, style gates, source ledgers, and reproduction cases.",
+        "Track accepted AI output with metrics, log events, and alerts so regressions can be tied back to generated changes.",
+        "Keep a rollback playbook: detect the symptom, contain the change, repair with a failing test first, then update the missed guardrail.",
+        "Define ownership clearly: AI operator, code reviewer, domain owner, and release owner each own different failure modes.",
+        "Escalate invented APIs, security-sensitive patches, high risk scores, and source-missing facts to the right reviewer.",
+        "Grow the workflow through maturity levels: manual, templated, automated, and operational.",
+        "Red-team the workflow with planted risks: invented APIs, missing reproduction, scope creep, and fabricated data.",
+        "Turn the checklist into automation through PR templates, CI route/test checks, dependency review, and security labels."
+      ],
+      "code": "Do not patch yet.\nList assumptions first.\nFor every factual claim, cite a repo file, test, log, docs page, or source row.\nReturn an acceptance gate: accept, needs evidence, or block.\nReturn verification commands and mark anything unverified.",
+      "links": [
+        {
+          "href": "{{HUB_BASE_URL}}/workbench/ai-hallucination-guard-plan",
+          "label": "AI hallucination guard workbench",
+          "desc": "Practice turning AI risk into evidence, prompt contracts, runtime checks, and review controls."
+        }
+      ]
     }
   ]
 }

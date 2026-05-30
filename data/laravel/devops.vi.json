@@ -456,7 +456,9 @@
     },
     {
       "title": "93. Zero-downtime có phải luôn đạt được tuyệt đối không?",
-      "body": "Không phải lúc nào cũng tuyệt đối, nhưng nhiều hệ thống có thể tiệm cận nếu rollout kỷ luật."
+      "body": "Không phải lúc nào cũng tuyệt đối, nhưng nhiều hệ thống có thể tiệm cận nếu rollout kỷ luật.",
+      "code": "composer install --no-dev --optimize-autoloader\nphp artisan migrate --force\nphp artisan config:cache\nphp artisan route:cache\nphp artisan queue:restart",
+      "note": "Điều quan trọng không phải khẩu hiệu zero downtime, mà là thứ tự rollout, compatibility và khả năng rollback."
     },
     {
       "title": "94. Blue-green hoặc canary mindset có liên quan gì?",
@@ -554,7 +556,9 @@
     },
     {
       "title": "117. Monitoring là gì trong vận hành Laravel?",
-      "body": "Là việc theo dõi sức khỏe hệ thống qua log, metric, dashboard, alert và health signal."
+      "body": "Là việc theo dõi sức khỏe hệ thống qua log, metric, dashboard, alert và health signal.",
+      "code": "GET /up\nGET /health\nGET /ready",
+      "note": "Health endpoint không thay thế observability đầy đủ, nhưng là tín hiệu baseline thực tế cho load balancer và incident response."
     },
     {
       "title": "118. Health check dùng để làm gì?",

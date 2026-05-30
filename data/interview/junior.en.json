@@ -51,6 +51,12 @@
       "title": "URL Tracing, Request Flow, And Thinking Questions",
       "description": "An added group for evaluating how you trace a request across layers, understand the basic web stack, and explain your thinking when facing an unfamiliar problem.",
       "tone": "coral"
+    },
+    {
+      "start": 76,
+      "title": "Frontend JavaScript Interview Basics",
+      "description": "Small JavaScript rules such as hoisting, declaration setup, and predictable runtime behavior that often appear in frontend or fullstack interviews.",
+      "tone": "amber"
     }
   ],
   "items": [
@@ -700,6 +706,24 @@
         "An endpoint that works functionally but exposes the wrong access is still a serious bug."
       ],
       "tip": "A short strong line is: `correct flow is not enough; the endpoint also needs correct access control and correct guardrails`."
+    },
+    {
+      "title": "Explain JavaScript hoisting in a simple way with code.",
+      "body": "Hoisting means JavaScript registers declarations before executing statements. Function declarations are initialized early, so they can be called before their source line. `var` declarations are also registered early, but the value starts as `undefined`. `let` and `const` are registered too, but cannot be read before their declaration line because they are in the temporal dead zone.",
+      "code": "sayHi(); // Works\n\nfunction sayHi() {\n  console.log('Hello');\n}\n\nconsole.log(userName); // undefined\nvar userName = 'Son';\n\n// console.log(score); // ReferenceError\nlet score = 10;\n\n// run(); // TypeError: run is not a function\nvar run = function () {\n  console.log('Assigned later');\n};",
+      "bullets": [
+        "Do not say JavaScript physically moves code to the top of the file.",
+        "Say declarations are prepared before execution.",
+        "Separate function declaration, `var`, `let`/`const`, and function expression behavior.",
+        "In real projects, declare before use and prefer `const` or `let` over `var`."
+      ],
+      "tip": "Interview answer: function declarations are callable early, `var` is early but `undefined`, and `let`/`const` are blocked by the temporal dead zone until the declaration line runs.",
+      "links": [
+        {
+          "label": "Open JavaScript hoisting lab",
+          "href": "{{HUB_BASE_URL}}/workbench/javascript-hoisting-lab"
+        }
+      ]
     }
   ]
 }

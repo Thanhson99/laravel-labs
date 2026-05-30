@@ -123,7 +123,11 @@
     {
       "title": "17. Job trong Laravel nên đại diện cho điều gì?",
       "body": "Một đơn vị công việc đủ rõ nghĩa để worker xử lý, ví dụ `SendInvoiceEmail`, `GenerateReportPdf`, `SyncOrderToERP`.",
-      "code": "class SyncOrderToErp implements ShouldQueue\n{\n    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;\n\n    public function __construct(public int $orderId)\n    {\n    }\n\n    public function handle(ErpGateway $erp): void\n    {\n        $order = Order::findOrFail($this->orderId);\n\n        $erp->pushOrder($order);\n    }\n}"
+      "code": "class SyncOrderToErp implements ShouldQueue\n{\n    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;\n\n    public function __construct(public int $orderId)\n    {\n    }\n\n    public function handle(ErpGateway $erp): void\n    {\n        $order = Order::findOrFail($this->orderId);\n\n        $erp->pushOrder($order);\n    }\n}",
+      "bullets": [
+        "Tên job tốt nên cho biết rõ công việc nào sẽ được chạy.",
+        "Constructor chỉ nên mang đủ dữ liệu để worker có thể xử lý về sau."
+      ]
     },
     {
       "title": "18. Job tốt nên nhỏ tới mức nào?",
@@ -178,7 +182,11 @@
     {
       "title": "30. Có nên tách nhiều queue name khác nhau không?",
       "body": "Rất nên khi app có loại việc ưu tiên khác nhau, ví dụ email, media processing, webhook, reports. Điều này giúp worker không để job nặng chặn job quan trọng.",
-      "code": "SendWelcomeMail::dispatch($user->id)->onQueue('mail');\nProcessVideo::dispatch($video->id)->onQueue('media');\nHandlePartnerWebhook::dispatch($payload)->onQueue('webhooks');"
+      "code": "SendWelcomeMail::dispatch($user->id)->onQueue('mail');\nProcessVideo::dispatch($video->id)->onQueue('media');\nHandlePartnerWebhook::dispatch($payload)->onQueue('webhooks');",
+      "bullets": [
+        "Tách queue giúp việc gấp không bị chặn sau pipeline nặng.",
+        "Tên queue thường phản ánh độ ưu tiên hoặc owner vận hành."
+      ]
     },
     {
       "title": "31. Delay job dùng khi nào?",
@@ -191,7 +199,8 @@
     {
       "title": "33. Timeout của job quan trọng ra sao?",
       "body": "Rất quan trọng vì job treo lâu sẽ giữ worker, làm queue lag và có thể bị xử lý lặp nếu cấu hình timeout và retry không khớp.",
-      "code": "class GenerateMonthlyReport implements ShouldQueue\n{\n    public int $timeout = 120;\n    public int $tries = 3;\n    public array $backoff = [30, 120, 300];\n}"
+      "code": "class GenerateMonthlyReport implements ShouldQueue\n{\n    public int $timeout = 120;\n    public int $tries = 3;\n    public array $backoff = [30, 120, 300];\n}",
+      "note": "Timeout, tries và backoff nên phản ánh dependency thật. Đối xử mọi job giống nhau thường tạo retry ồn và khó vận hành."
     },
     {
       "title": "34. `tries` và `backoff` nên nghĩ thế nào?",
@@ -220,7 +229,8 @@
     {
       "title": "40. Khi nào nên phát event?",
       "body": "Khi một sự kiện nghiệp vụ đáng được các phần khác của hệ thống lắng nghe, ví dụ user đăng ký, order được tạo, thanh toán thành công.",
-      "code": "event(new OrderPaid($order));\n\nclass SendReceiptListener implements ShouldQueue\n{\n    public function handle(OrderPaid $event): void\n    {\n        Mail::to($event->order->user)->send(new ReceiptMail($event->order));\n    }\n}"
+      "code": "event(new OrderPaid($order));\n\nclass SendReceiptListener implements ShouldQueue\n{\n    public function handle(OrderPaid $event): void\n    {\n        Mail::to($event->order->user)->send(new ReceiptMail($event->order));\n    }\n}",
+      "note": "Sai lầm hay gặp là đặt tên event như một command. `OrderPlaced` là một sự thật đã xảy ra. `SendOrderConfirmation` là công việc cần làm."
     },
     {
       "title": "41. Listener có nên luôn queue không?",
@@ -291,7 +301,11 @@
     {
       "title": "57. Gửi mail là use case async điển hình vì sao?",
       "body": "Mail thường không cần user chờ ngay trong request, lại phụ thuộc provider ngoài nên rất hợp với queue.",
-      "code": "Mail::to($user)->queue(new WelcomeMail($user));\n\n$user->notify((new InvoicePaidNotification($invoice))->delay(now()->addMinutes(1)));"
+      "code": "Mail::to($user)->queue(new WelcomeMail($user));\n\n$user->notify((new InvoicePaidNotification($invoice))->delay(now()->addMinutes(1)));",
+      "bullets": [
+        "Email là ứng viên queue kinh điển vì trải nghiệm user hiếm khi phụ thuộc vào việc gửi mail ngay trong request.",
+        "Notification cũng hợp với delay khi app muốn có khoảng chờ ngắn trước khi liên hệ user."
+      ]
     },
     {
       "title": "58. Notification trong Laravel giúp gì?",
@@ -364,7 +378,8 @@
     {
       "title": "75. Scheduler trong Laravel giúp gì hơn cron thuần?",
       "body": "Nó cho phép định nghĩa lịch chạy bằng code PHP, dễ review trong repo và gom các task định kỳ vào một chỗ dễ quản lý hơn.",
-      "code": "protected function schedule(Schedule $schedule): void\n{\n    $schedule->command('reports:daily')->dailyAt('01:00');\n    $schedule->command('cleanup:temp-files')->hourly();\n}"
+      "code": "protected function schedule(Schedule $schedule): void\n{\n    $schedule->command('reports:daily')->dailyAt('01:00');\n    $schedule->command('cleanup:temp-files')->hourly();\n}",
+      "note": "Sai lầm hay gặp là rải logic định kỳ ở nhiều cron entry khó biết trên server. Đưa lịch vào app code giúp dễ review hơn."
     },
     {
       "title": "76. `schedule:run` hoạt động thế nào?",
@@ -381,7 +396,8 @@
     {
       "title": "79. `withoutOverlapping()` có ý nghĩa gì?",
       "body": "Nó giúp tránh task mới chạy chồng lên task cũ chưa xong, rất hữu ích cho report, sync và cleanup dài.",
-      "code": "$schedule->command('reports:daily')\n    ->withoutOverlapping()\n    ->onOneServer();"
+      "code": "$schedule->command('reports:daily')\n    ->withoutOverlapping()\n    ->onOneServer();",
+      "note": "Điều này đặc biệt quan trọng với import, billing, reconciliation và cleanup, nơi chạy trùng có thể làm sai dữ liệu."
     },
     {
       "title": "80. `onOneServer()` dùng khi nào?",
@@ -446,7 +462,11 @@
     {
       "title": "95. Vì sao `queue:restart` quan trọng sau deploy?",
       "body": "Worker là process sống lâu, có thể vẫn chạy code cũ. Restart giúp worker nạp code và config mới.",
-      "code": "php artisan queue:restart"
+      "code": "php artisan queue:restart",
+      "bullets": [
+        "Worker là process sống lâu, không phải PHP script chạy lại theo từng request.",
+        "Deploy code mà quên restart worker thường tạo lỗi 'web đã mới nhưng queue vẫn chạy code cũ'."
+      ]
     },
     {
       "title": "96. Nếu quên restart worker sau deploy thì sao?",
@@ -521,7 +541,8 @@
     {
       "title": "113. Làm sao để job idempotent hơn?",
       "body": "Dùng unique key, kiểm tra trạng thái trước khi side effect, lưu idempotency token, transaction rõ hoặc audit event đã xử lý.",
-      "code": "if ($invoice->receipt_sent_at) {\n    return;\n}\n\nMail::to($invoice->user)->send(new ReceiptMail($invoice));\n\n$invoice->forceFill(['receipt_sent_at' => now()])->save();"
+      "code": "if ($invoice->receipt_sent_at) {\n    return;\n}\n\nMail::to($invoice->user)->send(new ReceiptMail($invoice));\n\n$invoice->forceFill(['receipt_sent_at' => now()])->save();",
+      "note": "Idempotency thường đến từ business key ổn định hoặc state đã lưu, không phải chỉ hy vọng queue chạy đúng một lần."
     },
     {
       "title": "114. Transaction boundary liên quan async thế nào?",
@@ -578,7 +599,8 @@
     {
       "title": "127. Test async flow trong Laravel nên bắt đầu từ đâu?",
       "body": "Từ việc xác nhận hành động đúng có dispatch job, event hay notification, rồi test từng job hoặc listener với input rõ ràng.",
-      "code": "Queue::fake();\n\n$response = $this->post('/orders', $payload);\n\nQueue::assertPushed(SyncOrderToErp::class);"
+      "code": "Queue::fake();\n\n$response = $this->post('/orders', $payload);\n\nQueue::assertPushed(SyncOrderToErp::class);",
+      "note": "Test hữu ích đầu tiên thường là 'request có dispatch đúng background work không', chưa phải 'toàn bộ hạ tầng worker có chạy không'."
     },
     {
       "title": "128. `Queue::fake()` có ích gì?",
@@ -591,7 +613,11 @@
     {
       "title": "130. Có nên chỉ test rằng job đã được dispatch là đủ không?",
       "body": "Không đủ. Cũng cần test logic bên trong job, failure path, idempotency và các side effect quan trọng.",
-      "code": "$job = new SendInvoiceMail($invoice->id);\n$job->handle();\n\n$this->assertNotNull($invoice->fresh()->sent_at);"
+      "code": "$job = new SendInvoiceMail($invoice->id);\n$job->handle();\n\n$this->assertNotNull($invoice->fresh()->sent_at);",
+      "bullets": [
+        "Dispatch test chứng minh orchestration.",
+        "Handle test chứng minh bản thân job làm đúng việc."
+      ]
     },
     {
       "title": "131. Debug background bug khó hơn request bug vì sao?",

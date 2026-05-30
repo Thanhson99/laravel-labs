@@ -29,6 +29,7 @@ final class ConfigurationChangeChecklistService
             'change_cards' => [
                 $this->appCard(),
                 $this->authCard(),
+                $this->securityMisconfigurationCard($testPlan),
                 $this->qualityGateCard($testPlan),
             ],
             'review_questions' => [
@@ -36,6 +37,7 @@ final class ConfigurationChangeChecklistService
                 'Will cached config behave the same after deployment?',
                 'Which feature test proves the new runtime contract?',
                 'Is there a rollback value that restores the previous behavior safely?',
+                'Which Security Misconfiguration smoke check blocks release if this value is wrong?',
             ],
             'commands' => [
                 ...$testPlan['commands'],
@@ -107,6 +109,42 @@ final class ConfigurationChangeChecklistService
                 'Document any new env key in setup notes before relying on it.',
             ],
             'rollback' => 'Restore the previous guard, provider, broker, or throttle value and rerun the readiness checks.',
+        ];
+    }
+
+    /**
+     * Return checklist guidance for Security Misconfiguration release blockers.
+     *
+     * @param  array<string, mixed>  $testPlan
+     * @return array<string, mixed>
+     */
+    private function securityMisconfigurationCard(array $testPlan): array
+    {
+        return [
+            'area' => 'Security Misconfiguration contract',
+            'file' => 'hub/app/Services/Practice/ConfigurationReadinessService.php',
+            'watch_values' => [
+                'app.debug',
+                'app.env',
+                'session.secure',
+                'session.same_site',
+                'cors.allowed_origins',
+                'trustedproxy.proxies',
+                'filesystems.disks.*.visibility',
+            ],
+            'impact' => 'Debug output, exposed secrets, permissive CORS, weak headers, public storage, weak cookies, or proxy drift can turn a safe code path into a production exposure.',
+            'before_change' => [
+                'Identify whether the setting is local-only, staging-only, or a production release blocker.',
+                'Map the setting to one readiness control and one fail-closed smoke check.',
+                'Assign an owner for rollback and evidence capture before deployment.',
+            ],
+            'after_change' => [
+                'Run the Security Misconfiguration contract group in the configuration test plan.',
+                'Open the readiness API and confirm release_blockers still describe fail-closed behavior.',
+                'Attach smoke evidence for debug, secrets, CORS, headers, cookies, proxies, or storage visibility.',
+            ],
+            'rollback' => 'Restore the last known-good production-safe value, rerun configuration readiness, and keep the failed smoke signal in release evidence.',
+            'test_group' => collect($testPlan['test_groups'])->firstWhere('name', 'Security Misconfiguration contract'),
         ];
     }
 

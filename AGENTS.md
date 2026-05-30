@@ -50,6 +50,8 @@ The Laravel folders are supporting examples unless the user asks specifically to
 - Prefer existing patterns in `assets/site.js`, `assets/shell.js`, `partials`, and `data`.
 - Treat JSON files under `data/` as user-facing content.
 - Escape user-facing HTML output when rendering JSON content into `innerHTML`.
+- When adding content, use existing section shapes and renderer-backed components (`type: "list"`, default card sections, links, PHP modules/phases) instead of adding custom HTML or one-off styling.
+- Keep related learning content inside the renderer's block/card/list structures so it appears on a deliberate white surface and does not blend into the page background.
 - Do not remove existing Vietnamese content because it appears garbled in a terminal. PowerShell may display UTF-8 text incorrectly, while the file itself can still be valid.
 - Do not modify generated dependency folders such as `vendor`, `node_modules`, or build output.
 - Before finalizing frontend changes, check internal links and responsive behavior where possible.

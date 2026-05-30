@@ -40,7 +40,9 @@ final class ConfigurationSpacedReviewTest extends TestCase
             ->assertJsonPath('data.incident_memory.postmortem_id', 'POSTMORTEM-CONFIG-001')
             ->assertJsonPath('data.review_cards.0.day', 1)
             ->assertJsonPath('data.review_cards.0.incident_prompt', 'Day 1: replay the incident timeline without looking at the drill page.')
+            ->assertJsonPath('data.review_cards.1.defense_prompt', 'Explain what would make you stop a config deployment, including one Security Misconfiguration release blocker.')
             ->assertJsonPath('data.review_cards.2.route', '/practice/configuration-interview-brief')
+            ->assertJsonPath('data.promotion_criteria.4', 'Name one Security Misconfiguration release blocker and the smoke check that proves it fails closed.')
             ->assertJsonPath('data.quality_gate.status', 'ready')
             ->assertJsonStructure([
                 'data' => [

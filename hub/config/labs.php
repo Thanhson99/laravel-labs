@@ -2,6 +2,13 @@
 
 declare(strict_types=1);
 
+$contentPath = env('LABS_CONTENT_PATH');
+$resolvedContentPath = $contentPath === null || $contentPath === ''
+    ? base_path('../data')
+    : (preg_match('/^(?:[A-Za-z]:[\\\\\\/]|\/|\\\\\\\\)/', $contentPath) === 1
+        ? $contentPath
+        : base_path($contentPath));
+
 return [
     /*
     |--------------------------------------------------------------------------
@@ -12,7 +19,7 @@ return [
     | Laravel integration stays aligned with the source learning content.
     |
     */
-    'content_path' => env('LABS_CONTENT_PATH', base_path('../data')),
+    'content_path' => $resolvedContentPath,
 
     /*
     |--------------------------------------------------------------------------

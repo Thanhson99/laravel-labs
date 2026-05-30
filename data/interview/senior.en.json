@@ -502,6 +502,46 @@
         "This is a very real production-access question.",
         "A good security tradeoff question is not only about convenience, but about who pays if sensitive data is exposed."
       ]
+    },
+    {
+      "title": "JWT in localStorage or cookies: which is safer, and how should you answer in an IT interview?",
+      "body": "A senior answer should compare threats instead of memorizing a slogan. `localStorage` is vulnerable to token theft after XSS because JavaScript can read it. An `HttpOnly`, `Secure`, `SameSite` cookie is harder for injected JavaScript to steal, but it introduces CSRF and cookie-scope concerns because the browser sends it automatically. The safer design usually combines short-lived access tokens, refresh-token rotation, revocation, CSRF protection for cookie flows, strong XSS prevention, and clear logout behavior.",
+      "bullets": [
+        "For browser-first apps, prefer secure `HttpOnly` cookies when the backend controls the session-like flow.",
+        "For non-browser clients or third-party APIs, bearer tokens may fit better, but lifetime, storage, and revocation must be explicit.",
+        "The interview signal is whether you can explain XSS versus CSRF tradeoffs, not whether you repeat one absolute rule."
+      ],
+      "note": "A concise answer: localStorage is simpler but easier to steal through XSS; cookies can be safer against token theft if `HttpOnly`, `Secure`, and `SameSite` are configured, but they need CSRF protection and careful lifecycle design."
+    },
+    {
+      "title": "JWT cannot be revoked before expiry. How should a senior engineer design around that?",
+      "body": "A senior answer should start by saying that a stateless JWT remains valid until `exp` unless the server checks extra state. The practical design is not one trick; it is a lifecycle: short-lived access tokens, `jti` claims, denylist storage until expiry when immediate revoke is required, token-version checks for user-wide invalidation, refresh-token rotation, reuse detection, and audit logs that never expose raw tokens.",
+      "bullets": [
+        "Use a denylist when one issued token must be stopped before `exp`, and store only the `jti` or a hash plus `expires_at`.",
+        "Use token version or session security version when password change, role downgrade, or account suspension should invalidate many tokens at once.",
+        "Keep access tokens short-lived and revoke refresh-token families on logout, lost device, or suspicious reuse.",
+        "Make middleware verify signature and expiry first, then revocation state, then scopes or policies."
+      ],
+      "note": "Strong interview signal: explain the tradeoff between pure stateless performance and stateful revocation control instead of saying JWT can never be used safely."
+    },
+    {
+      "title": "Why can a technically correct System Design answer still fail because it does not discuss tradeoffs?",
+      "body": "For a prompt like `design a notification system for 10 million users`, naming Kafka, WebSocket, Redis Pub/Sub, and user-id partitioning can be technically correct but still incomplete. A senior answer starts by asking whether delivery must be real-time, which platforms must receive messages, what a five-minute outage costs, whether duplicates are acceptable, and whether the team can operate the design. System Design is not a fixed answer; it is a negotiation between conflicting costs.",
+      "bullets": [
+        "Do not draw the architecture first. Ask clarifying questions that change the architecture.",
+        "Say the cost out loud: `I choose A. The price is X. I accept X because Y is more expensive in this context.`",
+        "Use three checks before deciding: if this is wrong, who pays; where does complexity live; can the current team carry it?",
+        "Long Polling may beat WebSocket when delay is acceptable and operations must stay simple.",
+        "Vertical scaling may be the only deployable option for a legacy database even if horizontal scaling sounds more senior.",
+        "At L4 candidates name tools, at L5 they compare options, at L6 they raise hidden tradeoffs, and at L7 they frame business and organization constraints before architecture."
+      ],
+      "links": [
+        {
+          "label": "Open System Design tradeoff workbench",
+          "href": "{{HUB_BASE_URL}}/workbench/system-design-tradeoff-plan"
+        }
+      ],
+      "note": "A strong closing line: `No one needs me to know every answer. They need to see that I ask the right questions before choosing one.`"
     }
   ]
 }
